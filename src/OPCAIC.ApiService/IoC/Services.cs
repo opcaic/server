@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.ApiService.Services;
 
 namespace OPCAIC.ApiService.IoC
 {
-  public static class Services
-  {
-    public static void AddServices(this IServiceCollection services)
-    {
-      services.AddTransient<IUserService, UserService>();
-    }
-  }
+	public static class Services
+	{
+		public static void AddServices(this IServiceCollection services)
+		{
+			services.AddTransient<IUserService, UserService>();
+		}
+	}
 }

@@ -7,27 +7,27 @@ using OPCAIC.Protos;
 
 namespace OPCAIC.Broker.Runner
 {
-  internal class MasterImpl : Master.MasterBase
-  {
-    // Server side handler of the SayHello RPC
-    public override async Task<HelloReply> SayHello(HelloRequest request, ServerCallContext context)
-    {
-      Console.WriteLine($"Received hello request from {request.ClientId}");
-      //await Task.Delay(1000);
-	    Thread.Sleep(1000); // simulate heavy load
-      Console.WriteLine($"Servicing hello request from {request.ClientId}");
-      return new HelloReply
-      {
-        Message = "Hello " + request.Name + " with id " + request.ClientId
-      };
-    }
-  }
+	internal class MasterImpl : Master.MasterBase
+	{
+		// Server side handler of the SayHello RPC
+		public override async Task<HelloReply> SayHello(HelloRequest request, ServerCallContext context)
+		{
+			Console.WriteLine($"Received hello request from {request.ClientId}");
+			//await Task.Delay(1000);
+			Thread.Sleep(1000); // simulate heavy load
+			Console.WriteLine($"Servicing hello request from {request.ClientId}");
+			return new HelloReply
+			{
+				Message = "Hello " + request.Name + " with id " + request.ClientId
+			};
+		}
+	}
 
 	internal class Program
 	{
 		public static int Main(string[] args)
 		{
-			if (args.Length != 2 || !int.TryParse(args[1], out int port))
+			if (args.Length != 2 || !int.TryParse(args[1], out var port))
 			{
 				Console.WriteLine("Usage: [host] [port]");
 				return 1;
