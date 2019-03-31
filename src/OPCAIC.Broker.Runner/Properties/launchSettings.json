@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "OPCAIC.Broker.Runner": {
+      "commandName": "Project",
+      "commandLineArgs": "localhost 5000"
+    }
+  }
+}
