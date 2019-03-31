@@ -12,20 +12,20 @@ namespace OPCAIC.ApiService.Configs
 {
 	public class SwaggerConfig
 	{
-		private const string _DocumentName = "v1";
+		private const string DocumentName = "v1";
 
-		private const string _DocumentRouteTemplate = "/swagger/{documentName}/swagger.json";
-		private const string _DocumentEndpoint = "/swagger/v1/swagger.json";
+		private const string DocumentRouteTemplate = "/swagger/{documentName}/swagger.json";
+		private const string DocumentEndpoint = "/swagger/v1/swagger.json";
 
-		private const string _ApiVersion = "V1";
-		private const string _Title = "OPCAIC API";
+		private const string ApiVersion = "V1";
+		private const string Title = "OPCAIC API";
 
 		public static void SetupSwaggerGen(SwaggerGenOptions options)
 		{
-			options.SwaggerDoc(_DocumentName, new Info
+			options.SwaggerDoc(DocumentName, new Info
 			{
-				Version = _ApiVersion,
-				Title = _Title
+				Version = ApiVersion,
+				Title = Title
 			});
 			options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
 				$"{Assembly.GetEntryAssembly().GetName().Name}.xml"));
@@ -44,14 +44,14 @@ namespace OPCAIC.ApiService.Configs
 			options.AddSecurityRequirement(security);
 		}
 
-		public static void SetupSwaggerUI(SwaggerUIOptions options)
+		public static void SetupSwaggerUi(SwaggerUIOptions options)
 		{
-			options.SwaggerEndpoint(_DocumentEndpoint, _DocumentName);
+			options.SwaggerEndpoint(DocumentEndpoint, DocumentName);
 		}
 
 		public static void SetupSwagger(SwaggerOptions options)
 		{
-			options.RouteTemplate = _DocumentRouteTemplate;
+			options.RouteTemplate = DocumentRouteTemplate;
 		}
 	}
 }

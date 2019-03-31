@@ -36,7 +36,7 @@ namespace OPCAIC.ApiService.Services
 
 			var jwtTokenHandler = new JwtSecurityTokenHandler();
 			var key = Encoding.ASCII.GetBytes(
-				Environment.GetEnvironmentVariable(EnvVariables._SecurityKey));
+				Environment.GetEnvironmentVariable(EnvVariables.SecurityKey));
 			var tokenDescriptor = new SecurityTokenDescriptor
 			{
 				Subject = new ClaimsIdentity(new[] {new Claim("user", user.Id.ToString())}),

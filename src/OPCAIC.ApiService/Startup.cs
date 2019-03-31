@@ -23,7 +23,7 @@ namespace OPCAIC
 		{
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 			var key = Encoding.ASCII.GetBytes(
-				Environment.GetEnvironmentVariable(EnvVariables._SecurityKey));
+				Environment.GetEnvironmentVariable(EnvVariables.SecurityKey));
 
 			services.AddAuthentication(x =>
 				{
@@ -54,7 +54,7 @@ namespace OPCAIC
 			app.UseAuthentication();
 
 			app.UseSwagger(SwaggerConfig.SetupSwagger);
-			app.UseSwaggerUI(SwaggerConfig.SetupSwaggerUI);
+			app.UseSwaggerUI(SwaggerConfig.SetupSwaggerUi);
 
 			app.UseHttpsRedirection();
 			app.UseMvc();

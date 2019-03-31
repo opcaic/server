@@ -2,6 +2,6 @@
 {
 	public static class EnvVariables
 	{
-		public const string _SecurityKey = "OPCAIC_SECURITY_KEY";
+		public const string SecurityKey = "OPCAIC_SECURITY_KEY";
 	}
 }
