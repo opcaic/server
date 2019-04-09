@@ -18,7 +18,7 @@ namespace OPCAIC.ApiService.Controllers
 		public UsersController(IUserService userService) => fUserService = userService;
 
 		/// <summary>
-		///     Returns lists of users
+		///   Returns lists of users
 		/// </summary>
 		/// <returns>array of all users</returns>
 		/// <response code="401">User is not authorized.</response>
@@ -31,7 +31,7 @@ namespace OPCAIC.ApiService.Controllers
 			=> Ok(await fUserService.GetAllAsync());
 
 		/// <summary>
-		///     Generates login token and returns model of current user
+		///   Generates login token and returns model of current user
 		/// </summary>
 		/// <param name="credentials"></param>
 		/// <returns>Model of current user</returns>
@@ -43,7 +43,10 @@ namespace OPCAIC.ApiService.Controllers
 		{
 			var user = await fUserService.Authenticate(credentials.Email, credentials.PasswordHash);
 			if (user == null)
+			{
 				return Unauthorized();
+			}
+
 			return Ok(user);
 		}
 	}

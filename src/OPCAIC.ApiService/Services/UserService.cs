@@ -32,7 +32,9 @@ namespace OPCAIC.ApiService.Services
 		{
 			var user = FindByEmail(email);
 			if (user == null || user.PasswordHash != passwordHash)
+			{
 				return null;
+			}
 
 			var jwtTokenHandler = new JwtSecurityTokenHandler();
 			var key = Encoding.ASCII.GetBytes(
@@ -58,7 +60,10 @@ namespace OPCAIC.ApiService.Services
 		private UserIdentity FindByEmail(string email)
 		{
 			if (!fUsers.TryGetValue(email, out var user))
+			{
 				user = null;
+			}
+
 			return user;
 		}
 	}
