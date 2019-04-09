@@ -14,6 +14,8 @@ namespace OPCAIC
 {
 	public class Startup
 	{
+		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
 		public Startup(IConfiguration configuration) => Configuration = configuration;
 
 		public IConfiguration Configuration { get; }
@@ -43,6 +45,20 @@ namespace OPCAIC
 					};
 				});
 
+			// TODO: handle CORS correctly
+			services.AddCors(options =>
+			{
+				options.AddPolicy(myAllowSpecificOrigins,
+					builder =>
+					{
+						builder.
+							AllowAnyOrigin()
+							.AllowCredentials()
+							.AllowAnyHeader()
+							.AllowAnyMethod();
+					});
+			});
+
 			services.AddServices();
 			services.AddSwaggerGen(SwaggerConfig.SetupSwaggerGen);
 		}
@@ -55,6 +71,7 @@ namespace OPCAIC
 
 			app.UseSwagger(SwaggerConfig.SetupSwagger);
 			app.UseSwaggerUI(SwaggerConfig.SetupSwaggerUi);
+			app.UseCors(myAllowSpecificOrigins);
 
 			app.UseHttpsRedirection();
 			app.UseMvc();
