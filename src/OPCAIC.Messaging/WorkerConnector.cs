@@ -2,18 +2,23 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using System.Threading;
 using NetMQ;
 using NetMQ.Sockets;
+using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.Messaging
 {
-	public class ClientConnector : ConnectorBase<DealerSocket>
+	public class WorkerConnector : ConnectorBase<DealerSocket>
 	{
 		private readonly string address;
 		private readonly NetMQTimer pingTimer;
 		private readonly Dictionary<Type, Action<object>> handlers;
 
-		public ClientConnector(string address, string identity)
+		private int liveness = Defaults.Liveness;
+		private int sleepInterval = Defaults.ReconnectIntervalInit;
+
+		public WorkerConnector(string address, string identity)
 			:base (new DealerSocket(address), identity)
 		{
 			this.address = address;
@@ -23,21 +28,44 @@ namespace OPCAIC.Messaging
 			};
 
 			// setup connection timeout, this handler will run on Socket thread
-			pingTimer = new NetMQTimer(Defaults.PingTimeout);
+			pingTimer = new NetMQTimer(Defaults.HeartbeatInterval);
 			pingTimer.Elapsed += (_, a) => OnPingTimeOut();
 			SocketPoller.Add(pingTimer);
 		}
 
 		private void OnPingTimeOut()
 		{
-			Console.WriteLine($"[{Identity}] - Ping timeout");
+			if (--liveness == 0)
+			{
+				Console.WriteLine($"[{Identity}] - Broker is dead, sleeping for {sleepInterval} ms before retrying");
+				Thread.Sleep(sleepInterval);
+				if (sleepInterval < Defaults.ReconnectIntervalMax)
+					sleepInterval *= 2; // exponential back off
+				else
+				{
+					throw new InvalidOperationException("The broker is unreachable");
+				}
+				ResetConnection();
+				liveness = Defaults.Liveness;
+			}
+			Console.WriteLine($"[{Identity}] - Sending ping");
 			Socket.SendMultipartMessage(CreateMessage(new PingMessage()));
+		}
+
+		void ResetConnection()
+		{
+			Socket.Disconnect(address);
+			Socket.Connect(address);
 		}
 
 		protected override void OnPollerReceive(NetMQMessage msg)
 		{
 			// treat each message as a ping message
 			pingTimer.EnableAndReset();
+
+			// reset reconnection props
+			liveness = Defaults.Liveness;
+			sleepInterval = Defaults.ReconnectIntervalInit;
 			base.OnPollerReceive(msg);
 		}
 

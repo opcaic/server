@@ -43,7 +43,7 @@ namespace OPCAIC.Messaging
 
 		protected virtual void OnPollerReceive(NetMQMessage msg)
 		{
-//			Console.WriteLine($"[{Identity}] - Received {msg}");
+			Console.WriteLine($"[{Identity}] - Received {msg}");
 			inboundQueue.Enqueue(msg);
 		}
 

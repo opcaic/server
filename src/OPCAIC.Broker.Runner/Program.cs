@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.Broker.Runner
 {
@@ -10,7 +11,7 @@ namespace OPCAIC.Broker.Runner
 	{
 		private static int port;
 		private static int counter;
-		private const int workerCount = 2;
+		private const int workerCount = 0;
 		public static int Main(string[] args)
 		{
 			if (args.Length != 2 || !int.TryParse(args[1], out port))
@@ -30,12 +31,12 @@ namespace OPCAIC.Broker.Runner
 			connector.RegisterHandler<WorkerConnectMessage>((s, msg) =>
 			{
 				Console.WriteLine($"[Broker] - received: {msg.Message}");
-				connector.SendMessage(s, new WorkLoadMessage(counter++.ToString()));
+				connector.SendMessage(s, new WorkLoadMessage(counter++));
 			});
 			connector.RegisterHandler<WorkCompletedMessage>((s, msg) =>
 			{
 				Console.WriteLine($"[Broker] - received completion report: {msg.Work}");
-				connector.SendMessage(s, new WorkLoadMessage(counter++.ToString()));
+				connector.SendMessage(s, new WorkLoadMessage(counter++));
 			});
 			
 			Thread t = new Thread(()=>connector.EnterConsumer());
@@ -48,12 +49,12 @@ namespace OPCAIC.Broker.Runner
 
 		public static void Worker(object identity)
 		{
-			var connector = new ClientConnector($"tcp://localhost:{port}", identity.ToString());
+			var connector = new WorkerConnector($"tcp://localhost:{port}", identity.ToString());
 			connector.RegisterHandler<WorkLoadMessage>(msg =>
 			{
 				Console.WriteLine($"[{identity}] - received workload: {msg.Work}");
 				Thread.Sleep(500);
-				connector.SendMessage(new WorkCompletedMessage(counter++.ToString()));
+				connector.SendMessage(new WorkCompletedMessage(msg.Work));
 			});
 
 			Thread t = new Thread(()=>connector.EnterConsumer());

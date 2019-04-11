@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Messaging;
+using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.Worker
 {
@@ -17,8 +18,18 @@ namespace OPCAIC.Worker
 				return;
 			}
 
-			var connector = new ClientConnector($"tcp://localhost:{port}", "client1");
+			string identity = "client";
+
+			var connector = new WorkerConnector($"tcp://localhost:{port}", identity);
+			connector.RegisterHandler<WorkLoadMessage>(msg =>
+			{
+				Console.WriteLine($"[{identity}] - received workload: {msg.Work}");
+				Thread.Sleep(500);
+				connector.SendMessage(new WorkCompletedMessage(msg.Work));
+			});
+
 			Thread t = new Thread(()=>connector.EnterConsumer());
+			t.Start();
 			connector.SendMessage(new WorkerConnectMessage("HELLO"));
 			connector.EnterPoller();
 

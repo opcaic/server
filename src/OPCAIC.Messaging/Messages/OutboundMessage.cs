@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Messaging
+﻿namespace OPCAIC.Messaging.Messages
 {
 	public class OutboundMessage<T>
 	{
