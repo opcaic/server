@@ -1,16 +1,23 @@
-﻿using NetMQ;
+﻿using System.Text;
+using NetMQ;
 using Newtonsoft.Json;
 
 namespace OPCAIC.Messaging.Utils
 {
 	public static class MessageHelpers
 	{
+		public static void AppendIdentity(this NetMQMessage msg, string identity)
+		{
+			msg.Append(IdentityToBytes(identity));
+		}
+
+		public static string ConvertToIdentity(this NetMQFrame frame)
+		{
+			return BytesToIdentity(frame.Buffer, 0, (int) frame.BufferSize);
+		}
+
 		public static void SerializeMessage(NetMQMessage msg, object payload)
 		{
-//			var bf = new BinaryFormatter();
-//			var ms = new MemoryStream();
-//			bf.Serialize(ms, payload);
-//			msg.Append(new NetMQFrame(ms.GetBuffer(), (int) ms.Length));
 			msg.Append(JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
 			{
 				TypeNameHandling = TypeNameHandling.All
@@ -19,14 +26,20 @@ namespace OPCAIC.Messaging.Utils
 
 		public static object DeserializeMessage(NetMQMessage msg)
 		{
-//			var frame = msg.Pop();
-//			var ms = new MemoryStream(frame.Buffer, 0, frame.BufferSize);
-//			var bf = new BinaryFormatter();
-//			return bf.Deserialize(ms);
 			return JsonConvert.DeserializeObject(msg.Pop().ConvertToString(), new JsonSerializerSettings()
 			{
 				TypeNameHandling = TypeNameHandling.All
 			});
+		}
+
+		public static string BytesToIdentity(byte[] buffer, int start, int count)
+		{
+			return Encoding.Default.GetString(buffer, start, count);
+		}
+
+		public static byte[] IdentityToBytes(string id)
+		{
+			return Encoding.Default.GetBytes(id);
 		}
 	}
 }

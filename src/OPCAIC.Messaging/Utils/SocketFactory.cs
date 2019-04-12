@@ -20,7 +20,7 @@ namespace OPCAIC.Messaging.Utils
 		public TSocket CreateSocket()
 		{
 			var sock = CreateRawSocket();
-			sock.Options.Identity = Encoding.Unicode.GetBytes(identity);
+			sock.Options.Identity = MessageHelpers.IdentityToBytes(identity);
 			if (bind)
 			{
 				sock.Bind(address);

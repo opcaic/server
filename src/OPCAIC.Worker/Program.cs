@@ -10,7 +10,7 @@ namespace OPCAIC.Worker
 {
 	public class WorkerProcess
 	{
-		public static string ConnectionString = "tpc://localhost:5000"; // for test purposes
+		public static string ConnectionString = "tcp://localhost:5000"; // for test purposes
 		public static void Start(object identity)
 		{
 			Random rand = new Random();
@@ -38,9 +38,9 @@ namespace OPCAIC.Worker
 					connector.EnterPoller(); // returns on worker exit
 					connector.StopConsumer();
 					t.Join();
-					Console.WriteLine($"[{identity}] - client officially dead, restarting in 5s");
-					Thread.Sleep(5000);
 				}
+				Console.WriteLine($"[{identity}] - client officially dead, restarting in 5s");
+				Thread.Sleep(5000);
 			}
 		}
 	}

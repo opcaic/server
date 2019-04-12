@@ -32,17 +32,16 @@ namespace OPCAIC.Messaging
 			inboundQueue = new NetMQQueue<Command<TItem>>();
 			outboundQueue = new NetMQQueue<NetMQMessage>();
 
-			// init Socket
-			ResetConnection();
-
 			// Socket thread callbacks
-			SocketPoller = new NetMQPoller {Socket, outboundQueue};
-			Socket.ReceiveReady += (_, args) => OnPollerReceive(args.Socket.ReceiveMultipartMessage());
-			outboundQueue.ReceiveReady += (_, args) => Socket.SendMultipartMessage(args.Queue.Dequeue());
+			SocketPoller = new NetMQPoller {outboundQueue};
+			outboundQueue.ReceiveReady += (_, args) => DirectSend(args.Queue.Dequeue());
 
 			// Work thread callbacks
 			WorkPoller = new NetMQPoller {inboundQueue};
 			inboundQueue.ReceiveReady += (_, args) => args.Queue.Dequeue().Invoke();
+
+			// initiate the connection
+			ResetConnection();
 		}
 
 		protected TSocket Socket { get; private set; }
@@ -51,11 +50,20 @@ namespace OPCAIC.Messaging
 		{
 			if (Socket != null)
 			{
+				Socket.Close();
 				Socket.Dispose();
 				SocketPoller.Remove(Socket);
 			}
 
 			Socket = socketFactory.CreateSocket();
+			Socket.ReceiveReady += (_, args) => OnPollerReceive(args.Socket.ReceiveMultipartMessage());
+			SocketPoller.Add(Socket);
+		}
+
+		protected void DirectSend(NetMQMessage msg)
+		{
+			Console.WriteLine($"[{Identity}] - Sending {msg}");
+			Socket.SendMultipartMessage(msg);
 		}
 
 		public void EnterPoller() => SocketPoller.Run();
@@ -74,7 +82,7 @@ namespace OPCAIC.Messaging
 
 		private void OnPollerReceive(NetMQMessage msg)
 		{
-//			Console.WriteLine($"[{Identity}] - Received {msg}");
+			Console.WriteLine($"[{Identity}] - Received {msg}");
 			var item = ReceiveMessage(msg);
 			var handler = handlerSet.GetHandler(item);
 

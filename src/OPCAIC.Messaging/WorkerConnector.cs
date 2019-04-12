@@ -13,6 +13,8 @@ namespace OPCAIC.Messaging
 		private readonly string address;
 		private readonly NetMQTimer pingTimer;
 
+		private bool connected = false;
+
 		private int liveness = Defaults.Liveness;
 		private int sleepInterval = Defaults.ReconnectIntervalInit;
 
@@ -46,22 +48,31 @@ namespace OPCAIC.Messaging
 				}
 
 				ResetConnection();
+				connected = false;
 				liveness = Defaults.Liveness;
+				return;
 			}
 
-			Console.WriteLine($"[{Identity}] - Sending ping");
-			Socket.SendMultipartMessage(CreateMessage(new PingMessage()));
+			//			Console.WriteLine($"[{Identity}] - Sending ping");
+			DirectSend(CreateMessage(new PingMessage()));
 		}
 
 		protected override object ReceiveMessage(NetMQMessage msg)
 		{
 			// treat each message as a ping message
 			ResetHeartbeat();
+			if (msg.First.IsEmpty)
+				msg.Pop();
 			return MessageHelpers.DeserializeMessage(msg);
 		}
 
 		private void ResetHeartbeat()
 		{
+			if (connected == false)
+			{
+				connected = true;
+				Console.WriteLine($"[{Identity}] - connection established");
+			}
 			pingTimer.EnableAndReset();
 			liveness = Defaults.Liveness;
 			sleepInterval = Defaults.ReconnectIntervalInit;
@@ -76,7 +87,7 @@ namespace OPCAIC.Messaging
 		private NetMQMessage CreateMessage<T>(T payload)
 		{
 			var msg = new NetMQMessage(2);
-//			msg.AppendEmptyFrame();
+			msg.AppendEmptyFrame();
 			MessageHelpers.SerializeMessage(msg, payload);
 			return msg;
 		}

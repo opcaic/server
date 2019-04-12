@@ -36,12 +36,12 @@ namespace OPCAIC.Messaging
 				return;
 			}
 
-			Console.WriteLine($"[{Identity}] - Sending ping to worker '{worker.Identity}'.");
+//			Console.WriteLine($"[{Identity}] - Sending ping to worker '{worker.Identity}'.");
 			PingWorker(worker);
 		}
 
 		private void PingWorker(WorkerEntry worker)
-			=> Socket.SendMultipartMessage(CreateMessage(worker.Identity, new PingMessage()));
+			=> DirectSend(CreateMessage(worker.Identity, new PingMessage()));
 
 		private void RemoveWorker(WorkerEntry worker)
 		{
@@ -56,7 +56,9 @@ namespace OPCAIC.Messaging
 		{
 			ClearWorkerTimers();
 
-			var sender = msg.Pop().ConvertToString(Encoding.Unicode);
+			var sender = msg.Pop().ConvertToIdentity();
+			if (msg.First.IsEmpty)
+				msg.Pop();
 			var payload = MessageHelpers.DeserializeMessage(msg);
 
 			if (workers.TryGetValue(sender, out var entry))
@@ -93,6 +95,7 @@ namespace OPCAIC.Messaging
 			workers[identity] = entry;
 			SocketPoller.Add(entry.PingTimer);
 			entry.PingTimer.Elapsed += (_, a) => OnPingTimeout(entry);
+			PingWorker(entry);
 			return entry;
 		}
 
@@ -102,7 +105,8 @@ namespace OPCAIC.Messaging
 		private NetMQMessage CreateMessage<T>(string recipient, T payload)
 		{
 			var msg = new NetMQMessage(3);
-			msg.Append(recipient, Encoding.Unicode);
+			msg.AppendIdentity(recipient);
+			msg.AppendEmptyFrame();
 			MessageHelpers.SerializeMessage(msg, payload);
 			return msg;
 		}
