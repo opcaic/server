@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using NetMQ;
 
-namespace OPCAIC.Messaging
+namespace OPCAIC.Messaging.Utils
 {
 	public abstract class SocketFactory<TSocket> : ISocketFactory<TSocket>
 		where TSocket : NetMQSocket

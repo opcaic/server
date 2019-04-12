@@ -1,32 +1,39 @@
 ﻿using System;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Serialization.Json;
-using System.Text;
 using NetMQ;
-using Newtonsoft.Json;
+using OPCAIC.Messaging.Commands;
+using OPCAIC.Messaging.Messages;
+using OPCAIC.Messaging.Utils;
 
 namespace OPCAIC.Messaging
 {
-	public abstract class ConnectorBase<TSocket>: IDisposable where TSocket : NetMQSocket
+	public abstract class ConnectorBase<TSocket, TItem> : IDisposable where TSocket : NetMQSocket
 	{
-		private readonly NetMQQueue<NetMQMessage> inboundQueue;
-		private readonly NetMQQueue<NetMQMessage> outboundQueue;
+		private readonly IHandlerSet<TItem> handlerSet;
 
-		private readonly ISocketFactory<TSocket> socketFactory;
 		protected readonly string Identity;
-		protected TSocket Socket { get; private set; }
+		private readonly NetMQQueue<Command<TItem>> inboundQueue;
+		private readonly NetMQQueue<NetMQMessage> outboundQueue;
+		private readonly ISocketFactory<TSocket> socketFactory;
 		protected readonly NetMQPoller SocketPoller;
 		protected readonly NetMQPoller WorkPoller;
 
-		protected ConnectorBase(ISocketFactory<TSocket> factory, string identity)
+		protected ConnectorBase(
+			string identity,
+			ISocketFactory<TSocket> factory,
+			IHandlerSet<TItem> handlerSet)
 		{
 			socketFactory = factory;
 			Identity = identity;
-			ResetConnection();
+			this.handlerSet = handlerSet;
 
-			inboundQueue = new NetMQQueue<NetMQMessage>();
+			// acknowledge ping messages on Socket thread
+			handlerSet.AddHandler(new HandlerInfo<TItem>(typeof(PingMessage), delegate { }, true));
+
+			inboundQueue = new NetMQQueue<Command<TItem>>();
 			outboundQueue = new NetMQQueue<NetMQMessage>();
+
+			// init Socket
+			ResetConnection();
 
 			// Socket thread callbacks
 			SocketPoller = new NetMQPoller {Socket, outboundQueue};
@@ -35,14 +42,22 @@ namespace OPCAIC.Messaging
 
 			// Work thread callbacks
 			WorkPoller = new NetMQPoller {inboundQueue};
-			inboundQueue.ReceiveReady += (_, args) => OnMessage(args.Queue.Dequeue());
+			inboundQueue.ReceiveReady += (_, args) => args.Queue.Dequeue().Invoke();
 		}
+
+		protected TSocket Socket { get; private set; }
 
 		public void ResetConnection()
 		{
-			Socket?.Dispose();
+			if (Socket != null)
+			{
+				Socket.Dispose();
+				SocketPoller.Remove(Socket);
+			}
+
 			Socket = socketFactory.CreateSocket();
 		}
+
 		public void EnterPoller() => SocketPoller.Run();
 
 		public void EnterPollerAsync() => SocketPoller.RunAsync();
@@ -55,42 +70,39 @@ namespace OPCAIC.Messaging
 
 		public void StopConsumer() => WorkPoller.Stop();
 
-		protected abstract void OnMessage(NetMQMessage msg);
+		protected abstract TItem ReceiveMessage(NetMQMessage msg);
 
-		protected virtual void OnPollerReceive(NetMQMessage msg)
+		private void OnPollerReceive(NetMQMessage msg)
 		{
 //			Console.WriteLine($"[{Identity}] - Received {msg}");
-			inboundQueue.Enqueue(msg);
+			var item = ReceiveMessage(msg);
+			var handler = handlerSet.GetHandler(item);
+
+			if (handler == null)
+			{
+				Console.WriteLine($"[{Identity}] - no handler for give message type");
+				return;
+			}
+
+			if (handler.IsSync)
+			{
+				// execute locally
+				handler.Handler(item);
+			}
+			else
+			{
+				// queue execution on worker thread
+				inboundQueue.Enqueue(new Command<TItem>(handler, item));
+			}
 		}
 
-		protected void SerializeMessage(NetMQMessage msg, object payload)
-		{
-//			var bf = new BinaryFormatter();
-//			var ms = new MemoryStream();
-//			bf.Serialize(ms, payload);
-//			msg.Append(new NetMQFrame(ms.GetBuffer(), (int) ms.Length));
-			msg.Append(JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
-			{
-				TypeNameHandling = TypeNameHandling.All
-			}));
-		}
-
-		protected object DeserializeMessage(NetMQMessage msg)
-		{
-//			var frame = msg.Pop();
-//			var ms = new MemoryStream(frame.Buffer, 0, frame.BufferSize);
-//			var bf = new BinaryFormatter();
-//			return bf.Deserialize(ms);
-			return JsonConvert.DeserializeObject(msg.Pop().ConvertToString(), new JsonSerializerSettings()
-			{
-				TypeNameHandling = TypeNameHandling.All
-			});
-		}
+		protected void AddHandler(HandlerInfo<TItem> handler) => handlerSet.AddHandler(handler);
 
 		protected void EnqueueMessage(NetMQMessage msg) => outboundQueue.Enqueue(msg);
 
 		#region IDisposable Support
-		private bool disposedValue = false; // To detect redundant calls
+
+		private bool disposedValue; // To detect redundant calls
 
 		protected virtual void Dispose(bool disposing)
 		{
@@ -113,6 +125,7 @@ namespace OPCAIC.Messaging
 				disposedValue = true;
 			}
 		}
+
 		#endregion
 	}
 }

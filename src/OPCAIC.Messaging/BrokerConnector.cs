@@ -3,37 +3,26 @@ using System.Collections.Generic;
 using System.Text;
 using NetMQ;
 using NetMQ.Sockets;
+using OPCAIC.Messaging.Commands;
 using OPCAIC.Messaging.Messages;
+using OPCAIC.Messaging.Utils;
 
 namespace OPCAIC.Messaging
 {
-	public class HandlerInfo<THandler>
-	{
-		public HandlerInfo(THandler handler, bool isSync)
-		{
-			Handler = handler;
-			IsSync = isSync;
-		}
-
-		public THandler Handler { get; }
-		public bool IsSync { get; }
-	}
-	public class BrokerConnector : ConnectorBase<RouterSocket>
+	public class BrokerConnector : ConnectorBase<RouterSocket, ReceivedMessage>
 	{
 		private readonly string address;
-		private readonly Dictionary<Type, HandlerInfo<Action<string, object>>> handlers;
 		private readonly Dictionary<string, WorkerEntry> workers;
 
 		private readonly List<NetMQTimer> workersToRemove;
 
 		public BrokerConnector(string address, string identity)
-			: base(new RouterSocketFactory(identity, address, true), identity)
+			: base(
+				identity,
+				new RouterSocketFactory(identity, address, true),
+				new HandlerSet<ReceivedMessage>(msg => msg.Payload))
 		{
 			this.address = address;
-			handlers = new Dictionary<Type, HandlerInfo<Action<string, object>>>
-			{
-				[typeof(PingMessage)] = new HandlerInfo<Action<string, object>>(delegate { }, true) // ignore ping messages
-			};
 			workers = new Dictionary<string, WorkerEntry>();
 			workersToRemove = new List<NetMQTimer>();
 		}
@@ -63,25 +52,31 @@ namespace OPCAIC.Messaging
 			workersToRemove.Add(worker.PingTimer);
 		}
 
-		protected override void OnPollerReceive(NetMQMessage msg)
+		protected override ReceivedMessage ReceiveMessage(NetMQMessage msg)
 		{
 			ClearWorkerTimers();
-			var sender = msg.First.ConvertToString(Encoding.Unicode);
+
+			var sender = msg.Pop().ConvertToString(Encoding.Unicode);
+			var payload = MessageHelpers.DeserializeMessage(msg);
 
 			if (workers.TryGetValue(sender, out var entry))
 			{
 				// treat each message as a ping message
-				entry.PingTimer.EnableAndReset();
-				entry.Liveness = Defaults.Liveness;
+				ResetHeartbeat(entry);
 			}
 			else
 			{
-				// new worker connected
 				Console.WriteLine($"[{Identity}] - new worker connected: {sender}");
 				entry = NewWorker(sender);
 			}
 
-			base.OnPollerReceive(msg);
+			return new ReceivedMessage(sender, payload);
+		}
+
+		private static void ResetHeartbeat(WorkerEntry entry)
+		{
+			entry.PingTimer.EnableAndReset();
+			entry.Liveness = Defaults.Liveness;
 		}
 
 		private void ClearWorkerTimers()
@@ -101,35 +96,23 @@ namespace OPCAIC.Messaging
 			return entry;
 		}
 
-		protected override void OnMessage(NetMQMessage msg)
-		{
-			var sender = msg.Pop().ConvertToString(Encoding.Unicode);
-			var payload = DeserializeMessage(msg);
-			if (!handlers.TryGetValue(payload.GetType(), out var handler))
-			{
-				throw new InvalidOperationException("Unknown payload type");
-			}
-
-			handler.Handler(sender, payload);
-		}
-
 		public void SendMessage<T>(string recipient, T payload)
-		{
-			var msg = CreateMessage(recipient, payload);
-			EnqueueMessage(msg);
-		}
+			=> EnqueueMessage(CreateMessage(recipient, payload));
 
 		private NetMQMessage CreateMessage<T>(string recipient, T payload)
 		{
 			var msg = new NetMQMessage(3);
 			msg.Append(recipient, Encoding.Unicode);
-			SerializeMessage(msg, payload);
+			MessageHelpers.SerializeMessage(msg, payload);
 			return msg;
 		}
 
 		public void RegisterHandler<T>(Action<string, T> handler)
-			=> handlers.Add(typeof(T), new HandlerInfo<Action<string, object>>((s, obj) => handler(s, (T) obj), true));
+			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
+				msg => handler(msg.Sender, (T) msg.Payload), true));
+
 		public void RegisterAsyncHandler<T>(Action<string, T> handler)
-			=> handlers.Add(typeof(T), new HandlerInfo<Action<string, object>>((s, obj) => handler(s, (T) obj), false));
+			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
+				msg => handler(msg.Sender, (T) msg.Payload), false));
 	}
 }

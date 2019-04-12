@@ -1,6 +1,6 @@
 ﻿using NetMQ;
 
-namespace OPCAIC.Messaging
+namespace OPCAIC.Messaging.Utils
 {
 	public interface ISocketFactory<TSocket> where TSocket : NetMQSocket
 	{

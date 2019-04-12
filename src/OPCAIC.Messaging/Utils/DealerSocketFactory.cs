@@ -1,6 +1,6 @@
 ﻿using NetMQ.Sockets;
 
-namespace OPCAIC.Messaging
+namespace OPCAIC.Messaging.Utils
 {
 	public class DealerSocketFactory : SocketFactory<DealerSocket>
 	{

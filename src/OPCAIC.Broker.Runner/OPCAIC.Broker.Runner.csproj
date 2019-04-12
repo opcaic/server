@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OPCAIC.Messaging\OPCAIC.Messaging.csproj" />
+    <ProjectReference Include="..\OPCAIC.Worker\OPCAIC.Worker.csproj" />
   </ItemGroup>
 
 </Project>

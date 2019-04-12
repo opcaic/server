@@ -1,4 +1,5 @@
 ﻿using NetMQ;
+using OPCAIC.Messaging.Utils;
 
 namespace OPCAIC.Messaging
 {

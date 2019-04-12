@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Messaging
+﻿namespace OPCAIC.Messaging.Utils
 {
 	public static class Defaults
 	{
