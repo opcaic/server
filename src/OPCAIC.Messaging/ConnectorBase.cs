@@ -9,36 +9,33 @@ namespace OPCAIC.Messaging
 	public abstract class ConnectorBase<TSocket, TItem> : IDisposable where TSocket : NetMQSocket
 	{
 		private readonly IHandlerSet<TItem> handlerSet;
-
 		protected readonly string Identity;
-		private readonly NetMQQueue<Command<TItem>> inboundQueue;
-		private readonly NetMQQueue<NetMQMessage> outboundQueue;
 		private readonly ISocketFactory<TSocket> socketFactory;
 		protected readonly NetMQPoller SocketPoller;
+		private readonly NetMQQueue<Action> socketQueue;
+		private readonly NetMQQueue<Action> workerQueue;
 		protected readonly NetMQPoller WorkPoller;
 
 		protected ConnectorBase(
 			string identity,
-			ISocketFactory<TSocket> factory,
+			ISocketFactory<TSocket> socketFactory,
 			IHandlerSet<TItem> handlerSet)
 		{
-			socketFactory = factory;
 			Identity = identity;
+			this.socketFactory = socketFactory;
 			this.handlerSet = handlerSet;
 
 			// acknowledge ping messages on Socket thread
 			handlerSet.AddHandler(new HandlerInfo<TItem>(typeof(PingMessage), delegate { }, true));
 
-			inboundQueue = new NetMQQueue<Command<TItem>>();
-			outboundQueue = new NetMQQueue<NetMQMessage>();
+			workerQueue = new NetMQQueue<Action>();
+			socketQueue = new NetMQQueue<Action>();
 
-			// Socket thread callbacks
-			SocketPoller = new NetMQPoller {outboundQueue};
-			outboundQueue.ReceiveReady += (_, args) => DirectSend(args.Queue.Dequeue());
+			SocketPoller = new NetMQPoller {socketQueue};
+			WorkPoller = new NetMQPoller {workerQueue};
 
-			// Work thread callbacks
-			WorkPoller = new NetMQPoller {inboundQueue};
-			inboundQueue.ReceiveReady += (_, args) => args.Queue.Dequeue().Invoke();
+			socketQueue.ReceiveReady += (_, args) => args.Queue.Dequeue().Invoke();
+			workerQueue.ReceiveReady += (_, args) => args.Queue.Dequeue().Invoke();
 
 			// initiate the connection
 			ResetConnection();
@@ -74,7 +71,7 @@ namespace OPCAIC.Messaging
 
 		public void EnterConsumer() => WorkPoller.Run();
 
-		public void EnterConsumerAsync() => WorkPoller.Run();
+		public void EnterConsumerAsync() => WorkPoller.RunAsync();
 
 		public void StopConsumer() => WorkPoller.Stop();
 
@@ -100,13 +97,15 @@ namespace OPCAIC.Messaging
 			else
 			{
 				// queue execution on worker thread
-				inboundQueue.Enqueue(new Command<TItem>(handler, item));
+				EnqueueWorkerTask(() => handler.Handler(item));
 			}
 		}
 
 		protected void AddHandler(HandlerInfo<TItem> handler) => handlerSet.AddHandler(handler);
 
-		protected void EnqueueMessage(NetMQMessage msg) => outboundQueue.Enqueue(msg);
+		protected void EnqueueSocketTask(Action task) => socketQueue.Enqueue(task);
+
+		protected void EnqueueWorkerTask(Action task) => workerQueue.Enqueue(task);
 
 		#region IDisposable Support
 
@@ -120,8 +119,8 @@ namespace OPCAIC.Messaging
 				Socket?.Dispose();
 				SocketPoller.Dispose();
 				WorkPoller.Dispose();
-				inboundQueue.Dispose();
-				outboundQueue.Dispose();
+				workerQueue.Dispose();
+				socketQueue.Dispose();
 			}
 		}
 

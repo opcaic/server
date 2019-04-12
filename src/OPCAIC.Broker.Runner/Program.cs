@@ -14,6 +14,21 @@ namespace OPCAIC.Broker.Runner
 		private static int counter;
 		private const int workerCount = 1;
 
+		private static bool stop;
+
+		public static void StartBroker(string conectionString)
+		{
+			using (var broker = new Broker(new BrokerConnector(conectionString, "Broker")))
+			{
+				broker.StartBrokering();
+				while (!stop)
+				{
+					Thread.Sleep(1000);
+				}
+				broker.StopBrokering();
+			}
+		}
+
 		public static int Main(string[] args)
 		{
 			if (args.Length != 2 || !int.TryParse(args[1], out port))
@@ -31,21 +46,13 @@ namespace OPCAIC.Broker.Runner
 				workers[i].Start($"Client{i}");
 			}
 
-			BrokerConnector connector = new BrokerConnector(WorkerProcess.ConnectionString, "Broker");
-			connector.RegisterHandler<WorkerConnectMessage>((s, msg) =>
+			Console.CancelKeyPress += (_, a) =>
 			{
-				Console.WriteLine($"[Broker] - received: {msg.Message}");
-				connector.SendMessage(s, new WorkLoadMessage(counter++));
-			});
-			connector.RegisterHandler<WorkCompletedMessage>((s, msg) =>
-			{
-				Console.WriteLine($"[Broker] - received completion report: {msg.Work}");
-				connector.SendMessage(s, new WorkLoadMessage(counter++));
-			});
+				a.Cancel = true;
+				stop = true;
+			};
 
-			Thread t = new Thread(() => connector.EnterConsumer());
-			t.Start();
-			connector.EnterPoller();
+			StartBroker(WorkerProcess.ConnectionString);
 
 			return 0;
 		}

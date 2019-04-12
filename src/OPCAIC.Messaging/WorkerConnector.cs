@@ -50,7 +50,6 @@ namespace OPCAIC.Messaging
 				ResetConnection();
 				connected = false;
 				liveness = Defaults.Liveness;
-				return;
 			}
 
 			//			Console.WriteLine($"[{Identity}] - Sending ping");
@@ -85,7 +84,7 @@ namespace OPCAIC.Messaging
 		public void SendMessage<T>(T payload)
 		{
 			var msg = CreateMessage(payload);
-			EnqueueMessage(msg);
+			EnqueueSocketTask(() => DirectSend(msg));
 		}
 
 		private NetMQMessage CreateMessage<T>(T payload)

@@ -8,12 +8,16 @@ using OPCAIC.Messaging.Utils;
 
 namespace OPCAIC.Messaging
 {
+	public class WorkerDisconnectedEventArgs
+	{
+		public string Identity { get; set; }
+	}
+
 	public class BrokerConnector : ConnectorBase<RouterSocket, ReceivedMessage>
 	{
 		private readonly string address;
-		private readonly Dictionary<string, WorkerEntry> workers;
 
-		private readonly List<NetMQTimer> workersToRemove;
+		private readonly Dictionary<string, WorkerConnection> workers;
 
 		public BrokerConnector(string address, string identity)
 			: base(
@@ -22,11 +26,12 @@ namespace OPCAIC.Messaging
 				new HandlerSet<ReceivedMessage>(msg => msg.Payload))
 		{
 			this.address = address;
-			workers = new Dictionary<string, WorkerEntry>();
-			workersToRemove = new List<NetMQTimer>();
+			workers = new Dictionary<string, WorkerConnection>();
 		}
 
-		private void OnPingTimeout(WorkerEntry worker)
+		public event EventHandler<WorkerDisconnectedEventArgs> WorkerDisconnected;
+
+		private void OnPingTimeout(WorkerConnection worker)
 		{
 			if (--worker.Liveness == 0)
 			{
@@ -38,22 +43,22 @@ namespace OPCAIC.Messaging
 			PingWorker(worker);
 		}
 
-		private void PingWorker(WorkerEntry worker)
+		private void PingWorker(WorkerConnection worker)
 			=> DirectSend(CreateMessage(worker.Identity, new PingMessage()));
 
-		private void RemoveWorker(WorkerEntry worker)
+		private void RemoveWorker(WorkerConnection worker)
 		{
 			workers.Remove(worker.Identity);
+			worker.PingTimer.Enable = false;
 			// HACK: Currently cannot remove timer from NetMQPoller during Elapsed call.
 			// queue the removal to other part of poll cycle, see ClearWorkerTimers() method
-			worker.PingTimer.Enable = false;
-			workersToRemove.Add(worker.PingTimer);
+			EnqueueSocketTask(() => SocketPoller.Remove(worker.PingTimer));
+			// inform about the disconnection
+			EnqueueWorkerTask(() => OnWorkerDisconnected(worker));
 		}
 
 		protected override ReceivedMessage ReceiveMessage(NetMQMessage msg)
 		{
-			ClearWorkerTimers();
-
 			var sender = msg.Pop().ConvertToIdentity();
 			if (msg.First.IsEmpty)
 			{
@@ -76,23 +81,15 @@ namespace OPCAIC.Messaging
 			return new ReceivedMessage(sender, payload);
 		}
 
-		private static void ResetHeartbeat(WorkerEntry entry)
+		private static void ResetHeartbeat(WorkerConnection connection)
 		{
-			entry.PingTimer.EnableAndReset();
-			entry.Liveness = Defaults.Liveness;
+			connection.PingTimer.EnableAndReset();
+			connection.Liveness = Defaults.Liveness;
 		}
 
-		private void ClearWorkerTimers()
+		private WorkerConnection NewWorker(string identity)
 		{
-			foreach (var timer in workersToRemove)
-				SocketPoller.Remove(timer);
-
-			workersToRemove.Clear();
-		}
-
-		private WorkerEntry NewWorker(string identity)
-		{
-			var entry = new WorkerEntry(identity);
+			var entry = new WorkerConnection(identity);
 			workers[identity] = entry;
 			SocketPoller.Add(entry.PingTimer);
 			entry.PingTimer.Elapsed += (_, a) => OnPingTimeout(entry);
@@ -101,7 +98,7 @@ namespace OPCAIC.Messaging
 		}
 
 		public void SendMessage<T>(string recipient, T payload)
-			=> EnqueueMessage(CreateMessage(recipient, payload));
+			=> EnqueueSocketTask(() => DirectSend(CreateMessage(recipient, payload)));
 
 		private NetMQMessage CreateMessage<T>(string recipient, T payload)
 		{
@@ -119,5 +116,26 @@ namespace OPCAIC.Messaging
 		public void RegisterAsyncHandler<T>(Action<string, T> handler)
 			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
 				msg => handler(msg.Sender, (T) msg.Payload), false));
+
+		protected virtual void OnWorkerDisconnected(WorkerConnection worker) => WorkerDisconnected?.Invoke(this, new WorkerDisconnectedEventArgs
+		{
+			Identity = worker.Identity
+		});
+
+		protected class WorkerConnection
+		{
+			public WorkerConnection(string identity)
+			{
+				Identity = identity;
+				PingTimer = new NetMQTimer(Defaults.HeartbeatInterval);
+				Liveness = Defaults.Liveness;
+			}
+
+			public NetMQTimer PingTimer { get; }
+
+			public int Liveness { get; set; }
+
+			public string Identity { get; }
+		}
 	}
 }

@@ -3,9 +3,9 @@
 namespace OPCAIC.Messaging.Messages
 {
 	[Serializable]
-	public class WorkLoadMessage
+	public class MatchExecutionResultMessage
 	{
-		public WorkLoadMessage(int work) => Work = work;
+		public MatchExecutionResultMessage(int work) => Work = work;
 
 		public int Work { get; set; }
 	}
