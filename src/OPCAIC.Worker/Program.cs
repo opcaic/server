@@ -8,22 +8,15 @@ using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.Worker
 {
-	internal class Program
+	public class WorkerProcess
 	{
-		public static void Main(string[] args)
+		public static string ConnectionString = "tpc://localhost:5000"; // for test purposes
+		public static void Start(object identity)
 		{
-			if (args.Length != 2 || !int.TryParse(args[1], out var port))
-			{
-				Console.WriteLine("usage: [server] [port]");
-				return;
-			}
-
-			string identity = "client";
-
 			Random rand = new Random();
 			while (true)
 			{
-				using (var connector = new WorkerConnector($"tcp://localhost:{port}", identity.ToString()))
+				using (var connector = new WorkerConnector(ConnectionString, identity.ToString()))
 				{
 					connector.RegisterHandler<WorkLoadMessage>(msg =>
 					{
@@ -42,11 +35,31 @@ namespace OPCAIC.Worker
 					t.Start();
 					Console.WriteLine($"[{identity}] - Initiating connection");
 					connector.SendMessage(new WorkerConnectMessage("HELLO"));
-					connector.EnterPoller();
-					Thread.Sleep(10000);
-					Console.WriteLine($"[{identity}] - client officially dead");
+					connector.EnterPoller(); // returns on worker exit
+					connector.StopConsumer();
+					t.Join();
+					Console.WriteLine($"[{identity}] - client officially dead, restarting in 5s");
+					Thread.Sleep(5000);
 				}
 			}
+		}
+	}
+
+	internal class Program
+	{
+		public static void Main(string[] args)
+		{
+			if (args.Length != 2 || !int.TryParse(args[1], out var port))
+			{
+				Console.WriteLine("usage: [server] [port]");
+				return;
+			}
+
+			WorkerProcess.ConnectionString = $"tcp://localhost:{port}";
+
+			Random rand = new Random();
+			string identity = $"client{rand.Next(100)}";
+			WorkerProcess.Start(identity);
 		}
 	}
 }

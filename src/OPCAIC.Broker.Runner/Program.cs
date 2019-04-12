@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Messaging.Messages;
+using OPCAIC.Worker;
 
 namespace OPCAIC.Broker.Runner
 {
@@ -21,14 +22,16 @@ namespace OPCAIC.Broker.Runner
 				return 1;
 			}
 
+			WorkerProcess.ConnectionString = $"tcp://localhost:{port}";
+
 			List<Thread> workers = new List<Thread>(workerCount);
 			for (int i = 0; i < workerCount; i++)
 			{
-				workers.Add(new Thread(Worker));
+				workers.Add(new Thread(WorkerProcess.Start));
 				workers[i].Start($"Client{i}");
 			}
 
-			BrokerConnector connector = new BrokerConnector($"tcp://localhost:{port}", "Broker");
+			BrokerConnector connector = new BrokerConnector(WorkerProcess.ConnectionString, "Broker");
 			connector.RegisterHandler<WorkerConnectMessage>((s, msg) =>
 			{
 				Console.WriteLine($"[Broker] - received: {msg.Message}");
@@ -45,38 +48,6 @@ namespace OPCAIC.Broker.Runner
 			connector.EnterPoller();
 
 			return 0;
-		}
-
-
-		public static void Worker(object identity)
-		{
-			Random rand = new Random();
-			while (true)
-			{
-				using (var connector = new WorkerConnector($"tcp://localhost:{port}", identity.ToString()))
-				{
-					connector.RegisterHandler<WorkLoadMessage>(msg =>
-					{
-						Console.WriteLine($"[{identity}] - received workload: {msg.Work}");
-						Thread.Sleep(500 * rand.Next(4));
-						if (rand.Next(10) == 0)
-						{
-							Console.WriteLine($"[{identity}] - simulating crash");
-							connector.StopPoller();
-						}
-
-						connector.SendMessage(new WorkCompletedMessage(msg.Work));
-					});
-
-					Thread t = new Thread(() => connector.EnterConsumer());
-					t.Start();
-					Console.WriteLine($"[{identity}] - Initiating connection");
-					connector.SendMessage(new WorkerConnectMessage("HELLO"));
-					connector.EnterPoller();
-					Thread.Sleep(10000);
-					Console.WriteLine($"[{identity}] - client officially dead");
-				}
-			}
 		}
 	}
 }
