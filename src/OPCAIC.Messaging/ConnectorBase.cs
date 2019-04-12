@@ -8,21 +8,22 @@ using Newtonsoft.Json;
 
 namespace OPCAIC.Messaging
 {
-	public abstract class ConnectorBase<TSocket> where TSocket : NetMQSocket
+	public abstract class ConnectorBase<TSocket>: IDisposable where TSocket : NetMQSocket
 	{
 		private readonly NetMQQueue<NetMQMessage> inboundQueue;
 		private readonly NetMQQueue<NetMQMessage> outboundQueue;
 
+		private readonly ISocketFactory<TSocket> socketFactory;
 		protected readonly string Identity;
-		protected readonly TSocket Socket;
+		protected TSocket Socket { get; private set; }
 		protected readonly NetMQPoller SocketPoller;
 		protected readonly NetMQPoller WorkPoller;
 
-		public ConnectorBase(TSocket socket, string identity)
+		protected ConnectorBase(ISocketFactory<TSocket> factory, string identity)
 		{
-			this.Identity = identity;
-			Socket = socket;
-			Socket.Options.Identity = Encoding.Unicode.GetBytes(identity);
+			socketFactory = factory;
+			Identity = identity;
+			ResetConnection();
 
 			inboundQueue = new NetMQQueue<NetMQMessage>();
 			outboundQueue = new NetMQQueue<NetMQMessage>();
@@ -36,14 +37,29 @@ namespace OPCAIC.Messaging
 			WorkPoller = new NetMQPoller {inboundQueue};
 			inboundQueue.ReceiveReady += (_, args) => OnMessage(args.Queue.Dequeue());
 		}
+
+		public void ResetConnection()
+		{
+			Socket?.Dispose();
+			Socket = socketFactory.CreateSocket();
+		}
 		public void EnterPoller() => SocketPoller.Run();
+
+		public void EnterPollerAsync() => SocketPoller.RunAsync();
+
+		public void StopPoller() => SocketPoller.Stop();
+
 		public void EnterConsumer() => WorkPoller.Run();
+
+		public void EnterConsumerAsync() => WorkPoller.Run();
+
+		public void StopConsumer() => WorkPoller.Stop();
 
 		protected abstract void OnMessage(NetMQMessage msg);
 
 		protected virtual void OnPollerReceive(NetMQMessage msg)
 		{
-			Console.WriteLine($"[{Identity}] - Received {msg}");
+//			Console.WriteLine($"[{Identity}] - Received {msg}");
 			inboundQueue.Enqueue(msg);
 		}
 
@@ -72,5 +88,31 @@ namespace OPCAIC.Messaging
 		}
 
 		protected void EnqueueMessage(NetMQMessage msg) => outboundQueue.Enqueue(msg);
+
+		#region IDisposable Support
+		private bool disposedValue = false; // To detect redundant calls
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				Socket?.Close();
+				Socket?.Dispose();
+				SocketPoller.Dispose();
+				WorkPoller.Dispose();
+				inboundQueue.Dispose();
+				outboundQueue.Dispose();
+			}
+		}
+
+		public void Dispose()
+		{
+			if (!disposedValue)
+			{
+				Dispose(true);
+				disposedValue = true;
+			}
+		}
+		#endregion
 	}
 }

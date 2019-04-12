@@ -19,7 +19,7 @@ namespace OPCAIC.Messaging
 		private int sleepInterval = Defaults.ReconnectIntervalInit;
 
 		public WorkerConnector(string address, string identity)
-			:base (new DealerSocket(address), identity)
+			:base (new DealerSocketFactory(identity, address, false),  identity)
 		{
 			this.address = address;
 			handlers = new Dictionary<Type, Action<object>>
@@ -37,7 +37,7 @@ namespace OPCAIC.Messaging
 		{
 			if (--liveness == 0)
 			{
-				Console.WriteLine($"[{Identity}] - Broker is dead, sleeping for {sleepInterval} ms before retrying");
+				Console.WriteLine($"[{Identity}] - Broker unreachable, sleeping for {sleepInterval} ms");
 				Thread.Sleep(sleepInterval);
 				if (sleepInterval < Defaults.ReconnectIntervalMax)
 					sleepInterval *= 2; // exponential back off

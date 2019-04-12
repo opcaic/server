@@ -11,7 +11,8 @@ namespace OPCAIC.Broker.Runner
 	{
 		private static int port;
 		private static int counter;
-		private const int workerCount = 0;
+		private const int workerCount = 1;
+
 		public static int Main(string[] args)
 		{
 			if (args.Length != 2 || !int.TryParse(args[1], out port))
@@ -38,8 +39,8 @@ namespace OPCAIC.Broker.Runner
 				Console.WriteLine($"[Broker] - received completion report: {msg.Work}");
 				connector.SendMessage(s, new WorkLoadMessage(counter++));
 			});
-			
-			Thread t = new Thread(()=>connector.EnterConsumer());
+
+			Thread t = new Thread(() => connector.EnterConsumer());
 			t.Start();
 			connector.EnterPoller();
 
@@ -49,18 +50,33 @@ namespace OPCAIC.Broker.Runner
 
 		public static void Worker(object identity)
 		{
-			var connector = new WorkerConnector($"tcp://localhost:{port}", identity.ToString());
-			connector.RegisterHandler<WorkLoadMessage>(msg =>
+			Random rand = new Random();
+			while (true)
 			{
-				Console.WriteLine($"[{identity}] - received workload: {msg.Work}");
-				Thread.Sleep(500);
-				connector.SendMessage(new WorkCompletedMessage(msg.Work));
-			});
+				using (var connector = new WorkerConnector($"tcp://localhost:{port}", identity.ToString()))
+				{
+					connector.RegisterHandler<WorkLoadMessage>(msg =>
+					{
+						Console.WriteLine($"[{identity}] - received workload: {msg.Work}");
+						Thread.Sleep(500 * rand.Next(4));
+						if (rand.Next(10) == 0)
+						{
+							Console.WriteLine($"[{identity}] - simulating crash");
+							connector.StopPoller();
+						}
 
-			Thread t = new Thread(()=>connector.EnterConsumer());
-			t.Start();
-			connector.SendMessage(new WorkerConnectMessage("HELLO"));
-			connector.EnterPoller();
+						connector.SendMessage(new WorkCompletedMessage(msg.Work));
+					});
+
+					Thread t = new Thread(() => connector.EnterConsumer());
+					t.Start();
+					Console.WriteLine($"[{identity}] - Initiating connection");
+					connector.SendMessage(new WorkerConnectMessage("HELLO"));
+					connector.EnterPoller();
+					Thread.Sleep(10000);
+					Console.WriteLine($"[{identity}] - client officially dead");
+				}
+			}
 		}
 	}
 }

@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices.ComTypes;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using NetMQ;
 using NetMQ.Sockets;
@@ -11,49 +7,38 @@ using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.Messaging
 {
-	public static class Defaults
+	public class HandlerInfo<THandler>
 	{
-		public static int HeartbeatInterval => 1000;
-		public static int Liveness => 3;
-		public static int ReconnectIntervalInit => 1000;
-		public static int ReconnectIntervalMax => 32000;
-	}
-
-	public class WorkerEntry
-	{
-		public WorkerEntry(string identity)
+		public HandlerInfo(THandler handler, bool isSync)
 		{
-			Identity = identity;
-			PingTimer = new NetMQTimer(Defaults.HeartbeatInterval);
-			Liveness = Defaults.Liveness;
+			Handler = handler;
+			IsSync = isSync;
 		}
-		public NetMQTimer PingTimer { get; }
-		public int Liveness { get; set; }
 
-		public string Identity { get; }
+		public THandler Handler { get; }
+		public bool IsSync { get; }
 	}
-
 	public class BrokerConnector : ConnectorBase<RouterSocket>
 	{
 		private readonly string address;
-		private readonly Dictionary<Type, Action<string, object>> handlers;
+		private readonly Dictionary<Type, HandlerInfo<Action<string, object>>> handlers;
 		private readonly Dictionary<string, WorkerEntry> workers;
 
 		private readonly List<NetMQTimer> workersToRemove;
 
 		public BrokerConnector(string address, string identity)
-			:base (new RouterSocket(address), identity)
+			: base(new RouterSocketFactory(identity, address, true), identity)
 		{
 			this.address = address;
-			handlers = new Dictionary<Type, Action<string, object>>()
+			handlers = new Dictionary<Type, HandlerInfo<Action<string, object>>>
 			{
-				[typeof(PingMessage)] = delegate { } // ignore ping messages
+				[typeof(PingMessage)] = new HandlerInfo<Action<string, object>>(delegate { }, true) // ignore ping messages
 			};
 			workers = new Dictionary<string, WorkerEntry>();
 			workersToRemove = new List<NetMQTimer>();
 		}
 
-		void OnPingTimeout(WorkerEntry worker)
+		private void OnPingTimeout(WorkerEntry worker)
 		{
 			if (--worker.Liveness == 0)
 			{
@@ -61,9 +46,13 @@ namespace OPCAIC.Messaging
 				RemoveWorker(worker);
 				return;
 			}
+
 			Console.WriteLine($"[{Identity}] - Sending ping to worker '{worker.Identity}'.");
-			Socket.SendMultipartMessage(CreateMessage(worker.Identity, new PingMessage()));
+			PingWorker(worker);
 		}
+
+		private void PingWorker(WorkerEntry worker)
+			=> Socket.SendMultipartMessage(CreateMessage(worker.Identity, new PingMessage()));
 
 		private void RemoveWorker(WorkerEntry worker)
 		{
@@ -77,7 +66,7 @@ namespace OPCAIC.Messaging
 		protected override void OnPollerReceive(NetMQMessage msg)
 		{
 			ClearWorkerTimers();
-			string sender = msg.First.ConvertToString(Encoding.Unicode);
+			var sender = msg.First.ConvertToString(Encoding.Unicode);
 
 			if (workers.TryGetValue(sender, out var entry))
 			{
@@ -88,7 +77,8 @@ namespace OPCAIC.Messaging
 			else
 			{
 				// new worker connected
-				entry =  NewWorker(sender);
+				Console.WriteLine($"[{Identity}] - new worker connected: {sender}");
+				entry = NewWorker(sender);
 			}
 
 			base.OnPollerReceive(msg);
@@ -97,14 +87,12 @@ namespace OPCAIC.Messaging
 		private void ClearWorkerTimers()
 		{
 			foreach (var timer in workersToRemove)
-			{
 				SocketPoller.Remove(timer);
-			}
 
 			workersToRemove.Clear();
 		}
 
-		WorkerEntry NewWorker(string identity)
+		private WorkerEntry NewWorker(string identity)
 		{
 			var entry = new WorkerEntry(identity);
 			workers[identity] = entry;
@@ -115,14 +103,14 @@ namespace OPCAIC.Messaging
 
 		protected override void OnMessage(NetMQMessage msg)
 		{
-			string sender = msg.Pop().ConvertToString(Encoding.Unicode);
-			object payload = DeserializeMessage(msg);
+			var sender = msg.Pop().ConvertToString(Encoding.Unicode);
+			var payload = DeserializeMessage(msg);
 			if (!handlers.TryGetValue(payload.GetType(), out var handler))
 			{
 				throw new InvalidOperationException("Unknown payload type");
 			}
 
-			handler(sender, payload);
+			handler.Handler(sender, payload);
 		}
 
 		public void SendMessage<T>(string recipient, T payload)
@@ -133,15 +121,15 @@ namespace OPCAIC.Messaging
 
 		private NetMQMessage CreateMessage<T>(string recipient, T payload)
 		{
-			NetMQMessage msg = new NetMQMessage(3);
+			var msg = new NetMQMessage(3);
 			msg.Append(recipient, Encoding.Unicode);
 			SerializeMessage(msg, payload);
 			return msg;
 		}
 
 		public void RegisterHandler<T>(Action<string, T> handler)
-		{
-			handlers.Add(typeof(T), (s, obj) =>handler(s, (T) obj));
-		}
+			=> handlers.Add(typeof(T), new HandlerInfo<Action<string, object>>((s, obj) => handler(s, (T) obj), true));
+		public void RegisterAsyncHandler<T>(Action<string, T> handler)
+			=> handlers.Add(typeof(T), new HandlerInfo<Action<string, object>>((s, obj) => handler(s, (T) obj), false));
 	}
 }

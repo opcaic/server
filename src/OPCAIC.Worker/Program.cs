@@ -20,19 +20,33 @@ namespace OPCAIC.Worker
 
 			string identity = "client";
 
-			var connector = new WorkerConnector($"tcp://localhost:{port}", identity);
-			connector.RegisterHandler<WorkLoadMessage>(msg =>
+			Random rand = new Random();
+			while (true)
 			{
-				Console.WriteLine($"[{identity}] - received workload: {msg.Work}");
-				Thread.Sleep(500);
-				connector.SendMessage(new WorkCompletedMessage(msg.Work));
-			});
+				using (var connector = new WorkerConnector($"tcp://localhost:{port}", identity.ToString()))
+				{
+					connector.RegisterHandler<WorkLoadMessage>(msg =>
+					{
+						Console.WriteLine($"[{identity}] - received workload: {msg.Work}");
+						Thread.Sleep(500 * rand.Next(4));
+						if (rand.Next(10) == 0)
+						{
+							Console.WriteLine($"[{identity}] - simulating crash");
+							connector.StopPoller();
+						}
 
-			Thread t = new Thread(()=>connector.EnterConsumer());
-			t.Start();
-			connector.SendMessage(new WorkerConnectMessage("HELLO"));
-			connector.EnterPoller();
+						connector.SendMessage(new WorkCompletedMessage(msg.Work));
+					});
 
+					Thread t = new Thread(() => connector.EnterConsumer());
+					t.Start();
+					Console.WriteLine($"[{identity}] - Initiating connection");
+					connector.SendMessage(new WorkerConnectMessage("HELLO"));
+					connector.EnterPoller();
+					Thread.Sleep(10000);
+					Console.WriteLine($"[{identity}] - client officially dead");
+				}
+			}
 		}
 	}
 }
