@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using NetMQ;
 using NetMQ.Sockets;
 using OPCAIC.Messaging.Commands;
@@ -36,7 +35,6 @@ namespace OPCAIC.Messaging
 				return;
 			}
 
-//			Console.WriteLine($"[{Identity}] - Sending ping to worker '{worker.Identity}'.");
 			PingWorker(worker);
 		}
 
@@ -58,7 +56,10 @@ namespace OPCAIC.Messaging
 
 			var sender = msg.Pop().ConvertToIdentity();
 			if (msg.First.IsEmpty)
+			{
 				msg.Pop();
+			}
+
 			var payload = MessageHelpers.DeserializeMessage(msg);
 
 			if (workers.TryGetValue(sender, out var entry))

@@ -13,7 +13,7 @@ namespace OPCAIC.Messaging
 		private readonly string address;
 		private readonly NetMQTimer pingTimer;
 
-		private bool connected = false;
+		private bool connected;
 
 		private int liveness = Defaults.Liveness;
 		private int sleepInterval = Defaults.ReconnectIntervalInit;
@@ -62,7 +62,10 @@ namespace OPCAIC.Messaging
 			// treat each message as a ping message
 			ResetHeartbeat();
 			if (msg.First.IsEmpty)
+			{
 				msg.Pop();
+			}
+
 			return MessageHelpers.DeserializeMessage(msg);
 		}
 
@@ -73,6 +76,7 @@ namespace OPCAIC.Messaging
 				connected = true;
 				Console.WriteLine($"[{Identity}] - connection established");
 			}
+
 			pingTimer.EnableAndReset();
 			liveness = Defaults.Liveness;
 			sleepInterval = Defaults.ReconnectIntervalInit;
@@ -94,6 +98,7 @@ namespace OPCAIC.Messaging
 
 		public void RegisterHandler<T>(Action<T> handler)
 			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), true));
+
 		public void RegisterAsyncHandler<T>(Action<T> handler)
 			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), false));
 	}

@@ -2,8 +2,8 @@
 {
 	public class Command<TItem>
 	{
-		private HandlerInfo<TItem> handler;
-		private TItem arg;
+		private readonly TItem arg;
+		private readonly HandlerInfo<TItem> handler;
 
 		public Command(HandlerInfo<TItem> handler, TItem arg)
 		{
@@ -11,9 +11,6 @@
 			this.arg = arg;
 		}
 
-		public void Invoke()
-		{
-			handler.Handler(arg);
-		}
+		public void Invoke() => handler.Handler(arg);
 	}
 }

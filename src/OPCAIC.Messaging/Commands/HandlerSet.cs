@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace OPCAIC.Messaging.Commands
 {
-	public class HandlerSet<TItem>  : IHandlerSet<TItem>
+	public class HandlerSet<TItem> : IHandlerSet<TItem>
 	{
 		private readonly Dictionary<Type, HandlerInfo<TItem>> handlers;
 		private readonly Func<TItem, object> payloadSelector;
@@ -20,7 +20,6 @@ namespace OPCAIC.Messaging.Commands
 			return handler;
 		}
 
-		public void AddHandler(HandlerInfo<TItem> info)
-			=> handlers.Add(info.Discriminator, info);
+		public void AddHandler(HandlerInfo<TItem> info) => handlers.Add(info.Discriminator, info);
 	}
 }
