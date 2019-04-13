@@ -50,12 +50,6 @@ namespace OPCAIC.Messaging
 		{
 			AssertSocketThread();
 			var sender = msg.Pop().ConvertToIdentity();
-			if (msg.First.IsEmpty)
-			{
-				msg.Pop();
-			}
-
-			var payload = MessageHelpers.DeserializeMessage(msg);
 
 			if (workers.TryGetValue(sender, out var entry))
 			{
@@ -68,15 +62,20 @@ namespace OPCAIC.Messaging
 				EnqueueWorkerTask(() => OnWorkerConnected(entry));
 			}
 
-			return new ReceivedMessage(sender, payload);
+			msg.Pop(); // empty frame
+			if (msg.IsEmpty)
+				return null; // heartbeat messsage
+
+			return new ReceivedMessage(sender, MessageHelpers.DeserializeMessage(msg));
 		}
 
-		private NetMQMessage CreateMessage<T>(string recipient, T payload)
+		private NetMQMessage CreateMessage(string recipient, object payload)
 		{
-			var msg = new NetMQMessage(3);
+			var msg = new NetMQMessage(2);
 			msg.AppendIdentity(recipient);
 			msg.AppendEmptyFrame();
-			MessageHelpers.SerializeMessage(msg, payload);
+			if (payload != null)
+				MessageHelpers.SerializeMessage(msg, payload);
 			return msg;
 		}
 
@@ -120,8 +119,8 @@ namespace OPCAIC.Messaging
 			}
 		}
 
-		private void PingWorker(WorkerConnection worker)
-			=> DirectSend(CreateMessage(worker.Identity, new PingMessage()));
+		private void SendHeartbeat(WorkerConnection worker)
+			=> DirectSend(CreateMessage(worker.Identity, null));
 
 		private void RemoveWorker(WorkerConnection worker)
 		{
@@ -149,8 +148,8 @@ namespace OPCAIC.Messaging
 			SocketPoller.Add(entry.OutgoingHeartbeatTimer);
 			entry.IncomingHeartbeatTimer.Elapsed += (_, a) => OnHeartbeatTimeout(entry);
 			entry.OutgoingHeartbeatTimer.Elapsed +=
-				(_, a) => DirectSend(CreateMessage(identity, new PingMessage()));
-			PingWorker(entry);
+				(_, a) => SendHeartbeat(entry);
+			SendHeartbeat(entry);
 			return entry;
 		}
 

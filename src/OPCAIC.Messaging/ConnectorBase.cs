@@ -46,9 +46,6 @@ namespace OPCAIC.Messaging
 			this.handlerSet = handlerSet;
 			Config = config;
 
-			// acknowledge ping messages on Socket thread
-			handlerSet.AddHandler(new HandlerInfo<TItem>(typeof(PingMessage), delegate { }, true));
-
 			workerQueue = new NetMQQueue<Action>();
 			socketQueue = new NetMQQueue<Action>();
 
@@ -121,13 +118,20 @@ namespace OPCAIC.Messaging
 		private void OnPollerReceive(NetMQMessage msg)
 		{
 			AssertSocketThread();
-			Console.WriteLine($"[{Identity}] - Received {msg}");
-			var item = ReceiveMessage(msg);
-			var handler = handlerSet.GetHandler(item);
+			if (!msg.Last.IsEmpty)
+			{
+				// non-heartbeat message
+				Console.WriteLine($"[{Identity}] - Received {msg}");
+			}
 
+			var item = ReceiveMessage(msg);
+			if (item == null)
+				return;
+
+			var handler = handlerSet.GetHandler(item);
 			if (handler == null)
 			{
-				Console.WriteLine($"[{Identity}] - no handler for give message type");
+				Console.WriteLine($"[{Identity}] - no handler for given message type");
 				return;
 			}
 

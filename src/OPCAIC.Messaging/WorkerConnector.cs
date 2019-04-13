@@ -32,7 +32,7 @@ namespace OPCAIC.Messaging
 			incomingHeartbeatTimer = new NetMQTimer(Config.HeartbeatInterval);
 			incomingHeartbeatTimer.Elapsed += (_, a) => OnPingTimeOut();
 			outgoingHeartbeatTimer = new NetMQTimer(Config.HeartbeatInterval);
-			outgoingHeartbeatTimer.Elapsed += (_, a) => DirectSend(CreateMessage(new PingMessage()));
+			outgoingHeartbeatTimer.Elapsed += (_, a) => SendHeartbeat();
 
 			SocketPoller.Add(incomingHeartbeatTimer);
 			SocketPoller.Add(outgoingHeartbeatTimer);
@@ -40,6 +40,7 @@ namespace OPCAIC.Messaging
 			liveness = Config.Liveness;
 			sleepInterval = Config.ReconnectIntervalInit;
 		}
+
 
 		public event EventHandler Connected;
 
@@ -68,13 +69,15 @@ namespace OPCAIC.Messaging
 
 			// treat each message as a heartbeat
 			ResetHeartbeat();
-			if (msg.First.IsEmpty)
-			{
-				msg.Pop();
-			}
+
+			msg.Pop(); // empty frame
+			if (msg.IsEmpty)
+				return null;
 
 			return MessageHelpers.DeserializeMessage(msg);
 		}
+
+		private void SendHeartbeat() => DirectSend(CreateMessage(null));
 
 		private void OnPingTimeOut()
 		{
@@ -112,11 +115,12 @@ namespace OPCAIC.Messaging
 			sleepInterval = Config.ReconnectIntervalInit;
 		}
 
-		private NetMQMessage CreateMessage<T>(T payload)
+		private NetMQMessage CreateMessage(object payload)
 		{
-			var msg = new NetMQMessage(2);
+			var msg = new NetMQMessage();
 			msg.AppendEmptyFrame();
-			MessageHelpers.SerializeMessage(msg, payload);
+			if (payload != null)
+				MessageHelpers.SerializeMessage(msg, payload);
 			return msg;
 		}
 
