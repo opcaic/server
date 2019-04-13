@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using NetMQ;
 using NetMQ.Sockets;
@@ -11,54 +12,61 @@ namespace OPCAIC.Messaging
 	public class WorkerConnector : ConnectorBase<DealerSocket, object>
 	{
 		private readonly string address;
-		private readonly NetMQTimer pingTimer;
+		private readonly NetMQTimer incomingHeartbeatTimer;
+		private readonly NetMQTimer outgoingHeartbeatTimer;
 
 		private bool connected;
+		private int liveness;
+		private int sleepInterval;
 
-		private int liveness = Defaults.Liveness;
-		private int sleepInterval = Defaults.ReconnectIntervalInit;
-
-		public WorkerConnector(string address, string identity)
+		public WorkerConnector(string address, string identity, HeartbeatConfig config)
 			: base(
 				identity,
 				new DealerSocketFactory(identity, address, false),
-				new HandlerSet<object>(obj => obj))
+				new HandlerSet<object>(obj => obj),
+				config)
 		{
 			this.address = address;
 
 			// setup connection timeout, this handler will run on Socket thread
-			pingTimer = new NetMQTimer(Defaults.HeartbeatInterval);
-			pingTimer.Elapsed += (_, a) => OnPingTimeOut();
-			SocketPoller.Add(pingTimer);
+			incomingHeartbeatTimer = new NetMQTimer(Config.HeartbeatInterval);
+			incomingHeartbeatTimer.Elapsed += (_, a) => OnPingTimeOut();
+			outgoingHeartbeatTimer = new NetMQTimer(Config.HeartbeatInterval);
+			outgoingHeartbeatTimer.Elapsed += (_, a) => DirectSend(CreateMessage(new PingMessage()));
+
+			SocketPoller.Add(incomingHeartbeatTimer);
+			SocketPoller.Add(outgoingHeartbeatTimer);
+
+			liveness = Config.Liveness;
+			sleepInterval = Config.ReconnectIntervalInit;
 		}
 
-		private void OnPingTimeOut()
+		public event EventHandler Connected;
+
+		public event EventHandler Disconnected;
+
+		public void RegisterHandler<T>(Action<T> handler)
+			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), true));
+
+		public void RegisterAsyncHandler<T>(Action<T> handler)
+			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), false));
+
+		public void SendMessage<T>(T payload)
 		{
-			if (--liveness == 0)
-			{
-				Console.WriteLine($"[{Identity}] - Broker unreachable, sleeping for {sleepInterval} ms");
-				Thread.Sleep(sleepInterval);
-				if (sleepInterval < Defaults.ReconnectIntervalMax)
-				{
-					sleepInterval *= 2; // exponential back off
-				}
-				else
-				{
-					throw new InvalidOperationException("The broker is unreachable");
-				}
-
-				ResetConnection();
-				connected = false;
-				liveness = Defaults.Liveness;
-			}
-
-			//			Console.WriteLine($"[{Identity}] - Sending ping");
-			DirectSend(CreateMessage(new PingMessage()));
+			var msg = CreateMessage(payload);
+			EnqueueSocketTask(() => DirectSend(msg));
 		}
 
 		protected override object ReceiveMessage(NetMQMessage msg)
 		{
-			// treat each message as a ping message
+			AssertSocketThread();
+			if (connected == false)
+			{
+				connected = true;
+				EnqueueWorkerTask(OnConnected);
+			}
+
+			// treat each message as a heartbeat
 			ResetHeartbeat();
 			if (msg.First.IsEmpty)
 			{
@@ -68,23 +76,40 @@ namespace OPCAIC.Messaging
 			return MessageHelpers.DeserializeMessage(msg);
 		}
 
-		private void ResetHeartbeat()
+		private void OnPingTimeOut()
 		{
-			if (connected == false)
+			AssertSocketThread();
+			if (--liveness == 0)
 			{
-				connected = true;
-				Console.WriteLine($"[{Identity}] - connection established");
-			}
+				EnqueueWorkerTask(OnDisconnected);
 
-			pingTimer.EnableAndReset();
-			liveness = Defaults.Liveness;
-			sleepInterval = Defaults.ReconnectIntervalInit;
+				Console.WriteLine($"[{Identity}] - Broker unreachable, sleeping for {sleepInterval} ms");
+				if (sleepInterval <= Config.ReconnectIntervalMax)
+				{
+					Thread.Sleep(sleepInterval);
+					sleepInterval *= 2; // exponential back off
+				}
+				else
+				{
+					throw new InvalidOperationException("The broker is unreachable");
+				}
+
+				connected = false;
+				ResetConnection();
+				liveness = Config.Liveness;
+			}
+			else
+			{
+				Console.WriteLine($"[{Identity}] - ping timeout, liveness={liveness}");
+			}
 		}
 
-		public void SendMessage<T>(T payload)
+		private void ResetHeartbeat()
 		{
-			var msg = CreateMessage(payload);
-			EnqueueSocketTask(() => DirectSend(msg));
+			AssertSocketThread();
+			incomingHeartbeatTimer.EnableAndReset();
+			liveness = Config.Liveness;
+			sleepInterval = Config.ReconnectIntervalInit;
 		}
 
 		private NetMQMessage CreateMessage<T>(T payload)
@@ -95,10 +120,16 @@ namespace OPCAIC.Messaging
 			return msg;
 		}
 
-		public void RegisterHandler<T>(Action<T> handler)
-			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), true));
+		private void OnConnected()
+		{
+			AssertWorkThread();
+			Connected?.Invoke(this, EventArgs.Empty);
+		}
 
-		public void RegisterAsyncHandler<T>(Action<T> handler)
-			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), false));
+		private void OnDisconnected()
+		{
+			AssertWorkThread();
+			Disconnected?.Invoke(this, EventArgs.Empty);
+		}
 	}
 }

@@ -52,7 +52,7 @@ namespace OPCAIC.Broker.Runner
 		private void RegisterHandlers()
 		{
 			// connectivity events
-			connector.RegisterAsyncHandler<WorkerConnectMessage>(OnWorkerConnected);
+			connector.WorkerConnected += (_, a) => OnWorkerConnected(a.Identity);
 			connector.WorkerDisconnected += (_, a) => OnWorkerDisconnected(a.Identity);
 
 			// match execution
@@ -71,10 +71,14 @@ namespace OPCAIC.Broker.Runner
 		{
 			throw new NotImplementedException();
 		}
-
 		private void OnWorkerConnected(string identity, WorkerConnectMessage msg)
 		{
-			var worker = new WorkerEntry(identity, msg.Capabilities);
+
+		}
+
+		private void OnWorkerConnected(string identity)
+		{
+			var worker = new WorkerEntry(identity);
 			workers.Add(identity, worker);
 			workerQueue.Add(worker);
 		}

@@ -12,13 +12,13 @@ namespace OPCAIC.Broker.Runner
 	{
 		private static int port;
 		private static int counter;
-		private const int workerCount = 1;
+		private const int workerCount = 0;
 
 		private static bool stop;
 
 		public static void StartBroker(string conectionString)
 		{
-			using (var broker = new Broker(new BrokerConnector(conectionString, "Broker")))
+			using (var broker = new Broker(new BrokerConnector(conectionString, "Broker", HeartbeatConfig.Default)))
 			{
 				broker.StartBrokering();
 				while (!stop)

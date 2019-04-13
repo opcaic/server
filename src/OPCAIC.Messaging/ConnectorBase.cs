@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using NetMQ;
 using OPCAIC.Messaging.Commands;
 using OPCAIC.Messaging.Messages;
@@ -6,10 +7,28 @@ using OPCAIC.Messaging.Utils;
 
 namespace OPCAIC.Messaging
 {
+	public class HeartbeatConfig
+	{
+		public static HeartbeatConfig Default
+			=> new HeartbeatConfig
+			{
+				HeartbeatInterval = 1000,
+				Liveness = 3,
+				ReconnectIntervalInit = 1000,
+				ReconnectIntervalMax = 32000
+			};
+
+		public int HeartbeatInterval { get; set; }
+		public int Liveness { get; set; }
+		public int ReconnectIntervalInit { get; set; }
+		public int ReconnectIntervalMax { get; set; }
+	}
+
 	public abstract class ConnectorBase<TSocket, TItem> : IDisposable where TSocket : NetMQSocket
 	{
+		protected readonly HeartbeatConfig Config;
+
 		private readonly IHandlerSet<TItem> handlerSet;
-		protected readonly string Identity;
 		private readonly ISocketFactory<TSocket> socketFactory;
 		protected readonly NetMQPoller SocketPoller;
 		private readonly NetMQQueue<Action> socketQueue;
@@ -19,11 +38,13 @@ namespace OPCAIC.Messaging
 		protected ConnectorBase(
 			string identity,
 			ISocketFactory<TSocket> socketFactory,
-			IHandlerSet<TItem> handlerSet)
+			IHandlerSet<TItem> handlerSet,
+			HeartbeatConfig config)
 		{
 			Identity = identity;
 			this.socketFactory = socketFactory;
 			this.handlerSet = handlerSet;
+			Config = config;
 
 			// acknowledge ping messages on Socket thread
 			handlerSet.AddHandler(new HandlerInfo<TItem>(typeof(PingMessage), delegate { }, true));
@@ -41,12 +62,15 @@ namespace OPCAIC.Messaging
 			ResetConnection();
 		}
 
+		public string Identity { get; }
+
 		protected TSocket Socket { get; private set; }
 
-		public void ResetConnection()
+		protected void ResetConnection()
 		{
 			if (Socket != null)
 			{
+				AssertSocketThread(); // allow first call in constructor from foreign thread
 				Socket.Close();
 				Socket.Dispose();
 				SocketPoller.Remove(Socket);
@@ -55,12 +79,6 @@ namespace OPCAIC.Messaging
 			Socket = socketFactory.CreateSocket();
 			Socket.ReceiveReady += (_, args) => OnPollerReceive(args.Socket.ReceiveMultipartMessage());
 			SocketPoller.Add(Socket);
-		}
-
-		protected void DirectSend(NetMQMessage msg)
-		{
-			Console.WriteLine($"[{Identity}] - Sending {msg}");
-			Socket.SendMultipartMessage(msg);
 		}
 
 		public void EnterPoller() => SocketPoller.Run();
@@ -75,10 +93,34 @@ namespace OPCAIC.Messaging
 
 		public void StopConsumer() => WorkPoller.Stop();
 
+		protected void DirectSend(NetMQMessage msg)
+		{
+			AssertSocketThread();
+			Console.WriteLine($"[{Identity}] - Sending {msg}");
+			Socket.SendMultipartMessage(msg);
+		}
+
 		protected abstract TItem ReceiveMessage(NetMQMessage msg);
+
+		protected void AddHandler(HandlerInfo<TItem> handler) => handlerSet.AddHandler(handler);
+
+		protected void EnqueueSocketTask(Action task) => socketQueue.Enqueue(task);
+
+		protected void EnqueueWorkerTask(Action task) => workerQueue.Enqueue(task);
+
+		protected void AssertSocketThread()
+		{
+			Debug.Assert(SocketPoller.CanExecuteTaskInline, "Not called from the socket thread");
+		}
+
+		protected void AssertWorkThread()
+		{
+			Debug.Assert(WorkPoller.CanExecuteTaskInline, "Not called from the work thread");
+		}
 
 		private void OnPollerReceive(NetMQMessage msg)
 		{
+			AssertSocketThread();
 			Console.WriteLine($"[{Identity}] - Received {msg}");
 			var item = ReceiveMessage(msg);
 			var handler = handlerSet.GetHandler(item);
@@ -100,12 +142,6 @@ namespace OPCAIC.Messaging
 				EnqueueWorkerTask(() => handler.Handler(item));
 			}
 		}
-
-		protected void AddHandler(HandlerInfo<TItem> handler) => handlerSet.AddHandler(handler);
-
-		protected void EnqueueSocketTask(Action task) => socketQueue.Enqueue(task);
-
-		protected void EnqueueWorkerTask(Action task) => workerQueue.Enqueue(task);
 
 		#region IDisposable Support
 

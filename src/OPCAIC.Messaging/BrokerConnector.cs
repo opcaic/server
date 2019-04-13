@@ -8,57 +8,47 @@ using OPCAIC.Messaging.Utils;
 
 namespace OPCAIC.Messaging
 {
-	public class WorkerDisconnectedEventArgs
-	{
-		public string Identity { get; set; }
-	}
-
 	public class BrokerConnector : ConnectorBase<RouterSocket, ReceivedMessage>
 	{
 		private readonly string address;
-
 		private readonly Dictionary<string, WorkerConnection> workers;
 
-		public BrokerConnector(string address, string identity)
+		public BrokerConnector(string address, string identity, HeartbeatConfig config)
 			: base(
 				identity,
 				new RouterSocketFactory(identity, address, true),
-				new HandlerSet<ReceivedMessage>(msg => msg.Payload))
+				new HandlerSet<ReceivedMessage>(msg => msg.Payload),
+				config)
 		{
 			this.address = address;
 			workers = new Dictionary<string, WorkerConnection>();
 		}
 
-		public event EventHandler<WorkerDisconnectedEventArgs> WorkerDisconnected;
+		public event EventHandler<WorkerConnectionEventArgs> WorkerDisconnected;
+		public event EventHandler<WorkerConnectionEventArgs> WorkerConnected;
 
-		private void OnPingTimeout(WorkerConnection worker)
-		{
-			if (--worker.Liveness == 0)
+		public void RegisterAsyncHandler<T>(Action<string, T> handler)
+			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
+				msg => handler(msg.Sender, (T) msg.Payload), false));
+
+		public void RegisterHandler<T>(Action<string, T> handler)
+			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
+				msg => handler(msg.Sender, (T) msg.Payload), true));
+
+		public void SendMessage<T>(string recipient, T payload)
+			=> EnqueueSocketTask(() =>
 			{
-				Console.WriteLine($"[{Identity}] - Worker '{worker.Identity}' is dead");
-				RemoveWorker(worker);
-				return;
-			}
+				// treat each message as a heartbeat
+				if (workers.TryGetValue(Identity, out var entry))
+					// the worker might have been removed
+					entry.OutgoingHeartbeatTimer.EnableAndReset();
 
-			PingWorker(worker);
-		}
-
-		private void PingWorker(WorkerConnection worker)
-			=> DirectSend(CreateMessage(worker.Identity, new PingMessage()));
-
-		private void RemoveWorker(WorkerConnection worker)
-		{
-			workers.Remove(worker.Identity);
-			worker.PingTimer.Enable = false;
-			// HACK: Currently cannot remove timer from NetMQPoller during Elapsed call.
-			// queue the removal to other part of poll cycle, see ClearWorkerTimers() method
-			EnqueueSocketTask(() => SocketPoller.Remove(worker.PingTimer));
-			// inform about the disconnection
-			EnqueueWorkerTask(() => OnWorkerDisconnected(worker));
-		}
+				DirectSend(CreateMessage(recipient, payload));
+			});
 
 		protected override ReceivedMessage ReceiveMessage(NetMQMessage msg)
 		{
+			AssertSocketThread();
 			var sender = msg.Pop().ConvertToIdentity();
 			if (msg.First.IsEmpty)
 			{
@@ -74,31 +64,12 @@ namespace OPCAIC.Messaging
 			}
 			else
 			{
-				Console.WriteLine($"[{Identity}] - new worker connected: {sender}");
 				entry = NewWorker(sender);
+				EnqueueWorkerTask(() => OnWorkerConnected(entry));
 			}
 
 			return new ReceivedMessage(sender, payload);
 		}
-
-		private static void ResetHeartbeat(WorkerConnection connection)
-		{
-			connection.PingTimer.EnableAndReset();
-			connection.Liveness = Defaults.Liveness;
-		}
-
-		private WorkerConnection NewWorker(string identity)
-		{
-			var entry = new WorkerConnection(identity);
-			workers[identity] = entry;
-			SocketPoller.Add(entry.PingTimer);
-			entry.PingTimer.Elapsed += (_, a) => OnPingTimeout(entry);
-			PingWorker(entry);
-			return entry;
-		}
-
-		public void SendMessage<T>(string recipient, T payload)
-			=> EnqueueSocketTask(() => DirectSend(CreateMessage(recipient, payload)));
 
 		private NetMQMessage CreateMessage<T>(string recipient, T payload)
 		{
@@ -109,29 +80,91 @@ namespace OPCAIC.Messaging
 			return msg;
 		}
 
-		public void RegisterHandler<T>(Action<string, T> handler)
-			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
-				msg => handler(msg.Sender, (T) msg.Payload), true));
-
-		public void RegisterAsyncHandler<T>(Action<string, T> handler)
-			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
-				msg => handler(msg.Sender, (T) msg.Payload), false));
-
-		protected virtual void OnWorkerDisconnected(WorkerConnection worker) => WorkerDisconnected?.Invoke(this, new WorkerDisconnectedEventArgs
+		private void ResetHeartbeat(WorkerConnection connection)
 		{
-			Identity = worker.Identity
-		});
+			AssertSocketThread();
+			connection.IncomingHeartbeatTimer.EnableAndReset();
+			connection.Liveness = Config.Liveness;
+		}
+
+		private void OnWorkerDisconnected(WorkerConnection worker)
+		{
+			AssertWorkThread();
+			WorkerDisconnected?.Invoke(this, new WorkerConnectionEventArgs
+			{
+				Identity = worker.Identity
+			});
+		}
+
+		private void OnWorkerConnected(WorkerConnection worker)
+		{
+			AssertWorkThread();
+			WorkerConnected?.Invoke(this, new WorkerConnectionEventArgs
+			{
+				Identity = worker.Identity
+			});
+		}
+
+		private void OnHeartbeatTimeout(WorkerConnection worker)
+		{
+			AssertSocketThread();
+			if (--worker.Liveness == 0)
+			{
+				Console.WriteLine($"[{Identity}] - Worker '{worker.Identity}' is dead");
+				RemoveWorker(worker);
+				return;
+			}
+			else
+			{
+				Console.WriteLine($"[{Identity}] - Worker '{worker.Identity}' livenes={worker.Liveness}");
+			}
+		}
+
+		private void PingWorker(WorkerConnection worker)
+			=> DirectSend(CreateMessage(worker.Identity, new PingMessage()));
+
+		private void RemoveWorker(WorkerConnection worker)
+		{
+			AssertSocketThread();
+			workers.Remove(worker.Identity);
+			worker.IncomingHeartbeatTimer.Enable = false;
+			worker.OutgoingHeartbeatTimer.Enable = false;
+
+			// HACK: Currently cannot remove timer from NetMQPoller during Elapsed call.
+			// queue the removal to other part of poll cycle, see ClearWorkerTimers() method
+			EnqueueSocketTask(() => SocketPoller.Remove(worker.IncomingHeartbeatTimer));
+			EnqueueSocketTask(() => SocketPoller.Remove(worker.OutgoingHeartbeatTimer));
+
+			// inform about the disconnection
+			EnqueueWorkerTask(() => OnWorkerDisconnected(worker));
+		}
+
+		private WorkerConnection NewWorker(string identity)
+		{
+			AssertSocketThread();
+			var entry = new WorkerConnection(identity, Config.HeartbeatInterval);
+			entry.Liveness = Config.Liveness;
+			workers[identity] = entry;
+			SocketPoller.Add(entry.IncomingHeartbeatTimer);
+			SocketPoller.Add(entry.OutgoingHeartbeatTimer);
+			entry.IncomingHeartbeatTimer.Elapsed += (_, a) => OnHeartbeatTimeout(entry);
+			entry.OutgoingHeartbeatTimer.Elapsed +=
+				(_, a) => DirectSend(CreateMessage(identity, new PingMessage()));
+			PingWorker(entry);
+			return entry;
+		}
 
 		protected class WorkerConnection
 		{
-			public WorkerConnection(string identity)
+			public WorkerConnection(string identity, int pingInterval)
 			{
 				Identity = identity;
-				PingTimer = new NetMQTimer(Defaults.HeartbeatInterval);
-				Liveness = Defaults.Liveness;
+				IncomingHeartbeatTimer = new NetMQTimer(pingInterval);
+				OutgoingHeartbeatTimer = new NetMQTimer(pingInterval);
 			}
 
-			public NetMQTimer PingTimer { get; }
+			public NetMQTimer IncomingHeartbeatTimer { get; }
+			public NetMQTimer OutgoingHeartbeatTimer { get; }
 
 			public int Liveness { get; set; }
 

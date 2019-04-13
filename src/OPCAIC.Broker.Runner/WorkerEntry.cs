@@ -5,15 +5,14 @@ namespace OPCAIC.Broker.Runner
 {
 	public class WorkerEntry
 	{
-		public WorkerEntry(string identity, WorkerCapabilities capabilities)
+		public WorkerEntry(string identity)
 		{
-			Capabilities = capabilities;
 			Identity = identity;
 		}
 
 		public string Identity { get; }
 
-		public WorkerCapabilities Capabilities { get; }
+		public WorkerCapabilities Capabilities { get; set; }
 
 		public ExecuteMatchMessage CurrentWorkItem { get; set; }
 	}

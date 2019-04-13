@@ -13,7 +13,7 @@ namespace OPCAIC.Worker
 			Random rand = new Random();
 			while (true)
 			{
-				using (var connector = new WorkerConnector(ConnectionString, identity.ToString()))
+				using (var connector = new WorkerConnector(ConnectionString, identity.ToString(), HeartbeatConfig.Default))
 				{
 					connector.RegisterHandler<ExecuteMatchMessage>(msg =>
 					{
