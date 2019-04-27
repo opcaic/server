@@ -1,17 +1,19 @@
-﻿using System;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using OPCAIC.ApiService.Configs;
-using OPCAIC.ApiService.IoC;
-
-namespace OPCAIC
+﻿namespace OPCAIC.ApiService
 {
+	using System;
+	using System.Text;
+	using Configs;
+	using Infrastructure.DbContexts;
+	using IoC;
+	using Microsoft.AspNetCore.Authentication.JwtBearer;
+	using Microsoft.AspNetCore.Builder;
+	using Microsoft.AspNetCore.Hosting;
+	using Microsoft.AspNetCore.Mvc;
+	using Microsoft.EntityFrameworkCore;
+	using Microsoft.Extensions.Configuration;
+	using Microsoft.Extensions.DependencyInjection;
+	using Microsoft.IdentityModel.Tokens;
+
 	public class Startup
 	{
 		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -58,6 +60,9 @@ namespace OPCAIC
 							.AllowAnyMethod();
 					});
 			});
+
+			// TODO: replace with real database
+			services.AddDbContext<DummyDbContext>(options => options.UseInMemoryDatabase(databaseName: "Dummy"));
 
 			services.AddServices();
 			services.AddSwaggerGen(SwaggerConfig.SetupSwaggerGen);

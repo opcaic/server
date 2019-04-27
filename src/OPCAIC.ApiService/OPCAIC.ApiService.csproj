@@ -16,4 +16,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="4.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\OPCAIC.Infrastructure\OPCAIC.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
