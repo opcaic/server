@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using NetMQ;
 using OPCAIC.Messaging.Commands;
 using OPCAIC.Messaging.Messages;
@@ -31,8 +32,6 @@ namespace OPCAIC.Messaging
 		private readonly IHandlerSet<TItem> handlerSet;
 		private readonly ISocketFactory<TSocket> socketFactory;
 		protected readonly NetMQPoller SocketPoller;
-		private readonly NetMQQueue<Action> socketQueue;
-		private readonly NetMQQueue<Action> workerQueue;
 		protected readonly NetMQPoller WorkPoller;
 
 		protected ConnectorBase(
@@ -46,14 +45,8 @@ namespace OPCAIC.Messaging
 			this.handlerSet = handlerSet;
 			Config = config;
 
-			workerQueue = new NetMQQueue<Action>();
-			socketQueue = new NetMQQueue<Action>();
-
-			SocketPoller = new NetMQPoller {socketQueue};
-			WorkPoller = new NetMQPoller {workerQueue};
-
-			socketQueue.ReceiveReady += (_, args) => args.Queue.Dequeue().Invoke();
-			workerQueue.ReceiveReady += (_, args) => args.Queue.Dequeue().Invoke();
+			SocketPoller = new NetMQPoller();
+			WorkPoller = new NetMQPoller();
 
 			// initiate the connection
 			ResetConnection();
@@ -102,9 +95,19 @@ namespace OPCAIC.Messaging
 
 		protected void AddHandler(HandlerInfo<TItem> handler) => handlerSet.AddHandler(handler);
 
-		protected void EnqueueSocketTask(Action task) => socketQueue.Enqueue(task);
+		protected Task EnqueueSocketTask(Action task)
+		{
+			var t = new Task(task);
+			t.Start(SocketPoller);
+			return t;
+		}
 
-		protected void EnqueueWorkerTask(Action task) => workerQueue.Enqueue(task);
+		protected Task EnqueueWorkerTask(Action task)
+		{
+			var t = new Task(task);
+			t.Start(WorkPoller);
+			return t;
+		}
 
 		protected void AssertSocketThread()
 		{
@@ -160,8 +163,6 @@ namespace OPCAIC.Messaging
 				Socket?.Dispose();
 				SocketPoller.Dispose();
 				WorkPoller.Dispose();
-				workerQueue.Dispose();
-				socketQueue.Dispose();
 			}
 		}
 

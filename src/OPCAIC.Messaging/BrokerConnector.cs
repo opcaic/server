@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NetMQ;
 using NetMQ.Sockets;
 using OPCAIC.Messaging.Commands;
@@ -45,6 +46,8 @@ namespace OPCAIC.Messaging
 
 				DirectSend(CreateMessage(recipient, payload));
 			});
+
+		public Task EnqueueTask(Action task) => EnqueueWorkerTask(task);
 
 		protected override ReceivedMessage ReceiveMessage(NetMQMessage msg)
 		{

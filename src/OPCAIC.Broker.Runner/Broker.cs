@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using OPCAIC.Utils;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
 
@@ -11,13 +13,50 @@ namespace OPCAIC.Broker.Runner
 		private readonly BrokerConnector connector;
 		private readonly Dictionary<string, WorkerEntry> workers;
 		private readonly List<WorkerEntry> workerQueue;
+		private readonly Queue<ExecuteMatchMessage> priorityTaskQueue;
 
 		public Broker(BrokerConnector connector)
 		{
 			this.connector = connector;
 			workers = new Dictionary<string, WorkerEntry>();
 			workerQueue = new List<WorkerEntry>();
+			priorityTaskQueue = new Queue<ExecuteMatchMessage>();
 			RegisterHandlers();
+		}
+
+		public Task EnqueueMatchExecution(ExecuteMatchMessage msg)
+		{
+			return connector.EnqueueTask(() =>
+			{
+				var capableWorkers = workers.Values.Where(w => CanWorkerExecute(w, msg));
+				if (!capableWorkers.Any())
+				{
+					Console.WriteLine($"Error: No worker can execute game {msg.Game}");
+					priorityTaskQueue.Enqueue(msg);
+					return;
+				}
+
+				// enqueue to worker with shortest queue
+				var worker = capableWorkers.ArgMin(w => w.TaskQueue.Count);
+				worker.TaskQueue.Enqueue(msg);
+				if (worker.CurrentWorkItem == null)
+					DispatchWork(worker);
+			});
+		}
+
+		private void Send<TMessage>(WorkerEntry worker, TMessage msg)
+		{
+			connector.SendMessage(worker.Identity, msg);
+		}
+
+		private void DispatchWork(WorkerEntry worker)
+		{
+			if (worker.TaskQueue.Count == 0)
+				return; // no work to be done
+			Console.WriteLine($"Dispatching work to {worker.Identity}");
+			var msg = worker.TaskQueue.Dequeue();
+			worker.CurrentWorkItem = msg;
+			Send(worker, msg);
 		}
 
 		private WorkerEntry PickCapableWorker(ExecuteMatchMessage msg)
@@ -55,32 +94,62 @@ namespace OPCAIC.Broker.Runner
 			connector.WorkerConnected += (_, a) => OnWorkerConnected(a.Identity);
 			connector.WorkerDisconnected += (_, a) => OnWorkerDisconnected(a.Identity);
 
+			// worker capability
+			RegisterHandler<WorkerConnectMessage>(OnWorkerConnected);
+
 			// match execution
-			connector.RegisterAsyncHandler<MatchExecutionResultMessage>(OnMatchCompleted);
+			RegisterHandler<MatchExecutionResultMessage>(OnMatchCompleted);
 
 			// misc
-			connector.RegisterAsyncHandler<RefuseMessage>(OnMatchRefused);
+			RegisterHandler<RefuseMessage>(OnMatchRefused);
 		}
 
-		private void OnMatchRefused(string identity, RefuseMessage msg)
+		private void RegisterHandler<TMessage>(Action<WorkerEntry, TMessage> handler)
+		{
+			connector.RegisterAsyncHandler<TMessage>((identity, message) =>
+			{
+				if (!workers.TryGetValue(identity, out var worker))
+				{
+					Console.WriteLine("Ignoring message from unknown worker");
+					return;
+				}
+
+				handler(worker, message);
+			});
+		}
+
+		private void OnMatchRefused(WorkerEntry worker, RefuseMessage msg)
 		{
 			throw new NotImplementedException();
 		}
 
-		private void OnMatchCompleted(string identity, MatchExecutionResultMessage msg)
+		private void OnMatchCompleted(WorkerEntry worker, MatchExecutionResultMessage msg)
 		{
-			throw new NotImplementedException();
+			worker.CurrentWorkItem = null;
+			Console.WriteLine($"Worker {worker.Identity} finished.");
+			DispatchWork(worker);
 		}
-		private void OnWorkerConnected(string identity, WorkerConnectMessage msg)
+		private void OnWorkerConnected(WorkerEntry worker, WorkerConnectMessage msg)
 		{
-
+			worker.Capabilities = msg.Capabilities;
 		}
 
 		private void OnWorkerConnected(string identity)
 		{
+			if (workers.ContainsKey(identity))
+			{
+				Console.WriteLine($"Error: worker {identity} already connected.");
+				return;
+			}
+
 			var worker = new WorkerEntry(identity);
 			workers.Add(identity, worker);
 			workerQueue.Add(worker);
+		}
+
+		private static bool CanWorkerExecute(WorkerEntry worker, ExecuteMatchMessage msg)
+		{
+			return worker.Capabilities.SupportedGames.Contains(msg.Game);
 		}
 
 		private void OnWorkerDisconnected(string identity)
@@ -95,7 +164,8 @@ namespace OPCAIC.Broker.Runner
 
 			if (worker.CurrentWorkItem != null)
 			{
-				throw new NotImplementedException();
+				Console.WriteLine($"Requeuing {identity}'s work item");
+				priorityTaskQueue.Enqueue(worker.CurrentWorkItem);
 			}
 		}
 

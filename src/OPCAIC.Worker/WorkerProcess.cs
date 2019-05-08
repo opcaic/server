@@ -17,7 +17,7 @@ namespace OPCAIC.Worker
 				{
 					connector.RegisterHandler<ExecuteMatchMessage>(msg =>
 					{
-						Console.WriteLine($"[{identity}] - received workload: {msg}");
+						Console.WriteLine($"[{identity}] - received workload: {msg.Game}");
 						Thread.Sleep(500 * rand.Next(4));
 						if (rand.Next(10) == 0)
 						{

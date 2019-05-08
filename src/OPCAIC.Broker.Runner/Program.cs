@@ -24,6 +24,7 @@ namespace OPCAIC.Broker.Runner
 				while (!stop)
 				{
 					Thread.Sleep(1000);
+					broker.EnqueueMatchExecution(new ExecuteMatchMessage(){Game = "game1"});
 				}
 				broker.StopBrokering();
 			}
