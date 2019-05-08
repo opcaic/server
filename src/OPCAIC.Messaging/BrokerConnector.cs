@@ -111,9 +111,8 @@ namespace OPCAIC.Messaging
 			{
 				Console.WriteLine($"[{Identity}] - Worker '{worker.Identity}' is dead");
 				RemoveWorker(worker);
-				return;
 			}
-			else
+			else if (worker.Liveness < Config.Liveness - 1)
 			{
 				Console.WriteLine($"[{Identity}] - Worker '{worker.Identity}' livenes={worker.Liveness}");
 			}

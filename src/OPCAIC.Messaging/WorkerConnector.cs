@@ -30,7 +30,7 @@ namespace OPCAIC.Messaging
 
 			// setup connection timeout, this handler will run on Socket thread
 			incomingHeartbeatTimer = new NetMQTimer(Config.HeartbeatInterval);
-			incomingHeartbeatTimer.Elapsed += (_, a) => OnPingTimeOut();
+			incomingHeartbeatTimer.Elapsed += (_, a) => OnHeartBeatTimeOut();
 			outgoingHeartbeatTimer = new NetMQTimer(Config.HeartbeatInterval);
 			outgoingHeartbeatTimer.Elapsed += (_, a) => SendHeartbeat();
 
@@ -40,7 +40,6 @@ namespace OPCAIC.Messaging
 			liveness = Config.Liveness;
 			sleepInterval = Config.ReconnectIntervalInit;
 		}
-
 
 		public event EventHandler Connected;
 
@@ -79,7 +78,7 @@ namespace OPCAIC.Messaging
 
 		private void SendHeartbeat() => DirectSend(CreateMessage(null));
 
-		private void OnPingTimeOut()
+		private void OnHeartBeatTimeOut()
 		{
 			AssertSocketThread();
 			if (--liveness == 0)
@@ -101,9 +100,9 @@ namespace OPCAIC.Messaging
 				ResetConnection();
 				liveness = Config.Liveness;
 			}
-			else
+			else if (liveness < Config.Liveness - 1)
 			{
-				Console.WriteLine($"[{Identity}] - ping timeout, liveness={liveness}");
+				Console.WriteLine($"[{Identity}] - heartbeat timeout, liveness={liveness}");
 			}
 		}
 

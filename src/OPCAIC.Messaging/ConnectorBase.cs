@@ -93,7 +93,8 @@ namespace OPCAIC.Messaging
 		protected void DirectSend(NetMQMessage msg)
 		{
 			AssertSocketThread();
-			Console.WriteLine($"[{Identity}] - Sending {msg}");
+			if (!msg.IsEmpty && !msg.Last.IsEmpty)
+				Console.WriteLine($"[{Identity}] - Sending {msg}");
 			Socket.SendMultipartMessage(msg);
 		}
 
