@@ -10,17 +10,15 @@ namespace OPCAIC.Utils
 		public static TSource ArgExtreme<TSource, TValue>(this IEnumerable<TSource> items,
 			Func<TSource, TValue> selector, int direction) where TValue : IComparable<TValue>
 		{
-			if (items == null) throw new ArgumentNullException(nameof(items));
-			if (selector == null) throw new ArgumentNullException(nameof(selector));
+			Require.NotNull(items, nameof(items));
+			Require.NotNull(selector, nameof(selector));
 
 			TSource extremeItem;
-			TValue extreme;
-
 			using (var e = items.GetEnumerator())
 			{
 				if (!e.MoveNext()) throw new InvalidOperationException("Sequence must be nonempty");
 				extremeItem = e.Current;
-				extreme = selector(extremeItem);
+				var extreme = selector(extremeItem);
 
 				while (e.MoveNext())
 				{
