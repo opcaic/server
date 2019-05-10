@@ -9,6 +9,14 @@ using OPCAIC.Messaging.Utils;
 
 namespace OPCAIC.Messaging
 {
+	public class BrokerConnectorConfig
+	{
+		public string Identity { get; set; }
+		public string ListeningAddress { get; set; }
+		public HeartbeatConfig HeartbeatConfig { get; set; }
+		public string[] Games { get; set; }
+	}
+
 	public class BrokerConnector : ConnectorBase<RouterSocket, ReceivedMessage>
 	{
 		private readonly Dictionary<string, WorkerConnection> workers;

@@ -24,36 +24,33 @@ namespace OPCAIC.Broker.Runner
 				.AddLog4Net();
 
 			var heartbeatConfig = new HeartbeatConfig();
-
-			int i = 0;
-
 			configuration.Bind("Heartbeat", heartbeatConfig);
+			var brokerConfig = new BrokerConnectorConfig();
+			configuration.Bind("Broker", brokerConfig);
+			brokerConfig.HeartbeatConfig = heartbeatConfig;
+			var workerSetConfig = new WorkerSetConfig();
+			configuration.Bind("WorkerSet", workerSetConfig);
+			int i = 0;
 			services
 				.AddSingleton(heartbeatConfig)
+				.AddSingleton(brokerConfig)
+				.AddSingleton(workerSetConfig)
 				.AddLogging(builder => builder.Services.AddSingleton(loggingFactory))
 				.AddOptions()
-				.AddSingleton(sf => new BrokerConnector(
-					Worker.Worker.ConnectionString,
-					"Broker",
-					sf.GetRequiredService<HeartbeatConfig>()))
+				.AddSingleton(sf =>
+				{
+					var config = sf.GetRequiredService<BrokerConnectorConfig>();
+					return new BrokerConnector(
+						config.ListeningAddress,
+						config.Identity,
+						config.HeartbeatConfig);
+				})
 				.AddSingleton<Broker>()
-				.AddTransient(sf => new WorkerConnector(
-					Worker.Worker.ConnectionString,
-					$"Worker{i++}",
-					sf.GetRequiredService<HeartbeatConfig>()))
-				.AddTransient<Worker.Worker>()
 				.AddSingleton<Application>();
 		}
 
 		public static int Main(string[] args)
 		{
-			if (args.Length != 2 || !int.TryParse(args[1], out port))
-			{
-				Console.WriteLine("Usage: [host] [port]");
-				return 1;
-			}
-			Worker.Worker.ConnectionString = $"tcp://localhost:{port}";
-
 			var config = new ConfigurationBuilder()
 				.AddJsonFile("appsettings.json").Build();
 

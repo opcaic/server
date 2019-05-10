@@ -4,14 +4,25 @@ using OPCAIC.Messaging.Messages;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 
 namespace OPCAIC.Worker
 {
+	public class WorkerSetConfig
+	{
+		public string BrokerAddress { get; set; }
+		public WorkerConfig[] Workers { get; set; }
+	}
+	public class WorkerConfig
+	{
+		public string Identity { get; set; }
+		public HeartbeatConfig HeartbeatConfig { get; set; }
+		public string[] Supportedgames { get; set; }
+	}
+
 	public class Worker : IDisposable
 	{
-		public static string ConnectionString = "tcp://localhost:5000"; // for test purposes
-
 		private WorkerConnector connector;
 		private ILogger logger;
 
@@ -23,7 +34,7 @@ namespace OPCAIC.Worker
 			this.logger = logger;
 		}
 
-		public void Run(List<string> games)
+		public void Run(string[] games)
 		{
 			Random rand = new Random();
 			connector.RegisterHandler<ExecuteMatchMessage>(msg =>
@@ -50,7 +61,7 @@ namespace OPCAIC.Worker
 				{
 					Capabilities = new WorkerCapabilities()
 					{
-						SupportedGames = games,
+						SupportedGames = games.ToList(),
 						SupportedLanguages = { "dotnet", "cpp" }
 					},
 				});

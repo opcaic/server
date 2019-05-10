@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker;
+using System;
+using System.Threading;
 
 namespace OPCAIC.Broker.Runner
 {
 	public class Application
 	{
-		private const int workerCount = 5;
-
 		private readonly Broker broker;
 		private readonly ILogger logger;
 		private readonly IServiceProvider serviceProvider;
@@ -28,21 +25,23 @@ namespace OPCAIC.Broker.Runner
 
 		private void StartWorkers()
 		{
-			List<Thread> workers = new List<Thread>(workerCount);
-			for (int i = 0; i < workerCount; i++)
+			var config = serviceProvider.GetRequiredService<WorkerSetConfig>();
+			var hearbeat = serviceProvider.GetRequiredService<HeartbeatConfig>();
+			foreach (var worker in config.Workers)
 			{
-				var games = Shared.Games.Where(_ => rand.Next(4) > 0).ToList();
-				workers.Add(new Thread(() =>
+				Thread t = new Thread(() =>
 				{
 					while (true)
 					{
-						using (var worker = serviceProvider.GetRequiredService<Worker.Worker>())
+						using (var connector = new WorkerConnector(config.BrokerAddress, worker.Identity, hearbeat))
 						{
-							worker.Run(games);
+							var W = new Worker.Worker(connector,
+								serviceProvider.GetRequiredService<ILogger<Worker.Worker>>());
+							W.Run(worker.Supportedgames);
 						}
 					}
-				}));
-				workers[i].Start();
+				});
+				t.Start();
 			}
 		}
 

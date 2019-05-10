@@ -10,16 +10,6 @@ namespace OPCAIC.Worker
 	{
 		public static void Main(string[] args)
 		{
-			if (args.Length != 2 || !int.TryParse(args[1], out var port))
-			{
-				Console.WriteLine("usage: [server] [port]");
-				return;
-			}
-
-			Worker.ConnectionString = $"tcp://localhost:{port}";
-
-			Random rand = new Random();
-			string identity = $"client{rand.Next(100)}";
 		}
 	}
 }
