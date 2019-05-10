@@ -1,17 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyName>OPCAIC.Broker.Runner</AssemblyName>
-    <RootNamespace>OPCAIC.Broker.Runner</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OPCAIC.Broker\OPCAIC.Broker.csproj" />
     <ProjectReference Include="..\OPCAIC.Messaging\OPCAIC.Messaging.csproj" />
     <ProjectReference Include="..\OPCAIC.Utils\OPCAIC.Utils.csproj" />
-    <ProjectReference Include="..\OPCAIC.Worker\OPCAIC.Worker.csproj" />
   </ItemGroup>
 
 </Project>
