@@ -47,7 +47,7 @@ namespace OPCAIC.Messaging
 				DirectSend(CreateMessage(recipient, payload));
 			});
 
-		public Task EnqueueTask(Action task) => EnqueueWorkerTask(task);
+		public void EnqueueTask(Task task) => EnqueueWorkerTask(task);
 
 		protected override ReceivedMessage ReceiveMessage(NetMQMessage msg)
 		{

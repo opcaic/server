@@ -15,6 +15,8 @@ namespace OPCAIC.Broker.Runner
 		private readonly List<WorkerEntry> workerQueue;
 		private readonly Queue<ExecuteMatchMessage> priorityTaskQueue;
 
+		public event EventHandler<MatchExecutionResultMessage> MatchExecuted; 
+
 		public Broker(BrokerConnector connector)
 		{
 			this.connector = connector;
@@ -24,16 +26,15 @@ namespace OPCAIC.Broker.Runner
 			RegisterHandlers();
 		}
 
-		public Task EnqueueMatchExecution(ExecuteMatchMessage msg)
+		public void EnqueueMatchExecution(ExecuteMatchMessage msg)
 		{
-			return connector.EnqueueTask(() =>
+			Schedule(() =>
 			{
 				var capableWorkers = workers.Values.Where(w => CanWorkerExecute(w, msg));
 				if (!capableWorkers.Any())
 				{
-					Console.WriteLine($"Error: No worker can execute game {msg.Game}");
 					priorityTaskQueue.Enqueue(msg);
-					return;
+					throw new InvalidOperationException($"Error: No worker can execute game {msg.Game}");
 				}
 
 				// enqueue to worker with shortest queue
@@ -44,6 +45,20 @@ namespace OPCAIC.Broker.Runner
 			});
 		}
 
+		private void Schedule(Action a)
+		{
+			Task task = new Task(a);
+			connector.EnqueueTask(task);
+			task.Wait();
+		}
+
+		private T Schedule<T>(Func<T> a)
+		{
+			var task = new Task<T>(a);
+			connector.EnqueueTask(task);;
+			return task.Result;
+		}
+
 		private void Send<TMessage>(WorkerEntry worker, TMessage msg)
 		{
 			connector.SendMessage(worker.Identity, msg);
@@ -51,29 +66,19 @@ namespace OPCAIC.Broker.Runner
 
 		private void DispatchWork(WorkerEntry worker)
 		{
-			if (worker.TaskQueue.Count == 0)
+			Queue<ExecuteMatchMessage> src;
+			if (priorityTaskQueue.Count > 0 && CanWorkerExecute(worker, priorityTaskQueue.Peek()))
+				src = priorityTaskQueue;
+			else
+				src = worker.TaskQueue;
+
+			if (src.Count == 0)
 				return; // no work to be done
+
 			Console.WriteLine($"Dispatching work to {worker.Identity}");
-			var msg = worker.TaskQueue.Dequeue();
+			var msg = src.Dequeue();
 			worker.CurrentWorkItem = msg;
 			Send(worker, msg);
-		}
-
-		private WorkerEntry PickCapableWorker(ExecuteMatchMessage msg)
-		{
-			foreach (var worker in workerQueue)
-			{
-				if (worker.CurrentWorkItem == null && // only free workers
-					worker.HasGame(msg.Game) && 
-					worker.HasRuntimes(msg.Bots.Select(b => b.Runtime)))
-				{
-					// remove worker from the queue
-					workerQueue.Remove(worker);
-					return worker;
-				}
-			}
-
-			return null;
 		}
 
 		public void StartBrokering()
@@ -127,8 +132,10 @@ namespace OPCAIC.Broker.Runner
 		{
 			worker.CurrentWorkItem = null;
 			Console.WriteLine($"Worker {worker.Identity} finished.");
+			MatchExecuted?.Invoke(this, msg);
 			DispatchWork(worker);
 		}
+
 		private void OnWorkerConnected(WorkerEntry worker, WorkerConnectMessage msg)
 		{
 			worker.Capabilities = msg.Capabilities;
@@ -162,11 +169,12 @@ namespace OPCAIC.Broker.Runner
 
 			Console.WriteLine($"Worker {identity} disconnected");
 
+			Console.WriteLine($"Requeuing {identity}'s work items");
 			if (worker.CurrentWorkItem != null)
-			{
-				Console.WriteLine($"Requeuing {identity}'s work item");
 				priorityTaskQueue.Enqueue(worker.CurrentWorkItem);
-			}
+
+			foreach (var msg in worker.TaskQueue)
+				priorityTaskQueue.Enqueue(msg);
 		}
 
 		public void Dispose() => connector.Dispose();

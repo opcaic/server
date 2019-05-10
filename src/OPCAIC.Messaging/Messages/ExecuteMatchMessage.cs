@@ -8,6 +8,8 @@ namespace OPCAIC.Messaging.Messages
 	{
 		public string Game { get; set; }
 
-		public List<BotInfo> Bots { get; set; }
+		public int Id { get; set; }
+
+//		public List<BotInfo> Bots { get; set; }
 	}
 }

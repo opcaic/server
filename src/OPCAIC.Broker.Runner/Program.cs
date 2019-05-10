@@ -1,6 +1,7 @@
 ﻿using OPCAIC.Messaging;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Messaging.Messages;
@@ -20,11 +21,21 @@ namespace OPCAIC.Broker.Runner
 		{
 			using (var broker = new Broker(new BrokerConnector(conectionString, "Broker", HeartbeatConfig.Default)))
 			{
+				int i = 1;
+				broker.MatchExecuted += (_, a) => Console.WriteLine($"Finished: {a.Work}");
 				broker.StartBrokering();
 				while (!stop)
 				{
 					Thread.Sleep(1000);
-					broker.EnqueueMatchExecution(new ExecuteMatchMessage(){Game = "game1"});
+					try
+					{
+						broker.EnqueueMatchExecution(new ExecuteMatchMessage() { Game = "game1", Id = i++ });
+					}
+					catch (AggregateException e)
+					{
+						Console.WriteLine("Exception caught");
+						Console.WriteLine(e);
+					}
 				}
 				broker.StopBrokering();
 			}

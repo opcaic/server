@@ -109,6 +109,11 @@ namespace OPCAIC.Messaging
 			return t;
 		}
 
+		protected void EnqueueWorkerTask(Task task)
+		{
+			task.Start(WorkPoller);
+		}
+
 		protected void AssertSocketThread()
 		{
 			Debug.Assert(SocketPoller.CanExecuteTaskInline, "Not called from the socket thread");
@@ -125,7 +130,7 @@ namespace OPCAIC.Messaging
 			if (!msg.Last.IsEmpty)
 			{
 				// non-heartbeat message
-				Console.WriteLine($"[{Identity}] - Received {msg}");
+//				Console.WriteLine($"[{Identity}] - Received {msg}");
 			}
 
 			var item = ReceiveMessage(msg);

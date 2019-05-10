@@ -25,7 +25,7 @@ namespace OPCAIC.Worker
 							connector.StopPoller();
 						}
 
-						connector.SendMessage(new MatchExecutionResultMessage(1));
+						connector.SendMessage(new MatchExecutionResultMessage(msg.Id));
 					});
 
 					Thread t = new Thread(() => connector.EnterConsumer());
