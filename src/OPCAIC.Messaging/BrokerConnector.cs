@@ -11,7 +11,6 @@ namespace OPCAIC.Messaging
 {
 	public class BrokerConnector : ConnectorBase<RouterSocket, ReceivedMessage>
 	{
-		private readonly string address;
 		private readonly Dictionary<string, WorkerConnection> workers;
 
 		public BrokerConnector(string address, string identity, HeartbeatConfig config)
@@ -21,7 +20,6 @@ namespace OPCAIC.Messaging
 				new HandlerSet<ReceivedMessage>(msg => msg.Payload),
 				config)
 		{
-			this.address = address;
 			workers = new Dictionary<string, WorkerConnection>();
 		}
 

@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using OPCAIC.Utils;
+using Microsoft.Extensions.Logging;
+using OPCAIC.Broker.Runner;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
+using OPCAIC.Utils;
 
-namespace OPCAIC.Broker.Runner
+namespace OPCAIC.Broker
 {
 	public class Broker : IDisposable
 	{
+		private readonly ILogger logger;
 		private readonly BrokerConnector connector;
 		private readonly Dictionary<string, WorkerEntry> workers;
 		private readonly List<WorkerEntry> workerQueue;
@@ -17,9 +21,10 @@ namespace OPCAIC.Broker.Runner
 
 		public event EventHandler<MatchExecutionResultMessage> MatchExecuted; 
 
-		public Broker(BrokerConnector connector)
+		public Broker(BrokerConnector connector, ILogger<Broker> logger)
 		{
 			this.connector = connector;
+			this.logger = logger;
 			workers = new Dictionary<string, WorkerEntry>();
 			workerQueue = new List<WorkerEntry>();
 			priorityTaskQueue = new Queue<ExecuteMatchMessage>();
@@ -49,14 +54,29 @@ namespace OPCAIC.Broker.Runner
 		{
 			Task task = new Task(a);
 			connector.EnqueueTask(task);
-			task.Wait();
+			try
+			{
+				task.Wait();
+			}
+			catch (AggregateException e)
+			{
+				ExceptionDispatchInfo.Capture(e.InnerExceptions[0]).Throw();
+			}
 		}
 
 		private T Schedule<T>(Func<T> a)
 		{
 			var task = new Task<T>(a);
 			connector.EnqueueTask(task);;
-			return task.Result;
+			try
+			{
+				return task.Result;
+			}
+			catch (AggregateException e)
+			{
+				ExceptionDispatchInfo.Capture(e.InnerExceptions[0]).Throw();
+				return default(T); // unreachable
+			}
 		}
 
 		private void Send<TMessage>(WorkerEntry worker, TMessage msg)
@@ -75,7 +95,7 @@ namespace OPCAIC.Broker.Runner
 			if (src.Count == 0)
 				return; // no work to be done
 
-			Console.WriteLine($"Dispatching work to {worker.Identity}");
+			logger.LogInformation($"Dispatching work to {worker.Identity}");
 			var msg = src.Dequeue();
 			worker.CurrentWorkItem = msg;
 			Send(worker, msg);
@@ -115,7 +135,7 @@ namespace OPCAIC.Broker.Runner
 			{
 				if (!workers.TryGetValue(identity, out var worker))
 				{
-					Console.WriteLine("Ignoring message from unknown worker");
+					logger.LogInformation("Ignoring message from unknown worker");
 					return;
 				}
 
@@ -131,7 +151,7 @@ namespace OPCAIC.Broker.Runner
 		private void OnMatchCompleted(WorkerEntry worker, MatchExecutionResultMessage msg)
 		{
 			worker.CurrentWorkItem = null;
-			Console.WriteLine($"Worker {worker.Identity} finished.");
+			logger.LogInformation($"Worker {worker.Identity} finished.");
 			MatchExecuted?.Invoke(this, msg);
 			DispatchWork(worker);
 		}
@@ -145,7 +165,7 @@ namespace OPCAIC.Broker.Runner
 		{
 			if (workers.ContainsKey(identity))
 			{
-				Console.WriteLine($"Error: worker {identity} already connected.");
+				logger.LogInformation($"Error: worker {identity} already connected.");
 				return;
 			}
 
@@ -156,20 +176,21 @@ namespace OPCAIC.Broker.Runner
 
 		private static bool CanWorkerExecute(WorkerEntry worker, ExecuteMatchMessage msg)
 		{
-			return worker.Capabilities.SupportedGames.Contains(msg.Game);
+			// capabilities can be null if WorkerConnectMessage has not been received yet
+			return worker.Capabilities?.SupportedGames.Contains(msg.Game) == true;
 		}
 
 		private void OnWorkerDisconnected(string identity)
 		{
 			if (!workers.Remove(identity, out var worker))
 			{
-				Console.WriteLine("Error, trying to disconnect unconnected worker");
+				logger.LogInformation("Error, trying to disconnect unconnected worker");
 				return;
 			}
 
-			Console.WriteLine($"Worker {identity} disconnected");
+			logger.LogInformation($"Worker {identity} disconnected");
 
-			Console.WriteLine($"Requeuing {identity}'s work items");
+			logger.LogInformation($"Requeuing {identity}'s work items");
 			if (worker.CurrentWorkItem != null)
 				priorityTaskQueue.Enqueue(worker.CurrentWorkItem);
 

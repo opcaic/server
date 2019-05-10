@@ -8,10 +8,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="chimera.extensions.logging.log4net" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\OPCAIC.Broker\OPCAIC.Broker.csproj" />
     <ProjectReference Include="..\OPCAIC.Messaging\OPCAIC.Messaging.csproj" />
     <ProjectReference Include="..\OPCAIC.Utils\OPCAIC.Utils.csproj" />
     <ProjectReference Include="..\OPCAIC.Worker\OPCAIC.Worker.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="log4net.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

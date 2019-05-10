@@ -16,11 +16,10 @@ namespace OPCAIC.Worker
 				return;
 			}
 
-			WorkerProcess.ConnectionString = $"tcp://localhost:{port}";
+			Worker.ConnectionString = $"tcp://localhost:{port}";
 
 			Random rand = new Random();
 			string identity = $"client{rand.Next(100)}";
-			WorkerProcess.Start(identity);
 		}
 	}
 }

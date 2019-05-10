@@ -1,10 +1,12 @@
 ﻿using OPCAIC.Messaging;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Messaging.Messages;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OPCAIC.Worker;
 
 namespace OPCAIC.Broker.Runner
@@ -13,32 +15,34 @@ namespace OPCAIC.Broker.Runner
 	{
 		private static int port;
 		private static int counter;
-		private const int workerCount = 1;
 
-		private static bool stop;
+		public static bool stop;
 
-		public static void StartBroker(string conectionString)
+		public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
 		{
-			using (var broker = new Broker(new BrokerConnector(conectionString, "Broker", HeartbeatConfig.Default)))
-			{
-				int i = 1;
-				broker.MatchExecuted += (_, a) => Console.WriteLine($"Finished: {a.Work}");
-				broker.StartBrokering();
-				while (!stop)
-				{
-					Thread.Sleep(1000);
-					try
-					{
-						broker.EnqueueMatchExecution(new ExecuteMatchMessage() { Game = "game1", Id = i++ });
-					}
-					catch (AggregateException e)
-					{
-						Console.WriteLine("Exception caught");
-						Console.WriteLine(e);
-					}
-				}
-				broker.StopBrokering();
-			}
+			var loggingFactory = new LoggerFactory()
+				.AddLog4Net();
+
+			var heartbeatConfig = new HeartbeatConfig();
+
+			int i = 0;
+
+			configuration.Bind("Heartbeat", heartbeatConfig);
+			services
+				.AddSingleton(heartbeatConfig)
+				.AddLogging(builder => builder.Services.AddSingleton(loggingFactory))
+				.AddOptions()
+				.AddSingleton(sf => new BrokerConnector(
+					Worker.Worker.ConnectionString,
+					"Broker",
+					sf.GetRequiredService<HeartbeatConfig>()))
+				.AddSingleton<Broker>()
+				.AddTransient(sf => new WorkerConnector(
+					Worker.Worker.ConnectionString,
+					$"Worker{i++}",
+					sf.GetRequiredService<HeartbeatConfig>()))
+				.AddTransient<Worker.Worker>()
+				.AddSingleton<Application>();
 		}
 
 		public static int Main(string[] args)
@@ -48,15 +52,14 @@ namespace OPCAIC.Broker.Runner
 				Console.WriteLine("Usage: [host] [port]");
 				return 1;
 			}
+			Worker.Worker.ConnectionString = $"tcp://localhost:{port}";
 
-			WorkerProcess.ConnectionString = $"tcp://localhost:{port}";
+			var config = new ConfigurationBuilder()
+				.AddJsonFile("appsettings.json").Build();
 
-			List<Thread> workers = new List<Thread>(workerCount);
-			for (int i = 0; i < workerCount; i++)
-			{
-				workers.Add(new Thread(WorkerProcess.Start));
-				workers[i].Start($"Client{i}");
-			}
+			var serviceCollection = new ServiceCollection();
+			ConfigureServices(serviceCollection, config);
+			var serviceProvider = serviceCollection.BuildServiceProvider();
 
 			Console.CancelKeyPress += (_, a) =>
 			{
@@ -64,8 +67,7 @@ namespace OPCAIC.Broker.Runner
 				stop = true;
 			};
 
-			StartBroker(WorkerProcess.ConnectionString);
-
+			serviceProvider.GetRequiredService<Application>().Run();
 			return 0;
 		}
 	}
