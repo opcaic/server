@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NetMQ;
 using NetMQ.Sockets;
 using OPCAIC.Messaging.Commands;
@@ -9,27 +10,18 @@ using OPCAIC.Messaging.Utils;
 
 namespace OPCAIC.Messaging
 {
-	public class BrokerConnectorConfig
-	{
-		public string Identity { get; set; }
-		public string ListeningAddress { get; set; }
-		public HeartbeatConfig HeartbeatConfig { get; set; }
-		public string[] Games { get; set; }
-	}
-
 	public class BrokerConnector : ConnectorBase<RouterSocket, ReceivedMessage>
 	{
 		private readonly Dictionary<string, WorkerConnection> workers;
 
-		public BrokerConnector(string address, string identity, HeartbeatConfig config)
+		public BrokerConnector(BrokerConnectorConfig config, ILogger<BrokerConnector> logger)
 			: base(
-				identity,
-				new RouterSocketFactory(identity, address, true),
+				config.Identity,
+				new RouterSocketFactory(config.Identity, config.ListeningAddress),
 				new HandlerSet<ReceivedMessage>(msg => msg.Payload),
-				config)
-		{
-			workers = new Dictionary<string, WorkerConnection>();
-		}
+				config.HeartbeatConfig,
+				logger)
+			=> workers = new Dictionary<string, WorkerConnection>();
 
 		public event EventHandler<WorkerConnectionEventArgs> WorkerDisconnected;
 		public event EventHandler<WorkerConnectionEventArgs> WorkerConnected;
@@ -48,7 +40,9 @@ namespace OPCAIC.Messaging
 				// treat each message as a heartbeat
 				if (workers.TryGetValue(Identity, out var entry))
 					// the worker might have been removed
+				{
 					entry.OutgoingHeartbeatTimer.EnableAndReset();
+				}
 
 				DirectSend(CreateMessage(recipient, payload));
 			});
@@ -73,7 +67,9 @@ namespace OPCAIC.Messaging
 
 			msg.Pop(); // empty frame
 			if (msg.IsEmpty)
+			{
 				return null; // heartbeat messsage
+			}
 
 			return new ReceivedMessage(sender, MessageHelpers.DeserializeMessage(msg));
 		}
@@ -84,7 +80,10 @@ namespace OPCAIC.Messaging
 			msg.AppendIdentity(recipient);
 			msg.AppendEmptyFrame();
 			if (payload != null)
+			{
 				MessageHelpers.SerializeMessage(msg, payload);
+			}
+
 			return msg;
 		}
 
@@ -118,12 +117,13 @@ namespace OPCAIC.Messaging
 			AssertSocketThread();
 			if (--worker.Liveness == 0)
 			{
-				Console.WriteLine($"[{Identity}] - Worker '{worker.Identity}' is dead");
+				Logger.LogInformation($"[{Identity}] - Worker '{worker.Identity}' is dead");
 				RemoveWorker(worker);
 			}
 			else if (worker.Liveness < Config.Liveness - 1)
 			{
-				Console.WriteLine($"[{Identity}] - Worker '{worker.Identity}' livenes={worker.Liveness}");
+				Logger.LogInformation(
+					$"[{Identity}] - Worker '{worker.Identity}' livenes={worker.Liveness}");
 			}
 		}
 

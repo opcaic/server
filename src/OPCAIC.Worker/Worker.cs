@@ -1,31 +1,17 @@
-﻿using Microsoft.Extensions.Logging;
-using OPCAIC.Messaging;
-using OPCAIC.Messaging.Messages;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
+using OPCAIC.Messaging;
+using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.Worker
 {
-	public class WorkerSetConfig
-	{
-		public string BrokerAddress { get; set; }
-		public WorkerConfig[] Workers { get; set; }
-	}
-	public class WorkerConfig
-	{
-		public string Identity { get; set; }
-		public HeartbeatConfig HeartbeatConfig { get; set; }
-		public string[] Supportedgames { get; set; }
-	}
-
 	public class Worker : IDisposable
 	{
-		private WorkerConnector connector;
-		private ILogger logger;
-
-		private string Identity => connector.Identity;
+		private readonly WorkerConnector connector;
+		private readonly ILogger logger;
 
 		public Worker(WorkerConnector connector, ILogger<Worker> logger)
 		{
@@ -33,9 +19,13 @@ namespace OPCAIC.Worker
 			this.logger = logger;
 		}
 
+		private string Identity => connector.Identity;
+
+		public void Dispose() => connector?.Dispose();
+
 		public void Run(string[] games)
 		{
-			Random rand = new Random();
+			var rand = new Random();
 			connector.RegisterHandler<ExecuteMatchMessage>(msg =>
 			{
 				logger.LogInformation($"[{Identity}] - received workload: {msg.Game}");
@@ -51,23 +41,21 @@ namespace OPCAIC.Worker
 				connector.SendMessage(new MatchExecutionResultMessage(msg.Id));
 			});
 
-			Thread t = new Thread(() => connector.EnterConsumer());
+			var t = new Thread(() => connector.EnterConsumer());
 			t.Start();
 			logger.LogInformation($"[{Identity}] - Initiating connection");
-			connector.SendMessage(new WorkerConnectMessage()
+			connector.SendMessage(new WorkerConnectMessage
 			{
-				Capabilities = new WorkerCapabilities()
+				Capabilities = new WorkerCapabilities
 				{
 					SupportedGames = games.ToList(),
-					SupportedLanguages = { "dotnet", "cpp" }
-				},
+					SupportedLanguages = {"dotnet", "cpp"}
+				}
 			});
 			connector.EnterPoller(); // returns on worker exit
 			connector.StopConsumer();
 			t.Join();
 			logger.LogInformation($"[{Identity}] - client officially dead, restarting in 5s");
 		}
-
-		public void Dispose() => connector?.Dispose();
 	}
 }

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 
 namespace OPCAIC.Utils
 {
@@ -16,7 +14,11 @@ namespace OPCAIC.Utils
 			TSource extremeItem;
 			using (var e = items.GetEnumerator())
 			{
-				if (!e.MoveNext()) throw new InvalidOperationException("Sequence must be nonempty");
+				if (!e.MoveNext())
+				{
+					throw new InvalidOperationException("Sequence must be nonempty");
+				}
+
 				extremeItem = e.Current;
 				var extreme = selector(extremeItem);
 
@@ -34,14 +36,12 @@ namespace OPCAIC.Utils
 			return extremeItem;
 		}
 
-		public static TSource ArgMin<TSource, TValue>(this IEnumerable<TSource> items, Func<TSource, TValue> selector) where TValue : IComparable<TValue>
-		{
-			return items.ArgExtreme(selector, 1);
-		}
+		public static TSource ArgMin<TSource, TValue>(this IEnumerable<TSource> items,
+			Func<TSource, TValue> selector) where TValue : IComparable<TValue>
+			=> items.ArgExtreme(selector, 1);
 
-		public static TSource ArgMax<TSource, TValue>(this IEnumerable<TSource> items, Func<TSource, TValue> selector) where TValue : IComparable<TValue>
-		{
-			return items.ArgExtreme(selector, -1);
-		}
+		public static TSource ArgMax<TSource, TValue>(this IEnumerable<TSource> items,
+			Func<TSource, TValue> selector) where TValue : IComparable<TValue>
+			=> items.ArgExtreme(selector, -1);
 	}
 }

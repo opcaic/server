@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OPCAIC.Utils
 {
 	/// <summary>
-	/// Class serving for compact assertions/exception throwing useful for checking method arguments
+	///   Class serving for compact assertions/exception throwing useful for checking method arguments
 	/// </summary>
-	static class Require
+	internal static class Require
 	{
-		public static void NotNull<T>(T arg, string name) where T : class 
+		public static void NotNull<T>(T arg, string name) where T : class
 		{
 			if (arg == null)
 			{
@@ -18,7 +16,7 @@ namespace OPCAIC.Utils
 			}
 		}
 
-		public static void NotEmpty<T>(IEnumerable collection, string name) where T :  Exception
+		public static void NotEmpty<T>(IEnumerable collection, string name) where T : Exception
 		{
 			if (!collection.GetEnumerator().MoveNext())
 			{
@@ -43,8 +41,6 @@ namespace OPCAIC.Utils
 		}
 
 		private static void ThrowHelper<T>(string arg) where T : Exception
-		{
-			throw (T) Activator.CreateInstance(typeof(T), arg);
-		}
+			=> throw ((T) Activator.CreateInstance(typeof(T), arg));
 	}
 }

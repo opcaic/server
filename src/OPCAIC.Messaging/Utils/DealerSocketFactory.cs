@@ -4,8 +4,8 @@ namespace OPCAIC.Messaging.Utils
 {
 	public class DealerSocketFactory : SocketFactory<DealerSocket>
 	{
-		public DealerSocketFactory(string identity, string address, bool bind) : base(identity, address,
-			bind)
+		public DealerSocketFactory(string identity, string address) : base(identity, address,
+			false)
 		{
 		}
 

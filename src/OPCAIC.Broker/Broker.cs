@@ -13,13 +13,11 @@ namespace OPCAIC.Broker
 {
 	public class Broker : IDisposable
 	{
-		private readonly ILogger logger;
 		private readonly BrokerConnector connector;
-		private readonly Dictionary<string, WorkerEntry> workers;
-		private readonly List<WorkerEntry> workerQueue;
+		private readonly ILogger logger;
 		private readonly Queue<ExecuteMatchMessage> priorityTaskQueue;
-
-		public event EventHandler<MatchExecutionResultMessage> MatchExecuted; 
+		private readonly List<WorkerEntry> workerQueue;
+		private readonly Dictionary<string, WorkerEntry> workers;
 
 		public Broker(BrokerConnector connector, ILogger<Broker> logger)
 		{
@@ -31,9 +29,12 @@ namespace OPCAIC.Broker
 			RegisterHandlers();
 		}
 
+		public void Dispose() => connector.Dispose();
+
+		public event EventHandler<MatchExecutionResultMessage> MatchExecuted;
+
 		public void EnqueueMatchExecution(ExecuteMatchMessage msg)
-		{
-			Schedule(() =>
+			=> Schedule(() =>
 			{
 				var capableWorkers = workers.Values.Where(w => CanWorkerExecute(w, msg));
 				if (!capableWorkers.Any())
@@ -46,13 +47,14 @@ namespace OPCAIC.Broker
 				var worker = capableWorkers.ArgMin(w => w.TaskQueue.Count);
 				worker.TaskQueue.Enqueue(msg);
 				if (worker.CurrentWorkItem == null)
+				{
 					DispatchWork(worker);
+				}
 			});
-		}
 
 		private void Schedule(Action a)
 		{
-			Task task = new Task(a);
+			var task = new Task(a);
 			connector.EnqueueTask(task);
 			try
 			{
@@ -67,7 +69,8 @@ namespace OPCAIC.Broker
 		private T Schedule<T>(Func<T> a)
 		{
 			var task = new Task<T>(a);
-			connector.EnqueueTask(task);;
+			connector.EnqueueTask(task);
+			;
 			try
 			{
 				return task.Result;
@@ -80,20 +83,24 @@ namespace OPCAIC.Broker
 		}
 
 		private void Send<TMessage>(WorkerEntry worker, TMessage msg)
-		{
-			connector.SendMessage(worker.Identity, msg);
-		}
+			=> connector.SendMessage(worker.Identity, msg);
 
 		private void DispatchWork(WorkerEntry worker)
 		{
 			Queue<ExecuteMatchMessage> src;
 			if (priorityTaskQueue.Count > 0 && CanWorkerExecute(worker, priorityTaskQueue.Peek()))
+			{
 				src = priorityTaskQueue;
+			}
 			else
+			{
 				src = worker.TaskQueue;
+			}
 
 			if (src.Count == 0)
+			{
 				return; // no work to be done
+			}
 
 			logger.LogInformation($"Dispatching work to {worker.Identity}");
 			var msg = src.Dequeue();
@@ -130,8 +137,7 @@ namespace OPCAIC.Broker
 		}
 
 		private void RegisterHandler<TMessage>(Action<WorkerEntry, TMessage> handler)
-		{
-			connector.RegisterAsyncHandler<TMessage>((identity, message) =>
+			=> connector.RegisterAsyncHandler<TMessage>((identity, message) =>
 			{
 				if (!workers.TryGetValue(identity, out var worker))
 				{
@@ -141,12 +147,9 @@ namespace OPCAIC.Broker
 
 				handler(worker, message);
 			});
-		}
 
 		private void OnMatchRefused(WorkerEntry worker, RefuseMessage msg)
-		{
-			throw new NotImplementedException();
-		}
+			=> throw new NotImplementedException();
 
 		private void OnMatchCompleted(WorkerEntry worker, MatchExecutionResultMessage msg)
 		{
@@ -157,9 +160,7 @@ namespace OPCAIC.Broker
 		}
 
 		private void OnWorkerConnected(WorkerEntry worker, WorkerConnectMessage msg)
-		{
-			worker.Capabilities = msg.Capabilities;
-		}
+			=> worker.Capabilities = msg.Capabilities;
 
 		private void OnWorkerConnected(string identity)
 		{
@@ -175,10 +176,7 @@ namespace OPCAIC.Broker
 		}
 
 		private static bool CanWorkerExecute(WorkerEntry worker, ExecuteMatchMessage msg)
-		{
-			// capabilities can be null if WorkerConnectMessage has not been received yet
-			return worker.Capabilities?.SupportedGames.Contains(msg.Game) == true;
-		}
+			=> worker.Capabilities?.SupportedGames.Contains(msg.Game) == true;
 
 		private void OnWorkerDisconnected(string identity)
 		{
@@ -192,12 +190,12 @@ namespace OPCAIC.Broker
 
 			logger.LogInformation($"Requeuing {identity}'s work items");
 			if (worker.CurrentWorkItem != null)
+			{
 				priorityTaskQueue.Enqueue(worker.CurrentWorkItem);
+			}
 
 			foreach (var msg in worker.TaskQueue)
 				priorityTaskQueue.Enqueue(msg);
 		}
-
-		public void Dispose() => connector.Dispose();
 	}
 }

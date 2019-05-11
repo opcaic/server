@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,13 +27,23 @@ namespace OPCAIC.Messaging.Test
 		protected void CreateBroker()
 		{
 			KillBroker();
-			Broker = new BrokerConnector(ConnectionString, "Broker", Config);
+			Broker = new BrokerConnector(new BrokerConnectorConfig()
+			{
+				Identity = "Broker",
+				ListeningAddress = ConnectionString,
+				HeartbeatConfig = Config
+			}, new NullLogger<BrokerConnector>());
 		}
 
 		protected void CreateWorker()
 		{
 			KillWorker();
-			Worker = new WorkerConnector(ConnectionString, "Worker", Config);
+			Worker = new WorkerConnector(new WorkerConnectorConfig()
+			{
+				Identity = "Worker",
+				BrokerAddress = ConnectionString,
+				HeartbeatConfig = Config
+			}, new NullLogger<WorkerConnector>());
 		}
 
 		protected void CreateConnectors()

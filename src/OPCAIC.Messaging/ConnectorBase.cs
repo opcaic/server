@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NetMQ;
 using OPCAIC.Messaging.Commands;
-using OPCAIC.Messaging.Messages;
 using OPCAIC.Messaging.Utils;
 
 namespace OPCAIC.Messaging
@@ -30,20 +30,22 @@ namespace OPCAIC.Messaging
 		protected readonly HeartbeatConfig Config;
 
 		private readonly IHandlerSet<TItem> handlerSet;
+		protected readonly ILogger Logger;
 		private readonly ISocketFactory<TSocket> socketFactory;
 		protected readonly NetMQPoller SocketPoller;
 		protected readonly NetMQPoller WorkPoller;
 
-		protected ConnectorBase(
-			string identity,
+		protected ConnectorBase(string identity,
 			ISocketFactory<TSocket> socketFactory,
 			IHandlerSet<TItem> handlerSet,
-			HeartbeatConfig config)
+			HeartbeatConfig config,
+			ILogger logger)
 		{
 			Identity = identity;
 			this.socketFactory = socketFactory;
 			this.handlerSet = handlerSet;
 			Config = config;
+			Logger = logger;
 
 			SocketPoller = new NetMQPoller();
 			WorkPoller = new NetMQPoller();
@@ -87,7 +89,7 @@ namespace OPCAIC.Messaging
 		{
 			AssertSocketThread();
 //			if (!msg.IsEmpty && !msg.Last.IsEmpty)
-//				Console.WriteLine($"[{Identity}] - Sending {msg}");
+//				Logger.LogInformation($"[{Identity}] - Sending {msg}");
 			Socket.SendMultipartMessage(msg);
 		}
 
@@ -109,20 +111,13 @@ namespace OPCAIC.Messaging
 			return t;
 		}
 
-		protected void EnqueueWorkerTask(Task task)
-		{
-			task.Start(WorkPoller);
-		}
+		protected void EnqueueWorkerTask(Task task) => task.Start(WorkPoller);
 
 		protected void AssertSocketThread()
-		{
-			Debug.Assert(SocketPoller.CanExecuteTaskInline, "Not called from the socket thread");
-		}
+			=> Debug.Assert(SocketPoller.CanExecuteTaskInline, "Not called from the socket thread");
 
 		protected void AssertWorkThread()
-		{
-			Debug.Assert(WorkPoller.CanExecuteTaskInline, "Not called from the work thread");
-		}
+			=> Debug.Assert(WorkPoller.CanExecuteTaskInline, "Not called from the work thread");
 
 		private void OnPollerReceive(NetMQMessage msg)
 		{
@@ -130,17 +125,19 @@ namespace OPCAIC.Messaging
 			if (!msg.Last.IsEmpty)
 			{
 				// non-heartbeat message
-//				Console.WriteLine($"[{Identity}] - Received {msg}");
+//				Logger.LogInformation($"[{Identity}] - Received {msg}");
 			}
 
 			var item = ReceiveMessage(msg);
 			if (item == null)
+			{
 				return;
+			}
 
 			var handler = handlerSet.GetHandler(item);
 			if (handler == null)
 			{
-				Console.WriteLine($"[{Identity}] - no handler for given message type");
+				Logger.LogInformation($"[{Identity}] - no handler for given message type");
 				return;
 			}
 

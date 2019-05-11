@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.Broker.Runner

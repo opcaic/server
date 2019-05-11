@@ -4,8 +4,8 @@ namespace OPCAIC.Messaging.Utils
 {
 	public class RouterSocketFactory : SocketFactory<RouterSocket>
 	{
-		public RouterSocketFactory(string identity, string address, bool bind) : base(identity, address,
-			bind)
+		public RouterSocketFactory(string identity, string address) : base(identity, address,
+			true)
 		{
 		}
 

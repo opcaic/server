@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 
 namespace OPCAIC.Messaging.Utils
 {
-	
 	public static class MessageHelpers
 	{
 		private static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings
@@ -18,7 +17,7 @@ namespace OPCAIC.Messaging.Utils
 		public static string ConvertToIdentity(this NetMQFrame frame)
 			=> BytesToIdentity(frame.Buffer, 0, frame.BufferSize);
 
-	// TODO: use binary serialization? (using JSON now for debug readability)
+		// TODO: use binary serialization? (using JSON now for debug readability)
 		public static void SerializeMessage(NetMQMessage msg, object payload)
 			// using typeof(object) forces the serializer to include the type name of the root object
 			=> msg.Append(JsonConvert.SerializeObject(payload, typeof(object), serializerSettings));

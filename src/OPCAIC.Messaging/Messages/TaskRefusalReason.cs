@@ -4,6 +4,6 @@
 	{
 		Unknown,
 		Busy,
-		Incapable,
+		Incapable
 	}
 }
