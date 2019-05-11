@@ -117,13 +117,13 @@ namespace OPCAIC.Messaging
 			AssertSocketThread();
 			if (--worker.Liveness == 0)
 			{
-				Logger.LogInformation($"[{Identity}] - Worker '{worker.Identity}' is dead");
+				Logger.LogWarning($"[{Identity}] - Worker '{worker.Identity}' is dead");
 				RemoveWorker(worker);
 			}
 			else if (worker.Liveness < Config.Liveness - 1)
 			{
-				Logger.LogInformation(
-					$"[{Identity}] - Worker '{worker.Identity}' livenes={worker.Liveness}");
+				Logger.LogWarning(
+					$"[{Identity}] - Worker '{worker.Identity}' heartbeat timeout liveness={worker.Liveness}");
 			}
 		}
 

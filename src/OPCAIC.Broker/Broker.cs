@@ -61,13 +61,14 @@ namespace OPCAIC.Broker
 				var capableWorkers = identityToWorker.Values.Where(w => CanWorkerExecute(w, msg));
 				if (!capableWorkers.Any())
 				{
-					taskQueue.Add(new WorkItem()
-					{
-						Payload = msg,
-						QueuedTime = DateTime.Now
-					});
 					logger.LogError($"No worker can execute game {msg.Game}");
 				}
+
+				taskQueue.Add(new WorkItem()
+				{
+					Payload = msg,
+					QueuedTime = DateTime.Now
+				});
 
 				// enqueue to worker with shortest queue
 				var worker = capableWorkers.FirstOrDefault(w => w.CurrentWorkItem == null);

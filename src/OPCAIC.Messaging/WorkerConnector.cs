@@ -86,8 +86,8 @@ namespace OPCAIC.Messaging
 			{
 				EnqueueWorkerTask(OnDisconnected);
 
-				Logger.LogInformation(
-					$"[{Identity}] - Broker unreachable, sleeping for {sleepInterval} ms");
+				Logger.LogError(
+					$"[{Identity}] - Broker unreachable, sleeping retrying in {sleepInterval} ms");
 				if (sleepInterval <= Config.ReconnectIntervalMax)
 				{
 					Thread.Sleep(sleepInterval);
@@ -104,7 +104,7 @@ namespace OPCAIC.Messaging
 			}
 			else if (liveness < Config.Liveness - 1)
 			{
-				Logger.LogInformation($"[{Identity}] - heartbeat timeout, liveness={liveness}");
+				Logger.LogWarning($"[{Identity}] - heartbeat timeout, liveness={liveness}");
 			}
 		}
 

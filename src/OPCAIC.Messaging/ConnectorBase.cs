@@ -88,8 +88,11 @@ namespace OPCAIC.Messaging
 		protected void DirectSend(NetMQMessage msg)
 		{
 			AssertSocketThread();
-//			if (!msg.IsEmpty && !msg.Last.IsEmpty)
-//				Logger.LogInformation($"[{Identity}] - Sending {msg}");
+			// avoid calling msg.ToString if debug is off
+			if (!msg.IsEmpty && !msg.Last.IsEmpty && Logger.IsEnabled(LogLevel.Debug))
+			{
+				Logger.LogDebug($"[{Identity}] - Sending {msg}");
+			}
 			Socket.SendMultipartMessage(msg);
 		}
 
@@ -122,10 +125,10 @@ namespace OPCAIC.Messaging
 		private void OnPollerReceive(NetMQMessage msg)
 		{
 			AssertSocketThread();
-			if (!msg.Last.IsEmpty)
+			// avoid calling msg.ToString if debug is off
+			if (!msg.Last.IsEmpty && Logger.IsEnabled(LogLevel.Debug))
 			{
-				// non-heartbeat message
-//				Logger.LogInformation($"[{Identity}] - Received {msg}");
+				Logger.LogDebug($"[{Identity}] - Received {msg}");
 			}
 
 			var item = ReceiveMessage(msg);
@@ -137,7 +140,7 @@ namespace OPCAIC.Messaging
 			var handler = handlerSet.GetHandler(item);
 			if (handler == null)
 			{
-				Logger.LogInformation($"[{Identity}] - no handler for given message type");
+				Logger.LogWarning($"[{Identity}] - no handler for given message type");
 				return;
 			}
 
