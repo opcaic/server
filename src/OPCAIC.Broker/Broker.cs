@@ -11,21 +11,43 @@ using OPCAIC.Utils;
 
 namespace OPCAIC.Broker
 {
+	internal class WorkItem : IComparable<WorkItem>
+	{
+		public DateTime QueuedTime { get; set; }
+		public ExecuteMatchMessage Payload { get; set; }
+
+		public int CompareTo(WorkItem other)
+		{
+			if (ReferenceEquals(this, other))
+			{
+				return 0;
+			}
+
+			if (ReferenceEquals(null, other))
+			{
+				return 1;
+			}
+
+			// order by time
+			return QueuedTime.CompareTo(other.QueuedTime);
+		}
+	}
+
 	public class Broker : IDisposable
 	{
 		private readonly BrokerConnector connector;
 		private readonly ILogger logger;
-		private readonly Queue<ExecuteMatchMessage> priorityTaskQueue;
-		private readonly List<WorkerEntry> workerQueue;
-		private readonly Dictionary<string, WorkerEntry> workers;
+		private readonly SortedSet<WorkItem> taskQueue;
+		private readonly List<WorkerEntry> workers;
+		private readonly Dictionary<string, WorkerEntry> identityToWorker;
 
 		public Broker(BrokerConnector connector, ILogger<Broker> logger)
 		{
 			this.connector = connector;
 			this.logger = logger;
-			workers = new Dictionary<string, WorkerEntry>();
-			workerQueue = new List<WorkerEntry>();
-			priorityTaskQueue = new Queue<ExecuteMatchMessage>();
+			identityToWorker = new Dictionary<string, WorkerEntry>();
+			workers = new List<WorkerEntry>();
+			taskQueue = new SortedSet<WorkItem>();
 			RegisterHandlers();
 		}
 
@@ -36,21 +58,28 @@ namespace OPCAIC.Broker
 		public void EnqueueMatchExecution(ExecuteMatchMessage msg)
 			=> Schedule(() =>
 			{
-				var capableWorkers = workers.Values.Where(w => CanWorkerExecute(w, msg));
+				var capableWorkers = identityToWorker.Values.Where(w => CanWorkerExecute(w, msg));
 				if (!capableWorkers.Any())
 				{
-					priorityTaskQueue.Enqueue(msg);
-					throw new InvalidOperationException($"Error: No worker can execute game {msg.Game}");
+					taskQueue.Add(new WorkItem()
+					{
+						Payload = msg,
+						QueuedTime = DateTime.Now
+					});
+					logger.LogError($"No worker can execute game {msg.Game}");
 				}
 
 				// enqueue to worker with shortest queue
-				var worker = capableWorkers.ArgMin(w => w.TaskQueue.Count);
-				worker.TaskQueue.Enqueue(msg);
-				if (worker.CurrentWorkItem == null)
+				var worker = capableWorkers.FirstOrDefault(w => w.CurrentWorkItem == null);
+				if (worker != null)
 				{
 					DispatchWork(worker);
 				}
 			});
+
+		public int GetUnfinishedTasksCount() => Schedule(() => 
+			workers.Count(w => w.CurrentWorkItem != null) +
+			taskQueue.Count);
 
 		private void Schedule(Action a)
 		{
@@ -87,25 +116,18 @@ namespace OPCAIC.Broker
 
 		private void DispatchWork(WorkerEntry worker)
 		{
-			Queue<ExecuteMatchMessage> src;
-			if (priorityTaskQueue.Count > 0 && CanWorkerExecute(worker, priorityTaskQueue.Peek()))
+			var work = taskQueue.FirstOrDefault(i => CanWorkerExecute(worker, i.Payload));
+			if (work == null)
 			{
-				src = priorityTaskQueue;
-			}
-			else
-			{
-				src = worker.TaskQueue;
+				// nothing to be done
+				return;
 			}
 
-			if (src.Count == 0)
-			{
-				return; // no work to be done
-			}
+			taskQueue.Remove(work);
 
 			logger.LogInformation($"Dispatching work to {worker.Identity}");
-			var msg = src.Dequeue();
-			worker.CurrentWorkItem = msg;
-			Send(worker, msg);
+			worker.CurrentWorkItem = work;
+			Send(worker, work.Payload);
 		}
 
 		public void StartBrokering()
@@ -139,9 +161,9 @@ namespace OPCAIC.Broker
 		private void RegisterHandler<TMessage>(Action<WorkerEntry, TMessage> handler)
 			=> connector.RegisterAsyncHandler<TMessage>((identity, message) =>
 			{
-				if (!workers.TryGetValue(identity, out var worker))
+				if (!identityToWorker.TryGetValue(identity, out var worker))
 				{
-					logger.LogInformation("Ignoring message from unknown worker");
+					logger.LogError($"Ignoring message from unknown worker {identity}");
 					return;
 				}
 
@@ -160,19 +182,22 @@ namespace OPCAIC.Broker
 		}
 
 		private void OnWorkerConnected(WorkerEntry worker, WorkerConnectMessage msg)
-			=> worker.Capabilities = msg.Capabilities;
+		{
+			worker.Capabilities = msg.Capabilities;
+			DispatchWork(worker);
+		}
 
 		private void OnWorkerConnected(string identity)
 		{
-			if (workers.ContainsKey(identity))
+			if (identityToWorker.ContainsKey(identity))
 			{
-				logger.LogInformation($"Error: worker {identity} already connected.");
+				logger.LogError($"Worker {identity} already connected.");
 				return;
 			}
 
 			var worker = new WorkerEntry(identity);
-			workers.Add(identity, worker);
-			workerQueue.Add(worker);
+			identityToWorker.Add(identity, worker);
+			workers.Add(worker);
 		}
 
 		private static bool CanWorkerExecute(WorkerEntry worker, ExecuteMatchMessage msg)
@@ -180,22 +205,21 @@ namespace OPCAIC.Broker
 
 		private void OnWorkerDisconnected(string identity)
 		{
-			if (!workers.Remove(identity, out var worker))
+			if (!identityToWorker.Remove(identity, out var worker))
 			{
-				logger.LogInformation("Error, trying to disconnect unconnected worker");
+				logger.LogError($"Trying to disconnect unconnected worker {identity}");
 				return;
 			}
 
 			logger.LogInformation($"Worker {identity} disconnected");
 
 			logger.LogInformation($"Requeuing {identity}'s work items");
+
 			if (worker.CurrentWorkItem != null)
 			{
-				priorityTaskQueue.Enqueue(worker.CurrentWorkItem);
+				// return back go queue (with original enqueue time)
+				taskQueue.Add(worker.CurrentWorkItem);
 			}
-
-			foreach (var msg in worker.TaskQueue)
-				priorityTaskQueue.Enqueue(msg);
 		}
 	}
 }
