@@ -34,11 +34,11 @@ namespace OPCAIC.Broker.Runner
 					while (true)
 					{
 						using (var connector = new WorkerConnector(config.BrokerAddress, worker.Identity, hearbeat))
+						using (var W = new Worker.Worker(connector, serviceProvider.GetRequiredService<ILogger<Worker.Worker>>()))
 						{
-							var W = new Worker.Worker(connector,
-								serviceProvider.GetRequiredService<ILogger<Worker.Worker>>());
 							W.Run(worker.Supportedgames);
 						}
+						Thread.Sleep(5000);
 					}
 				});
 				t.Start();

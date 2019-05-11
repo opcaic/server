@@ -2,7 +2,6 @@
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -52,25 +51,21 @@ namespace OPCAIC.Worker
 				connector.SendMessage(new MatchExecutionResultMessage(msg.Id));
 			});
 
-			while (true)
+			Thread t = new Thread(() => connector.EnterConsumer());
+			t.Start();
+			logger.LogInformation($"[{Identity}] - Initiating connection");
+			connector.SendMessage(new WorkerConnectMessage()
 			{
-				Thread t = new Thread(() => connector.EnterConsumer());
-				t.Start();
-				logger.LogInformation($"[{Identity}] - Initiating connection");
-				connector.SendMessage(new WorkerConnectMessage()
+				Capabilities = new WorkerCapabilities()
 				{
-					Capabilities = new WorkerCapabilities()
-					{
-						SupportedGames = games.ToList(),
-						SupportedLanguages = { "dotnet", "cpp" }
-					},
-				});
-				connector.EnterPoller(); // returns on worker exit
-				connector.StopConsumer();
-				t.Join();
-				logger.LogInformation($"[{Identity}] - client officially dead, restarting in 5s");
-				Thread.Sleep(5000);
-			}
+					SupportedGames = games.ToList(),
+					SupportedLanguages = { "dotnet", "cpp" }
+				},
+			});
+			connector.EnterPoller(); // returns on worker exit
+			connector.StopConsumer();
+			t.Join();
+			logger.LogInformation($"[{Identity}] - client officially dead, restarting in 5s");
 		}
 
 		public void Dispose() => connector?.Dispose();
