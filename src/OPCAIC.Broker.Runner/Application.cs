@@ -60,6 +60,7 @@ namespace OPCAIC.Broker.Runner
 			var i = 1;
 			broker.MatchExecuted += (_, a) => logger.LogInformation($"Finished: {a.Work}");
 			broker.StartBrokering();
+			var config = serviceProvider.GetRequiredService<BrokerConnectorConfig>();
 			while (!Program.stop)
 			{
 				Thread.Sleep(50);
@@ -67,7 +68,7 @@ namespace OPCAIC.Broker.Runner
 				{
 					broker.EnqueueMatchExecution(new ExecuteMatchMessage
 					{
-						Game = Shared.Games[rand.Next(Shared.Games.Count)],
+						Game = config.Games[rand.Next(config.Games.Length)],
 						Id = i++
 					});
 				}
