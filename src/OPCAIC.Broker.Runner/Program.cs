@@ -18,45 +18,45 @@ namespace OPCAIC.Broker.Runner
 
 		public static bool stop;
 
-		public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+		public static void ConfigureServices(IServiceCollection services, ILoggerFactory logger, IConfiguration config)
 		{
-			var loggingFactory = new LoggerFactory()
-				.AddLog4Net();
+			logger.AddLog4Net();
 
 			var heartbeatConfig = new HeartbeatConfig();
-			configuration.Bind("Heartbeat", heartbeatConfig);
+			config.Bind("Heartbeat", heartbeatConfig);
 			var brokerConfig = new BrokerConnectorConfig();
-			configuration.Bind("Broker", brokerConfig);
+			config.Bind("Broker", brokerConfig);
 			brokerConfig.HeartbeatConfig = heartbeatConfig;
 			var workerSetConfig = new WorkerSetConfig();
-			configuration.Bind("WorkerSet", workerSetConfig);
+			config.Bind("WorkerSet", workerSetConfig);
 			int i = 0;
 			services
 				.AddSingleton(heartbeatConfig)
 				.AddSingleton(brokerConfig)
 				.AddSingleton(workerSetConfig)
-				.AddLogging(builder => builder.Services.AddSingleton(loggingFactory))
 				.AddOptions()
 				.AddSingleton(sf =>
 				{
-					var config = sf.GetRequiredService<BrokerConnectorConfig>();
+					var cfg = sf.GetRequiredService<BrokerConnectorConfig>();
 					return new BrokerConnector(
-						config.ListeningAddress,
-						config.Identity,
-						config.HeartbeatConfig);
+						cfg.ListeningAddress,
+						cfg.Identity,
+						cfg.HeartbeatConfig);
 				})
-				.AddSingleton<Broker>()
-				.AddSingleton<Application>();
+				.AddSingleton<Broker>();
 		}
 
 		public static int Main(string[] args)
 		{
 			var config = new ConfigurationBuilder()
-				.AddJsonFile("appsettings.json").Build();
+				.AddJsonFile("appsettings.json")
+				.Build();
+			var logger = new LoggerFactory();
+			var services = new ServiceCollection()
+				.AddLogging(builder => builder.Services.AddSingleton(logger))
+				.AddSingleton<Application>();
 
-			var serviceCollection = new ServiceCollection();
-			ConfigureServices(serviceCollection, config);
-			var serviceProvider = serviceCollection.BuildServiceProvider();
+			ConfigureServices(services, logger, config);
 
 			Console.CancelKeyPress += (_, a) =>
 			{
@@ -64,7 +64,7 @@ namespace OPCAIC.Broker.Runner
 				stop = true;
 			};
 
-			serviceProvider.GetRequiredService<Application>().Run();
+			services.BuildServiceProvider().GetRequiredService<Application>().Run();
 			return 0;
 		}
 	}
