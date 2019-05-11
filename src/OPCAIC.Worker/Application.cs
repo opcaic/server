@@ -6,6 +6,6 @@
 
 		public Application(Worker worker) => this.worker = worker;
 
-		public void Run() => worker.Run(new[] {"game1"});
+		public void Run() => worker.Run();
 	}
 }

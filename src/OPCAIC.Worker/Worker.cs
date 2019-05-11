@@ -5,6 +5,7 @@ using System.Threading;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
+using OPCAIC.Worker.GameModules;
 
 namespace OPCAIC.Worker
 {
@@ -12,43 +13,51 @@ namespace OPCAIC.Worker
 	{
 		private readonly WorkerConnector connector;
 		private readonly ILogger logger;
+		private readonly IGameModuleRegistry registry;
 
-		public Worker(WorkerConnector connector, ILogger<Worker> logger)
+		Random rand = new Random();
+		public Worker(WorkerConnector connector, ILogger<Worker> logger, IGameModuleRegistry registry)
 		{
 			this.connector = connector;
 			this.logger = logger;
+			this.registry = registry;
+
+			connector.RegisterHandler<ExecuteMatchMessage>(ExecuteMatch);
 		}
 
 		private string Identity => connector.Identity;
 
 		public void Dispose() => connector?.Dispose();
 
-		public void Run(string[] games)
+		void ExecuteMatch(ExecuteMatchMessage msg)
 		{
-			var rand = new Random();
-			connector.RegisterHandler<ExecuteMatchMessage>(msg =>
+			logger.LogInformation($"[{Identity}] - received workload: {msg.Game}");
+
+			var module = registry.FindGameModule(msg.Game);
+			Debug.Assert(module != null);
+
+			module.Check(null, null);
+
+			if (rand.Next(10) == 0)
 			{
-				logger.LogInformation($"[{Identity}] - received workload: {msg.Game}");
-				Debug.Assert(games.Contains(msg.Game));
+				logger.LogInformation($"[{Identity}] - simulating crash");
+				connector.StopPoller();
+			}
 
-				Thread.Sleep(500 * rand.Next(4));
-				if (rand.Next(10) == 0)
-				{
-					logger.LogInformation($"[{Identity}] - simulating crash");
-					connector.StopPoller();
-				}
+			connector.SendMessage(new MatchExecutionResultMessage(msg.Id));
+		}
 
-				connector.SendMessage(new MatchExecutionResultMessage(msg.Id));
-			});
-
-			var t = new Thread(() => connector.EnterConsumer());
+		public void Run()
+		{
+			var t = new Thread(connector.EnterConsumer);
 			t.Start();
+
 			logger.LogInformation($"[{Identity}] - Initiating connection");
 			connector.SendMessage(new WorkerConnectMessage
 			{
 				Capabilities = new WorkerCapabilities
 				{
-					SupportedGames = games.ToList(),
+					SupportedGames = registry.GetAllModules().Select(m => m.GameName).ToList(),
 					SupportedLanguages = {"dotnet", "cpp"}
 				}
 			});

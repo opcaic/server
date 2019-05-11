@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 namespace OPCAIC.Broker.Runner
 {
 	public class Application
@@ -28,27 +28,32 @@ namespace OPCAIC.Broker.Runner
 			var hearbeat = serviceProvider.GetRequiredService<HeartbeatConfig>();
 			foreach (var worker in config.Workers)
 			{
-				var t = new Thread(() =>
+				// bootstrap with custom configs
+				var logger = serviceProvider.GetRequiredService<ILoggerFactory>();
+				var services = new ServiceCollection()
+					.AddSingleton(worker)
+					.AddSingleton(new WorkerConnectorConfig
+					{
+						Identity = worker.Identity,
+						BrokerAddress = config.BrokerAddress,
+						HeartbeatConfig = hearbeat
+					})
+					.AddLogging(builder => builder.Services.AddSingleton<ILoggerFactory>(logger));
+
+				Worker.Startup.ConfigureServices(services);
+
+				Thread t = new Thread(() =>
 				{
 					while (true)
 					{
-						// ugly cause we have to manually create the config
-						using (var connector = new WorkerConnector(new WorkerConnectorConfig
-							{
-								Identity = worker.Identity,
-								BrokerAddress = config.BrokerAddress,
-								HeartbeatConfig = hearbeat
-							},
-							serviceProvider.GetRequiredService<ILogger<WorkerConnector>>()))
-						using (var W = new Worker.Worker(connector,
-							serviceProvider.GetRequiredService<ILogger<Worker.Worker>>()))
+						using (var workerApp = services.BuildServiceProvider().GetRequiredService<Worker.Worker>())
 						{
-							W.Run(worker.Supportedgames);
+							workerApp.Run();
 						}
-
 						Thread.Sleep(5000);
 					}
 				});
+
 				t.Start();
 			}
 		}
@@ -56,6 +61,11 @@ namespace OPCAIC.Broker.Runner
 		public void Run()
 		{
 			StartWorkers();
+			RunBroker();
+		}
+
+		private void RunBroker()
+		{
 			List<MatchExecutionResultMessage> results = new List<MatchExecutionResultMessage>();
 
 			var i = 0;
