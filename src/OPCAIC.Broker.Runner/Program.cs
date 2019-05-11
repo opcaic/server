@@ -1,10 +1,7 @@
 ﻿using System;
-using Chimera.Extensions.Logging.Log4Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OPCAIC.Messaging;
-using OPCAIC.Worker;
 
 namespace OPCAIC.Broker.Runner
 {
@@ -14,31 +11,6 @@ namespace OPCAIC.Broker.Runner
 		private static int counter;
 
 		public static bool stop;
-
-		public static void ConfigureServices(IServiceCollection services, ILoggerFactory loggerFactory,
-			IConfiguration configuration)
-		{
-			loggerFactory.AddLog4Net(new Log4NetSettings()
-			{
-				ConfigFilePath = "log4net.config",
-				Watch = true
-			});
-
-			var heartbeatConfig = new HeartbeatConfig();
-			configuration.Bind("Heartbeat", heartbeatConfig);
-			var brokerConfig = new BrokerConnectorConfig();
-			configuration.Bind("Broker", brokerConfig);
-			brokerConfig.HeartbeatConfig = heartbeatConfig;
-			var workerSetConfig = new WorkerSetConfig();
-			configuration.Bind("WorkerSet", workerSetConfig);
-			var i = 0;
-			services
-				.AddSingleton(heartbeatConfig)
-				.AddSingleton(brokerConfig)
-				.AddSingleton(workerSetConfig)
-				.AddTransient<BrokerConnector>()
-				.AddSingleton<Broker>();
-		}
 
 		public static int Main(string[] args)
 		{
@@ -50,7 +22,9 @@ namespace OPCAIC.Broker.Runner
 				.AddLogging(builder => builder.Services.AddSingleton<ILoggerFactory>(logger))
 				.AddSingleton<Application>();
 
-			ConfigureServices(services, logger, config);
+			Startup.ConfigureLogging(logger);
+			Startup.ConfigureServices(services);
+			Startup.Configure(config, services);
 
 			Console.CancelKeyPress += (_, a) =>
 			{
