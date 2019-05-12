@@ -38,9 +38,9 @@ namespace OPCAIC.Worker
 
 			module.Check(null, null);
 
-			if (rand.Next(10) == 0)
+			if (rand.Next(100) == 0)
 			{
-				logger.LogInformation($"[{Identity}] - simulating crash");
+				logger.LogCritical($"[{Identity}] - simulating crash");
 				connector.StopPoller();
 			}
 

@@ -5,6 +5,7 @@ using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 namespace OPCAIC.Broker.Runner
 {
@@ -26,7 +27,7 @@ namespace OPCAIC.Broker.Runner
 		{
 			var config = serviceProvider.GetRequiredService<WorkerSetConfig>();
 			var hearbeat = serviceProvider.GetRequiredService<HeartbeatConfig>();
-			foreach (var worker in config.Workers)
+			foreach (var worker in config.Workers ?? Enumerable.Empty<WorkerConfig>())
 			{
 				// bootstrap with custom configs
 				var logger = serviceProvider.GetRequiredService<ILoggerFactory>();
