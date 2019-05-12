@@ -6,14 +6,13 @@ using Microsoft.Extensions.Logging;
 
 namespace OPCAIC.Worker.GameModules
 {
-	class DummyModuleRegistry : IGameModuleRegistry
+	public class DummyModuleRegistry : IGameModuleRegistry
 	{
 		private Dictionary<string, IGameModule> modules;
 
-		public DummyModuleRegistry(IServiceProvider serviceProvider, WorkerConfig config)
+		public DummyModuleRegistry(string[] games)
 		{
-			modules = config.Supportedgames.Select(game => new DummyGameModule(
-					serviceProvider.GetRequiredService<ILogger<DummyGameModule>>(),
+			modules = games.Select(game => new DummyGameModule( 
 					game))
 				.Cast<IGameModule>()
 				.ToDictionary(m => m.GameName);

@@ -18,18 +18,20 @@ namespace OPCAIC.Worker
 			var config = new WorkerConnectorConfig();
 			configuration.Bind("ConnectorConfig", config);
 			services.AddSingleton(config);
-
-			// temporary, for DummyModuleRegistry
-			services.AddSingleton(new WorkerConfig
-			{
-				Supportedgames = new[] {"game0", "game1", "game2", "game3", "game4", "game5"}
-			});
 		}
 
 		public static void ConfigureServices(IServiceCollection services)
 		{
 			services
-				.AddSingleton<IGameModuleRegistry, DummyModuleRegistry>()
+				.AddSingleton<IGameModuleRegistry>(new DummyModuleRegistry(new[]
+				{
+					"game0",
+					"game1",
+					"game2",
+					"game3",
+					"game4",
+					"game5"
+				}))
 				.AddSingleton<WorkerConnector>()
 				.AddSingleton<Worker>();
 		}

@@ -86,10 +86,9 @@ namespace OPCAIC.Messaging
 			{
 				EnqueueWorkerTask(OnDisconnected);
 
-				Logger.LogError(
-					$"[{Identity}] - Broker unreachable, sleeping retrying in {sleepInterval} ms");
 				if (sleepInterval <= Config.ReconnectIntervalMax)
 				{
+					Logger.LogError($"[{Identity}] - Broker unreachable, retrying in {sleepInterval} ms");
 					Thread.Sleep(sleepInterval);
 					sleepInterval *= 2; // exponential back off
 				}

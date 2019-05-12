@@ -1,15 +1,16 @@
 ﻿using System.Threading;
+using Chimera.Extensions.Logging.Log4Net;
 using Microsoft.Extensions.Logging;
 
 namespace OPCAIC.Worker.GameModules
 {
-	class DummyGameModule : IGameModule
+	public class DummyGameModule : IGameModule
 	{
-		private ILogger logger;
+		private readonly ILogger logger;
 
-		public DummyGameModule(ILogger<DummyGameModule> logger, string gameName)
+		public DummyGameModule(string gameName)
 		{
-			this.logger = logger;
+			this.logger = new Log4NetLogger(log4net.LogManager.GetLogger(typeof(DummyGameModule)));
 			GameName = gameName;
 		}
 

@@ -7,6 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using OPCAIC.Worker.GameModules;
+
 namespace OPCAIC.Broker.Runner
 {
 	public class Application
@@ -42,6 +45,10 @@ namespace OPCAIC.Broker.Runner
 					.AddLogging(builder => builder.Services.AddSingleton<ILoggerFactory>(logger));
 
 				Worker.Startup.ConfigureServices(services);
+
+				// replace with our custom module registry
+				services.RemoveAll(typeof(IGameModuleRegistry))
+					.AddSingleton<IGameModuleRegistry>(new DummyModuleRegistry(worker.Supportedgames));
 
 				Thread t = new Thread(() =>
 				{
