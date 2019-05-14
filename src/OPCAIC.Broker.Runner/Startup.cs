@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Messaging;
+using OPCAIC.Messaging.Config;
 using OPCAIC.Worker;
 
 namespace OPCAIC.Broker.Runner
@@ -40,7 +41,7 @@ namespace OPCAIC.Broker.Runner
 		{
 			services
 				.AddTransient<BrokerConnector>()
-				.AddSingleton<Broker>();
+				.AddSingleton<IBroker, Broker>();
 		}
 	}
 }

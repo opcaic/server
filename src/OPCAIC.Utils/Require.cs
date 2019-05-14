@@ -6,9 +6,9 @@ namespace OPCAIC.Utils
 	/// <summary>
 	///   Class serving for compact assertions/exception throwing useful for checking method arguments
 	/// </summary>
-	internal static class Require
+	public static class Require
 	{
-		public static void NotNull<T>(T arg, string name) where T : class
+		public static void NotNull(object arg, string name) 
 		{
 			if (arg == null)
 			{

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Messaging;
+using OPCAIC.Messaging.Config;
 using OPCAIC.Worker.GameModules;
 
 namespace OPCAIC.Worker

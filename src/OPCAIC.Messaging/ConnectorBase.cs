@@ -4,27 +4,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetMQ;
 using OPCAIC.Messaging.Commands;
+using OPCAIC.Messaging.Config;
 using OPCAIC.Messaging.Utils;
 
 namespace OPCAIC.Messaging
 {
-	public class HeartbeatConfig
-	{
-		public static HeartbeatConfig Default
-			=> new HeartbeatConfig
-			{
-				HeartbeatInterval = 1000,
-				Liveness = 3,
-				ReconnectIntervalInit = 1000,
-				ReconnectIntervalMax = 32000
-			};
-
-		public int HeartbeatInterval { get; set; }
-		public int Liveness { get; set; }
-		public int ReconnectIntervalInit { get; set; }
-		public int ReconnectIntervalMax { get; set; }
-	}
-
 	public abstract class ConnectorBase<TSocket, TItem> : IDisposable where TSocket : NetMQSocket
 	{
 		protected readonly HeartbeatConfig Config;
@@ -34,6 +18,9 @@ namespace OPCAIC.Messaging
 		private readonly ISocketFactory<TSocket> socketFactory;
 		protected readonly NetMQPoller SocketPoller;
 		protected readonly NetMQPoller WorkPoller;
+
+		public event EventHandler<TItem> MessageReceived;
+		public event EventHandler<TItem> UnhandeledMessage;
 
 		protected ConnectorBase(string identity,
 			ISocketFactory<TSocket> socketFactory,
@@ -141,10 +128,9 @@ namespace OPCAIC.Messaging
 			if (handler == null)
 			{
 				Logger.LogWarning($"[{Identity}] - no handler for given message type");
-				return;
+				EnqueueWorkerTask(() => OnUnhandledMessage(item));
 			}
-
-			if (handler.IsSync)
+			else if (handler.IsSync)
 			{
 				// execute locally
 				handler.Handler(item);
@@ -154,6 +140,20 @@ namespace OPCAIC.Messaging
 				// queue execution on worker thread
 				EnqueueWorkerTask(() => handler.Handler(item));
 			}
+
+			EnqueueWorkerTask(() => OnMessageReceived(item));
+		}
+
+		private void OnUnhandledMessage(TItem item)
+		{
+			AssertWorkThread();
+			UnhandeledMessage?.Invoke(this, item);
+		}
+
+		private void OnMessageReceived(TItem message)
+		{
+			AssertWorkThread();
+			MessageReceived?.Invoke(this, message);
 		}
 
 		#region IDisposable Support

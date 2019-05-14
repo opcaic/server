@@ -5,7 +5,7 @@ namespace OPCAIC.Messaging.Messages
 	[Serializable]
 	public class RefuseMessage
 	{
-		public ExecuteMatchMessage WorkItem { get; set; }
+		public MatchExecutionRequest WorkItem { get; set; }
 
 		public TaskRefusalReason Reason { get; set; }
 	}

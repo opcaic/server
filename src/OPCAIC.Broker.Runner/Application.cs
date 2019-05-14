@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using OPCAIC.Messaging.Config;
 using OPCAIC.Worker.GameModules;
 
 namespace OPCAIC.Broker.Runner
@@ -15,11 +16,11 @@ namespace OPCAIC.Broker.Runner
 	public class Application
 	{
 		private static readonly Random rand = new Random(42);
-		private readonly Broker broker;
+		private readonly IBroker broker;
 		private readonly ILogger logger;
 		private readonly IServiceProvider serviceProvider;
 
-		public Application(Broker broker, ILogger<Application> logger, IServiceProvider serviceProvider)
+		public Application(IBroker broker, ILogger<Application> logger, IServiceProvider serviceProvider)
 		{
 			this.broker = broker;
 			this.logger = logger;
@@ -29,20 +30,20 @@ namespace OPCAIC.Broker.Runner
 		private void StartWorkers()
 		{
 			var config = serviceProvider.GetRequiredService<WorkerSetConfig>();
-			var hearbeat = serviceProvider.GetRequiredService<HeartbeatConfig>();
+			var heartbeat = serviceProvider.GetRequiredService<HeartbeatConfig>();
 			foreach (var worker in config.Workers ?? Enumerable.Empty<WorkerConfig>())
 			{
 				// bootstrap with custom configs
-				var logger = serviceProvider.GetRequiredService<ILoggerFactory>();
+				var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 				var services = new ServiceCollection()
 					.AddSingleton(worker)
 					.AddSingleton(new WorkerConnectorConfig
 					{
 						Identity = worker.Identity,
 						BrokerAddress = config.BrokerAddress,
-						HeartbeatConfig = hearbeat
+						HeartbeatConfig = heartbeat
 					})
-					.AddLogging(builder => builder.Services.AddSingleton<ILoggerFactory>(logger));
+					.AddLogging(builder => builder.Services.AddSingleton<ILoggerFactory>(loggerFactory));
 
 				Worker.Startup.ConfigureServices(services);
 
@@ -74,14 +75,15 @@ namespace OPCAIC.Broker.Runner
 
 		private void RunBroker()
 		{
-			List<MatchExecutionResultMessage> results = new List<MatchExecutionResultMessage>();
+			List<ReplyMessageBase> results = new List<ReplyMessageBase>();
 
 			var i = 0;
-			broker.MatchExecuted += (_, a) =>
+			broker.RegisterHandler<MatchExecutionResult>(a =>
 			{
-				logger.LogInformation($"Finished: {a.Work}");
+				logger.LogInformation($"Finished: {a.Id}");
 				results.Add(a);
-			};
+			});
+
 			broker.StartBrokering();
 			var config = serviceProvider.GetRequiredService<BrokerConnectorConfig>();
 			while (!Program.stop && i < 200)
@@ -91,7 +93,7 @@ namespace OPCAIC.Broker.Runner
 					continue;
 				try
 				{
-					broker.EnqueueMatchExecution(new ExecuteMatchMessage
+					broker.EnqueueWork(new MatchExecutionRequest
 					{
 						Game = config.Games[rand.Next(config.Games.Length)],
 						Id = ++i

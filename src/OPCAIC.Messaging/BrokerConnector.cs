@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using NetMQ;
 using NetMQ.Sockets;
 using OPCAIC.Messaging.Commands;
+using OPCAIC.Messaging.Config;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Messaging.Utils;
 

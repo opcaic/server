@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.Logging.Abstractions;
+using OPCAIC.Messaging.Config;
 using Xunit;
 using Xunit.Abstractions;
 

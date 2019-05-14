@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Messaging
+﻿namespace OPCAIC.Messaging.Config
 {
 	public class WorkerConnectorConfig
 	{

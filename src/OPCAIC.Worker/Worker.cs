@@ -22,14 +22,14 @@ namespace OPCAIC.Worker
 			this.logger = logger;
 			this.registry = registry;
 
-			connector.RegisterHandler<ExecuteMatchMessage>(ExecuteMatch);
+			connector.RegisterHandler<MatchExecutionRequest>(ExecuteMatch);
 		}
 
 		private string Identity => connector.Identity;
 
 		public void Dispose() => connector?.Dispose();
 
-		void ExecuteMatch(ExecuteMatchMessage msg)
+		void ExecuteMatch(MatchExecutionRequest msg)
 		{
 			logger.LogInformation($"[{Identity}] - received workload: {msg.Game}");
 
@@ -44,7 +44,7 @@ namespace OPCAIC.Worker
 				connector.StopPoller();
 			}
 
-			connector.SendMessage(new MatchExecutionResultMessage(msg.Id));
+			connector.SendMessage(new MatchExecutionResult(msg.Id));
 		}
 
 		public void Run()
