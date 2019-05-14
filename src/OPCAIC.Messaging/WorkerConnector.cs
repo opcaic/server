@@ -48,7 +48,7 @@ namespace OPCAIC.Messaging
 		public void RegisterAsyncHandler<T>(Action<T> handler)
 			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), false));
 
-		public void SendMessage<T>(T payload)
+		public void SendMessage(object payload)
 			=> EnqueueSocketTask(() =>
 			{
 				var msg = CreateMessage(payload);

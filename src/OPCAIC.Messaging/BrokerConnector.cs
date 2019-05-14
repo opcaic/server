@@ -34,7 +34,7 @@ namespace OPCAIC.Messaging
 			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
 				msg => handler(msg.Sender, (T) msg.Payload), true));
 
-		public void SendMessage<T>(string recipient, T payload)
+		public void SendMessage(string recipient, object payload)
 			=> EnqueueSocketTask(() =>
 			{
 				// treat each message as a heartbeat
