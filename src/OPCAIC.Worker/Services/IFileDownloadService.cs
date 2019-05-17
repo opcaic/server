@@ -2,7 +2,6 @@
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using OPCAIC.Utils;
 using OPCAIC.Worker.Config;
 
@@ -14,7 +13,7 @@ namespace OPCAIC.Worker.Services
 		Task UploadFile(string serverPath, string localPath);
 	}
 
-	class FileDownloadService : IFileDownloadService, IDisposable
+	internal class FileDownloadService : IFileDownloadService, IDisposable
 	{
 		private readonly FileServerConfig config;
 		private readonly WebClient webClient;
@@ -24,8 +23,13 @@ namespace OPCAIC.Worker.Services
 			this.config = config;
 			webClient = new WebClient();
 			if (config.Username != null)
+			{
 				webClient.Credentials = new NetworkCredential(config.Username, config.Password);
+			}
 		}
+
+		public void Dispose() => webClient?.Dispose();
+
 		public Task DownloadFile(string serverPath, string localPath)
 		{
 			Require.NotNull(serverPath, nameof(serverPath));
@@ -45,7 +49,5 @@ namespace OPCAIC.Worker.Services
 				Path.Combine(config.ServerAddress, serverPath),
 				localPath);
 		}
-
-		public void Dispose() => webClient?.Dispose();
 	}
 }

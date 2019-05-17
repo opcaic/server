@@ -9,7 +9,7 @@ namespace OPCAIC.Worker
 		public static void Main(string[] args)
 		{
 			var config = new ConfigurationBuilder()
-				.AddJsonFile("appsettings.json")
+				.AddJsonFile("appsettings.json", false, true)
 				.Build();
 			var logger = new LoggerFactory();
 			var services = new ServiceCollection()

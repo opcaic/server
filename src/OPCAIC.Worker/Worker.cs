@@ -9,6 +9,9 @@ using OPCAIC.Worker.GameModules;
 
 namespace OPCAIC.Worker
 {
+	/// <summary>
+	/// The main class of the opcaic worker process
+	/// </summary>
 	public class Worker : IDisposable
 	{
 		private readonly WorkerConnector connector;

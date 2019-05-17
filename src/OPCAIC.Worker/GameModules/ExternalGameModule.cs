@@ -3,10 +3,10 @@ using Microsoft.Extensions.Logging;
 
 namespace OPCAIC.Worker.GameModules
 {
-	class ExternalGameModule : IGameModule
+	internal class ExternalGameModule : IGameModule
 	{
-		private ILogger logger;
 		private readonly string rootDir;
+		private readonly ILogger logger;
 
 		public ExternalGameModule(ILogger<ExternalGameModule> logger, string gameName, string rootDir)
 		{

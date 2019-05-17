@@ -7,13 +7,22 @@ using OPCAIC.Worker.GameModules;
 
 namespace OPCAIC.Worker
 {
-	public class Startup
+	/// <summary>
+	///   Configuration class for the hosted console application.
+	/// </summary>
+	public static class Startup
 	{
-		public static void ConfigureLogging(ILoggerFactory loggerFactory)
-		{
-			loggerFactory.AddLog4Net();
-		}
+		/// <summary>
+		///   Configures the logging facilities.
+		/// </summary>
+		/// <param name="loggerFactory"></param>
+		public static void ConfigureLogging(ILoggerFactory loggerFactory) => loggerFactory.AddLog4Net();
 
+		/// <summary>
+		///   Configures the configuration facilities.
+		/// </summary>
+		/// <param name="configuration">Configuration root of the entire application.</param>
+		/// <param name="services">Service collection of the application.</param>
 		public static void Configure(IConfiguration configuration, IServiceCollection services)
 		{
 			var config = new WorkerConnectorConfig();
@@ -21,9 +30,12 @@ namespace OPCAIC.Worker
 			services.AddSingleton(config);
 		}
 
+		/// <summary>
+		///   Configures used services for the application.
+		/// </summary>
+		/// <param name="services">Service collection of the application.</param>
 		public static void ConfigureServices(IServiceCollection services)
-		{
-			services
+			=> services
 				.AddSingleton<IGameModuleRegistry>(new DummyModuleRegistry(new[]
 				{
 					"game0",
@@ -35,6 +47,5 @@ namespace OPCAIC.Worker
 				}))
 				.AddSingleton<WorkerConnector>()
 				.AddSingleton<Worker>();
-		}
 	}
 }
