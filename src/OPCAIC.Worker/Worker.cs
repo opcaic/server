@@ -58,7 +58,6 @@ namespace OPCAIC.Worker
 				Capabilities = new WorkerCapabilities
 				{
 					SupportedGames = registry.GetAllModules().Select(m => m.GameName).ToList(),
-					SupportedLanguages = {"dotnet", "cpp"}
 				}
 			});
 			connector.EnterPoller(); // returns on worker exit

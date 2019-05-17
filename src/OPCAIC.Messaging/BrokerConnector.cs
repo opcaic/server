@@ -6,11 +6,13 @@ using NetMQ;
 using NetMQ.Sockets;
 using OPCAIC.Messaging.Commands;
 using OPCAIC.Messaging.Config;
-using OPCAIC.Messaging.Messages;
 using OPCAIC.Messaging.Utils;
 
 namespace OPCAIC.Messaging
 {
+	/// <summary>
+	///   NetMQ connector for the broker node.
+	/// </summary>
 	public class BrokerConnector : ConnectorBase<RouterSocket, ReceivedMessage>
 	{
 		private readonly Dictionary<string, WorkerConnection> workers;
@@ -24,17 +26,41 @@ namespace OPCAIC.Messaging
 				logger)
 			=> workers = new Dictionary<string, WorkerConnection>();
 
+		/// <summary>
+		///   Invoked when a new worker has connected.
+		/// </summary>
 		public event EventHandler<WorkerConnectionEventArgs> WorkerDisconnected;
+
+		/// <summary>
+		///   Invoked when a worker has disconnected.
+		/// </summary>
 		public event EventHandler<WorkerConnectionEventArgs> WorkerConnected;
 
+		/// <summary>
+		///   Registers a handler to be invoked on consumer thread when a message of given type is
+		///   received.
+		/// </summary>
+		/// <typeparam name="T">Type of the handled message.</typeparam>
+		/// <param name="handler">The handler.</param>
 		public void RegisterAsyncHandler<T>(Action<string, T> handler)
 			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
 				msg => handler(msg.Sender, (T) msg.Payload), false));
 
+		/// <summary>
+		///   Registers a handler to be invoked on socket thread when a message of given type is
+		///   received.
+		/// </summary>
+		/// <typeparam name="T">Type of the handled message.</typeparam>
+		/// <param name="handler">The handler.</param>
 		public void RegisterHandler<T>(Action<string, T> handler)
 			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
 				msg => handler(msg.Sender, (T) msg.Payload), true));
 
+		/// <summary>
+		///   Sends a message to the specified worker with given payload.
+		/// </summary>
+		/// <param name="recipient">The recipients identity.</param>
+		/// <param name="payload">Payload to send.</param>
 		public void SendMessage(string recipient, object payload)
 			=> EnqueueSocketTask(() =>
 			{
@@ -48,8 +74,13 @@ namespace OPCAIC.Messaging
 				DirectSend(CreateMessage(recipient, payload));
 			});
 
-		public void EnqueueTask(Task task) => EnqueueWorkerTask(task);
+		/// <summary>
+		///   Enqueues a task to be executed on the consumer thread.
+		/// </summary>
+		/// <param name="task"></param>
+		public void EnqueueTask(Task task) => EnqueueConsumerTask(task);
 
+		/// <inheritdoc />
 		protected override ReceivedMessage ReceiveMessage(NetMQMessage msg)
 		{
 			AssertSocketThread();
@@ -63,7 +94,7 @@ namespace OPCAIC.Messaging
 			else
 			{
 				entry = NewWorker(sender);
-				EnqueueWorkerTask(() => OnWorkerConnected(entry));
+				EnqueueConsumerTask(() => OnWorkerConnected(entry));
 			}
 
 			msg.Pop(); // empty frame
@@ -97,7 +128,7 @@ namespace OPCAIC.Messaging
 
 		private void OnWorkerDisconnected(WorkerConnection worker)
 		{
-			AssertWorkThread();
+			AssertConsumerThread();
 			WorkerDisconnected?.Invoke(this, new WorkerConnectionEventArgs
 			{
 				Identity = worker.Identity
@@ -106,7 +137,7 @@ namespace OPCAIC.Messaging
 
 		private void OnWorkerConnected(WorkerConnection worker)
 		{
-			AssertWorkThread();
+			AssertConsumerThread();
 			WorkerConnected?.Invoke(this, new WorkerConnectionEventArgs
 			{
 				Identity = worker.Identity
@@ -144,7 +175,7 @@ namespace OPCAIC.Messaging
 			EnqueueSocketTask(() => SocketPoller.Remove(worker.OutgoingHeartbeatTimer));
 
 			// inform about the disconnection
-			EnqueueWorkerTask(() => OnWorkerDisconnected(worker));
+			EnqueueConsumerTask(() => OnWorkerDisconnected(worker));
 		}
 
 		private WorkerConnection NewWorker(string identity)
@@ -162,7 +193,7 @@ namespace OPCAIC.Messaging
 			return entry;
 		}
 
-		protected class WorkerConnection
+		private class WorkerConnection
 		{
 			public WorkerConnection(string identity, int pingInterval)
 			{

@@ -9,6 +9,9 @@ using OPCAIC.Messaging.Utils;
 
 namespace OPCAIC.Messaging
 {
+	/// <summary>
+	///   NetMQ connector for the worker node.
+	/// </summary>
 	public class WorkerConnector : ConnectorBase<DealerSocket, object>
 	{
 		private readonly NetMQTimer incomingHeartbeatTimer;
@@ -39,16 +42,38 @@ namespace OPCAIC.Messaging
 			sleepInterval = Config.ReconnectIntervalInit;
 		}
 
+		/// <summary>
+		///   Invoked when a connection is established.
+		/// </summary>
 		public event EventHandler Connected;
 
+		/// <summary>
+		///   Invoked when disconnected.
+		/// </summary>
 		public event EventHandler Disconnected;
 
-		public void RegisterHandler<T>(Action<T> handler)
-			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), true));
-
+		/// <summary>
+		///   Registers a handler to be invoked on consumer thread when a message of given type is
+		///   received.
+		/// </summary>
+		/// <typeparam name="T">Type of the handled message.</typeparam>
+		/// <param name="handler">The handler.</param>
 		public void RegisterAsyncHandler<T>(Action<T> handler)
 			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), false));
 
+		/// <summary>
+		///   Registers a handler to be invoked on socket thread when a message of given type is
+		///   received.
+		/// </summary>
+		/// <typeparam name="T">Type of the handled message.</typeparam>
+		/// <param name="handler">The handler.</param>
+		public void RegisterHandler<T>(Action<T> handler)
+			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), true));
+
+		/// <summary>
+		///   Sends a message with given payload to the broker.
+		/// </summary>
+		/// <param name="payload"></param>
 		public void SendMessage(object payload)
 			=> EnqueueSocketTask(() =>
 			{
@@ -57,13 +82,14 @@ namespace OPCAIC.Messaging
 				DirectSend(msg);
 			});
 
+		/// <inheritdoc />
 		protected override object ReceiveMessage(NetMQMessage msg)
 		{
 			AssertSocketThread();
 			if (connected == false)
 			{
 				connected = true;
-				EnqueueWorkerTask(OnConnected);
+				EnqueueConsumerTask(OnConnected);
 			}
 
 			// treat each message as a heartbeat
@@ -85,7 +111,7 @@ namespace OPCAIC.Messaging
 			AssertSocketThread();
 			if (--liveness == 0)
 			{
-				EnqueueWorkerTask(OnDisconnected);
+				EnqueueConsumerTask(OnDisconnected);
 
 				if (sleepInterval <= Config.ReconnectIntervalMax)
 				{
@@ -130,13 +156,13 @@ namespace OPCAIC.Messaging
 
 		private void OnConnected()
 		{
-			AssertWorkThread();
+			AssertConsumerThread();
 			Connected?.Invoke(this, EventArgs.Empty);
 		}
 
 		private void OnDisconnected()
 		{
-			AssertWorkThread();
+			AssertConsumerThread();
 			Disconnected?.Invoke(this, EventArgs.Empty);
 		}
 	}
