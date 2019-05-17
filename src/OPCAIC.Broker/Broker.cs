@@ -2,25 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NetMQ;
 using Newtonsoft.Json;
-using OPCAIC.Broker.Runner;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 
 namespace OPCAIC.Broker
 {
+	/// <inheritdoc cref="IBroker" />
 	public class Broker : IBroker, IDisposable
 	{
 		private readonly BrokerConnector connector;
+		private readonly Dictionary<string, WorkerEntry> identityToWorker;
 		private readonly ILogger logger;
 		private readonly SortedSet<WorkItem> taskQueue;
 		private readonly List<WorkerEntry> workers;
-		private readonly Dictionary<string, WorkerEntry> identityToWorker;
 
 		public Broker(BrokerConnector connector, ILogger<Broker> logger)
 		{
@@ -32,8 +30,7 @@ namespace OPCAIC.Broker
 			RegisterHandlers();
 		}
 
-		public void Dispose() => connector.Dispose();
-
+		/// <inheritdoc />
 		public void EnqueueWork(WorkMessageBase msg)
 		{
 			Require.NotNull(msg, nameof(msg));
@@ -46,7 +43,7 @@ namespace OPCAIC.Broker
 					logger.LogError($"No worker can execute game {msg.Game}");
 				}
 
-				taskQueue.Add(new WorkItem()
+				taskQueue.Add(new WorkItem
 				{
 					Payload = msg,
 					QueuedTime = DateTime.Now
@@ -61,27 +58,37 @@ namespace OPCAIC.Broker
 			});
 		}
 
+		/// <inheritdoc />
 		public void StartBrokering()
 		{
 			connector.EnterPollerAsync();
 			connector.EnterConsumerAsync();
 		}
 
+		/// <inheritdoc />
 		public void StopBrokering()
 		{
 			connector.StopPoller();
 			connector.StopConsumer();
 		}
 
+		/// <inheritdoc />
 		public void RegisterHandler<TMessage>(Action<TMessage> handler)
-		{
-			RegisterInternalHandler<TMessage>((_, msg) => handler(msg));
-		}
+			=> RegisterInternalHandler<TMessage>((_, msg) => handler(msg));
 
-		public int GetUnfinishedTasksCount() => Schedule(() => 
-			workers.Count(w => w.CurrentWorkItem != null) +
-			taskQueue.Count);
+		/// <inheritdoc />
+		public int GetUnfinishedTasksCount()
+			=> Schedule(() =>
+				workers.Count(w => w.CurrentWorkItem != null) +
+				taskQueue.Count);
 
+		/// <inheritdoc cref="IDisposable.Dispose" />
+		public void Dispose() => connector.Dispose();
+
+		/// <summary>
+		///   Schedules an action to be invoked in a brokers consumer thread and waits for the completion.
+		/// </summary>
+		/// <param name="a">The action to be invoked.</param>
 		private void Schedule(Action a)
 		{
 			var task = new Task(a);
@@ -96,11 +103,15 @@ namespace OPCAIC.Broker
 			}
 		}
 
+		/// <summary>
+		///   Schedules a function to be invoked in a brokers consumer thread and waits for the completion.
+		/// </summary>
+		/// <param name="a">The function to be invoked.</param>
+		/// <returns>The return value of of a()</returns>
 		private T Schedule<T>(Func<T> a)
 		{
 			var task = new Task<T>(a);
 			connector.EnqueueTask(task);
-			;
 			try
 			{
 				return task.Result;
@@ -183,9 +194,7 @@ namespace OPCAIC.Broker
 			});
 
 		private void OnWorkerConnected(WorkerEntry worker, WorkerConnectMessage msg)
-		{
-			worker.Capabilities = msg.Capabilities;
-		}
+			=> worker.Capabilities = msg.Capabilities;
 
 		private void OnWorkerConnected(string identity)
 		{
