@@ -7,10 +7,7 @@ namespace OPCAIC.Broker.Runner
 {
 	internal class Program
 	{
-		private static int port;
-		private static int counter;
-
-		public static bool stop;
+		public static bool Stop;
 
 		public static int Main(string[] args)
 		{
@@ -29,7 +26,7 @@ namespace OPCAIC.Broker.Runner
 			Console.CancelKeyPress += (_, a) =>
 			{
 				a.Cancel = true;
-				stop = true;
+				Stop = true;
 			};
 
 			services.BuildServiceProvider().GetRequiredService<Application>().Run();

@@ -8,7 +8,7 @@ namespace OPCAIC.Worker.GameModules
 		private readonly string rootDir;
 		private readonly ILogger logger;
 
-		public ExternalGameModule(ILogger<ExternalGameModule> logger, string gameName, string rootDir)
+		public ExternalGameModule(ILogger logger, string gameName, string rootDir)
 		{
 			this.logger = logger;
 			this.rootDir = rootDir;

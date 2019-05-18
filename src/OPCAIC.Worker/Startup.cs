@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.IO;
+using Chimera.Extensions.Logging.Log4Net;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Messaging;
@@ -25,27 +27,40 @@ namespace OPCAIC.Worker
 		/// <param name="services">Service collection of the application.</param>
 		public static void Configure(IConfiguration configuration, IServiceCollection services)
 		{
-			var config = new WorkerConnectorConfig();
-			configuration.Bind("ConnectorConfig", config);
-			services.AddSingleton(config);
+			var connectorConfig = new WorkerConnectorConfig();
+			configuration.Bind("ConnectorConfig", connectorConfig);
+			services.AddSingleton(connectorConfig);
+
+			var registry = new GameModuleRegistry();
+			services.AddSingleton<IGameModuleRegistry>(registry);
+			string modulePath = configuration.GetValue<string>("ModulePath");
+			LoadModules(registry, modulePath);
 		}
 
 		/// <summary>
 		///   Configures used services for the application.
 		/// </summary>
 		/// <param name="services">Service collection of the application.</param>
-		public static void ConfigureServices(IServiceCollection services)
-			=> services
-				.AddSingleton<IGameModuleRegistry>(new DummyModuleRegistry(new[]
-				{
-					"game0",
-					"game1",
-					"game2",
-					"game3",
-					"game4",
-					"game5"
-				}))
-				.AddSingleton<WorkerConnector>()
-				.AddSingleton<Worker>();
+		public static void ConfigureServices(IServiceCollection services) => services
+			.AddSingleton<WorkerConnector>()
+			.AddSingleton<Worker>();
+
+		/// <summary>
+		///   Loads all game modules from specified path into provided registry
+		/// </summary>
+		/// <param name="registry">Registry into which loaded game modules should be added.</param>
+		/// <param name="path">Path to root directory of the game modules.</param>
+		internal static void LoadModules(GameModuleRegistry registry, string path)
+		{
+			Directory.CreateDirectory(path);
+			foreach (var directory in Directory.GetDirectories(path))
+			{
+				registry.AddModule(new ExternalGameModule(
+					new Log4NetLogger(log4net.LogManager.GetLogger(typeof(ExternalGameModule))),
+					Path.GetDirectoryName(path),
+					path));
+			}
+		}
 	}
+
 }

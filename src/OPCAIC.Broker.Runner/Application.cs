@@ -48,8 +48,11 @@ namespace OPCAIC.Broker.Runner
 				Worker.Startup.ConfigureServices(services);
 
 				// replace with our custom module registry
+				var registry = new GameModuleRegistry();
+				foreach (var game in worker.Supportedgames)
+					registry.AddModule(new DummyGameModule(game));
 				services.RemoveAll(typeof(IGameModuleRegistry))
-					.AddSingleton<IGameModuleRegistry>(new DummyModuleRegistry(worker.Supportedgames));
+					.AddSingleton<IGameModuleRegistry>(registry);
 
 				Thread t = new Thread(() =>
 				{
@@ -86,7 +89,7 @@ namespace OPCAIC.Broker.Runner
 
 			broker.StartBrokering();
 			var config = serviceProvider.GetRequiredService<BrokerConnectorConfig>();
-			while (!Program.stop && i < 200)
+			while (!Program.Stop && i < 200)
 			{
 				Thread.Sleep(50);
 				if (broker.GetUnfinishedTasksCount() > 20)
@@ -106,7 +109,7 @@ namespace OPCAIC.Broker.Runner
 				}
 			}
 
-			while (!Program.stop && results.Count < i)
+			while (!Program.Stop && results.Count < i)
 			{
 				Thread.Sleep(100);
 			}
