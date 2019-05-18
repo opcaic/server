@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NetMQ;
 using NetMQ.Sockets;
 using OPCAIC.Messaging.Commands;
@@ -21,12 +22,12 @@ namespace OPCAIC.Messaging
 		private int liveness;
 		private int sleepInterval;
 
-		public WorkerConnector(WorkerConnectorConfig config, ILogger<WorkerConnector> logger)
+		public WorkerConnector(IOptions<WorkerConnectorConfig> config, ILogger<WorkerConnector> logger)
 			: base(
-				config.Identity,
-				new DealerSocketFactory(config.Identity, config.BrokerAddress),
+				config.Value.Identity,
+				new DealerSocketFactory(config.Value.Identity, config.Value.BrokerAddress),
 				new HandlerSet<object>(obj => obj),
-				config.HeartbeatConfig,
+				config.Value.HeartbeatConfig,
 				logger)
 		{
 			// setup connection timeout, this handler will run on Socket thread

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Chimera.Extensions.Logging.Log4Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,9 +28,9 @@ namespace OPCAIC.Worker
 		/// <param name="services">Service collection of the application.</param>
 		public static void Configure(IConfiguration configuration, IServiceCollection services)
 		{
-			var connectorConfig = new WorkerConnectorConfig();
-			configuration.Bind("ConnectorConfig", connectorConfig);
-			services.AddSingleton(connectorConfig);
+			services
+				.AddOptions()
+				.Configure<WorkerConnectorConfig>(configuration.GetSection("ConnectorConfig"));
 
 			var registry = new GameModuleRegistry();
 			services.AddSingleton<IGameModuleRegistry>(registry);

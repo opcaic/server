@@ -21,20 +21,10 @@ namespace OPCAIC.Broker.Runner
 
 		public static void Configure(IConfiguration configuration, IServiceCollection services)
 		{
-			var heartbeatConfig = new HeartbeatConfig();
-			configuration.Bind("Heartbeat", heartbeatConfig);
-
-			var brokerConfig = new BrokerConnectorConfig();
-			configuration.Bind("Broker", brokerConfig);
-			brokerConfig.HeartbeatConfig = heartbeatConfig;
-
-			var workerSetConfig = new WorkerSetConfig();
-			configuration.Bind("WorkerSet", workerSetConfig);
-
 			services
-				.AddSingleton(heartbeatConfig)
-				.AddSingleton(brokerConfig)
-				.AddSingleton(workerSetConfig);
+				.AddOptions()
+				.Configure<AppConfig>(configuration)
+				.Configure<BrokerConnectorConfig>(configuration.GetSection("Broker"));
 		}
 
 		public static void ConfigureServices(IServiceCollection services)

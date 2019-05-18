@@ -7,7 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using OPCAIC.Messaging.Config;
 using OPCAIC.Worker.GameModules;
 
@@ -19,29 +21,29 @@ namespace OPCAIC.Broker.Runner
 		private readonly IBroker broker;
 		private readonly ILogger logger;
 		private readonly IServiceProvider serviceProvider;
+		private readonly AppConfig config;
 
-		public Application(IBroker broker, ILogger<Application> logger, IServiceProvider serviceProvider)
+		public Application(IBroker broker, ILogger<Application> logger, IServiceProvider serviceProvider, IOptions<AppConfig> config)
 		{
 			this.broker = broker;
 			this.logger = logger;
 			this.serviceProvider = serviceProvider;
+			this.config = config.Value;
 		}
 
 		private void StartWorkers()
 		{
-			var config = serviceProvider.GetRequiredService<WorkerSetConfig>();
-			var heartbeat = serviceProvider.GetRequiredService<HeartbeatConfig>();
-			foreach (var worker in config.Workers ?? Enumerable.Empty<WorkerConfig>())
+			foreach (var worker in config.WorkerSet.Workers ?? Enumerable.Empty<WorkerConfig>())
 			{
 				// bootstrap with custom configs
 				var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 				var services = new ServiceCollection()
 					.AddSingleton(worker)
-					.AddSingleton(new WorkerConnectorConfig
+					.Configure<WorkerConnectorConfig>(cfg =>
 					{
-						Identity = worker.Identity,
-						BrokerAddress = config.BrokerAddress,
-						HeartbeatConfig = heartbeat
+						cfg.Identity = worker.Identity;
+						cfg.BrokerAddress = config.WorkerSet.BrokerAddress;
+						cfg.HeartbeatConfig = config.Broker.HeartbeatConfig;
 					})
 					.AddLogging(builder => builder.Services.AddSingleton<ILoggerFactory>(loggerFactory));
 
@@ -88,7 +90,6 @@ namespace OPCAIC.Broker.Runner
 			});
 
 			broker.StartBrokering();
-			var config = serviceProvider.GetRequiredService<BrokerConnectorConfig>();
 			while (!Program.Stop && i < 200)
 			{
 				Thread.Sleep(50);

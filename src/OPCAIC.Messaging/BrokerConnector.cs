@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NetMQ;
 using NetMQ.Sockets;
 using OPCAIC.Messaging.Commands;
@@ -17,12 +18,12 @@ namespace OPCAIC.Messaging
 	{
 		private readonly Dictionary<string, WorkerConnection> workers;
 
-		public BrokerConnector(BrokerConnectorConfig config, ILogger<BrokerConnector> logger)
+		public BrokerConnector(IOptions<BrokerConnectorConfig> config, ILogger<BrokerConnector> logger)
 			: base(
-				config.Identity,
-				new RouterSocketFactory(config.Identity, config.ListeningAddress),
+				config.Value.Identity,
+				new RouterSocketFactory(config.Value.Identity, config.Value.ListeningAddress),
 				new HandlerSet<ReceivedMessage>(msg => msg.Payload),
-				config.HeartbeatConfig,
+				config.Value.HeartbeatConfig,
 				logger)
 			=> workers = new Dictionary<string, WorkerConnection>();
 

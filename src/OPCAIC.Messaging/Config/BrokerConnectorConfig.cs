@@ -20,8 +20,5 @@
 		///   Configuration of the heartbeat messages.
 		/// </summary>
 		public HeartbeatConfig HeartbeatConfig { get; set; }
-
-		//TODO: Remove this, it is only used for trial runs
-		public string[] Games { get; set; }
 	}
 }
