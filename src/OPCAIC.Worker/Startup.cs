@@ -1,12 +1,14 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Chimera.Extensions.Logging.Log4Net;
+using log4net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Config;
+using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker.GameModules;
+using OPCAIC.Worker.Services;
 
 namespace OPCAIC.Worker
 {
@@ -34,7 +36,7 @@ namespace OPCAIC.Worker
 
 			var registry = new GameModuleRegistry();
 			services.AddSingleton<IGameModuleRegistry>(registry);
-			string modulePath = configuration.GetValue<string>("ModulePath");
+			var modulePath = configuration.GetValue<string>("ModulePath");
 			LoadModules(registry, modulePath);
 		}
 
@@ -42,9 +44,16 @@ namespace OPCAIC.Worker
 		///   Configures used services for the application.
 		/// </summary>
 		/// <param name="services">Service collection of the application.</param>
-		public static void ConfigureServices(IServiceCollection services) => services
-			.AddSingleton<WorkerConnector>()
-			.AddSingleton<Worker>();
+		public static void ConfigureServices(IServiceCollection services)
+			=> services
+				.AddSingleton<WorkerConnector>()
+				.AddSingleton<Worker>()
+				.AddTransient<
+					IJobExecutor<MatchExecutionRequest, MatchExecutionResult>,
+					MatchExecutor>()
+				.AddTransient<
+					IJobExecutor<SubmissionValidationRequest, SubmissionValidationResult>,
+					SubmissionValidator>();
 
 		/// <summary>
 		///   Loads all game modules from specified path into provided registry
@@ -55,13 +64,10 @@ namespace OPCAIC.Worker
 		{
 			Directory.CreateDirectory(path);
 			foreach (var directory in Directory.GetDirectories(path))
-			{
 				registry.AddModule(new ExternalGameModule(
-					new Log4NetLogger(log4net.LogManager.GetLogger(typeof(ExternalGameModule))),
+					new Log4NetLogger(LogManager.GetLogger(typeof(ExternalGameModule))),
 					Path.GetDirectoryName(path),
 					path));
-			}
 		}
 	}
-
 }

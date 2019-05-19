@@ -12,5 +12,10 @@ namespace OPCAIC.Messaging.Messages
 		///   Unique identifier of the job.
 		/// </summary>
 		public int Id { get; set; }
+
+		/// <summary>
+		///   Execution status of the job.
+		/// </summary>
+		public Status Status { get; set; }
 	}
 }
