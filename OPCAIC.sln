@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.489
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.452
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OPCAIC.ApiService", "src\OPCAIC.ApiService\OPCAIC.ApiService.csproj", "{DCD8C05A-4FD8-4BA6-88C8-A117511F7D4E}"
 EndProject
@@ -24,6 +24,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OPCAIC.Utils", "src\OPCAIC.Utils\OPCAIC.Utils.csproj", "{0EF0B099-A67F-4B5A-9ADE-549C1C558F42}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OPCAIC.Broker", "src\OPCAIC.Broker\OPCAIC.Broker.csproj", "{61DC49F6-2DA7-41AE-8190-A811E9A8E2EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OPCAIC.Worker.Test", "test\OPCAIC.Worker.Test\OPCAIC.Worker.Test.csproj", "{E97B382E-45AF-473B-B1CB-29B51B071CA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,6 +69,10 @@ Global
 		{61DC49F6-2DA7-41AE-8190-A811E9A8E2EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61DC49F6-2DA7-41AE-8190-A811E9A8E2EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61DC49F6-2DA7-41AE-8190-A811E9A8E2EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E97B382E-45AF-473B-B1CB-29B51B071CA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E97B382E-45AF-473B-B1CB-29B51B071CA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E97B382E-45AF-473B-B1CB-29B51B071CA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E97B382E-45AF-473B-B1CB-29B51B071CA3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,6 +87,7 @@ Global
 		{D6DEBC51-AC04-43BC-81D6-68ACD6BB5702} = {3311B63A-DE17-4FDA-95BF-0427A8170589}
 		{0EF0B099-A67F-4B5A-9ADE-549C1C558F42} = {C9300B9F-159D-43AD-93C7-9C381A09009D}
 		{61DC49F6-2DA7-41AE-8190-A811E9A8E2EE} = {C9300B9F-159D-43AD-93C7-9C381A09009D}
+		{E97B382E-45AF-473B-B1CB-29B51B071CA3} = {3311B63A-DE17-4FDA-95BF-0427A8170589}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4830CD70-8D84-4172-A842-6910162EBF72}

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("OPCAIC.Worker.Test")]
 
 namespace OPCAIC.Worker
 {
