@@ -22,12 +22,12 @@ namespace OPCAIC.Messaging
 		private int liveness;
 		private int sleepInterval;
 
-		public WorkerConnector(IOptions<WorkerConnectorConfig> config, ILogger<WorkerConnector> logger)
+		public WorkerConnector(WorkerConnectorConfig config, ILogger logger)
 			: base(
-				config.Value.Identity,
-				new DealerSocketFactory(config.Value.Identity, config.Value.BrokerAddress),
+				config.Identity,
+				new DealerSocketFactory(config.Identity, config.BrokerAddress),
 				new HandlerSet<object>(obj => obj),
-				config.Value.HeartbeatConfig,
+				config.HeartbeatConfig,
 				logger)
 		{
 			// setup connection timeout, this handler will run on Socket thread

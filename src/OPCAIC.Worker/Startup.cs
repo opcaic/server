@@ -46,7 +46,6 @@ namespace OPCAIC.Worker
 		/// <param name="services">Service collection of the application.</param>
 		public static void ConfigureServices(IServiceCollection services)
 			=> services
-				.AddSingleton<WorkerConnector>()
 				.AddSingleton<Worker>()
 				.AddTransient<
 					IJobExecutor<MatchExecutionRequest, MatchExecutionResult>,

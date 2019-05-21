@@ -18,12 +18,12 @@ namespace OPCAIC.Messaging
 	{
 		private readonly Dictionary<string, WorkerConnection> workers;
 
-		public BrokerConnector(IOptions<BrokerConnectorConfig> config, ILogger<BrokerConnector> logger)
+		public BrokerConnector(BrokerConnectorConfig config, ILogger logger)
 			: base(
-				config.Value.Identity,
-				new RouterSocketFactory(config.Value.Identity, config.Value.ListeningAddress),
+				config.Identity,
+				new RouterSocketFactory(config.Identity, config.ListeningAddress),
 				new HandlerSet<ReceivedMessage>(msg => msg.Payload),
-				config.Value.HeartbeatConfig,
+				config.HeartbeatConfig,
 				logger)
 			=> workers = new Dictionary<string, WorkerConnection>();
 

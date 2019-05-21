@@ -3,8 +3,10 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OPCAIC.Messaging;
+using OPCAIC.Messaging.Config;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
@@ -22,10 +24,10 @@ namespace OPCAIC.Worker
 
 		private readonly Random rand = new Random();
 
-		public Worker(WorkerConnector connector, ILogger<Worker> logger,
+		public Worker(IOptions<WorkerConnectorConfig> config, ILogger<Worker> logger,
 			IServiceProvider serviceProvider)
 		{
-			this.connector = connector;
+			this.connector = new WorkerConnector(config.Value, logger);
 			this.logger = logger;
 			this.serviceProvider = serviceProvider;
 

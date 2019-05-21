@@ -4,8 +4,10 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OPCAIC.Messaging;
+using OPCAIC.Messaging.Config;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 
@@ -20,9 +22,9 @@ namespace OPCAIC.Broker
 		private readonly SortedSet<WorkItem> taskQueue;
 		private readonly List<WorkerEntry> workers;
 
-		public Broker(BrokerConnector connector, ILogger<Broker> logger)
+		public Broker(IOptions<BrokerConnectorConfig> config, ILogger<Broker> logger)
 		{
-			this.connector = connector;
+			this.connector = new BrokerConnector(config.Value, logger);
 			this.logger = logger;
 			identityToWorker = new Dictionary<string, WorkerEntry>();
 			workers = new List<WorkerEntry>();
