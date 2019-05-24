@@ -12,7 +12,7 @@ namespace OPCAIC.Messaging.Test
 		protected readonly ITestOutputHelper Output;
 		public string ConnectionString = TestConnectionStringFactory.GetConnectionString();
 
-		protected static readonly double Timeout = 1000;
+		protected static readonly double Timeout = 5000;
 
 		protected BrokerConnector Broker { get; private set; }
 		protected WorkerConnector Worker { get; private set; }

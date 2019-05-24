@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
 
 namespace OPCAIC.Utils
 {
@@ -8,32 +9,28 @@ namespace OPCAIC.Utils
 	/// </summary>
 	public static class Require
 	{
-		public static void NotNull(object arg, string name) 
+		public static void NotNull(object arg, string name)
 		{
-			if (arg == null)
-			{
-				throw new ArgumentNullException(name);
-			}
+			Debug.Assert(name != null);
+			That<ArgumentNullException>(arg != null, name);
 		}
 
 		public static void NotEmpty<T>(IEnumerable collection, string name) where T : Exception
 		{
-			if (!collection.GetEnumerator().MoveNext())
-			{
-				ThrowHelper<T>(name);
-			}
+			Debug.Assert(name != null);
+			That<T>(collection.GetEnumerator().MoveNext(), name);
 		}
 
 		public static void IndexInRange(int i, int itemCount, string name)
 		{
-			if (i < 0 || i >= itemCount)
-			{
-				throw new ArgumentOutOfRangeException(name);
-			}
+			Debug.Assert(name != null);
+			Debug.Assert(itemCount >= 0);
+			That<ArgumentOutOfRangeException>(i >= 0 && i < itemCount, name);
 		}
 
 		public static void That<T>(bool condition, string message) where T : Exception
 		{
+			Debug.Assert(message != null);
 			if (!condition)
 			{
 				ThrowHelper<T>(message);

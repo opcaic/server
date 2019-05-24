@@ -20,7 +20,6 @@ namespace OPCAIC.Messaging.Test
 			Broker.WorkerConnected += (_, a) => flag.Set();
 
 			StartAll();
-			Worker.SendMessage(new PingMessage());
 
 			AssertEx.WaitForEvent(flag, Timeout);
 		}
@@ -32,7 +31,6 @@ namespace OPCAIC.Messaging.Test
 			Worker.Connected += (_, a) => flag.Set();
 
 			StartAll();
-			Worker.SendMessage(new PingMessage());
 
 			AssertEx.WaitForEvent(flag, Timeout);
 		}

@@ -23,12 +23,13 @@ namespace OPCAIC.Utils.Test
 		[Fact]
 		public void ArgMinMaxExceptions()
 		{
+			Func<double, double> selector = Math.Sqrt;
 			Assert.Throws<ArgumentNullException>(
-				() => EnumerableExtensions.ArgMax(null, (int a) => a * a));
+				() => EnumerableExtensions.ArgMax(null, selector));
 			Assert.Throws<ArgumentNullException>(
-				() => new[] {1,2,3}.ArgMax<int, int>(null));
+				() => new[] {1.0,2.0,3.0}.ArgMax<double, double>(null));
 			Assert.Throws<InvalidOperationException>(
-				() => new int[0].ArgMax((int a) => a * a));
+				() => new double[0].ArgMax(selector));
 		}
 	}
 }
