@@ -72,12 +72,12 @@ namespace OPCAIC.Messaging
 		///   Invoked when a new message is received. This should not be used to receive messages, but
 		///   only for notifications.
 		/// </summary>
-		public event EventHandler<TItem> MessageReceived;
+		public event EventHandler<TItem> ReceivedMessage;
 
 		/// <summary>
 		///   Invoked when received a message of type for which no handler was registered.
 		/// </summary>
-		public event EventHandler<TItem> UnhandeledMessage;
+		public event EventHandler<TItem> UnhandledMessage;
 
 		/// <summary>
 		///   Resets connection by creating a new socket.
@@ -236,13 +236,13 @@ namespace OPCAIC.Messaging
 		private void OnUnhandledMessage(TItem item)
 		{
 			AssertConsumerThread();
-			UnhandeledMessage?.Invoke(this, item);
+			UnhandledMessage?.Invoke(this, item);
 		}
 
 		private void OnMessageReceived(TItem message)
 		{
 			AssertConsumerThread();
-			MessageReceived?.Invoke(this, message);
+			ReceivedMessage?.Invoke(this, message);
 		}
 
 		#region IDisposable Support

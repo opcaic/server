@@ -1,4 +1,3 @@
-using System;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker.Services;
 using Xunit;
@@ -7,12 +6,9 @@ namespace OPCAIC.Worker.Test
 {
 	public class MatchExecutorTest
 	{
-		private MatchExecutor MatchExecutor { get; }
+		public MatchExecutorTest() => MatchExecutor = new MatchExecutor();
 
-		public MatchExecutorTest()
-		{
-			MatchExecutor = new MatchExecutor();
-		}
+		private MatchExecutor MatchExecutor { get; }
 
 		[Fact]
 		public void ExecutesMatchSuccessfully()

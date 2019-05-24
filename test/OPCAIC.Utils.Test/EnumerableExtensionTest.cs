@@ -1,5 +1,4 @@
 using System;
-using OPCAIC.Utils;
 using Xunit;
 
 namespace OPCAIC.Utils.Test
@@ -7,17 +6,17 @@ namespace OPCAIC.Utils.Test
 	public class EnumerableExtensionTest
 	{
 		[Fact]
-		public void ArgMin()
+		public void ArgMax()
 		{
-			int[] values = { 1, 3, 5, -7 };
-			Assert.Equal(1, values.ArgMin(v => v * v));
+			int[] values = {1, 3, 5, -7};
+			Assert.Equal(-7, values.ArgMax(v => v * v));
 		}
 
 		[Fact]
-		public void ArgMax()
+		public void ArgMin()
 		{
-			int[] values = { 1, 3, 5, -7 };
-			Assert.Equal(-7, values.ArgMax(v => v * v));
+			int[] values = {1, 3, 5, -7};
+			Assert.Equal(1, values.ArgMin(v => v * v));
 		}
 
 		[Fact]
@@ -27,7 +26,7 @@ namespace OPCAIC.Utils.Test
 			Assert.Throws<ArgumentNullException>(
 				() => EnumerableExtensions.ArgMax(null, selector));
 			Assert.Throws<ArgumentNullException>(
-				() => new[] {1.0,2.0,3.0}.ArgMax<double, double>(null));
+				() => new[] {1.0, 2.0, 3.0}.ArgMax<double, double>(null));
 			Assert.Throws<InvalidOperationException>(
 				() => new double[0].ArgMax(selector));
 		}

@@ -14,17 +14,17 @@ using OPCAIC.Utils;
 namespace OPCAIC.Broker
 {
 	/// <inheritdoc cref="IBroker" />
-	public class Broker : IBroker, IDisposable
+	public class Broker : IBroker
 	{
-		private readonly BrokerConnector connector;
+		private readonly IBrokerConnector connector;
 		private readonly Dictionary<string, WorkerEntry> identityToWorker;
 		private readonly ILogger logger;
 		private readonly SortedSet<WorkItem> taskQueue;
 		private readonly List<WorkerEntry> workers;
 
-		public Broker(IOptions<BrokerConnectorConfig> config, ILogger<Broker> logger)
+		public Broker(IBrokerConnector connector, ILogger<Broker> logger)
 		{
-			this.connector = new BrokerConnector(config.Value, logger);
+			this.connector = connector;
 			this.logger = logger;
 			identityToWorker = new Dictionary<string, WorkerEntry>();
 			workers = new List<WorkerEntry>();
@@ -83,9 +83,6 @@ namespace OPCAIC.Broker
 			=> Schedule(() =>
 				workers.Count(w => w.CurrentWorkItem != null) +
 				taskQueue.Count);
-
-		/// <inheritdoc cref="IDisposable.Dispose" />
-		public void Dispose() => connector.Dispose();
 
 		/// <summary>
 		///   Schedules an action to be invoked in a brokers consumer thread and waits for the completion.
@@ -149,7 +146,7 @@ namespace OPCAIC.Broker
 			// connectivity events
 			connector.WorkerConnected += (_, a) => OnWorkerConnected(a.Identity);
 			connector.WorkerDisconnected += (_, a) => OnWorkerDisconnected(a.Identity);
-			connector.MessageReceived += (_, a) => OnMessageReceived(a.Sender, a.Payload);
+			connector.ReceivedMessage += (_, a) => OnMessageReceived(a.Sender, a.Payload);
 
 			// message handlers
 			RegisterInternalHandler<WorkerConnectMessage>(OnWorkerConnected);

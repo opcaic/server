@@ -30,6 +30,7 @@ namespace OPCAIC.Broker.Runner
 		public static void ConfigureServices(IServiceCollection services)
 		{
 			services
+				.AddSingleton<IBrokerConnector, BrokerConnector>()
 				.AddSingleton<IBroker, Broker>();
 		}
 	}

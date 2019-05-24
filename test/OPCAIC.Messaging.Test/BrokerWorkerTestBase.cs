@@ -1,50 +1,54 @@
 using System;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OPCAIC.Messaging.Config;
-using Xunit;
+using OPCAIC.TestUtils;
 using Xunit.Abstractions;
-
 
 namespace OPCAIC.Messaging.Test
 {
 	public class BrokerWorkerTestBase : IDisposable
 	{
-		protected readonly ITestOutputHelper Output;
+		protected static readonly double Timeout = 5000;
+
+		private readonly XUnitLoggerFactory loggerFactory;
 		public string ConnectionString = TestConnectionStringFactory.GetConnectionString();
 
-		protected static readonly double Timeout = 5000;
+		public BrokerWorkerTestBase(ITestOutputHelper output)
+		{
+			output.WriteLine(ConnectionString);
+			loggerFactory = new XUnitLoggerFactory(output);
+			Config = HeartbeatConfig.Default;
+		}
 
 		protected BrokerConnector Broker { get; private set; }
 		protected WorkerConnector Worker { get; private set; }
 		protected HeartbeatConfig Config { get; }
 
-		public BrokerWorkerTestBase(ITestOutputHelper output)
-		{
-			Output = output;
-			Output.WriteLine(ConnectionString);
-			Config = HeartbeatConfig.Default;
-		}
+		public void Dispose() => KillAll();
+
+		private ILogger<T> GetLogger<T>() => loggerFactory.CreateLogger<T>();
 
 		protected void CreateBroker()
 		{
 			KillBroker();
-			Broker = new BrokerConnector(new BrokerConnectorConfig()
+			Broker = new BrokerConnector(Options.Create(new BrokerConnectorConfig
 			{
 				Identity = "Broker",
 				ListeningAddress = ConnectionString,
 				HeartbeatConfig = Config
-			}, new NullLogger<BrokerConnector>());
+			}), GetLogger<BrokerConnector>());
 		}
 
 		protected void CreateWorker()
 		{
 			KillWorker();
-			Worker = new WorkerConnector(new WorkerConnectorConfig()
+			Worker = new WorkerConnector(Options.Create(new WorkerConnectorConfig
 			{
 				Identity = "Worker",
 				BrokerAddress = ConnectionString,
 				HeartbeatConfig = Config
-			}, new NullLogger<WorkerConnector>());
+			}), GetLogger<WorkerConnector>());
 		}
 
 		protected void CreateConnectors()
@@ -61,14 +65,22 @@ namespace OPCAIC.Messaging.Test
 
 		protected void StartWorker()
 		{
-			if (Worker == null) CreateWorker();
+			if (Worker == null)
+			{
+				CreateWorker();
+			}
+
 			Worker.EnterPollerAsync();
 			Worker.EnterConsumerAsync();
 		}
 
 		protected void StartBroker()
 		{
-			if (Broker == null) CreateBroker();
+			if (Broker == null)
+			{
+				CreateBroker();
+			}
+
 			Broker.EnterPollerAsync();
 			Broker.EnterConsumerAsync();
 		}
@@ -81,18 +93,40 @@ namespace OPCAIC.Messaging.Test
 
 		protected void StopWorker()
 		{
-			try { Worker.StopPoller(); }
-			catch { /*ignore*/ }
-			try { Worker.StopConsumer(); }
-			catch { /*ignore*/ }
+			try
+			{
+				Worker.StopPoller();
+			}
+			catch
+			{ /*ignore*/
+			}
+
+			try
+			{
+				Worker.StopConsumer();
+			}
+			catch
+			{ /*ignore*/
+			}
 		}
 
 		protected void StopBroker()
 		{
-			try { Broker.StopPoller(); }
-			catch { /*ignore*/ }
-			try { Broker.StopConsumer(); }
-			catch { /*ignore*/ }
+			try
+			{
+				Broker.StopPoller();
+			}
+			catch
+			{ /*ignore*/
+			}
+
+			try
+			{
+				Broker.StopConsumer();
+			}
+			catch
+			{ /*ignore*/
+			}
 		}
 
 		protected void KillAll()
@@ -108,6 +142,7 @@ namespace OPCAIC.Messaging.Test
 				StopWorker();
 				Worker.Dispose();
 			}
+
 			Worker = null;
 		}
 
@@ -118,12 +153,8 @@ namespace OPCAIC.Messaging.Test
 				StopBroker();
 				Broker.Dispose();
 			}
-			Broker = null;
-		}
 
-		public void Dispose()
-		{
-			KillAll();
+			Broker = null;
 		}
 	}
 }

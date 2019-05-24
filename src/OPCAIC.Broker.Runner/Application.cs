@@ -56,13 +56,14 @@ namespace OPCAIC.Broker.Runner
 				services.RemoveAll(typeof(IGameModuleRegistry))
 					.AddSingleton<IGameModuleRegistry>(registry);
 
+				var sp = services.BuildServiceProvider();
 				Thread t = new Thread(() =>
 				{
 					while (true)
 					{
-						using (var workerApp = services.BuildServiceProvider().GetRequiredService<Worker.Worker>())
+						using (var scope = sp.CreateScope())
 						{
-							workerApp.Run();
+							scope.ServiceProvider.GetRequiredService<Worker.Worker>().Run();
 						}
 						Thread.Sleep(5000);
 					}

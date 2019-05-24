@@ -1,5 +1,4 @@
 using System.Threading;
-using OPCAIC.Messaging.Messages;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -7,10 +6,17 @@ namespace OPCAIC.Messaging.Test
 {
 	public class ConnectionTest : BrokerWorkerTestBase
 	{
+		public ConnectionTest(ITestOutputHelper output) : base(output)
+		{
+			Config.HeartbeatInterval = 10;
+			Config.ReconnectIntervalInit = 10;
+			CreateConnectors();
+		}
+
 		[Fact]
 		public void WorkerDeadAfterTimeout()
 		{
-			ManualResetEventSlim flag = new ManualResetEventSlim(false);
+			var flag = new ManualResetEventSlim(false);
 			Broker.WorkerConnected += (_, a) => StopWorker();
 			string workerId = null;
 			Broker.WorkerDisconnected += (_, a) =>
@@ -20,7 +26,6 @@ namespace OPCAIC.Messaging.Test
 			};
 
 			StartAll();
-			Worker.SendMessage(new PingMessage());
 
 			AssertEx.WaitForEvent(flag, Timeout);
 			Assert.Equal(Worker.Identity, workerId);
@@ -29,13 +34,12 @@ namespace OPCAIC.Messaging.Test
 		[Fact]
 		public void WorkerReconnectsToBroker()
 		{
-			ManualResetEventSlim connFlag = new ManualResetEventSlim(false);
-			ManualResetEventSlim disconFlag = new ManualResetEventSlim(false);
+			var connFlag = new ManualResetEventSlim(false);
+			var disconFlag = new ManualResetEventSlim(false);
 			Worker.Connected += (_, a) => connFlag.Set();
 			Worker.Disconnected += (_, a) => disconFlag.Set();
 
 			StartAll();
-			Worker.SendMessage(new PingMessage());
 
 			AssertEx.WaitForEvent(connFlag, Timeout);
 			KillBroker();
@@ -44,13 +48,6 @@ namespace OPCAIC.Messaging.Test
 			StartBroker();
 
 			AssertEx.WaitForEvent(connFlag, Timeout);
-		}
-
-		public ConnectionTest(ITestOutputHelper output) : base(output)
-		{
-			Config.HeartbeatInterval = 10;
-			Config.ReconnectIntervalInit = 10;
-			CreateConnectors();
 		}
 	}
 }

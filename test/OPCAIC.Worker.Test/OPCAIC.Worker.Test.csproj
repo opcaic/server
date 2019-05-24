@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OPCAIC.Worker\OPCAIC.Worker.csproj" />
+    <ProjectReference Include="..\OPCAIC.TestUtils\OPCAIC.TestUtils.csproj" />
   </ItemGroup>
 
 </Project>

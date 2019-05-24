@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OPCAIC.Messaging\OPCAIC.Messaging.csproj" />
+    <ProjectReference Include="..\OPCAIC.TestUtils\OPCAIC.TestUtils.csproj" />
   </ItemGroup>
 
 </Project>

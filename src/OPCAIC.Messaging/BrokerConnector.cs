@@ -14,54 +14,36 @@ namespace OPCAIC.Messaging
 	/// <summary>
 	///   NetMQ connector for the broker node.
 	/// </summary>
-	public class BrokerConnector : ConnectorBase<RouterSocket, ReceivedMessage>
+	public class BrokerConnector : ConnectorBase<RouterSocket, ReceivedMessage>, IBrokerConnector
 	{
 		private readonly Dictionary<string, WorkerConnection> workers;
 
-		public BrokerConnector(BrokerConnectorConfig config, ILogger logger)
+		public BrokerConnector(IOptions<BrokerConnectorConfig> config, ILogger<BrokerConnector> logger)
 			: base(
-				config.Identity,
-				new RouterSocketFactory(config.Identity, config.ListeningAddress),
+				config.Value.Identity,
+				new RouterSocketFactory(config.Value.Identity, config.Value.ListeningAddress),
 				new HandlerSet<ReceivedMessage>(msg => msg.Payload),
-				config.HeartbeatConfig,
+				config.Value.HeartbeatConfig,
 				logger)
 			=> workers = new Dictionary<string, WorkerConnection>();
 
-		/// <summary>
-		///   Invoked when a new worker has connected.
-		/// </summary>
+		/// <inheritdoc cref="IBrokerConnector"/>
 		public event EventHandler<WorkerConnectionEventArgs> WorkerDisconnected;
 
-		/// <summary>
-		///   Invoked when a worker has disconnected.
-		/// </summary>
+		/// <inheritdoc cref="IBrokerConnector"/>
 		public event EventHandler<WorkerConnectionEventArgs> WorkerConnected;
 
-		/// <summary>
-		///   Registers a handler to be invoked on consumer thread when a message of given type is
-		///   received.
-		/// </summary>
-		/// <typeparam name="T">Type of the handled message.</typeparam>
-		/// <param name="handler">The handler.</param>
+		/// <inheritdoc cref="IBrokerConnector"/>
 		public void RegisterAsyncHandler<T>(Action<string, T> handler)
 			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
 				msg => handler(msg.Sender, (T) msg.Payload), false));
 
-		/// <summary>
-		///   Registers a handler to be invoked on socket thread when a message of given type is
-		///   received.
-		/// </summary>
-		/// <typeparam name="T">Type of the handled message.</typeparam>
-		/// <param name="handler">The handler.</param>
+		/// <inheritdoc cref="IBrokerConnector"/>
 		public void RegisterHandler<T>(Action<string, T> handler)
 			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
 				msg => handler(msg.Sender, (T) msg.Payload), true));
 
-		/// <summary>
-		///   Sends a message to the specified worker with given payload.
-		/// </summary>
-		/// <param name="recipient">The recipients identity.</param>
-		/// <param name="payload">Payload to send.</param>
+		/// <inheritdoc cref="IBrokerConnector"/>
 		public void SendMessage(string recipient, object payload)
 			=> EnqueueSocketTask(() =>
 			{
@@ -75,10 +57,7 @@ namespace OPCAIC.Messaging
 				DirectSend(CreateMessage(recipient, payload));
 			});
 
-		/// <summary>
-		///   Enqueues a task to be executed on the consumer thread.
-		/// </summary>
-		/// <param name="task"></param>
+		/// <inheritdoc cref="IBrokerConnector"/>
 		public void EnqueueTask(Task task) => EnqueueConsumerTask(task);
 
 		/// <inheritdoc />

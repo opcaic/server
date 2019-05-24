@@ -1,33 +1,18 @@
-using System;
-using System.Diagnostics;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading;
-using OPCAIC.Messaging.Messages;
 using OPCAIC.Messaging.Test.Messages;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace OPCAIC.Messaging.Test
 {
 	public class SimpleTest : BrokerWorkerTestBase
 	{
-		[Fact]
-		public void WorkerConnects()
-		{
-			ManualResetEventSlim flag = new ManualResetEventSlim(false);
-			Broker.WorkerConnected += (_, a) => flag.Set();
-
-			StartAll();
-
-			AssertEx.WaitForEvent(flag, Timeout);
-		}
+		public SimpleTest(ITestOutputHelper output) : base(output) => CreateConnectors();
 
 		[Fact]
 		public void BrokerConnects()
 		{
-			ManualResetEventSlim flag = new ManualResetEventSlim(false);
+			var flag = new ManualResetEventSlim(false);
 			Worker.Connected += (_, a) => flag.Set();
 
 			StartAll();
@@ -38,8 +23,8 @@ namespace OPCAIC.Messaging.Test
 		[Fact]
 		public void SimpleSendMessage()
 		{
-			ManualResetEventSlim workerReceive = new ManualResetEventSlim(false);
-			ManualResetEventSlim brokerReceive = new ManualResetEventSlim(false);
+			var workerReceive = new ManualResetEventSlim(false);
+			var brokerReceive = new ManualResetEventSlim(false);
 			Worker.RegisterAsyncHandler<HelloMessage>(msg =>
 			{
 				Assert.Equal("message", msg.Message);
@@ -66,10 +51,15 @@ namespace OPCAIC.Messaging.Test
 			AssertEx.WaitForEvent(brokerReceive, Timeout);
 		}
 
-		public SimpleTest(ITestOutputHelper output) : base(output)
+		[Fact]
+		public void WorkerConnects()
 		{
-			// no extra setup needed
-			CreateConnectors();
+			var flag = new ManualResetEventSlim(false);
+			Broker.WorkerConnected += (_, a) => flag.Set();
+
+			StartAll();
+
+			AssertEx.WaitForEvent(flag, Timeout);
 		}
 	}
 }

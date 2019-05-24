@@ -16,33 +16,29 @@ namespace OPCAIC.Worker
 	/// <summary>
 	///   The main class of the opcaic worker process
 	/// </summary>
-	public class Worker : IDisposable
+	public class Worker
 	{
-		private readonly WorkerConnector connector;
+		private readonly IWorkerConnector connector;
 		private readonly ILogger logger;
 		private readonly IServiceProvider serviceProvider;
 
 		private readonly Random rand = new Random();
 
-		public Worker(IOptions<WorkerConnectorConfig> config, ILogger<Worker> logger,
+		public Worker(IWorkerConnector connector, ILogger<Worker> logger,
 			IServiceProvider serviceProvider)
 		{
-			this.connector = new WorkerConnector(config.Value, logger);
+			this.connector = connector;
 			this.logger = logger;
 			this.serviceProvider = serviceProvider;
-
-			RegisterHandlers();
 		}
 
 		private string Identity => connector.Identity;
 
-		public void Dispose() => connector?.Dispose();
-
 		private void RegisterHandlers()
 		{
-			connector.RegisterHandler<MatchExecutionRequest>(
+			connector.RegisterAsyncHandler<MatchExecutionRequest>(
 				ServeRequest<MatchExecutionRequest, MatchExecutionResult>);
-			connector.RegisterHandler<SubmissionValidationRequest>(
+			connector.RegisterAsyncHandler<SubmissionValidationRequest>(
 				ServeRequest<SubmissionValidationRequest, SubmissionValidationResult>);
 		}
 
@@ -80,7 +76,9 @@ namespace OPCAIC.Worker
 
 		public void Run()
 		{
-			var t = new Thread(connector.EnterConsumer);
+			RegisterHandlers();
+
+			var t = new Thread(connector.EnterPoller);
 			t.Start();
 
 			logger.LogInformation($"[{Identity}] - Initiating connection");
@@ -91,8 +89,8 @@ namespace OPCAIC.Worker
 					SupportedGames = serviceProvider.GetService<IGameModuleRegistry>().GetAllModules().Select(m => m.GameName).ToList()
 				}
 			});
-			connector.EnterPoller(); // returns on worker exit
-			connector.StopConsumer();
+			connector.EnterConsumer(); // returns on worker exit
+			connector.StopPoller();
 			t.Join();
 			logger.LogInformation($"[{Identity}] - client officially dead, restarting in 5s");
 		}

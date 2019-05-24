@@ -13,7 +13,7 @@ namespace OPCAIC.Messaging
 	/// <summary>
 	///   NetMQ connector for the worker node.
 	/// </summary>
-	public class WorkerConnector : ConnectorBase<DealerSocket, object>
+	public class WorkerConnector : ConnectorBase<DealerSocket, object>, IWorkerConnector
 	{
 		private readonly NetMQTimer incomingHeartbeatTimer;
 		private readonly NetMQTimer outgoingHeartbeatTimer;
@@ -22,12 +22,12 @@ namespace OPCAIC.Messaging
 		private int liveness;
 		private int sleepInterval;
 
-		public WorkerConnector(WorkerConnectorConfig config, ILogger logger)
+		public WorkerConnector(IOptions<WorkerConnectorConfig> config, ILogger<WorkerConnector> logger)
 			: base(
-				config.Identity,
-				new DealerSocketFactory(config.Identity, config.BrokerAddress),
+				config.Value.Identity,
+				new DealerSocketFactory(config.Value.Identity, config.Value.BrokerAddress),
 				new HandlerSet<object>(obj => obj),
-				config.HeartbeatConfig,
+				config.Value.HeartbeatConfig,
 				logger)
 		{
 			// setup connection timeout, this handler will run on Socket thread
@@ -43,38 +43,21 @@ namespace OPCAIC.Messaging
 			sleepInterval = Config.ReconnectIntervalInit;
 		}
 
-		/// <summary>
-		///   Invoked when a connection is established.
-		/// </summary>
+		/// <inheritdoc cref="IWorkerConnector"/>
 		public event EventHandler Connected;
 
-		/// <summary>
-		///   Invoked when disconnected.
-		/// </summary>
+		/// <inheritdoc cref="IWorkerConnector"/>
 		public event EventHandler Disconnected;
 
-		/// <summary>
-		///   Registers a handler to be invoked on consumer thread when a message of given type is
-		///   received.
-		/// </summary>
-		/// <typeparam name="T">Type of the handled message.</typeparam>
-		/// <param name="handler">The handler.</param>
+		/// <inheritdoc cref="IWorkerConnector"/>
 		public void RegisterAsyncHandler<T>(Action<T> handler)
 			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), false));
 
-		/// <summary>
-		///   Registers a handler to be invoked on socket thread when a message of given type is
-		///   received.
-		/// </summary>
-		/// <typeparam name="T">Type of the handled message.</typeparam>
-		/// <param name="handler">The handler.</param>
+		/// <inheritdoc cref="IWorkerConnector"/>
 		public void RegisterHandler<T>(Action<T> handler)
 			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), true));
 
-		/// <summary>
-		///   Sends a message with given payload to the broker.
-		/// </summary>
-		/// <param name="payload"></param>
+		/// <inheritdoc cref="IWorkerConnector"/>
 		public void SendMessage(object payload)
 			=> EnqueueSocketTask(() =>
 			{

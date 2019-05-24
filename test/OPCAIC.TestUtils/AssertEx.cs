@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
-using Xunit;
 using Xunit.Sdk;
 
 namespace OPCAIC.Messaging.Test
@@ -14,6 +13,7 @@ namespace OPCAIC.Messaging.Test
 			{
 				milliseconds = 1000 * 60 * 60;
 			}
+
 			if (!handle.Wait(TimeSpan.FromMilliseconds(milliseconds)))
 			{
 				throw new XunitException("The event was not signaled in given time");
