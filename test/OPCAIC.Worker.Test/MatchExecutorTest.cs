@@ -1,14 +1,15 @@
+using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker.Services;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace OPCAIC.Worker.Test
 {
-	public class MatchExecutorTest
+	public class MatchExecutorTest : WorkerTestBase
 	{
-		public MatchExecutorTest() => MatchExecutor = new MatchExecutor();
 
-		private MatchExecutor MatchExecutor { get; }
+		private MatchExecutor MatchExecutor => GetService<MatchExecutor>();
 
 		[Fact]
 		public void ExecutesMatchSuccessfully()
@@ -16,6 +17,13 @@ namespace OPCAIC.Worker.Test
 			// TODO: more tests once the executor is implemented
 			var result = MatchExecutor.Execute(new MatchExecutionRequest());
 			Assert.Equal(Status.Ok, result.Status);
+		}
+
+		/// <inheritdoc />
+		public MatchExecutorTest(ITestOutputHelper output) : base(output)
+		{
+			Services.AddTransient<MatchExecutor>();
+			Services.Mock<IDownloadService>();
 		}
 	}
 }

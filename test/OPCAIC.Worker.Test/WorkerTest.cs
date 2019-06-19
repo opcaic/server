@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
-using OPCAIC.TestUtils;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
 using Xunit;
@@ -11,34 +10,27 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.Worker.Test
 {
-	public class WorkerTest
+	public class WorkerTest : WorkerTestBase
 	{
-		public WorkerTest(ITestOutputHelper output)
-		{
-			services = new MockingServiceCollection();
-			services
-				.AddXUnitLogging(output)
-				.AddTransient<Worker>()
-				.AddTransient<IGameModuleRegistry, GameModuleRegistry>();
-		}
+		public WorkerTest(ITestOutputHelper output) : base(output) 
+			=> Services
+			.AddTransient<Worker>()
+			.AddTransient<IGameModuleRegistry, GameModuleRegistry>();
 
-		private readonly MockingServiceCollection services;
+		private void RunWorker() => GetService<Worker>().Run();
 
-		private Worker GetWorker() => services.BuildServiceProvider().GetRequiredService<Worker>();
-
-		private void DoRespondsToMessages<TRequest, TResponse>()
+		[Theory]
+		[MemberData(nameof(RequestTestData))]
+		public void RespondsToMessages<TRequest, TResponse>(TRequest request, TResponse response)
 			where TRequest : WorkMessageBase, new() where TResponse : ReplyMessageBase, new()
 		{
-			var jobMock = services.Mock<IJobExecutor<TRequest, TResponse>>();
-			var request = new TRequest();
-			var response = new TResponse();
-
+			var jobMock = Services.Mock<IJobExecutor<TRequest, TResponse>>();
 			var connectorMock = SetupConnectorReceive(request);
 
 			// setup response from job executor
 			jobMock.Setup(j => j.Execute(request)).Returns(response);
 
-			GetWorker().Run();
+			RunWorker();
 
 			// check that the respons was actually sent
 			connectorMock.Verify(c => c.SendMessage(response));
@@ -49,7 +41,7 @@ namespace OPCAIC.Worker.Test
 			where TRequest : WorkMessageBase, new()
 		{
 			Action<TRequest> handler = null;
-			var connectorMock = services.Mock<IWorkerConnector>();
+			var connectorMock = Services.Mock<IWorkerConnector>();
 			// capture the handler
 			connectorMock.Setup(c => c.RegisterAsyncHandler(It.IsAny<Action<TRequest>>()))
 				.Callback((Action<TRequest> h) => { handler = h; });
@@ -59,69 +51,61 @@ namespace OPCAIC.Worker.Test
 			return connectorMock;
 		}
 
-		private void DoErrorStatusOnException<TRequest, TResponse>()
+		[Theory]
+		[MemberData(nameof(RequestTestData))]
+		public void ErrorStatusOnException<TRequest, TResponse>(TRequest request, TResponse _)
 			where TRequest : WorkMessageBase, new() where TResponse : ReplyMessageBase, new()
 		{
-			var jobMock = services.Mock<IJobExecutor<TRequest, TResponse>>();
-			var connectorMock = SetupConnectorReceive(new TRequest());
+			var jobMock = Services.Mock<IJobExecutor<TRequest, TResponse>>();
+			var connectorMock = SetupConnectorReceive(request);
 
 			// simulate an error
 			jobMock.Setup(j => j.Execute(It.IsAny<TRequest>())).Throws<Exception>();
 
-			GetWorker().Run();
+			RunWorker();
 
 			// check that a response was actually sent
 			connectorMock.Verify(c => c.SendMessage(It.Is<TResponse>(r => r.Status == Status.Error)));
 			jobMock.VerifyAll();
 		}
 
-		private void DoNeverSendsNull<TRequest, TResponse>()
+		[Theory]
+		[MemberData(nameof(RequestTestData))]
+		public void NeverSendsNull<TRequest, TResponse>(TRequest request, TResponse _)
 			where TRequest : WorkMessageBase, new() where TResponse : ReplyMessageBase, new()
 		{
-			var jobMock = services.Mock<IJobExecutor<TRequest, TResponse>>();
-			var connectorMock = SetupConnectorReceive(new TRequest());
+			var jobMock = Services.Mock<IJobExecutor<TRequest, TResponse>>();
+			var connectorMock = SetupConnectorReceive(request);
 
 			// simulate an error
 			jobMock.Setup(j => j.Execute(It.IsAny<TRequest>())).Returns((TResponse) null);
 
-			GetWorker().Run();
+			RunWorker();
 
 			// check that a response was actually sent
 			connectorMock.Verify(c => c.SendMessage(It.Is<TResponse>(r => r.Status == Status.Error)));
 			jobMock.VerifyAll();
-		}
-
-		[Fact]
-		public void ErrorStatusOnException()
-		{
-			DoErrorStatusOnException<MatchExecutionRequest, MatchExecutionResult>();
-			DoErrorStatusOnException<SubmissionValidationRequest, SubmissionValidationResult>();
-		}
-
-		[Fact]
-		public void NeverSendsNull()
-		{
-			DoNeverSendsNull<MatchExecutionRequest, MatchExecutionResult>();
-			DoNeverSendsNull<SubmissionValidationRequest, SubmissionValidationResult>();
-		}
-
-		[Fact]
-		public void RespondsToMessages()
-		{
-			DoRespondsToMessages<MatchExecutionRequest, MatchExecutionResult>();
-			DoRespondsToMessages<SubmissionValidationRequest, SubmissionValidationResult>();
 		}
 
 		[Fact]
 		public void StartupTest()
 		{
-			var connectorMock = services.Mock<IWorkerConnector>();
+			var connectorMock = Services.Mock<IWorkerConnector>();
 
-			GetWorker().Run();
+			RunWorker();
 
 			connectorMock.Verify(c => c.SendMessage(It.IsAny<WorkerConnectMessage>()));
 			connectorMock.Verify(c => c.EnterConsumer());
 			connectorMock.Verify(c => c.EnterPoller());
+		}
+
+		public static TheoryData<WorkMessageBase, ReplyMessageBase> RequestTestData()
+		{
+			var ret = new TheoryData<WorkMessageBase, ReplyMessageBase>();
+			ret.Add(new MatchExecutionRequest(), new MatchExecutionResult());
+			ret.Add(new SubmissionValidationRequest(), new SubmissionValidationResult());
+
+			return ret;
 		}
 	}
 }
