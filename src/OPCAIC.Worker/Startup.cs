@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Config;
 using OPCAIC.Messaging.Messages;
+using OPCAIC.Worker.Config;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
 
@@ -32,7 +33,8 @@ namespace OPCAIC.Worker
 		{
 			services
 				.AddOptions()
-				.Configure<WorkerConnectorConfig>(configuration.GetSection("ConnectorConfig"));
+				.Configure<WorkerConnectorConfig>(configuration.GetSection("ConnectorConfig"))
+				.Configure<FileServerConfig>(configuration.GetSection("FileServer"));
 
 			var registry = new GameModuleRegistry();
 			services.AddSingleton<IGameModuleRegistry>(registry);
@@ -53,7 +55,8 @@ namespace OPCAIC.Worker
 					MatchExecutor>()
 				.AddTransient<
 					IJobExecutor<SubmissionValidationRequest, SubmissionValidationResult>,
-					SubmissionValidator>();
+					SubmissionValidator>()
+				.AddTransient<IDownloadService, DownloadService>();
 
 		/// <summary>
 		///   Loads all game modules from specified path into provided registry

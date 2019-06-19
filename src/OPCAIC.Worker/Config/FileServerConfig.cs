@@ -11,12 +11,12 @@
 		public string ServerAddress { get; set; }
 
 		/// <summary>
-		///   Username to be used when connecting. If null, then no credentials are used
+		///   User name to be used when connecting. If null, then no credentials are used
 		/// </summary>
-		public string Username { get; set; }
+		public string UserName { get; set; }
 
 		/// <summary>
-		///   Password to be used when connecting.
+		///   Password to be used when connecting. Used only if <see cref="UserName"/> is not null.
 		/// </summary>
 		public string Password { get; set; }
 	}
