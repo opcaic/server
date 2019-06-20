@@ -35,7 +35,7 @@ namespace OPCAIC.Broker
 		/// <inheritdoc />
 		public void EnqueueWork(WorkMessageBase msg)
 		{
-			Require.NotNull(msg, nameof(msg));
+			Require.ArgNotNull(msg, nameof(msg));
 
 			Schedule(() =>
 			{

@@ -76,12 +76,24 @@ namespace OPCAIC.Worker
 
 		public void Run()
 		{
+			logger.LogInformation("Starting Worker");
 			RegisterHandlers();
 
 			var t = new Thread(connector.EnterPoller);
 			t.Start();
 
+			InitConnection();
+			connector.EnterConsumer(); // returns on worker exit
+
+			connector.StopPoller();
+			t.Join();
+			logger.LogInformation("Shutting down Worker");
+		}
+
+		public void InitConnection()
+		{
 			logger.LogInformation($"[{Identity}] - Initiating connection");
+
 			connector.SendMessage(new WorkerConnectMessage
 			{
 				Capabilities = new WorkerCapabilities
@@ -89,10 +101,6 @@ namespace OPCAIC.Worker
 					SupportedGames = serviceProvider.GetService<IGameModuleRegistry>().GetAllModules().Select(m => m.GameName).ToList()
 				}
 			});
-			connector.EnterConsumer(); // returns on worker exit
-			connector.StopPoller();
-			t.Join();
-			logger.LogInformation($"[{Identity}] - client officially dead, restarting in 5s");
 		}
 	}
 }

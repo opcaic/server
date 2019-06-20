@@ -14,7 +14,6 @@ namespace OPCAIC.Worker.Test
 	{
 		public WorkerTest(ITestOutputHelper output) : base(output) 
 			=> Services
-			.AddTransient<Worker>()
 			.AddTransient<IGameModuleRegistry, GameModuleRegistry>();
 
 		private void RunWorker() => GetService<Worker>().Run();

@@ -22,8 +22,4 @@
     <ProjectReference Include="..\OPCAIC.TestUtils\OPCAIC.TestUtils.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Mocks\" />
-  </ItemGroup>
-
 </Project>

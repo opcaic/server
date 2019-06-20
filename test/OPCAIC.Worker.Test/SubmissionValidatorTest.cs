@@ -5,19 +5,19 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.Worker.Test
 {
-	public class MatchExecutorTest : WorkerTestBase
+	public class SubmissionValidatorTest : WorkerTestBase
 	{
 		/// <inheritdoc />
-		public MatchExecutorTest(ITestOutputHelper output) : base(output)
+		public SubmissionValidatorTest(ITestOutputHelper output) : base(output)
 			=> Services.Mock<IExecutionServices>();
 
-		private MatchExecutor MatchExecutor => GetService<MatchExecutor>();
+		private SubmissionValidator SubmissionValidator => GetService<SubmissionValidator>();
 
-		[Fact]
+		[Fact(Skip = "Not Implemented")]
 		public void ExecutesMatchSuccessfully()
 		{
 			// TODO: more tests once the executor is implemented
-			var result = MatchExecutor.Execute(new MatchExecutionRequest());
+			var result = SubmissionValidator.Execute(new SubmissionValidationRequest());
 			Assert.Equal(Status.Ok, result.Status);
 		}
 	}

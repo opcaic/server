@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using OPCAIC.TestUtils;
 using Xunit.Abstractions;
 
@@ -20,6 +20,10 @@ namespace OPCAIC.Worker.Test
 				.AddXUnitLogging(output);
 		}
 
-		protected T GetService<T>() => Services.BuildServiceProvider().GetRequiredService<T>();
+		protected T GetService<T>() where T : class
+		{
+			Services.TryAddTransient<T>();
+			return Services.BuildServiceProvider().GetRequiredService<T>();
+		}
 	}
 }

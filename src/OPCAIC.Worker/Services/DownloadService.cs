@@ -31,8 +31,8 @@ namespace OPCAIC.Worker.Services
 		/// <inheritdoc />
 		public Task DownloadAsync(string serverPath, string localPath)
 		{
-			Require.NotNull(serverPath, nameof(serverPath));
-			Require.NotNull(localPath, nameof(localPath));
+			Require.ArgNotNull(serverPath, nameof(serverPath));
+			Require.ArgNotNull(localPath, nameof(localPath));
 
 			return webClient.DownloadFileTaskAsync(
 				serverPath,
@@ -42,7 +42,7 @@ namespace OPCAIC.Worker.Services
 		/// <inheritdoc />
 		public Task<byte[]> DownloadBinaryAsync(string serverPath)
 		{
-			Require.NotNull(serverPath, nameof(serverPath));
+			Require.ArgNotNull(serverPath, nameof(serverPath));
 
 			return webClient.DownloadDataTaskAsync(serverPath);
 		}
@@ -50,7 +50,7 @@ namespace OPCAIC.Worker.Services
 		/// <inheritdoc />
 		public Task<string> DownloadTextAsync(string serverPath)
 		{
-			Require.NotNull(serverPath, nameof(serverPath));
+			Require.ArgNotNull(serverPath, nameof(serverPath));
 
 			return webClient.DownloadStringTaskAsync(serverPath);
 		}
@@ -58,8 +58,8 @@ namespace OPCAIC.Worker.Services
 		/// <inheritdoc />
 		public async Task UploadAsync(string serverPath, string localPath, bool post)
 		{
-			Require.NotNull(serverPath, nameof(serverPath));
-			Require.NotNull(localPath, nameof(localPath));
+			Require.ArgNotNull(serverPath, nameof(serverPath));
+			Require.ArgNotNull(localPath, nameof(localPath));
 
 			var res = await webClient.UploadFileTaskAsync(
 				serverPath,
@@ -72,8 +72,8 @@ namespace OPCAIC.Worker.Services
 		/// <inheritdoc />
 		public Task UploadBinaryAsync(string serverPath, byte[] data, bool post)
 		{
-			Require.NotNull(serverPath, nameof(serverPath));
-			Require.NotNull(data, nameof(data));
+			Require.ArgNotNull(serverPath, nameof(serverPath));
+			Require.ArgNotNull(data, nameof(data));
 
 			return webClient.UploadDataTaskAsync(
 				serverPath,
@@ -84,8 +84,8 @@ namespace OPCAIC.Worker.Services
 		/// <inheritdoc />
 		public Task UploadTextAsync(string serverPath, string data, bool post)
 		{
-			Require.NotNull(serverPath, nameof(serverPath));
-			Require.NotNull(data, nameof(data));
+			Require.ArgNotNull(serverPath, nameof(serverPath));
+			Require.ArgNotNull(data, nameof(data));
 
 			return webClient.UploadStringTaskAsync(
 				serverPath,

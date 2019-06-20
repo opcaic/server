@@ -8,8 +8,8 @@ namespace OPCAIC.Utils
 		public static TSource ArgExtreme<TSource, TValue>(this IEnumerable<TSource> items,
 			Func<TSource, TValue> selector, int direction) where TValue : IComparable<TValue>
 		{
-			Require.NotNull(items, nameof(items));
-			Require.NotNull(selector, nameof(selector));
+			Require.ArgNotNull(items, nameof(items));
+			Require.ArgNotNull(selector, nameof(selector));
 
 			TSource extremeItem;
 			using (var e = items.GetEnumerator())
