@@ -37,7 +37,6 @@ namespace OPCAIC.Worker.Test
 		}
 
 		private Mock<IWorkerConnector> SetupConnectorReceive<TRequest>(TRequest request)
-			where TRequest : WorkMessageBase, new()
 		{
 			Action<TRequest> handler = null;
 			var connectorMock = Services.Mock<IWorkerConnector>();
@@ -95,7 +94,19 @@ namespace OPCAIC.Worker.Test
 
 			connectorMock.Verify(c => c.SendMessage(It.IsAny<WorkerConnectMessage>()));
 			connectorMock.Verify(c => c.EnterConsumer());
-			connectorMock.Verify(c => c.EnterPoller());
+			connectorMock.Verify(c => c.EnterSocket());
+		}
+
+		[Fact]
+		public void UpdatesHeartbeatConfig()
+		{
+			var connectorMock = Services.Mock<IWorkerConnector>();
+
+			RunWorker();
+
+			connectorMock.Verify(c => c.SendMessage(It.IsAny<WorkerConnectMessage>()));
+			connectorMock.Verify(c => c.EnterConsumer());
+			connectorMock.Verify(c => c.EnterSocket());
 		}
 
 		public static TheoryData<WorkMessageBase, ReplyMessageBase> RequestTestData()

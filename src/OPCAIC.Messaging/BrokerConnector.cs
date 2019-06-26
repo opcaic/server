@@ -61,6 +61,17 @@ namespace OPCAIC.Messaging
 		public void EnqueueTask(Task task) => EnqueueConsumerTask(task);
 
 		/// <inheritdoc />
+		protected override void OnHeartbeatConfigChanged(HeartbeatConfig config)
+		{
+			foreach (var worker in workers.Values)
+			{
+				worker.Liveness = config.Liveness;
+				worker.IncomingHeartbeatTimer.Interval = config.HeartbeatInterval;
+				worker.OutgoingHeartbeatTimer.Interval = config.HeartbeatInterval;
+			}
+		}
+
+		/// <inheritdoc />
 		protected override ReceivedMessage ReceiveMessage(NetMQMessage msg)
 		{
 			AssertSocketThread();
@@ -103,7 +114,7 @@ namespace OPCAIC.Messaging
 		{
 			AssertSocketThread();
 			connection.IncomingHeartbeatTimer.EnableAndReset();
-			connection.Liveness = Config.Liveness;
+			connection.Liveness = HeartbeatConfig.Liveness;
 		}
 
 		private void OnWorkerDisconnected(WorkerConnection worker)
@@ -132,7 +143,7 @@ namespace OPCAIC.Messaging
 				Logger.LogWarning($"[{Identity}] - Worker '{worker.Identity}' is dead");
 				RemoveWorker(worker);
 			}
-			else if (worker.Liveness < Config.Liveness - 1)
+			else if (worker.Liveness < HeartbeatConfig.Liveness - 1)
 			{
 				Logger.LogWarning(
 					$"[{Identity}] - Worker '{worker.Identity}' heartbeat timeout liveness={worker.Liveness}");
@@ -161,8 +172,8 @@ namespace OPCAIC.Messaging
 		private WorkerConnection NewWorker(string identity)
 		{
 			AssertSocketThread();
-			var entry = new WorkerConnection(identity, Config.HeartbeatInterval);
-			entry.Liveness = Config.Liveness;
+			var entry = new WorkerConnection(identity, HeartbeatConfig.HeartbeatInterval);
+			entry.Liveness = HeartbeatConfig.Liveness;
 			workers[identity] = entry;
 			SocketPoller.Add(entry.IncomingHeartbeatTimer);
 			SocketPoller.Add(entry.OutgoingHeartbeatTimer);

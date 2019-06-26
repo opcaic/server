@@ -27,20 +27,20 @@ namespace OPCAIC.Messaging
 				config.Value.Identity,
 				new DealerSocketFactory(config.Value.Identity, config.Value.BrokerAddress),
 				new HandlerSet<object>(obj => obj),
-				config.Value.HeartbeatConfig,
+				HeartbeatConfig.Default, // temporary, will receive correct after connection.
 				logger)
 		{
 			// setup connection timeout, this handler will run on Socket thread
-			incomingHeartbeatTimer = new NetMQTimer(Config.HeartbeatInterval);
+			incomingHeartbeatTimer = new NetMQTimer(HeartbeatConfig.HeartbeatInterval);
 			incomingHeartbeatTimer.Elapsed += (_, a) => OnHeartBeatTimeOut();
-			outgoingHeartbeatTimer = new NetMQTimer(Config.HeartbeatInterval);
+			outgoingHeartbeatTimer = new NetMQTimer(HeartbeatConfig.HeartbeatInterval);
 			outgoingHeartbeatTimer.Elapsed += (_, a) => SendHeartbeat();
 
 			SocketPoller.Add(incomingHeartbeatTimer);
 			SocketPoller.Add(outgoingHeartbeatTimer);
 
-			liveness = Config.Liveness;
-			sleepInterval = Config.ReconnectIntervalInit;
+			liveness = HeartbeatConfig.Liveness;
+			sleepInterval = HeartbeatConfig.ReconnectIntervalInit;
 		}
 
 		/// <inheritdoc cref="IWorkerConnector"/>
@@ -65,6 +65,15 @@ namespace OPCAIC.Messaging
 				outgoingHeartbeatTimer.EnableAndReset();
 				DirectSend(msg);
 			});
+
+		/// <inheritdoc />
+		protected override void OnHeartbeatConfigChanged(HeartbeatConfig config)
+		{
+			liveness = config.Liveness;
+			sleepInterval = config.ReconnectIntervalInit;
+			incomingHeartbeatTimer.Interval = config.HeartbeatInterval;
+			outgoingHeartbeatTimer.Interval = config.HeartbeatInterval;
+		}
 
 		/// <inheritdoc />
 		protected override object ReceiveMessage(NetMQMessage msg)
@@ -97,7 +106,7 @@ namespace OPCAIC.Messaging
 			{
 				EnqueueConsumerTask(OnDisconnected);
 
-				if (sleepInterval <= Config.ReconnectIntervalMax)
+				if (sleepInterval <= HeartbeatConfig.ReconnectIntervalMax)
 				{
 					Logger.LogError($"[{Identity}] - Broker unreachable, retrying in {sleepInterval} ms");
 					Thread.Sleep(sleepInterval);
@@ -110,9 +119,9 @@ namespace OPCAIC.Messaging
 
 				connected = false;
 				ResetConnection();
-				liveness = Config.Liveness;
+				liveness = HeartbeatConfig.Liveness;
 			}
-			else if (liveness < Config.Liveness - 1)
+			else if (liveness < HeartbeatConfig.Liveness - 1)
 			{
 				Logger.LogWarning($"[{Identity}] - heartbeat timeout, liveness={liveness}");
 			}
@@ -122,8 +131,8 @@ namespace OPCAIC.Messaging
 		{
 			AssertSocketThread();
 			incomingHeartbeatTimer.EnableAndReset();
-			liveness = Config.Liveness;
-			sleepInterval = Config.ReconnectIntervalInit;
+			liveness = HeartbeatConfig.Liveness;
+			sleepInterval = HeartbeatConfig.ReconnectIntervalInit;
 		}
 
 		private NetMQMessage CreateMessage(object payload)

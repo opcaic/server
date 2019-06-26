@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using NetMQ;
+using OPCAIC.Messaging.Config;
 
 namespace OPCAIC.Messaging
 {
@@ -10,6 +10,18 @@ namespace OPCAIC.Messaging
 		///   Identity used for communication.
 		/// </summary>
 		string Identity { get; }
+
+		/// <summary>
+		///   Configuration options for heartbeat.
+		/// </summary>
+		HeartbeatConfig HeartbeatConfig { get; }
+
+		/// <summary>
+		///   Updates the heartbeat configuration to the given value.
+		/// </summary>
+		/// <param name="config">The configuration.</param>
+		void SetHeartbeatConfig(HeartbeatConfig config);
+
 
 		/// <summary>
 		///   Invoked when a new worker has connected.
@@ -64,17 +76,18 @@ namespace OPCAIC.Messaging
 		/// <summary>
 		///   Entry point for the poller thread.
 		/// </summary>
-		void EnterPoller();
+		void EnterSocket();
 
 		/// <summary>
 		///   Creates a new thread for the socket poller.
 		/// </summary>
-		void EnterPollerAsync();
+		void EnterSocketAsync();
 
 		/// <summary>
-		///   Stops the socket poller.
+		///   Breaks the socket thread loop, causing the thread to return from the
+		///   <see cref="EnterSocket" /> method.
 		/// </summary>
-		void StopPoller();
+		void StopSocket();
 
 		/// <summary>
 		///   Entry point for the consumer thread.
@@ -87,7 +100,8 @@ namespace OPCAIC.Messaging
 		void EnterConsumerAsync();
 
 		/// <summary>
-		///   Stops the consumer poller.
+		///   Breaks the consumer thread loop, causing the thread to return from the
+		///   <see cref="EnterConsumer" /> method.
 		/// </summary>
 		void StopConsumer();
 	}

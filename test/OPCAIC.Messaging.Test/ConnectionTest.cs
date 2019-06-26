@@ -9,8 +9,8 @@ namespace OPCAIC.Messaging.Test
 	{
 		public ConnectionTest(ITestOutputHelper output) : base(output)
 		{
-			Config.HeartbeatInterval = 10;
-			Config.ReconnectIntervalInit = 10;
+			HeartbeatConfig.HeartbeatInterval = 10;
+			HeartbeatConfig.ReconnectIntervalInit = 10;
 			CreateConnectors();
 		}
 
