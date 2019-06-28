@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
+using OPCAIC.TestUtils;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
 using Xunit;
@@ -10,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.Worker.Test
 {
-	public class WorkerTest : WorkerTestBase
+	public class WorkerTest : ServiceTestBase
 	{
 		public WorkerTest(ITestOutputHelper output) : base(output) 
 			=> Services

@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 
-namespace OPCAIC.Worker.Test
+namespace OPCAIC.TestUtils
 {
 	/// <summary>
 	///   Wrapper around <see cref="IServiceCollection" /> which supports simple specifying mocks.

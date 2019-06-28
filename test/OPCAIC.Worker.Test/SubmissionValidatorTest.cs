@@ -1,11 +1,12 @@
 using OPCAIC.Messaging.Messages;
+using OPCAIC.TestUtils;
 using OPCAIC.Worker.Services;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace OPCAIC.Worker.Test
 {
-	public class SubmissionValidatorTest : WorkerTestBase
+	public class SubmissionValidatorTest : ServiceTestBase
 	{
 		/// <inheritdoc />
 		public SubmissionValidatorTest(ITestOutputHelper output) : base(output)

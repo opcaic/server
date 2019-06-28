@@ -1,11 +1,12 @@
 using OPCAIC.Messaging.Messages;
+using OPCAIC.TestUtils;
 using OPCAIC.Worker.Services;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace OPCAIC.Worker.Test
 {
-	public class MatchExecutorTest : WorkerTestBase
+	public class MatchExecutorTest : ServiceTestBase
 	{
 		/// <inheritdoc />
 		public MatchExecutorTest(ITestOutputHelper output) : base(output)

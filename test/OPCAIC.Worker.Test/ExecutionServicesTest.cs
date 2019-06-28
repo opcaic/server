@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using OPCAIC.Messaging.Messages;
+using OPCAIC.TestUtils;
 using OPCAIC.Worker.Exceptions;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
@@ -16,7 +17,7 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.Worker.Test
 {
-	public class ExecutionServicesTest : WorkerTestBase, IDisposable
+	public class ExecutionServicesTest : ServiceTestBase, IDisposable
 	{
 		private readonly Mock<IDownloadService> downloadService;
 		private readonly Mock<IGameModuleRegistry> gameModuleRegistry;

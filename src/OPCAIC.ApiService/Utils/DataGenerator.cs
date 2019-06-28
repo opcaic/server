@@ -11,8 +11,8 @@
 	{
 		public static void Initialize(IServiceProvider serviceProvider)
 		{
-			using (var context = new DummyDbContext(
-				serviceProvider.GetRequiredService<DbContextOptions<DummyDbContext>>()))
+			using (var context = new EntityFrameworkDbContext(
+				serviceProvider.GetRequiredService<DbContextOptions<EntityFrameworkDbContext>>()))
 			{
 				// Look for any board games.
 				if (context.Tournaments.Any())

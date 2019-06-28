@@ -25,14 +25,28 @@ namespace OPCAIC.Infrastructure.Entities
 		public DateTime Updated { get; set; }
 	}
 
-	public class Submission : Entity
+	public abstract class SoftDeletableEntity : Entity, ISoftDeletable
+	{
+		/// <inheritdoc />
+		public bool IsDeleted { get; set; }
+	}
+
+	public interface ISoftDeletable
+	{
+		/// <summary>
+		///   Flag whether the entity should be considered deleted (so we never actually delete any data).
+		/// </summary>
+		bool IsDeleted { get; set; }
+	}
+
+	public class Submission : SoftDeletableEntity
 	{
 		public string Path { get; set; }
 		public string Author { get; set; }
 		public bool IsActive { get; set; }
 	}
 
-	public class MatchExecution : Entity
+	public class MatchExecution : SoftDeletableEntity
 	{
 		public long MatchId { get; set; }
 		public Match Match { get; set; }
@@ -48,7 +62,7 @@ namespace OPCAIC.Infrastructure.Entities
 		public virtual IList<SubmissionMatchResult> BotResults { get; set; }
 	}
 
-	public class Match : Entity
+	public class Match : SoftDeletableEntity
 	{
 		public long TournamentId { get; set; }
 		public Tournament Tournament { get; set; }
@@ -57,7 +71,7 @@ namespace OPCAIC.Infrastructure.Entities
 		public MatchExecution LastExecution => Executions.ArgMaxOrDefault(e => e.Executed);
 	}
 
-	public class SubmissionMatchResult : Entity
+	public class SubmissionMatchResult : SoftDeletableEntity
 	{
 		public long SubmissionId { get; set; }
 		public Submission Submission { get; set; }

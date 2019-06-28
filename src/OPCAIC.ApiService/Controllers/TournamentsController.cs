@@ -16,9 +16,9 @@ namespace OPCAIC.ApiService.Controllers
 	[ApiController]
 	public class TournamentsController : ControllerBase
 	{
-		private readonly DummyDbContext context;
+		private readonly EntityFrameworkDbContext context;
 
-		public TournamentsController(DummyDbContext context)
+		public TournamentsController(EntityFrameworkDbContext context)
 		{
 			this.context = context;
 		}
