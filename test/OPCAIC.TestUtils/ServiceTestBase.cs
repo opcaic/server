@@ -55,20 +55,16 @@ namespace OPCAIC.TestUtils
 		}
 
 		/// <summary>
-		///   Creates a new scoped service provider and requests instance of service registered for type
-		///   <see cref="T" />. The scoped service provider is not explicitly disposed. After this call,
-		///   it is no longer possible to access the <see cref="Services" /> Property.
+		///   Performs given code block withing new service provider scope and disposes of it afterwards.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
-		/// <returns></returns>
-		protected T GetScopedService<T>() where T : class
+		/// <param name="call"></param>
+		protected void WithScoped<T>(Action<T> call)
 		{
-			if (services != null)
+			using (var scope = ServiceProvider.CreateScope())
 			{
-				Services.TryAddTransient<T>();
+				call(scope.ServiceProvider.GetRequiredService<T>());
 			}
-
-			return ServiceProvider.CreateScope().ServiceProvider.GetRequiredService<T>();
 		}
 	}
 }

@@ -14,13 +14,13 @@ namespace OPCAIC.Messaging.Test
 	{
 		protected static readonly double Timeout = 5000;
 
-		private readonly XUnitLoggerFactory loggerFactory;
+		private readonly XUnitLoggerProvider loggerProvider;
 		public string ConnectionString = TestConnectionStringFactory.GetConnectionString();
 
 		public BrokerWorkerTestBase(ITestOutputHelper output)
 		{
 			output.WriteLine(ConnectionString);
-			loggerFactory = new XUnitLoggerFactory(output);
+			loggerProvider = new XUnitLoggerProvider(output);
 			HeartbeatConfig = HeartbeatConfig.Default;
 			BrokerConsumerThread = new ThreadHelper(output, "BrokerConsumer");
 			BrokerSocketThread = new ThreadHelper(output, "BrokerSocket");
@@ -38,7 +38,7 @@ namespace OPCAIC.Messaging.Test
 
 		public void Dispose() => KillAll();
 
-		private ILogger<T> GetLogger<T>() => loggerFactory.CreateLogger<T>();
+		private ILogger<T> GetLogger<T>() => loggerProvider.CreateLogger<T>();
 
 		protected void CreateBroker()
 		{
