@@ -20,6 +20,14 @@ namespace OPCAIC.Utils.Test
 		}
 
 		[Fact]
+		public void ArgExtremeOrDefault()
+		{
+			Exception[] values = {};
+			Assert.Null(values.ArgMinOrDefault(e => e.Message));
+			Assert.Null(values.ArgMaxOrDefault(e => e.Message));
+		}
+
+		[Fact]
 		public void ArgMinMaxExceptions()
 		{
 			Func<double, double> selector = Math.Sqrt;
