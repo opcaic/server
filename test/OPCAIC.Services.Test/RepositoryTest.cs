@@ -15,11 +15,17 @@ namespace OPCAIC.Services.Test
 		[Fact]
 		public void SoftDelete()
 		{
-			long id = 0;
+			long matchId = 0;
+			long tournamentId = 0;
 			Output.WriteLine("Creating a new match");
 			WithScoped<EntityFrameworkDbContext>(ctx =>
 			{
-				ctx.Matches.Add(new Match());
+				var tournament = new Tournament();
+				ctx.Tournaments.Add(tournament);
+				ctx.Matches.Add(new Match()
+				{
+					Tournament = tournament
+				});
 				ctx.SaveChanges();
 			});
 
@@ -27,19 +33,21 @@ namespace OPCAIC.Services.Test
 			WithScoped<EntityFrameworkDbContext>(ctx =>
 			{
 				var match = ctx.Matches.Single();
-				id = match.Id;
+				matchId = match.Id;
+				tournamentId = match.TournamentId;
 				Assert.False(match.IsDeleted);
 				ctx.Remove(match);
 				ctx.SaveChanges();
 				Assert.True(match.IsDeleted);
 			});
-			Assert.NotEqual(0, id);
+			Assert.NotEqual(0, tournamentId);
 
 			Output.WriteLine("Checking the match is soft-deleted");
 			WithScoped<EntityFrameworkDbContext>(ctx =>
 			{
 				var match = ctx.Matches.IgnoreQueryFilters().Single();
-				Assert.Equal(id, match.Id);
+				Assert.Equal(matchId, match.Id);
+				Assert.Equal(tournamentId, match.TournamentId);
 				Assert.True(match.IsDeleted);
 			});
 		}

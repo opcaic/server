@@ -1,8 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.DbContexts
@@ -24,8 +28,25 @@ namespace OPCAIC.Infrastructure.DbContexts
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			base.OnModelCreating(modelBuilder);
-
+			AssertEntityTypesHaveCorrectBaseClass(modelBuilder.Model.GetEntityTypes());
 			RegisterSoftDeleteQueryFilters(modelBuilder);
+
+			// specify composite keys
+			modelBuilder.Entity<Match>().HasKey(m => new {m.Id, m.TournamentId});
+		}
+
+		/// <summary>
+		///   Application code relies on the fact that all entities derive from <see cref="IChangeTrackable" />,
+		///   this function is just a sanity check.
+		/// </summary>
+		/// <param name="types"></param>
+		[Conditional("DEBUG")]
+		private void AssertEntityTypesHaveCorrectBaseClass(IEnumerable<IMutableEntityType> types)
+		{
+			foreach (var type in types)
+				Debug.Assert(
+					typeof(IChangeTrackable).IsAssignableFrom(type.ClrType),
+					$"Type '{type.ClrType}' used in {nameof(EntityFrameworkDbContext)} does not derive from {typeof(IChangeTrackable)}.");
 		}
 
 		private static void RegisterSoftDeleteQueryFilters(ModelBuilder modelBuilder)
@@ -48,14 +69,14 @@ namespace OPCAIC.Infrastructure.DbContexts
 		/// <inheritdoc />
 		public override int SaveChanges()
 		{
-			UpdateSoftDeleted();
+			OnSavingChanges();
 			return base.SaveChanges();
 		}
 
 		/// <inheritdoc />
 		public override int SaveChanges(bool acceptAllChangesOnSuccess)
 		{
-			UpdateSoftDeleted();
+			OnSavingChanges();
 			return base.SaveChanges(acceptAllChangesOnSuccess);
 		}
 
@@ -63,7 +84,7 @@ namespace OPCAIC.Infrastructure.DbContexts
 		public override Task<int> SaveChangesAsync(
 			CancellationToken cancellationToken = new CancellationToken())
 		{
-			UpdateSoftDeleted();
+			OnSavingChanges();
 			return base.SaveChangesAsync(cancellationToken);
 		}
 
@@ -71,18 +92,35 @@ namespace OPCAIC.Infrastructure.DbContexts
 		public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
 			CancellationToken cancellationToken = new CancellationToken())
 		{
-			UpdateSoftDeleted();
+			OnSavingChanges();
 			return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 		}
 
-		private void UpdateSoftDeleted()
+		private void OnSavingChanges()
 		{
+			var now = DateTime.Now;
+
 			foreach (var e in ChangeTracker.Entries())
 			{
 				if (e.Entity is ISoftDeletable sd && e.State == EntityState.Deleted)
 				{
+					// process soft delete condition
 					e.State = EntityState.Modified;
 					sd.IsDeleted = true;
+				}
+
+				if (e.Entity is IChangeTrackable eb)
+				{
+					// update timestamps
+					switch (e.State)
+					{
+						case EntityState.Added:
+							eb.Created = eb.Updated = now;
+							break;
+						case EntityState.Modified:
+							eb.Updated = now;
+							break;
+					}
 				}
 			}
 		}
