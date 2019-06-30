@@ -42,7 +42,7 @@ namespace OPCAIC.Services.Test
 			});
 			Assert.NotEqual(0, tournamentId);
 
-			Output.WriteLine("Checking the match is soft-deleted");
+			Output.WriteLine("Checking that the match is soft-deleted");
 			WithScoped<EntityFrameworkDbContext>(ctx =>
 			{
 				var match = ctx.Matches.IgnoreQueryFilters().Single();

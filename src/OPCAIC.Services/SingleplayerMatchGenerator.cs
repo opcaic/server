@@ -11,8 +11,9 @@ namespace OPCAIC.Services
 		{
 			var matches = tournament.GetActiveSubmissions().Select(s => new Match()
 			{
+				MatchState = MatchState.Waiting, // no dependency
 				Tournament = tournament,
-				Participants = new Submission[] {s}
+				Participants = new[] {s}
 			}).ToList();
 
 			return (matches, true);

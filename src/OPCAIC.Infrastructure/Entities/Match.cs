@@ -34,6 +34,6 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///   Last execution of this match.
 		/// </summary>
-		public MatchExecution LastExecution => Executions.ArgMaxOrDefault(e => e.Executed);
+		public MatchExecution LastExecution => Executions?.ArgMaxOrDefault(e => e.Executed);
 	}
 }

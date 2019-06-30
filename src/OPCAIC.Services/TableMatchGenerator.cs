@@ -15,11 +15,14 @@ namespace OPCAIC.Services
 
 			for (var i = 0; i < submissions.Count; i++)
 			for (var j = i + 1; j < submissions.Count; j++)
+			{
 				matches.Add(new Match
 				{
+					MatchState = MatchState.Waiting, 
 					Tournament = tournament,
 					Participants = new[] {submissions[i], submissions[j]}
 				});
+			}
 
 			return (matches, true);
 		}

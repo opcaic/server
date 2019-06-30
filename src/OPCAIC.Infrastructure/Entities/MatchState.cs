@@ -11,14 +11,14 @@
 		Unknown,
 
 		/// <summary>
-		///   Match cannot be queued, because something is not ready.
+		///   Match is blocked by manual action from the administrator.
 		/// </summary>
-		WaitingForDependency,
+		Blocked,
 
 		/// <summary>
 		///   Match is waiting in a queue to be scheduled.
 		/// </summary>
-		Queued,
+		Waiting,
 
 		/// <summary>
 		///   Match has been scheduled for execution.
