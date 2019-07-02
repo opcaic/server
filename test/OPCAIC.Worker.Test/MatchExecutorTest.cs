@@ -1,14 +1,18 @@
 using OPCAIC.Messaging.Messages;
+using OPCAIC.TestUtils;
 using OPCAIC.Worker.Services;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace OPCAIC.Worker.Test
 {
-	public class MatchExecutorTest
+	public class MatchExecutorTest : ServiceTestBase
 	{
-		public MatchExecutorTest() => MatchExecutor = new MatchExecutor();
+		/// <inheritdoc />
+		public MatchExecutorTest(ITestOutputHelper output) : base(output)
+			=> Services.Mock<IExecutionServices>();
 
-		private MatchExecutor MatchExecutor { get; }
+		private MatchExecutor MatchExecutor => GetService<MatchExecutor>();
 
 		[Fact]
 		public void ExecutesMatchSuccessfully()

@@ -16,8 +16,8 @@ namespace OPCAIC.TestUtils
 		public static IServiceCollection AddXUnitLogging(this IServiceCollection services,
 			ITestOutputHelper output)
 		{
-			Require.NotNull(services, nameof(services));
-			Require.NotNull(output, nameof(output));
+			Require.ArgNotNull(services, nameof(services));
+			Require.ArgNotNull(output, nameof(output));
 
 			services.AddSingleton(output);
 			services.AddSingleton(typeof(ILogger<>), typeof(XUnitLogger<>));

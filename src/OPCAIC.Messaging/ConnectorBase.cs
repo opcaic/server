@@ -17,11 +17,6 @@ namespace OPCAIC.Messaging
 	public abstract class ConnectorBase<TSocket, TItem> : IDisposable where TSocket : NetMQSocket
 	{
 		/// <summary>
-		///   Heartbeat configuration.
-		/// </summary>
-		protected readonly HeartbeatConfig Config;
-
-		/// <summary>
 		///   Poller for workload tasks.
 		/// </summary>
 		protected readonly NetMQPoller ConsumerPoller;
@@ -48,7 +43,7 @@ namespace OPCAIC.Messaging
 		{
 			this.socketFactory = socketFactory;
 			this.handlerSet = handlerSet;
-			Config = config;
+			HeartbeatConfig = config;
 			Logger = logger;
 
 			SocketPoller = new NetMQPoller();
@@ -59,6 +54,11 @@ namespace OPCAIC.Messaging
 		}
 
 		/// <summary>
+		///   Heartbeat configuration.
+		/// </summary>
+		public HeartbeatConfig HeartbeatConfig { get; private set; }
+
+		/// <summary>
 		///   Identity used for communication.
 		/// </summary>
 		public string Identity => socketFactory.Identity;
@@ -67,6 +67,23 @@ namespace OPCAIC.Messaging
 		///   The underlying NetMQ Socket.
 		/// </summary>
 		protected TSocket Socket { get; private set; }
+
+		/// <summary>
+		///   Sets heartbeat configuration for this connector.
+		/// </summary>
+		/// <param name="config"></param>
+		public void SetHeartbeatConfig(HeartbeatConfig config)
+		{
+			AssertSocketThread();
+			HeartbeatConfig = config;
+			OnHeartbeatConfigChanged(config);
+		}
+
+		/// <summary>
+		///   Updates the necessary state when heartbeat configuration changes.
+		/// </summary>
+		/// <param name="config"></param>
+		protected abstract void OnHeartbeatConfigChanged(HeartbeatConfig config);
 
 		/// <summary>
 		///   Invoked when a new message is received. This should not be used to receive messages, but
@@ -100,17 +117,21 @@ namespace OPCAIC.Messaging
 		/// <summary>
 		///   Entry point for the poller thread.
 		/// </summary>
-		public void EnterPoller() => SocketPoller.Run();
+		public void EnterSocket()
+		{
+			SocketPoller.Run();
+		}
 
 		/// <summary>
 		///   Creates a new thread for the socket poller.
 		/// </summary>
-		public void EnterPollerAsync() => SocketPoller.RunAsync();
+		public void EnterSocketAsync() => SocketPoller.RunAsync();
 
 		/// <summary>
-		///   Stops the socket poller.
+		///   Breaks the socket thread loop, causing the thread to return from the
+		///   <see cref="EnterSocket" /> method.
 		/// </summary>
-		public void StopPoller() => SocketPoller.Stop();
+		public void StopSocket() => SocketPoller.Stop();
 
 		/// <summary>
 		///   Entry point for the consumer thread.
@@ -123,7 +144,8 @@ namespace OPCAIC.Messaging
 		public void EnterConsumerAsync() => ConsumerPoller.RunAsync();
 
 		/// <summary>
-		///   Stops the consumer poller.
+		///   Breaks the consumer thread loop, causing the thread to return from the
+		///   <see cref="EnterConsumer" /> method.
 		/// </summary>
 		public void StopConsumer() => ConsumerPoller.Stop();
 

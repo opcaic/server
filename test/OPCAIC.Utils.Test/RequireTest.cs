@@ -14,7 +14,7 @@ namespace OPCAIC.Utils.Test
 		public void IndexInRangeThrows(int i, int range)
 		{
 			var ex = Assert.Throws<ArgumentOutOfRangeException>(
-				() => Require.IndexInRange(i, range, argName));
+				() => Require.ArgInRange(i, range, argName));
 			Assert.Equal(argName, ex.ParamName);
 		}
 
@@ -22,7 +22,7 @@ namespace OPCAIC.Utils.Test
 		[InlineData(0, 1)]
 		[InlineData(1, 2)]
 		public void IndexInRangeDoesNotThrow(int i, int range)
-			=> Require.IndexInRange(i, range, argName);
+			=> Require.ArgInRange(i, range, argName);
 
 		[Fact]
 		public void NotEmptyDoesNotThrow()
@@ -35,12 +35,12 @@ namespace OPCAIC.Utils.Test
 					Enumerable.Empty<int>(), argName));
 
 		[Fact]
-		public void NotNullDoesNotThrow() => Require.NotNull(new object(), "name");
+		public void NotNullDoesNotThrow() => Require.ArgNotNull(new object(), "name");
 
 		[Fact]
 		public void NotNullThrows()
 		{
-			var ex = Assert.Throws<ArgumentNullException>(() => Require.NotNull(null, argName));
+			var ex = Assert.Throws<ArgumentNullException>(() => Require.ArgNotNull(null, argName));
 			Assert.Equal(argName, ex.ParamName);
 		}
 

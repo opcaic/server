@@ -3,12 +3,15 @@ using System.Diagnostics;
 using System.Threading;
 using Xunit.Sdk;
 
-namespace OPCAIC.Messaging.Test
+namespace OPCAIC.TestUtils
 {
 	public static class AssertEx
 	{
 		public static void WaitForEvent(ManualResetEventSlim handle, double milliseconds)
 		{
+			Debug.Assert(handle != null);
+			Debug.Assert(milliseconds >= 0);
+
 			if (Debugger.IsAttached)
 			{
 				milliseconds = 1000 * 60 * 60;

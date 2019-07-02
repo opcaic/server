@@ -1,4 +1,7 @@
 using System;
+using System.Diagnostics;
+using System.Runtime.ExceptionServices;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OPCAIC.Messaging.Config;
@@ -11,23 +14,31 @@ namespace OPCAIC.Messaging.Test
 	{
 		protected static readonly double Timeout = 5000;
 
-		private readonly XUnitLoggerFactory loggerFactory;
+		private readonly XUnitLoggerProvider loggerProvider;
 		public string ConnectionString = TestConnectionStringFactory.GetConnectionString();
 
 		public BrokerWorkerTestBase(ITestOutputHelper output)
 		{
 			output.WriteLine(ConnectionString);
-			loggerFactory = new XUnitLoggerFactory(output);
-			Config = HeartbeatConfig.Default;
+			loggerProvider = new XUnitLoggerProvider(output);
+			HeartbeatConfig = HeartbeatConfig.Default;
+			BrokerConsumerThread = new ThreadHelper(output, "BrokerConsumer");
+			BrokerSocketThread = new ThreadHelper(output, "BrokerSocket");
+			WorkerConsumerThread = new ThreadHelper(output, "WorkerSocket");
+			WorkerSocketThread = new ThreadHelper(output, "WorkerSocket");
 		}
 
 		protected BrokerConnector Broker { get; private set; }
+		private ThreadHelper BrokerConsumerThread { get; }
+		private ThreadHelper BrokerSocketThread { get; }
 		protected WorkerConnector Worker { get; private set; }
-		protected HeartbeatConfig Config { get; }
+		private ThreadHelper WorkerConsumerThread { get; }
+		private ThreadHelper WorkerSocketThread { get; }
+		protected HeartbeatConfig HeartbeatConfig { get; }
 
 		public void Dispose() => KillAll();
 
-		private ILogger<T> GetLogger<T>() => loggerFactory.CreateLogger<T>();
+		private ILogger<T> GetLogger<T>() => loggerProvider.CreateLogger<T>();
 
 		protected void CreateBroker()
 		{
@@ -36,7 +47,7 @@ namespace OPCAIC.Messaging.Test
 			{
 				Identity = "Broker",
 				ListeningAddress = ConnectionString,
-				HeartbeatConfig = Config
+				HeartbeatConfig = HeartbeatConfig
 			}), GetLogger<BrokerConnector>());
 		}
 
@@ -47,7 +58,7 @@ namespace OPCAIC.Messaging.Test
 			{
 				Identity = "Worker",
 				BrokerAddress = ConnectionString,
-				HeartbeatConfig = Config
+				HeartbeatConfig = HeartbeatConfig
 			}), GetLogger<WorkerConnector>());
 		}
 
@@ -70,8 +81,11 @@ namespace OPCAIC.Messaging.Test
 				CreateWorker();
 			}
 
-			Worker.EnterPollerAsync();
-			Worker.EnterConsumerAsync();
+			Debug.Assert(!WorkerSocketThread.IsRunning);
+			Debug.Assert(!WorkerConsumerThread.IsRunning);
+
+			WorkerSocketThread.Start(Worker.EnterSocket, Worker.StopSocket);
+			WorkerConsumerThread.Start(Worker.EnterConsumer, Worker.StopConsumer);
 		}
 
 		protected void StartBroker()
@@ -81,8 +95,11 @@ namespace OPCAIC.Messaging.Test
 				CreateBroker();
 			}
 
-			Broker.EnterPollerAsync();
-			Broker.EnterConsumerAsync();
+			Debug.Assert(!BrokerSocketThread.IsRunning);
+			Debug.Assert(!BrokerConsumerThread.IsRunning);
+
+			BrokerSocketThread.Start(Broker.EnterSocket, Broker.StopSocket);
+			BrokerConsumerThread.Start(Broker.EnterConsumer, Broker.StopConsumer);
 		}
 
 		protected void StopAll()
@@ -93,39 +110,27 @@ namespace OPCAIC.Messaging.Test
 
 		protected void StopWorker()
 		{
-			try
+			if (WorkerSocketThread.IsRunning)
 			{
-				Worker.StopPoller();
-			}
-			catch
-			{ /*ignore*/
+				WorkerSocketThread.Stop();
 			}
 
-			try
+			if (WorkerConsumerThread.IsRunning)
 			{
-				Worker.StopConsumer();
-			}
-			catch
-			{ /*ignore*/
+				WorkerConsumerThread.Stop();
 			}
 		}
 
 		protected void StopBroker()
 		{
-			try
+			if (BrokerSocketThread.IsRunning)
 			{
-				Broker.StopPoller();
-			}
-			catch
-			{ /*ignore*/
+				BrokerSocketThread.Stop();
 			}
 
-			try
+			if (BrokerConsumerThread.IsRunning)
 			{
-				Broker.StopConsumer();
-			}
-			catch
-			{ /*ignore*/
+				BrokerConsumerThread.Stop();
 			}
 		}
 
@@ -155,6 +160,64 @@ namespace OPCAIC.Messaging.Test
 			}
 
 			Broker = null;
+		}
+
+		private class ThreadHelper
+		{
+			private readonly string description;
+			private readonly ITestOutputHelper output;
+			private Exception ex;
+			private Action stopAction;
+			private Thread thread;
+
+			public ThreadHelper(ITestOutputHelper output, string description)
+			{
+				this.output = output;
+				this.description = description;
+			}
+
+			public bool IsRunning => thread != null;
+
+			public void Start(Action enter, Action stop)
+			{
+				stopAction = stop;
+
+				thread = new Thread(() =>
+				{
+					try
+					{
+						enter();
+					}
+					catch (Exception e)
+					{
+						output.WriteLine($"Thread '{description}' exited with exception: \n{e}");
+						ex = e;
+					}
+				});
+
+				thread.Name = description;
+				thread.Start();
+			}
+
+			public void Stop()
+			{
+				stopAction();
+				if (!thread.Join(100))
+				{
+					output.WriteLine("Thread Aborted");
+					thread.Abort();
+				}
+
+				if (ex != null)
+				{
+					// rethrow any exception with original stack trace
+					ExceptionDispatchInfo.Throw(ex); 
+				}
+
+				ex = null;
+				thread = null;
+				stopAction = null;
+			}
 		}
 	}
 }

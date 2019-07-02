@@ -62,7 +62,7 @@
 			});
 
 			// TODO: replace with real database
-			services.AddDbContext<DummyDbContext>(options => options.UseInMemoryDatabase(databaseName: "Dummy"));
+			services.AddDbContext<EntityFrameworkDbContext>(options => options.UseInMemoryDatabase(databaseName: "Dummy"));
 
 			services.AddServices();
 			services.AddSwaggerGen(SwaggerConfig.SetupSwaggerGen);

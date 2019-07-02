@@ -5,17 +5,23 @@ namespace OPCAIC.Utils
 {
 	public static class EnumerableExtensions
 	{
-		public static TSource ArgExtreme<TSource, TValue>(this IEnumerable<TSource> items,
-			Func<TSource, TValue> selector, int direction) where TValue : IComparable<TValue>
+		private static TSource ArgExtreme<TSource, TValue>(this IEnumerable<TSource> items,
+			Func<TSource, TValue> selector, int direction, bool allowNull)
+			where TValue : IComparable<TValue>
 		{
-			Require.NotNull(items, nameof(items));
-			Require.NotNull(selector, nameof(selector));
+			Require.ArgNotNull(items, nameof(items));
+			Require.ArgNotNull(selector, nameof(selector));
 
 			TSource extremeItem;
 			using (var e = items.GetEnumerator())
 			{
 				if (!e.MoveNext())
 				{
+					if (allowNull)
+					{
+						return default;
+					}
+
 					throw new InvalidOperationException("Sequence must be nonempty");
 				}
 
@@ -38,10 +44,18 @@ namespace OPCAIC.Utils
 
 		public static TSource ArgMin<TSource, TValue>(this IEnumerable<TSource> items,
 			Func<TSource, TValue> selector) where TValue : IComparable<TValue>
-			=> items.ArgExtreme(selector, 1);
+			=> items.ArgExtreme(selector, 1, false);
+
+		public static TSource ArgMinOrDefault<TSource, TValue>(this IEnumerable<TSource> items,
+			Func<TSource, TValue> selector) where TValue : IComparable<TValue>
+			=> items.ArgExtreme(selector, 1, true);
 
 		public static TSource ArgMax<TSource, TValue>(this IEnumerable<TSource> items,
 			Func<TSource, TValue> selector) where TValue : IComparable<TValue>
-			=> items.ArgExtreme(selector, -1);
+			=> items.ArgExtreme(selector, -1, false);
+
+		public static TSource ArgMaxOrDefault<TSource, TValue>(this IEnumerable<TSource> items,
+			Func<TSource, TValue> selector) where TValue : IComparable<TValue>
+			=> items.ArgExtreme(selector, -1, true);
 	}
 }

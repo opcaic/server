@@ -1,4 +1,5 @@
 ﻿using System;
+using OPCAIC.Messaging.Config;
 
 namespace OPCAIC.Messaging
 {
@@ -8,6 +9,17 @@ namespace OPCAIC.Messaging
 		///   Identity used for communication.
 		/// </summary>
 		string Identity { get; }
+
+		/// <summary>
+		///   Configuration options for heartbeat.
+		/// </summary>
+		HeartbeatConfig HeartbeatConfig { get; }
+
+		/// <summary>
+		///   Updates the heartbeat configuration to the given value.
+		/// </summary>
+		/// <param name="config">The configuration.</param>
+		void SetHeartbeatConfig(HeartbeatConfig config);
 
 		/// <summary>
 		///   Invoked when a connection is established.
@@ -53,19 +65,15 @@ namespace OPCAIC.Messaging
 		event EventHandler<object> UnhandledMessage;
 
 		/// <summary>
-		///   Entry point for the poller thread.
+		///   Entry point for the socket thread.
 		/// </summary>
-		void EnterPoller();
+		void EnterSocket();
 
 		/// <summary>
-		///   Creates a new thread for the socket poller.
+		///   Breaks the socket thread loop, causing the thread to return from the
+		///   <see cref="EnterSocket" /> method.
 		/// </summary>
-		void EnterPollerAsync();
-
-		/// <summary>
-		///   Stops the socket poller.
-		/// </summary>
-		void StopPoller();
+		void StopSocket();
 
 		/// <summary>
 		///   Entry point for the consumer thread.
@@ -73,12 +81,8 @@ namespace OPCAIC.Messaging
 		void EnterConsumer();
 
 		/// <summary>
-		///   Creates a new thread for the consumer poller.
-		/// </summary>
-		void EnterConsumerAsync();
-
-		/// <summary>
-		///   Stops the consumer poller.
+		///   Breaks the consumer thread loop, causing the thread to return from the
+		///   <see cref="EnterConsumer" /> method.
 		/// </summary>
 		void StopConsumer();
 	}

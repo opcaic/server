@@ -35,7 +35,7 @@ namespace OPCAIC.Broker
 		/// <inheritdoc />
 		public void EnqueueWork(WorkMessageBase msg)
 		{
-			Require.NotNull(msg, nameof(msg));
+			Require.ArgNotNull(msg, nameof(msg));
 
 			Schedule(() =>
 			{
@@ -63,14 +63,14 @@ namespace OPCAIC.Broker
 		/// <inheritdoc />
 		public void StartBrokering()
 		{
-			connector.EnterPollerAsync();
+			connector.EnterSocketAsync();
 			connector.EnterConsumerAsync();
 		}
 
 		/// <inheritdoc />
 		public void StopBrokering()
 		{
-			connector.StopPoller();
+			connector.StopSocket();
 			connector.StopConsumer();
 		}
 
@@ -122,7 +122,7 @@ namespace OPCAIC.Broker
 			}
 		}
 
-		private void Send(WorkerEntry worker, WorkMessageBase msg)
+		private void Send(WorkerEntry worker, object msg)
 			=> connector.SendMessage(worker.Identity, msg);
 
 		private void DispatchWork(WorkerEntry worker)
@@ -206,7 +206,15 @@ namespace OPCAIC.Broker
 			var worker = new WorkerEntry(identity);
 			identityToWorker.Add(identity, worker);
 			workers.Add(worker);
+
+			// make sure the worker is not executing anything
+			Reset(worker);
 		}
+
+		private void Reset(WorkerEntry worker) => Send(worker, new WorkerResetMessage()
+		{
+			HeartbeatConfig = connector.HeartbeatConfig
+		});
 
 		private static bool CanWorkerExecute(WorkerEntry worker, WorkMessageBase msg)
 			=> worker.Capabilities?.SupportedGames.Contains(msg.Game) == true;
