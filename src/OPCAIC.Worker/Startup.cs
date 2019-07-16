@@ -3,6 +3,7 @@ using Chimera.Extensions.Logging.Log4Net;
 using log4net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Config;
@@ -21,36 +22,45 @@ namespace OPCAIC.Worker
 		/// <summary>
 		///   Configures the logging facilities.
 		/// </summary>
-		/// <param name="loggerFactory"></param>
-		public static void ConfigureLogging(ILoggerFactory loggerFactory) => loggerFactory.AddLog4Net();
-
-		/// <summary>
-		///   Configures the configuration facilities.
-		/// </summary>
-		/// <param name="configuration">Configuration root of the entire application.</param>
-		/// <param name="services">Service collection of the application.</param>
-		public static void Configure(IConfiguration configuration, IServiceCollection services)
+		/// <param name="host">Host configuration.</param>
+		/// <param name="logging">Logging builder to configure.</param>
+		public static void ConfigureLogging(HostBuilderContext host, ILoggingBuilder logging)
 		{
-			services
-				.AddOptions()
-				.Configure<WorkerConnectorConfig>(configuration.GetSection("ConnectorConfig"))
-				.Configure<FileServerConfig>(configuration.GetSection("FileServer"))
-				.Configure<ExecutionConfig>(configuration.GetSection("Execution"));
-
-			var registry = new GameModuleRegistry();
-			services.AddSingleton<IGameModuleRegistry>(registry);
-			var modulePath = configuration.GetValue<string>("ModulePath");
-			LoadModules(registry, modulePath);
+			logging.AddLog4NetLogging();
 		}
 
 		/// <summary>
-		///   Configures used services for the application.
+		///   Configures logging builder to use Log4Net logging.
 		/// </summary>
-		/// <param name="services">Service collection of the application.</param>
-		public static void ConfigureServices(IServiceCollection services)
-			=> services
-				.AddTransient<IWorkerConnector, WorkerConnector>()
-				.AddSingleton<Worker>()
+		/// <param name="logging"></param>
+		/// <returns></returns>
+		private static ILoggingBuilder AddLog4NetLogging(this ILoggingBuilder logging)
+		{
+			var container = new Log4NetContainer(new Log4NetSettings
+			{
+				ConfigFilePath = "log4net.config",
+				Watch = true
+			});
+			container.Initialize();
+			return logging.AddProvider(new Log4NetProvider(container));
+		}
+
+		/// <summary>
+		///   Configures the application services.
+		/// </summary>
+		/// <param name="host">Host configuration.</param>
+		/// <param name="services">Services collection to configure.</param>
+		public static void ConfigureServices(HostBuilderContext host, IServiceCollection services)
+		{
+			var config = host.Configuration;
+
+			services
+				.AddOptions()
+				.Configure<FileServerConfig>(config.GetSection("FileServer"))
+				.Configure<ExecutionConfig>(config.GetSection("Execution"));
+
+			services
+				.AddWorker(worker => config.Bind("ConnectorConfig", worker))
 				.AddTransient<
 					IJobExecutor<MatchExecutionRequest, MatchExecutionResult>,
 					MatchExecutor>()
@@ -60,12 +70,18 @@ namespace OPCAIC.Worker
 				.AddTransient<IDownloadService, DownloadService>()
 				.AddTransient<IExecutionServices, ExecutionServices>();
 
+			var registry = new GameModuleRegistry();
+			services.AddSingleton<IGameModuleRegistry>(registry);
+			var modulePath = config.GetValue<string>("ModulePath");
+			LoadModules(registry, modulePath);
+		}
+
 		/// <summary>
 		///   Loads all game modules from specified path into provided registry
 		/// </summary>
 		/// <param name="registry">Registry into which loaded game modules should be added.</param>
 		/// <param name="path">Path to root directory of the game modules.</param>
-		internal static void LoadModules(GameModuleRegistry registry, string path)
+		private static void LoadModules(GameModuleRegistry registry, string path)
 		{
 			Directory.CreateDirectory(path);
 			foreach (var directory in Directory.GetDirectories(path))

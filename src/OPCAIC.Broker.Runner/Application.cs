@@ -7,23 +7,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OPCAIC.Messaging.Config;
 using OPCAIC.Worker.GameModules;
 
 namespace OPCAIC.Broker.Runner
 {
-	public class Application
+	public class Application : IHostedService
 	{
 		private static readonly Random rand = new Random(42);
 		private readonly IBroker broker;
 		private readonly ILogger logger;
 		private readonly IServiceProvider serviceProvider;
 		private readonly AppConfig config;
+		private bool stop = false;
 
-		public Application(IBroker broker, ILogger<Application> logger, IServiceProvider serviceProvider, IOptions<AppConfig> config)
+		public Application(ILogger<Application> logger, IApplicationLifetime lifetime, IBroker broker, IServiceProvider serviceProvider, IOptions<AppConfig> config)
 		{
 			this.broker = broker;
 			this.logger = logger;
@@ -47,7 +50,7 @@ namespace OPCAIC.Broker.Runner
 					})
 					.AddLogging(builder => builder.Services.AddSingleton<ILoggerFactory>(loggerFactory));
 
-				Worker.Startup.ConfigureServices(services);
+//				Worker.Startup.ConfigureServices(services);
 
 				// replace with our custom module registry
 				var registry = new GameModuleRegistry();
@@ -75,7 +78,7 @@ namespace OPCAIC.Broker.Runner
 
 		public void Run()
 		{
-			StartWorkers();
+//			StartWorkers();
 			RunBroker();
 		}
 
@@ -90,8 +93,7 @@ namespace OPCAIC.Broker.Runner
 				results.Add(a);
 			});
 
-			broker.StartBrokering();
-			while (!Program.Stop && i < 200)
+			while (!stop && i < 200)
 			{
 				Thread.Sleep(50);
 				if (broker.GetUnfinishedTasksCount() > 20)
@@ -111,14 +113,25 @@ namespace OPCAIC.Broker.Runner
 				}
 			}
 
-			while (!Program.Stop && results.Count < i)
+			while (!stop && results.Count < i)
 			{
 				Thread.Sleep(100);
 			}
 
 			Console.WriteLine($"Completed: {results.Count}/200 tasks");
+		}
 
-			broker.StopBrokering();
+		/// <inheritdoc />
+		public async Task StartAsync(CancellationToken cancellationToken)
+		{
+			Task.Factory.StartNew(Run);
+			return;
+		}
+
+		/// <inheritdoc />
+		public async Task StopAsync(CancellationToken cancellationToken)
+		{
+			stop = true;
 		}
 	}
 }

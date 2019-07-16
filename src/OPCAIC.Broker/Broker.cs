@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -14,7 +16,7 @@ using OPCAIC.Utils;
 namespace OPCAIC.Broker
 {
 	/// <inheritdoc cref="IBroker" />
-	public class Broker : IBroker
+	public class Broker : IBroker, IHostedService
 	{
 		private readonly IBrokerConnector connector;
 		private readonly Dictionary<string, WorkerEntry> identityToWorker;
@@ -234,6 +236,18 @@ namespace OPCAIC.Broker
 				// return back go queue (with original enqueue time)
 				taskQueue.Add(worker.CurrentWorkItem);
 			}
+		}
+
+		/// <inheritdoc />
+		public async Task StartAsync(CancellationToken cancellationToken)
+		{
+			StartBrokering();
+		}
+
+		/// <inheritdoc />
+		public async Task StopAsync(CancellationToken cancellationToken)
+		{
+			StopBrokering();
 		}
 	}
 }

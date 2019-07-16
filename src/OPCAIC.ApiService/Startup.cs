@@ -1,4 +1,6 @@
-﻿namespace OPCAIC.ApiService
+﻿using OPCAIC.Broker;
+
+namespace OPCAIC.ApiService
 {
 	using System;
 	using System.Text;
@@ -29,6 +31,12 @@
 			var key = Encoding.ASCII.GetBytes(
 				Environment.GetEnvironmentVariable(EnvVariables.SecurityKey));
 
+			// Frontend app sources
+			services.AddSpaStaticFiles(config =>
+			{
+				config.RootPath = Configuration.GetValue<string>("SPA_ROOT") ?? "wwwroot";
+			});
+
 			services.AddAuthentication(x =>
 				{
 					x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -47,7 +55,6 @@
 					};
 				});
 
-			// TODO: handle CORS correctly
 			services.AddCors(options =>
 			{
 				options.AddPolicy(myAllowSpecificOrigins,
@@ -65,21 +72,35 @@
 			services.AddDbContext<EntityFrameworkDbContext>(options => options.UseInMemoryDatabase(databaseName: "Dummy"));
 
 			services.AddServices();
+			services.AddBroker(broker => Configuration.Bind("Broker", broker));
 			services.AddSwaggerGen(SwaggerConfig.SetupSwaggerGen);
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 		{
-			app.UseHsts();
+			if (env.IsDevelopment())
+			{
+				app.UseDeveloperExceptionPage();
+				app.UseCors(myAllowSpecificOrigins);
+			}
+			else
+			{
+				app.UseHsts();
+				app.UseHttpsRedirection();
+			}
 
 			app.UseAuthentication();
 
 			app.UseSwagger(SwaggerConfig.SetupSwagger);
 			app.UseSwaggerUI(SwaggerConfig.SetupSwaggerUi);
-			app.UseCors(myAllowSpecificOrigins);
 
-			app.UseHttpsRedirection();
+			// Serve the frontend SPA
+			app.UseStaticFiles();
+			app.UseDefaultFiles();
+			app.UseSpaStaticFiles();
+
 			app.UseMvc();
+			app.UseSpa(spa => { });
 		}
 	}
 }

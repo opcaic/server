@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -16,11 +18,14 @@ namespace OPCAIC.Worker
 	/// <summary>
 	///   The main class of the opcaic worker process
 	/// </summary>
-	public class Worker
+	public class Worker : IHostedService
 	{
 		private readonly IWorkerConnector connector;
 		private readonly ILogger logger;
 		private readonly IServiceProvider serviceProvider;
+
+		private Thread SocketThread;
+		private Thread ConsumerThread;
 
 		private readonly Random rand = new Random();
 
@@ -30,6 +35,14 @@ namespace OPCAIC.Worker
 			this.connector = connector;
 			this.logger = logger;
 			this.serviceProvider = serviceProvider;
+
+			// setup threads
+			SocketThread = new Thread(connector.EnterSocket);
+			SocketThread.Name = $"{Identity} - Socket";
+			ConsumerThread = new Thread(connector.EnterConsumer);
+			ConsumerThread.Name = $"{Identity} - Consumer";
+
+			RegisterHandlers();
 		}
 
 		private string Identity => connector.Identity;
@@ -83,9 +96,6 @@ namespace OPCAIC.Worker
 
 		public void Run()
 		{
-			logger.LogInformation("Starting Worker");
-			RegisterHandlers();
-
 			var t = new Thread(connector.EnterSocket);
 			t.Start();
 
@@ -94,7 +104,6 @@ namespace OPCAIC.Worker
 
 			connector.StopSocket();
 			t.Join();
-			logger.LogInformation("Shutting down Worker");
 		}
 
 		public void InitConnection()
@@ -108,6 +117,24 @@ namespace OPCAIC.Worker
 					SupportedGames = serviceProvider.GetService<IGameModuleRegistry>().GetAllModules().Select(m => m.GameName).ToList()
 				}
 			});
+		}
+
+		/// <inheritdoc />
+		public async Task StartAsync(CancellationToken cancellationToken)
+		{
+			logger.LogInformation("Starting Worker");
+			SocketThread.Start();
+			ConsumerThread.Start();
+		}
+
+		/// <inheritdoc />
+		public async Task StopAsync(CancellationToken cancellationToken)
+		{
+			logger.LogInformation("Shutting down Worker");
+			connector.StopSocket();
+			connector.StopConsumer();
+			SocketThread.Join();
+			ConsumerThread.Join();
 		}
 	}
 }

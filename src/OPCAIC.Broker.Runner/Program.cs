@@ -1,36 +1,25 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace OPCAIC.Broker.Runner
 {
-	internal class Program
+	internal static class Program
 	{
-		public static bool Stop;
+		public static void Main(string[] args) => CreateHostBuilder(args).Build().Run();
 
-		public static int Main(string[] args)
-		{
-			var config = new ConfigurationBuilder()
-				.AddJsonFile("appsettings.json")
-				.Build();
-			var logger = new LoggerFactory();
-			var services = new ServiceCollection()
-				.AddLogging(builder => builder.Services.AddSingleton<ILoggerFactory>(logger))
-				.AddSingleton<Application>();
+		public static IHostBuilder CreateHostBuilder(string[] args)
+			=> new HostBuilder().ConfigureAppConfiguration((host, config) =>
+				{
+					var env = host.HostingEnvironment;
 
-			Startup.ConfigureLogging(logger);
-			Startup.ConfigureServices(services);
-			Startup.Configure(config, services);
-
-			Console.CancelKeyPress += (_, a) =>
-			{
-				a.Cancel = true;
-				Stop = true;
-			};
-
-			services.BuildServiceProvider().GetRequiredService<Application>().Run();
-			return 0;
-		}
+					config
+						.AddJsonFile("appsettings.json", true, true)
+						.AddJsonFile($"appsettings.{env}.json", true, true)
+						.AddEnvironmentVariables()
+						.AddCommandLine(args);
+				})
+				.ConfigureLogging(Startup.ConfigureLogging)
+				.ConfigureServices(Startup.ConfigureServices)
+				.UseConsoleLifetime();
 	}
 }
