@@ -1,8 +1,8 @@
 {
-	"profiles": {
-		"OPCAIC.Worker": {
-			"commandName": "Project",
-			"commandLineArgs": "localhost 5000"
-		}
-	}
+  "profiles": {
+    "OPCAIC.Worker": {
+      "commandName": "Project",
+      "commandLineArgs": "localhost 5000"
+    }
+  }
 }

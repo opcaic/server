@@ -29,7 +29,7 @@ namespace OPCAIC.Worker.Services
 
 		/// <inheritdoc />
 		public IGameModule GetGameModule(string game)
-			=> gameModuleRegistry.FindGameModule(game) ?? throw new GameModulueNotFoundException(game);
+			=> gameModuleRegistry.FindGameModule(game) ?? throw new GameModuleNotFoundException(game);
 
 		/// <inheritdoc />
 		public async Task DownloadSubmission(string serverPath, string localPath)

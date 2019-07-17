@@ -6,6 +6,8 @@
 		{
 			public static string Source => "src";
 			public static string Binary => "bin";
+			public static string Input => "in";
+			public static string Output => "out";
 			public static string Extra => "extra";
 		}
 
@@ -16,6 +18,7 @@
 			public static string CheckerResult = "check-result" + ResultFileExt;
 			public static string CompilerResult = "compile-result" + ResultFileExt;
 			public static string ValidatorResult = "validate-result" + ResultFileExt;
+			public static string ExecutorResult = "match-result" + ResultFileExt;
 		}
 	}
 }

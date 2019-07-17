@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="GameModules\ProcessHandler\**" />
+    <EmbeddedResource Remove="GameModules\ProcessHandler\**" />
+    <None Remove="GameModules\ProcessHandler\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="chimera.extensions.logging.log4net" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.2.0" />

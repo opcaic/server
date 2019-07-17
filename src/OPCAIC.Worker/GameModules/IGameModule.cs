@@ -14,30 +14,31 @@
 		/// <summary>
 		///   Invokes the checker entry point to check the submission.
 		/// </summary>
-		/// <param name="inputDir">Path to the directory with input files.</param>
-		/// <param name="outputDir">Path to the directory in which to store the output files.</param>
-		void Check(string inputDir, string outputDir);
+		/// <param name="outputDir">Path to the directory with result files.</param> 
+		/// <param name="inputSrcDir">Path to the directory with bot source files</param>
+		CheckerResult Check(string inputSrcDir, string outputDir);
 
 		/// <summary>
 		///   Invokes the compiler entry point to compile the submission into executable.
 		/// </summary>
-		/// <param name="inputDir">Path to the directory with input files.</param>
-		/// <param name="outputDir">Path to the directory in which to store the output files.</param>
-		void Compile(string inputDir, string outputDir);
+		/// <param name="outputDir"> Path to the directory with result files.</param>
+		/// <param name="inputSrcDir">Path to the directory with bot source files.</param>
+		/// <param name="outputBinDir">Path to the directory in which to store the compiled bot.</param>
+		CompilerResult Compile(string inputSrcDir, string outputBinDir, string outputDir);
 
 		/// <summary>
 		///   Invokes the validator entry point to validate the results of the compilation.
 		/// </summary>
-		/// <param name="inputDir">Path to the directory with input files.</param>
-		/// <param name="outputDir">Path to the directory in which to store the output files.</param>
-		void Validate(string inputDir, string outputDir);
+		/// <param name="outputDir">Path to the directory with result files.</param>
+		/// <param name="inputBinDir">Path to the directory with the compiled bot.</param>
+		ValidatorResult Validate(string inputBinDir, string outputDir);
 
 		/// <summary>
 		///   Invokes the executor entry point to execute the match.
 		/// </summary>
-		/// <param name="inputDir">Path to the directory with input files.</param>
-		/// <param name="outputDir">Path to the directory in which to store the output files.</param>
-		void Execute(string inputDir, string outputDir);
+		/// <param name="inputDirs">Paths to the directories with input files.</param>
+		/// <param name="outputDir">Path to the directory in which to store the result files.</param>
+		ExecutorResult Execute(string[] inputDirs, string outputDir);
 
 		/// <summary>
 		///   Invokes the Cleaner entry point to reset the game module after a crash.

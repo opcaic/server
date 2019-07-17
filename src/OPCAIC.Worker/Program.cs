@@ -2,6 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Worker.GameModules;
+using System;
+
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("OPCAIC.Worker.Test")]
 
 namespace OPCAIC.Worker
