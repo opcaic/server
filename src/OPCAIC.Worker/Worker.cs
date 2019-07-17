@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OPCAIC.Messaging;
-using OPCAIC.Messaging.Config;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
@@ -21,20 +21,24 @@ namespace OPCAIC.Worker
 	public class Worker : IHostedService
 	{
 		private readonly IWorkerConnector connector;
+		private readonly ExecutionConfig executionConfig;
 		private readonly ILogger logger;
-		private readonly IServiceProvider serviceProvider;
 
 		private Thread SocketThread;
 		private Thread ConsumerThread;
 
 		private readonly Random rand = new Random();
+		private readonly IServiceProvider serviceProvider;
+
+		private CancellationTokenSource currentTaskCts;
 
 		public Worker(IWorkerConnector connector, ILogger<Worker> logger,
-			IServiceProvider serviceProvider)
+			IServiceProvider serviceProvider, IOptions<ExecutionConfig> executionConfig)
 		{
 			this.connector = connector;
 			this.logger = logger;
 			this.serviceProvider = serviceProvider;
+			this.executionConfig = executionConfig.Value;
 
 			// setup threads
 			SocketThread = new Thread(connector.EnterSocket);
@@ -58,21 +62,35 @@ namespace OPCAIC.Worker
 
 		private void Reset(WorkerResetMessage msg)
 		{
+			logger.LogInformation($"{nameof(WorkerResetMessage)} received, resetting heartbeat config.");
 			connector.SetHeartbeatConfig(msg.HeartbeatConfig);
-			// TODO: stop any task currently being executed
+
+			// claim ownership of the CTS
+			var cts = Interlocked.Exchange(ref currentTaskCts, null);
+			if (cts != null)
+			{
+				logger.LogInformation("Aborting current task");
+				cts.Cancel();
+				cts.Dispose();
+			}
 		}
 
 		private void ServeRequest<TRequest, TResult>(TRequest request)
 			where TResult : ReplyMessageBase, new() where TRequest : WorkMessageBase
 		{
 			TResult res = null;
+			Debug.Assert(currentTaskCts == null);
+
+			// keep local (thread-safe) reference
+			var cts = new CancellationTokenSource(executionConfig.MaxTaskTimeout);
+			currentTaskCts = cts;
 
 			try
 			{
 				using (var scope = serviceProvider.CreateScope())
 				{
 					res = scope.ServiceProvider.GetRequiredService<IJobExecutor<TRequest, TResult>>()
-						.Execute(request);
+						.Execute(request, cts.Token);
 				}
 			}
 			catch (Exception e)
@@ -91,11 +109,15 @@ namespace OPCAIC.Worker
 				};
 			}
 
+			// atomically dispose of the cancellation token source
+			Interlocked.Exchange(ref currentTaskCts, null)?.Dispose();
+
 			connector.SendMessage(res);
 		}
 
 		public void Run()
 		{
+			logger.LogInformation("Starting Worker");
 			var t = new Thread(connector.EnterSocket);
 			t.Start();
 
@@ -114,7 +136,8 @@ namespace OPCAIC.Worker
 			{
 				Capabilities = new WorkerCapabilities
 				{
-					SupportedGames = serviceProvider.GetService<IGameModuleRegistry>().GetAllModules().Select(m => m.GameName).ToList()
+					SupportedGames = serviceProvider.GetService<IGameModuleRegistry>().GetAllModules()
+						.Select(m => m.GameName).ToList()
 				}
 			});
 		}

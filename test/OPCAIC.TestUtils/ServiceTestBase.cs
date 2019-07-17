@@ -54,6 +54,20 @@ namespace OPCAIC.TestUtils
 			return ServiceProvider.GetRequiredService<T>();
 		}
 
+
+		/// <summary>
+		///   Starts a new thread wrapped in a helper to correctly handle uncaught exceptions.
+		/// </summary>
+		/// <param name="action">Main code of the thread.</param>
+		/// <param name="description">Optional name of the thread.</param>
+		/// <returns></returns>
+		protected ThreadHelper StartThread(Action action, string description = "")
+		{
+			var helper = new ThreadHelper(Output, description);
+			helper.Start(action, () => { });
+			return helper;
+		}
+
 		/// <summary>
 		///   Performs given code block withing new service provider scope and disposes of it afterwards.
 		/// </summary>
