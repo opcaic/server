@@ -1,14 +1,16 @@
 ﻿using System.Threading.Tasks;
+using AutoMapper;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Entities;
 
-namespace OPCAIC.Infrastructure.Repository
+namespace OPCAIC.Infrastructure.Repositories
 {
 	public class SimpleLookupRepository<TEntity>
 		: Repository<TEntity>, ISimpleLookupRepository<TEntity> where TEntity : Entity
 	{
 		/// <inheritdoc />
-		protected SimpleLookupRepository(EntityFrameworkDbContext context) : base(context)
+		protected SimpleLookupRepository(DataContext context, IMapper mapper) 
+      : base(context, mapper)
 		{
 		}
 

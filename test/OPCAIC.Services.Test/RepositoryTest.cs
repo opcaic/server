@@ -18,7 +18,7 @@ namespace OPCAIC.Services.Test
 			long matchId = 0;
 			long tournamentId = 0;
 			Output.WriteLine("Creating a new match");
-			WithScoped<EntityFrameworkDbContext>(ctx =>
+			WithScoped<DataContext>(ctx =>
 			{
 				var tournament = new Tournament();
 				ctx.Tournaments.Add(tournament);
@@ -30,7 +30,7 @@ namespace OPCAIC.Services.Test
 			});
 
 			Output.WriteLine("Deleting the match");
-			WithScoped<EntityFrameworkDbContext>(ctx =>
+			WithScoped<DataContext>(ctx =>
 			{
 				var match = ctx.Matches.Single();
 				matchId = match.Id;
@@ -43,7 +43,7 @@ namespace OPCAIC.Services.Test
 			Assert.NotEqual(0, tournamentId);
 
 			Output.WriteLine("Checking that the match is soft-deleted");
-			WithScoped<EntityFrameworkDbContext>(ctx =>
+			WithScoped<DataContext>(ctx =>
 			{
 				var match = ctx.Matches.IgnoreQueryFilters().Single();
 				Assert.Equal(matchId, match.Id);
@@ -58,7 +58,7 @@ namespace OPCAIC.Services.Test
 			LoggerFactory factory = new LoggerFactory();
 			factory.AddProvider(new XUnitLoggerProvider(output));
 
-			Services.AddDbContext<EntityFrameworkDbContext>(options =>
+			Services.AddDbContext<DataContext>(options =>
 			{
 				options.UseInMemoryDatabase(databaseName: "Dummy");
 				options.EnableSensitiveDataLogging();

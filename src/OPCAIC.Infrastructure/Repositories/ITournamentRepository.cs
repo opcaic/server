@@ -1,7 +1,7 @@
 ﻿using System.Xml.Xsl;
 using OPCAIC.Infrastructure.Entities;
 
-namespace OPCAIC.Infrastructure.Repository
+namespace OPCAIC.Infrastructure.Repositories
 {
 	public interface ITournamentRepository : IRepository<Tournament>
 	{

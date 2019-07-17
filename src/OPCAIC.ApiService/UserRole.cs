@@ -4,7 +4,7 @@
 	{
 		None,
 		User,
-		Teacher,
+		Organizer,
 		Admin
 	}
 }

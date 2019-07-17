@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using OPCAIC.Infrastructure.Entities;
 
-namespace OPCAIC.Infrastructure.Repository
+namespace OPCAIC.Infrastructure.Repositories
 {
 	public interface IMatchRepository : IRepository<Match>
 	{

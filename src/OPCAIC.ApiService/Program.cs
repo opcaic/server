@@ -16,7 +16,7 @@
 			{
 				//3. Get the instance of BoardGamesDBContext in our services layer
 				var services = scope.ServiceProvider;
-				var context = services.GetRequiredService<EntityFrameworkDbContext>();
+				var context = services.GetRequiredService<DataContext>();
 
 				//4. Call the DataGenerator to create sample data
 				DataGenerator.Initialize(services);

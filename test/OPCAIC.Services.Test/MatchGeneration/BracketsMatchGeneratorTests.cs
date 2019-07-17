@@ -2,7 +2,7 @@
 using System.Linq;
 using Moq;
 using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Repository;
+using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.TestUtils;
 using Xunit;
 using Xunit.Abstractions;

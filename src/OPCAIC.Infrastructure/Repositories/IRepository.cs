@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace OPCAIC.Infrastructure.Repository
+namespace OPCAIC.Infrastructure.Repositories
 {
 	/// <summary>
 	///   Provides most basic methods for any repository implementations.
