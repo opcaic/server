@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Repository;
+using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Utils;
 
 namespace OPCAIC.Services

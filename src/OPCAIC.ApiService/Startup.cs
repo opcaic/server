@@ -28,14 +28,14 @@ namespace OPCAIC.ApiService
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-			var key = Encoding.ASCII.GetBytes(
-				Environment.GetEnvironmentVariable(EnvVariables.SecurityKey));
 
 			// Frontend app sources
 			services.AddSpaStaticFiles(config =>
 			{
 				config.RootPath = Configuration.GetValue<string>("SPA_ROOT") ?? "wwwroot";
 			});
+
+			string key = Configuration.GetValue<string>(ConfigNames.SecurityKey);
 
 			services.AddAuthentication(x =>
 				{
@@ -49,7 +49,7 @@ namespace OPCAIC.ApiService
 					x.TokenValidationParameters = new TokenValidationParameters
 					{
 						ValidateIssuerSigningKey = true,
-						IssuerSigningKey = new SymmetricSecurityKey(key),
+						IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
 						ValidateIssuer = false,
 						ValidateAudience = false
 					};
@@ -71,10 +71,12 @@ namespace OPCAIC.ApiService
 			});
 
 			// TODO: replace with real database
-			services.AddDbContext<EntityFrameworkDbContext>(options => options.UseInMemoryDatabase(databaseName: "Dummy"));
+			services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase(databaseName: "Dummy"));
 
 			services.AddServices();
 			services.AddBroker(broker => Configuration.Bind("Broker", broker));
+			services.AddRepositories();
+			services.AddMapper();
 			services.AddSwaggerGen(SwaggerConfig.SetupSwaggerGen);
 		}
 
@@ -92,6 +94,8 @@ namespace OPCAIC.ApiService
 			}
 
 			app.UseAuthentication();
+			app.UseMiddleware<ExceptionMiddleware>();
+			app.UseMiddleware<DbTransactionMiddleware>();
 
 			app.UseSwagger(SwaggerConfig.SetupSwagger);
 			app.UseSwaggerUI(SwaggerConfig.SetupSwaggerUi);

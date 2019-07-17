@@ -11,9 +11,9 @@ using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.DbContexts
 {
-	public class EntityFrameworkDbContext : DbContext
+	public class DataContext : DbContext
 	{
-		public EntityFrameworkDbContext(DbContextOptions<EntityFrameworkDbContext> options)
+		public DataContext(DbContextOptions<DataContext> options)
 			: base(options)
 		{
 		}
@@ -23,6 +23,8 @@ namespace OPCAIC.Infrastructure.DbContexts
 		public DbSet<MatchExecution> MatchExecutions { get; set; }
 		public DbSet<Submission> Submissions { get; set; }
 		public DbSet<SubmissionMatchResult> SubmissionsMatchResults { get; set; }
+		public DbSet<User> Users { get; set; }
+		public DbSet<UserRole> UserRoles { get; set; }
 
 		/// <inheritdoc />
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -46,7 +48,7 @@ namespace OPCAIC.Infrastructure.DbContexts
 			foreach (var type in types)
 				Debug.Assert(
 					typeof(IChangeTrackable).IsAssignableFrom(type.ClrType),
-					$"Type '{type.ClrType}' used in {nameof(EntityFrameworkDbContext)} does not derive from {typeof(IChangeTrackable)}.");
+					$"Type '{type.ClrType}' used in {nameof(DataContext)} does not derive from {typeof(IChangeTrackable)}.");
 		}
 
 		private static void RegisterSoftDeleteQueryFilters(ModelBuilder modelBuilder)

@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Infrastructure.Dtos;
+using OPCAIC.Infrastructure.Repositories;
 
 namespace OPCAIC.ApiService.Services
 {
@@ -25,16 +26,26 @@ namespace OPCAIC.ApiService.Services
 			this.userTournamentRepository = userTournamentRepository;
 		}
 
-		public async Task<UserIdentity[]> GetAllAsync()
-			=> await Task.FromResult(fUsers.Values.ToArray());
-
-		public async Task<UserIdentity> Authenticate(string email, string passwordHash)
+		public async Task<long> CreateAsync(NewUserDto user, CancellationToken cancellationToken)
 		{
-			var user = await userRepository.(email);
-			if (user == null || user.PasswordHash != passwordHash)
-			{
+			if (await userRepository.ExistsByEmailAsync(user.Email, cancellationToken))
+				throw new ConflictException("user-email-conflict");
+
+			return await userRepository.CreateAsync(user, cancellationToken);
+
+#warning TODO - Send verification email
+		}
+
+		public Task<UserIdentityDto[]> GetAllAsync(CancellationToken cancellationToken)
+		{
+			return userRepository.GetAsync(cancellationToken);
+		}
+
+		public async Task<UserIdentity> AuthenticateAsync(string email, string passwordHash, CancellationToken cancellationToken)
+		{
+			var user = await userRepository.AuthenticateAsync(email, passwordHash, cancellationToken);
+			if (user == null)
 				return null;
-			}
 
 			var jwtTokenHandler = new JwtSecurityTokenHandler();
 
@@ -46,12 +57,12 @@ namespace OPCAIC.ApiService.Services
 			{
 				Subject = new ClaimsIdentity(new[] { new Claim("role", user.RoleId.ToString()) }),
 				Expires = DateTime.Now.AddHours(1),
-				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
 					SecurityAlgorithms.HmacSha256Signature)
 			};
 			var token = jwtTokenHandler.CreateToken(tokenDescriptor);
 
-			return Task.FromResult(new UserIdentity
+			return new UserIdentity
 			{
 				Id = user.Id,
 				Email = user.Email,
