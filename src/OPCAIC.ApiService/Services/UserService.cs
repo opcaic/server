@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Security;
@@ -13,35 +14,37 @@ namespace OPCAIC.ApiService.Services
 {
 	public class UserService : IUserService
 	{
-		private readonly Dictionary<string, UserIdentity> fUsers;
+		private readonly IConfiguration configuration;
+		private readonly IUserRepository userRepository;
+		private readonly IUserTournamentRepository userTournamentRepository;
 
-		public UserService()
+		public UserService(IConfiguration configuration, IUserRepository userRepository, IUserTournamentRepository userTournamentRepository)
 		{
-			// TODO mock data, replace with DB configuration
-			fUsers = new Dictionary<string, UserIdentity>();
-			fUsers.Add("test@user.com",
-				new UserIdentity {Id = 1, Email = "test@user.com", PasswordHash = "password"});
-			fUsers.Add("example@user.com",
-				new UserIdentity {Id = 2, Email = "example@user.com", PasswordHash = "password"});
+			this.configuration = configuration;
+			this.userRepository = userRepository;
+			this.userTournamentRepository = userTournamentRepository;
 		}
 
 		public async Task<UserIdentity[]> GetAllAsync()
 			=> await Task.FromResult(fUsers.Values.ToArray());
 
-		public Task<UserIdentity> Authenticate(string email, string passwordHash)
+		public async Task<UserIdentity> Authenticate(string email, string passwordHash)
 		{
-			var user = FindByEmail(email);
+			var user = await userRepository.(email);
 			if (user == null || user.PasswordHash != passwordHash)
 			{
 				return null;
 			}
 
 			var jwtTokenHandler = new JwtSecurityTokenHandler();
-			var key = Encoding.ASCII.GetBytes(
-				Environment.GetEnvironmentVariable(EnvVariables.SecurityKey));
+
+			string key = configuration.GetValue<string>(ConfigNames.SecurityKey);
+
+			var tournamentIds = await userTournamentRepository.FindTournamentsByUserAsync(user.Id, cancellationToken);
+
 			var tokenDescriptor = new SecurityTokenDescriptor
 			{
-				Subject = new ClaimsIdentity(new[] {new Claim("user", user.Id.ToString())}),
+				Subject = new ClaimsIdentity(new[] { new Claim("role", user.RoleId.ToString()) }),
 				Expires = DateTime.Now.AddHours(1),
 				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
 					SecurityAlgorithms.HmacSha256Signature)
@@ -52,19 +55,10 @@ namespace OPCAIC.ApiService.Services
 			{
 				Id = user.Id,
 				Email = user.Email,
-				Role = user.Role,
-				Token = jwtTokenHandler.WriteToken(token)
-			});
-		}
-
-		private UserIdentity FindByEmail(string email)
-		{
-			if (!fUsers.TryGetValue(email, out var user))
-			{
-				user = null;
-			}
-
-			return user;
+				Role = (UserRole)user.RoleId,
+				Token = jwtTokenHandler.WriteToken(token),
+				ManagedTournamentIds = tournamentIds
+			};
 		}
 	}
 }

@@ -11,5 +11,7 @@
 		public string Token { get; set; }
 
 		public UserRole Role { get; set; }
+
+		public long[] ManagedTournamentIds { get; set; }
 	}
 }

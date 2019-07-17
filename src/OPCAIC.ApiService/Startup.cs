@@ -1,21 +1,21 @@
 ﻿using OPCAIC.Broker;
+using System.Text;
+using OPCAIC.ApiService.Configs;
+using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.ApiService.IoC;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using OPCAIC.ApiService.Middlewares;
+using OPCAIC.ApiService.Security;
 
 namespace OPCAIC.ApiService
 {
-	using System;
-	using System.Text;
-	using Configs;
-	using Infrastructure.DbContexts;
-	using IoC;
-	using Microsoft.AspNetCore.Authentication.JwtBearer;
-	using Microsoft.AspNetCore.Builder;
-	using Microsoft.AspNetCore.Hosting;
-	using Microsoft.AspNetCore.Mvc;
-	using Microsoft.EntityFrameworkCore;
-	using Microsoft.Extensions.Configuration;
-	using Microsoft.Extensions.DependencyInjection;
-	using Microsoft.IdentityModel.Tokens;
-
 	public class Startup
 	{
 		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -54,6 +54,8 @@ namespace OPCAIC.ApiService
 						ValidateAudience = false
 					};
 				});
+
+			services.AddAuthorization(AuthenticationConfiguration.Setup);
 
 			services.AddCors(options =>
 			{

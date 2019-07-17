@@ -1,61 +1,62 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using OPCAIC.Infrastructure.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.ApiService.Security;
 
 namespace OPCAIC.ApiService.Controllers
 {
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Net;
-	using System.Threading.Tasks;
-	using Infrastructure.DbContexts;
-	using Infrastructure.Entities;
-	using Microsoft.AspNetCore.Cors;
-	using Microsoft.EntityFrameworkCore;
-	using Security;
-
 	[Route("api/tournaments")]
-	[ApiController]
-	public class TournamentsController : ControllerBase
+	public class TournamentsController : ApiController
 	{
-		private readonly EntityFrameworkDbContext context;
+		private readonly DataContext context;
 
-		public TournamentsController(EntityFrameworkDbContext context)
+		public TournamentsController(DataContext context)
 		{
 			this.context = context;
 		}
 
 
 		[HttpGet]
-		[ProducesResponseType(typeof(Tournament), (int) HttpStatusCode.OK)]
-		public async Task<ActionResult<Tournament[]>> GetTournaments()
+		[Authorize(RolePolicy._User)]
+		[ProducesResponseType(typeof(Tournament), (int)HttpStatusCode.OK)]
+		public async Task<Tournament[]> GetTournaments()
 		{
-			return Ok(context.Tournaments.ToArray());
+			return context.Set<Tournament>().ToArray();
 		}
 
 		[HttpGet("{id}")]
-		public async Task<ActionResult<Tournament>> GetTournament(int id)
+		[Authorize(RolePolicy._User)]
+		public async Task<Tournament> GetTournament(int id, CancellationToken cancellationToken)
 		{
-			var tournament = context.Tournaments.SingleOrDefault(x => x.Id == id);
+			var tournament = await context.Set<Tournament>().SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
 
 			if (tournament == null)
 			{
-				return NotFound();
+				throw new NotFoundException(nameof(Tournament), id);
 			}
 
-			return Ok(tournament);
+			return tournament;
 		}
 
 		[HttpPut("{id}")]
-		public async Task<ActionResult<Tournament>> UpdateTournament(int id, Tournament tournament)
+		[Authorize(RolePolicy._Organizer)]
+		public async Task UpdateTournament(int id, Tournament tournament)
 		{
+			CheckTournamentAccess(id, User.Identity);
+
 			if (id != tournament.Id)
 			{
-				return BadRequest();
+				throw new BadRequestException("Invalid model of tournament.");
 			}
 
 			context.Entry(tournament).State = EntityState.Modified;
 			context.SaveChanges();
-
-			return NoContent();
 		}
 	}
 }
