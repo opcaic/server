@@ -4,8 +4,15 @@ using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Services
 {
-	public class TableMatchGenerator : IDeadlineMatchGenerator
+	/// <summary>
+	///   Generator for the matrix of matches (each pair of submission will compete against each other
+	///   in some match).
+	/// </summary>
+	public class TableMatchGenerator : IMatchGenerator
 	{
+		/// <inheritdoc />
+		public TournamentFormat Format => TournamentFormat.Table;
+
 		/// <inheritdoc />
 		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
 		{
@@ -18,7 +25,7 @@ namespace OPCAIC.Services
 			{
 				matches.Add(new Match
 				{
-					MatchState = MatchState.Waiting, 
+					MatchState = MatchState.Waiting,
 					Tournament = tournament,
 					Participants = new[] {submissions[i], submissions[j]}
 				});

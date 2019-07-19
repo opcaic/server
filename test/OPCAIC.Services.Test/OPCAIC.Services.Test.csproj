@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\OPCAIC.Infrastructure\OPCAIC.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\OPCAIC.Services\OPCAIC.Services.csproj" />
     <ProjectReference Include="..\..\src\OPCAIC.Utils\OPCAIC.Utils.csproj" />
     <ProjectReference Include="..\OPCAIC.TestUtils\OPCAIC.TestUtils.csproj" />

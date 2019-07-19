@@ -9,10 +9,12 @@
 		///   Link concerns the winner of the linked match.
 		/// </summary>
 		Winner,
+
 		/// <summary>
 		///   Link concerns the looser of the linked match.
 		/// </summary>
 		Looser,
+
 		/// <summary>
 		///   Link concerns a fixed player identified by a seed number.
 		/// </summary>

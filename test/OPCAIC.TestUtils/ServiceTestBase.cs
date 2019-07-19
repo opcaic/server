@@ -46,7 +46,7 @@ namespace OPCAIC.TestUtils
 		/// <returns></returns>
 		protected T GetService<T>() where T : class
 		{
-			if (services != null)
+			if (services != null && !typeof(T).IsInterface)
 			{
 				Services.TryAddTransient<T>();
 			}

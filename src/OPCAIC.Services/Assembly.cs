@@ -1,2 +1,5 @@
 ﻿// make internals visible for unit testing
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("OPCAIC.Services.Test")] 
+
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("OPCAIC.Services.Test")]
