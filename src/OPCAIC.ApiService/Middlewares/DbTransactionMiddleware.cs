@@ -17,9 +17,14 @@ namespace OPCAIC.ApiService.Middlewares
 		public async Task InvokeAsync(HttpContext context, DataContext dataContext)
 		{
 			if (context == null)
+			{
 				throw new ArgumentNullException(nameof(context));
+			}
+
 			if (dataContext == null)
+			{
 				throw new ArgumentNullException(nameof(dataContext));
+			}
 
 			// temporary skipping transactions - in-memory DB does not support transactions
 			await next(context);

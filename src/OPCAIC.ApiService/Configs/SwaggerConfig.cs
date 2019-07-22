@@ -22,11 +22,7 @@ namespace OPCAIC.ApiService.Configs
 
 		public static void SetupSwaggerGen(SwaggerGenOptions options)
 		{
-			options.SwaggerDoc(DocumentName, new Info
-			{
-				Version = ApiVersion,
-				Title = Title
-			});
+			options.SwaggerDoc(DocumentName, new Info {Version = ApiVersion, Title = Title});
 			options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
 				$"{Assembly.GetEntryAssembly().GetName().Name}.xml"));
 			options.AddSecurityDefinition("Bearer", new ApiKeyScheme
@@ -45,9 +41,13 @@ namespace OPCAIC.ApiService.Configs
 		}
 
 		public static void SetupSwaggerUi(SwaggerUIOptions options)
-			=> options.SwaggerEndpoint(DocumentEndpoint, DocumentName);
+		{
+			options.SwaggerEndpoint(DocumentEndpoint, DocumentName);
+		}
 
 		public static void SetupSwagger(SwaggerOptions options)
-			=> options.RouteTemplate = DocumentRouteTemplate;
+		{
+			options.RouteTemplate = DocumentRouteTemplate;
+		}
 	}
 }

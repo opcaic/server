@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using OPCAIC.Infrastructure.Entities;
 
-namespace OPCAIC.Services.Test
+namespace OPCAIC.Services.Test.MatchGeneration
 {
 	public static class TournamentDataGenerator
 	{

@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Entities
+﻿namespace OPCAIC.Infrastructure.Enums
 {
 	/// <summary>
 	///   Defines the format of the tournament (how matches are organized).

@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Entities
+﻿namespace OPCAIC.Infrastructure.Enums
 {
 	/// <summary>
 	///   Strategy how to determine the best submission in a tournament.

@@ -1,27 +1,28 @@
-﻿using OPCAIC.Broker;
+﻿using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using OPCAIC.ApiService.Configs;
+using OPCAIC.ApiService.IoC;
+using OPCAIC.ApiService.Middlewares;
+using OPCAIC.Broker;
+using OPCAIC.Infrastructure.DbContexts;
 
 namespace OPCAIC.ApiService
 {
-	using System;
-	using System.Text;
-	using Configs;
-	using Infrastructure.DbContexts;
-	using IoC;
-	using Microsoft.AspNetCore.Authentication.JwtBearer;
-	using Microsoft.AspNetCore.Builder;
-	using Microsoft.AspNetCore.Hosting;
-	using Microsoft.AspNetCore.Mvc;
-	using Microsoft.EntityFrameworkCore;
-	using Microsoft.Extensions.Configuration;
-	using Microsoft.Extensions.DependencyInjection;
-	using Microsoft.IdentityModel.Tokens;
-	using OPCAIC.ApiService.Middlewares;
-
 	public class Startup
 	{
 		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-		public Startup(IConfiguration configuration) => Configuration = configuration;
+		public Startup(IConfiguration configuration)
+		{
+			Configuration = configuration;
+		}
 
 		public IConfiguration Configuration { get; }
 
@@ -36,7 +37,7 @@ namespace OPCAIC.ApiService
 				config.RootPath = Configuration.GetValue<string>("SPA_ROOT") ?? "wwwroot";
 			});
 
-			string key = Configuration.GetValue<string>(ConfigNames.SecurityKey);
+			var key = Configuration.GetValue<string>(ConfigNames.SecurityKey);
 
 			services.AddAuthentication(x =>
 				{
@@ -50,7 +51,8 @@ namespace OPCAIC.ApiService
 					x.TokenValidationParameters = new TokenValidationParameters
 					{
 						ValidateIssuerSigningKey = true,
-						IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
+						IssuerSigningKey =
+							new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
 						ValidateIssuer = false,
 						ValidateAudience = false
 					};
@@ -61,8 +63,7 @@ namespace OPCAIC.ApiService
 				options.AddPolicy(myAllowSpecificOrigins,
 					builder =>
 					{
-						builder.
-							AllowAnyOrigin()
+						builder.AllowAnyOrigin()
 							.AllowCredentials()
 							.AllowAnyHeader()
 							.AllowAnyMethod();
@@ -70,7 +71,7 @@ namespace OPCAIC.ApiService
 			});
 
 			// TODO: replace with real database
-			services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase(databaseName: "Dummy"));
+			services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("Dummy"));
 
 			services.AddServices();
 			services.AddBroker(broker => Configuration.Bind("Broker", broker));

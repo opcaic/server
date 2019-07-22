@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using OPCAIC.Infrastructure.Extensions;
 using OPCAIC.Infrastructure.Repositories;
+using OPCAIC.Services.Extensions;
 using OPCAIC.TestUtils;
 using Xunit;
 using Xunit.Abstractions;

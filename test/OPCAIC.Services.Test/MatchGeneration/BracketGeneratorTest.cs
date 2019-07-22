@@ -4,13 +4,14 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.TestUtils;
 using Xunit;
 using Xunit.Abstractions;
 using Match = OPCAIC.Infrastructure.Entities.Match;
 
-namespace OPCAIC.Services.Test
+namespace OPCAIC.Services.Test.MatchGeneration
 {
 	public class SingleEliminationGeneratorTest : BracketGeneratorTest
 	{

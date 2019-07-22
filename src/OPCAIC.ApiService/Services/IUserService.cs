@@ -7,8 +7,11 @@ namespace OPCAIC.ApiService.Services
 {
 	public interface IUserService
 	{
-    Task<long> CreateAsync(NewUserDto user, CancellationToken cancellationToken);
+		Task<long> CreateAsync(NewUserDto user, CancellationToken cancellationToken);
+
 		Task<UserIdentityDto[]> GetAllAsync(CancellationToken cancellationToken);
-		Task<UserIdentity> AuthenticateAsync(string email, string passwordHash, CancellationToken cancellationToken);
+
+		Task<UserIdentity> AuthenticateAsync(string email, string passwordHash,
+			CancellationToken cancellationToken);
 	}
 }

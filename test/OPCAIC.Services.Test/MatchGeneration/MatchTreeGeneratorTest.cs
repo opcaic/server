@@ -3,7 +3,7 @@ using System.Linq;
 using OPCAIC.TestUtils;
 using Xunit;
 
-namespace OPCAIC.Services.Test
+namespace OPCAIC.Services.Test.MatchGeneration
 {
 	public class MatchTreeGeneratorTest
 	{

@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+﻿using System;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using OPCAIC.Utils;
-using System;
 
 namespace OPCAIC.ApiService.Security
 {
@@ -19,11 +19,11 @@ namespace OPCAIC.ApiService.Security
 			Require.ArgNotNull(password, nameof(password));
 
 			return Convert.ToBase64String(KeyDerivation.Pbkdf2(
-				password: password,
-				salt: salt,
-				prf: KeyDerivationPrf.HMACSHA1,
-				iterationCount: 10000,
-				numBytesRequested: 256 / 8));
+				password,
+				salt,
+				KeyDerivationPrf.HMACSHA1,
+				10000,
+				256 / 8));
 		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Worker
+﻿namespace OPCAIC.Broker.Runner
 {
 	public class WorkerSetConfig
 	{
