@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.ApiService.Security;
+using OPCAIC.ApiService.Exceptions;
 
 namespace OPCAIC.ApiService.Controllers
 {

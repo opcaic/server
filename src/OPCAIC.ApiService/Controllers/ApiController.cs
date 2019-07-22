@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Security;
 using System;
 using System.Linq;
