@@ -2,7 +2,7 @@
 
 namespace OPCAIC.ApiService.Security
 {
-	public static class AuthenticationConfiguration
+	public static class AuthorizationConfiguration
 	{
 		public static void Setup(AuthorizationOptions options)
 		{

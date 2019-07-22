@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Middlewares;
 using OPCAIC.ApiService.Security;
+using System;
 
 namespace OPCAIC.ApiService
 {
@@ -35,7 +36,7 @@ namespace OPCAIC.ApiService
 				config.RootPath = Configuration.GetValue<string>("SPA_ROOT") ?? "wwwroot";
 			});
 
-			string key = Configuration.GetValue<string>(ConfigNames.SecurityKey);
+			var conf = Configuration.GetSecurityConfiguration();
 
 			services.AddAuthentication(x =>
 				{
@@ -45,17 +46,18 @@ namespace OPCAIC.ApiService
 				.AddJwtBearer(x =>
 				{
 					x.RequireHttpsMetadata = false;
-					x.SaveToken = true;
+					x.SaveToken = false;			
 					x.TokenValidationParameters = new TokenValidationParameters
 					{
 						ValidateIssuerSigningKey = true,
-						IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
+						IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(conf.Key)),
 						ValidateIssuer = false,
-						ValidateAudience = false
+						ValidateAudience = false,
+						ClockSkew = TimeSpan.Zero
 					};
 				});
 
-			services.AddAuthorization(AuthenticationConfiguration.Setup);
+			services.AddAuthorization(AuthorizationConfiguration.Setup);
 
 			services.AddCors(options =>
 			{
