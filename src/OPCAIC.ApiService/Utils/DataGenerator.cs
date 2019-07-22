@@ -51,7 +51,7 @@
         {
           FirstName = "Admin",
           LastName = "Opcaic",
-          RoleId = 1,
+          RoleId = (long)ApiService.UserRole.Admin,
           PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 		  Email = "admin@opcaic.com",
           EmailVerified = true
