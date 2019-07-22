@@ -4,14 +4,14 @@ using System.Runtime.Serialization;
 namespace OPCAIC.Worker.Exceptions
 {
 	[Serializable]
-	public class GameModulueNotFoundException : InvalidOperationException
+	public class GameModuleNotFoundException : InvalidOperationException
 	{
-		public GameModulueNotFoundException(string moduleName) : base(
+		public GameModuleNotFoundException(string moduleName) : base(
 			$"GameModule '{moduleName}' does not exist.")
 		{
 		}
 
-		protected GameModulueNotFoundException(
+		protected GameModuleNotFoundException(
 			SerializationInfo info,
 			StreamingContext context) : base(info, context)
 		{

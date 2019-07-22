@@ -1,8 +1,7 @@
-﻿using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 using OPCAIC.Worker.GameModules;
@@ -12,17 +11,16 @@ namespace OPCAIC.Worker.Services
 	internal abstract class JobExecutorBase<TRequest, TResult> : IJobExecutor<TRequest, TResult>
 		where TRequest : WorkMessageBase where TResult : ReplyMessageBase, new()
 	{
-		public IExecutionServices Services { get; }
-		protected DirectoryInfo WorkingDirectory { get; private set; }
-		protected TResult Result { get; }
-
-
 		protected JobExecutorBase(ILogger logger, IExecutionServices services)
 		{
 			Services = services;
-			this.Logger = logger;
+			Logger = logger;
 			Result = new TResult();
 		}
+
+		public IExecutionServices Services { get; }
+		protected DirectoryInfo WorkingDirectory { get; private set; }
+		protected TResult Result { get; }
 
 		protected IGameModule GameModule { get; private set; }
 
@@ -31,7 +29,8 @@ namespace OPCAIC.Worker.Services
 		protected TRequest Request { get; set; }
 
 		/// <inheritdoc />
-		public TResult Execute(TRequest request)
+		public TResult Execute(TRequest request,
+			CancellationToken cancellationToken = new CancellationToken())
 		{
 			Require.ArgNotNull(request, nameof(request));
 

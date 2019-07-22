@@ -1,5 +1,6 @@
 ﻿using OPCAIC.Infrastructure.Entities;
 using System.Collections.Generic;
+using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Entities
 {
@@ -10,5 +11,11 @@ namespace OPCAIC.Infrastructure.Entities
 		public string Description { get; set; }
 
 		public virtual IList<Submission> Submissions { get; set; }
+
+		public TournamentFormat Format { get; set; }
+
+		public TournamentScope Scope { get; set; }
+
+		public TournamentRankingStrategy RankingStrategy { get; set; }
 	}
 }

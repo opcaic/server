@@ -53,7 +53,7 @@ namespace OPCAIC.Worker.Test
 		{
 			gameModuleRegistry.Setup(s => s.FindGameModule(It.IsAny<string>())).Returns((IGameModule)null);
 
-			Assert.Throws<GameModulueNotFoundException>(() => ExecutionServices.GetGameModule("game"));
+			Assert.Throws<GameModuleNotFoundException>(() => ExecutionServices.GetGameModule("game"));
 		}
 
 		[Fact]

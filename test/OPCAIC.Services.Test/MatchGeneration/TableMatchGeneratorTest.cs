@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Infrastructure.Enums;
 using Xunit;
 
-namespace OPCAIC.Services.Test
+namespace OPCAIC.Services.Test.MatchGeneration
 {
 	public class TableMatchGeneratorTest
 	{

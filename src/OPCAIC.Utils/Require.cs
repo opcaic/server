@@ -13,42 +13,33 @@ namespace OPCAIC.Utils
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgNotNull(object arg, string name)
-		{
-			Debug.Assert(name != null);
-			That<ArgumentNullException>(arg != null, name);
-		}
+			=> That<ArgumentNullException>(arg != null, name);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void NotEmpty<T>(IEnumerable collection, string name) where T : Exception
-		{
-			Debug.Assert(name != null);
-			That<T>(collection.GetEnumerator().MoveNext(), name);
-		}
+			=> That<T>(collection.GetEnumerator().MoveNext(), name);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgInRange(int i, int itemCount, string name)
 		{
-			Debug.Assert(name != null);
 			Debug.Assert(itemCount >= 0);
 			That<ArgumentOutOfRangeException>(i >= 0 && i < itemCount, name);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void FileExists(string filename) 
+		public static void FileExists(string filename)
+			=> FileExists(filename, $"File {filename} does not exist.");
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void FileExists(string filename, string message)
 		{
-			FileExists(filename, $"File {filename} does not exist.");
+			Debug.Assert(filename != null);
+			That<InvalidOperationException>(!File.Exists(filename), message);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void FileExists(string filename, string message) 
-		{
-			Debug.Assert(filename != null);
-			Debug.Assert(message != null);
-			if (!File.Exists(filename))
-			{
-				ThrowHelper<InvalidOperationException>(message);
-			}
-		}
+		public static void Nonnegative(int value, string name)
+			=> That<ArgumentOutOfRangeException>(value >= 0, name);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void That<T>(bool condition, string message) where T : Exception

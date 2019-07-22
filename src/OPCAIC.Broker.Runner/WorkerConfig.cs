@@ -1,7 +1,6 @@
-﻿using OPCAIC.Messaging;
-using OPCAIC.Messaging.Config;
+﻿using OPCAIC.Messaging.Config;
 
-namespace OPCAIC.Worker
+namespace OPCAIC.Broker.Runner
 {
 	//TODO: remove this, as it is only for mocking 
 	public class WorkerConfig

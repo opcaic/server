@@ -34,7 +34,8 @@ namespace OPCAIC.ApiService.Controllers
 		[Authorize(RolePolicy._User)]
 		public async Task<Tournament> GetTournament(int id, CancellationToken cancellationToken)
 		{
-			var tournament = await context.Set<Tournament>().SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+			var tournament = await context.Set<Tournament>()
+          .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
 
 			if (tournament == null)
 			{

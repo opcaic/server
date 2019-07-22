@@ -1,8 +1,4 @@
-﻿using OPCAIC.Broker;
-using System.Text;
-using OPCAIC.ApiService.Configs;
-using OPCAIC.Infrastructure.DbContexts;
-using OPCAIC.ApiService.IoC;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,9 +7,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using OPCAIC.ApiService.Configs;
+using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Middlewares;
-using OPCAIC.ApiService.Security;
-using System;
+using OPCAIC.Broker;
+using OPCAIC.Infrastructure.DbContexts;
 
 namespace OPCAIC.ApiService
 {
@@ -21,7 +19,10 @@ namespace OPCAIC.ApiService
 	{
 		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-		public Startup(IConfiguration configuration) => Configuration = configuration;
+		public Startup(IConfiguration configuration)
+		{
+			Configuration = configuration;
+		}
 
 		public IConfiguration Configuration { get; }
 
@@ -64,8 +65,7 @@ namespace OPCAIC.ApiService
 				options.AddPolicy(myAllowSpecificOrigins,
 					builder =>
 					{
-						builder.
-							AllowAnyOrigin()
+						builder.AllowAnyOrigin()
 							.AllowCredentials()
 							.AllowAnyHeader()
 							.AllowAnyMethod();
@@ -73,7 +73,7 @@ namespace OPCAIC.ApiService
 			});
 
 			// TODO: replace with real database
-			services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase(databaseName: "Dummy"));
+			services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("Dummy"));
 
 			services.AddServices();
 			services.AddBroker(broker => Configuration.Bind("Broker", broker));

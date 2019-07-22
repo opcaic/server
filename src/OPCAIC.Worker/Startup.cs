@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Config;
 using OPCAIC.Messaging.Messages;
@@ -22,12 +23,8 @@ namespace OPCAIC.Worker
 		/// <summary>
 		///   Configures the logging facilities.
 		/// </summary>
-		/// <param name="host">Host configuration.</param>
-		/// <param name="logging">Logging builder to configure.</param>
-		public static void ConfigureLogging(HostBuilderContext host, ILoggingBuilder logging)
-		{
-			logging.AddLog4NetLogging();
-		}
+		/// <param name="loggingBuilder"></param>
+		public static void ConfigureLogging(HostBuilderContext host, ILoggingBuilder loggingBuilder) => loggingBuilder.AddLog4NetLogging();
 
 		/// <summary>
 		///   Configures logging builder to use Log4Net logging.
@@ -85,10 +82,18 @@ namespace OPCAIC.Worker
 		{
 			Directory.CreateDirectory(path);
 			foreach (var directory in Directory.GetDirectories(path))
+			{
+				string directoryName = Path.GetDirectoryName(directory);
+				var config = JsonConvert.DeserializeObject<EntrypointsConfiguration>(directoryName +
+					Path.DirectorySeparatorChar +
+					"entrypoints.json");
+
 				registry.AddModule(new ExternalGameModule(
 					new Log4NetLogger(LogManager.GetLogger(typeof(ExternalGameModule))),
+					config,
 					Path.GetDirectoryName(path),
 					path));
+			}
 		}
 	}
 }

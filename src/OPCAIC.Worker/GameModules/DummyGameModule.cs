@@ -17,40 +17,48 @@ namespace OPCAIC.Worker.GameModules
 
 		public string GameName { get; }
 
-		public void Check(string inputDir, string outputDir)
+		public CheckerResult Check(string inputDir, string outputDir)
 		{
 			using (logger.BeginScope("Check"))
 			{
 				logger.LogInformation("Simulating work...");
 				Thread.Sleep(100);
 			}
+
+			return null;
 		}
 
-		public void Compile(string inputDir, string outputDir)
+		public CompilerResult Compile(string inputDir, string outputBinDir, string outputDir)
 		{
 			using (logger.BeginScope("Compile"))
 			{
 				logger.LogInformation("Simulating work...");
 				Thread.Sleep(100);
 			}
+
+			return null;
 		}
 
-		public void Validate(string inputDir, string outputDir)
+		public ValidatorResult Validate(string inputDir, string outputDir)
 		{
 			using (logger.BeginScope("Validate"))
 			{
 				logger.LogInformation("Simulating work...");
 				Thread.Sleep(100);
 			}
+
+			return null;
 		}
 
-		public void Execute(string inputDir, string outputDir)
+		public ExecutorResult Execute(string[] inputDirs, string outputDir)
 		{
 			using (logger.BeginScope("Execute"))
 			{
 				logger.LogInformation("Simulating work...");
 				Thread.Sleep(100);
 			}
+
+			return null;
 		}
 
 		public void Clean()

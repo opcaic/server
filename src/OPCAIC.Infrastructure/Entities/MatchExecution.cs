@@ -7,6 +7,7 @@ namespace OPCAIC.Infrastructure.Entities
 	{
 		public long MatchId { get; set; }
 		public Match Match { get; set; }
+		public long TournamentId { get; set; }
 
 		/// <summary>
 		///   Timestamp when this match was executed.

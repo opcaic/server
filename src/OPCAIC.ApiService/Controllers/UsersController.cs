@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
@@ -55,9 +56,12 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType((int)HttpStatusCode.Unauthorized)]
 		public async Task<UserIdentity> LoginAsync([FromBody] UserCredentialsModel credentials, CancellationToken cancellationToken)
 		{
-			var user = await userService.AuthenticateAsync(credentials.Email, Hashing.HashPassword(credentials.Password), cancellationToken);
+			var user = await userService.AuthenticateAsync(credentials.Email,
+				Hashing.HashPassword(credentials.Password), cancellationToken);
 			if (user == null)
+			{
 				throw new UnauthorizedExcepion("Invalid username or password.");
+			}
 
 			return user;
 		}

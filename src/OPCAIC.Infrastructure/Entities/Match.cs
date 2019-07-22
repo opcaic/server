@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Utils;
 
 namespace OPCAIC.Infrastructure.Entities

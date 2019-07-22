@@ -3,8 +3,14 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <LangVersion>7.1</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="GameModules\ProcessHandler\**" />
+    <EmbeddedResource Remove="GameModules\ProcessHandler\**" />
+    <None Remove="GameModules\ProcessHandler\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="chimera.extensions.logging.log4net" Version="1.1.1" />

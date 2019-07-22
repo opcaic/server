@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,9 +59,12 @@ namespace OPCAIC.Services.Test
 			LoggerFactory factory = new LoggerFactory();
 			factory.AddProvider(new XUnitLoggerProvider(output));
 
+			// random new name so tests can run in parallel
+			string dbName = Guid.NewGuid().ToString();
+
 			Services.AddDbContext<DataContext>(options =>
 			{
-				options.UseInMemoryDatabase(databaseName: "Dummy");
+				options.UseInMemoryDatabase(dbName);
 				options.EnableSensitiveDataLogging();
 				options.EnableDetailedErrors();
 				options.UseLoggerFactory(factory);

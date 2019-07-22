@@ -21,7 +21,11 @@ namespace OPCAIC.Worker.Services
 		{
 			Logger.LogInformation("Downloading submission");
 			var srcDir = new DirectoryInfo(PathTo(Constants.DirectoryNames.Source));
-			await Services.DownloadSubmission(Request.Path, srcDir.FullName);
+            //var inDir = new DirectoryInfo(PathTo(Constants.DirectoryNames.Input));
+            //var outDir = new DirectoryInfo(PathTo(Constants.DirectoryNames.Output));
+            var binDir = Directory.CreateDirectory(PathTo(Constants.DirectoryNames.Binary));
+
+            await Services.DownloadSubmission(Request.Path, srcDir.FullName);
 			Require.That<InvalidOperationException>(srcDir.Exists, "Failed to download sources");
 
 			Logger.LogInformation("Invoking checker");
@@ -30,8 +34,7 @@ namespace OPCAIC.Worker.Services
 			Require.FileExists(filename, $"{Constants.FileNames.CheckerResult} was not produced");
 
 			Logger.LogInformation("Invoking compiler");
-			var binDir = Directory.CreateDirectory(PathTo(Constants.DirectoryNames.Binary));
-			GameModule.Compile(srcDir.FullName, binDir.FullName);
+			GameModule.Compile(srcDir.FullName, binDir.FullName, WorkingDirectory.FullName);
 			filename = PathTo(Constants.FileNames.CompilerResult);
 			Require.FileExists(filename, $"{Constants.FileNames.CompilerResult} was not produced");
 

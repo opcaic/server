@@ -1,4 +1,5 @@
-﻿using OPCAIC.Messaging.Messages;
+﻿using System.Threading;
+using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.Worker.Services
 {
@@ -14,7 +15,9 @@ namespace OPCAIC.Worker.Services
 		///   Executes the request.
 		/// </summary>
 		/// <param name="request">Input request object.</param>
+		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		TResult Execute(TRequest request);
+		TResult Execute(TRequest request,
+			CancellationToken cancellationToken = new CancellationToken());
 	}
 }

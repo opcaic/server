@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OPCAIC.Messaging;
-using OPCAIC.Messaging.Config;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 
@@ -23,9 +22,11 @@ namespace OPCAIC.Broker
 		private readonly ILogger logger;
 		private readonly SortedSet<WorkItem> taskQueue;
 		private readonly List<WorkerEntry> workers;
+		private bool shuttingDown;
 
 		public Broker(IBrokerConnector connector, ILogger<Broker> logger)
 		{
+			shuttingDown = false;
 			this.connector = connector;
 			this.logger = logger;
 			identityToWorker = new Dictionary<string, WorkerEntry>();
@@ -35,7 +36,10 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public void EnqueueWork(WorkMessageBase msg)
+		public void EnqueueWork(WorkMessageBase msg) => EnqueueWork(msg, DateTime.Now);
+
+		/// <inheritdoc />
+		public void EnqueueWork(WorkMessageBase msg, DateTime queueTime)
 		{
 			Require.ArgNotNull(msg, nameof(msg));
 
@@ -50,12 +54,12 @@ namespace OPCAIC.Broker
 				taskQueue.Add(new WorkItem
 				{
 					Payload = msg,
-					QueuedTime = DateTime.Now
+					QueuedTime = queueTime
 				});
 
 				// enqueue to worker with shortest queue
 				var worker = capableWorkers.FirstOrDefault(w => w.CurrentWorkItem == null);
-				if (worker != null)
+				if (!shuttingDown && worker != null)
 				{
 					DispatchWork(worker);
 				}
@@ -63,17 +67,25 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public void StartBrokering()
+		public void CancelWork(int id)
 		{
-			connector.EnterSocketAsync();
-			connector.EnterConsumerAsync();
+			Schedule(() =>
+			{
+				taskQueue.RemoveWhere(w => w.Payload.Id == id);
+				var worker = workers.SingleOrDefault(w => w.CurrentWorkItem?.Payload.Id == id);
+				if (worker != null)
+				{
+					Reset(worker);
+				}
+			});
 		}
 
 		/// <inheritdoc />
-		public void StopBrokering()
+		public void StartBrokering()
 		{
-			connector.StopSocket();
-			connector.StopConsumer();
+			shuttingDown = false;
+			connector.EnterSocketAsync();
+			connector.EnterConsumerAsync();
 		}
 
 		/// <inheritdoc />
@@ -85,6 +97,44 @@ namespace OPCAIC.Broker
 			=> Schedule(() =>
 				workers.Count(w => w.CurrentWorkItem != null) +
 				taskQueue.Count);
+
+		/// <summary>
+		///   Returns true if some worker is executing anything.
+		/// </summary>
+		/// <returns></returns>
+		public bool IsExecutingAnything()
+			=> Schedule(() => { return workers.Any(w => w.CurrentWorkItem != null); });
+
+		/// <inheritdoc />
+		public void StopBrokering(CancellationToken cancellationToken)
+		{
+			shuttingDown = true;
+			StopAllWorkers();
+
+			var sw = Stopwatch.StartNew();
+
+			// wait until all workers report stopped or grace period ends
+			while (IsExecutingAnything() && !cancellationToken.IsCancellationRequested)
+			{
+				Thread.Sleep(1);
+			}
+
+			connector.StopSocket();
+			connector.StopConsumer();
+		}
+
+		public void StopAllWorkers()
+			=> Schedule(() =>
+			{
+				// make sure no worker is running anything
+				foreach (var worker in workers.Where(w => w.CurrentWorkItem != null))
+				{
+					Reset(worker);
+				}
+			});
+
+		/// <inheritdoc />
+		public void ClearWorkQueue() => taskQueue.Clear();
 
 		/// <summary>
 		///   Schedules an action to be invoked in a brokers consumer thread and waits for the completion.
@@ -120,7 +170,7 @@ namespace OPCAIC.Broker
 			catch (AggregateException e)
 			{
 				ExceptionDispatchInfo.Throw(e.InnerExceptions[0]);
-				return default(T); // unreachable
+				return default; // unreachable
 			}
 		}
 
@@ -213,10 +263,14 @@ namespace OPCAIC.Broker
 			Reset(worker);
 		}
 
-		private void Reset(WorkerEntry worker) => Send(worker, new WorkerResetMessage()
+		private void Reset(WorkerEntry worker)
 		{
-			HeartbeatConfig = connector.HeartbeatConfig
-		});
+			worker.CurrentWorkItem = null;
+			Send(worker, new WorkerResetMessage
+			{
+				HeartbeatConfig = connector.HeartbeatConfig
+			});
+		}
 
 		private static bool CanWorkerExecute(WorkerEntry worker, WorkMessageBase msg)
 			=> worker.Capabilities?.SupportedGames.Contains(msg.Game) == true;
@@ -247,7 +301,7 @@ namespace OPCAIC.Broker
 		/// <inheritdoc />
 		public async Task StopAsync(CancellationToken cancellationToken)
 		{
-			StopBrokering();
+			StopBrokering(cancellationToken);
 		}
 	}
 }
