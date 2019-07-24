@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.TestUtils;
+using OPCAIC.Worker.Config;
 using OPCAIC.Worker.Exceptions;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
@@ -17,7 +18,7 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.Worker.Test
 {
-	public class ExecutionServicesTest : ServiceTestBase, IDisposable
+	public class ExecutionServicesTest : ServiceTestBase
 	{
 		private readonly Mock<IDownloadService> downloadService;
 		private readonly Mock<IGameModuleRegistry> gameModuleRegistry;
@@ -27,7 +28,7 @@ namespace OPCAIC.Worker.Test
 		/// <inheritdoc />
 		public ExecutionServicesTest(ITestOutputHelper output) : base(output)
 		{
-			workdir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
+			workdir = NewDirectory();
 
 			Services.AddSingleton(Options.Create(new ExecutionConfig()
 			{
@@ -40,7 +41,7 @@ namespace OPCAIC.Worker.Test
 		[Fact]
 		public void CreatesWorkDirForJob()
 		{
-			var id = new Random().Next();
+			var id = Guid.NewGuid();
 
 			var dir = ExecutionServices.GetWorkingDirectory(new MatchExecutionRequest() {Id = id});
 
@@ -80,12 +81,6 @@ namespace OPCAIC.Worker.Test
 			{
 				Assert.Equal(fileContents, stream.ReadToEnd());
 			}
-		}
-
-		/// <inheritdoc />
-		public void Dispose()
-		{
-			workdir.Delete(true);
 		}
 	}
 }

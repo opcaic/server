@@ -11,7 +11,7 @@ namespace OPCAIC.Messaging.Messages
 		/// <summary>
 		///   Unique identifier of the job.
 		/// </summary>
-		public int Id { get; set; }
+		public Guid Id { get; set; }
 
 		/// <summary>
 		///   Game which the work task concerns.

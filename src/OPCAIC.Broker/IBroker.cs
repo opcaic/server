@@ -26,7 +26,7 @@ namespace OPCAIC.Broker
 		///     Cancels work job with given id.
 		/// </summary>
 		/// <param name="id">Id of the job to cancel.</param>
-		void CancelWork(int id);
+		void CancelWork(Guid id);
 
 		/// <summary>
 		///     Gets number of scheduled but not finished tasks.

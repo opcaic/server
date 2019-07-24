@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
+using OPCAIC.Worker.GameModules;
 
-namespace OPCAIC.Worker.GameModules
+namespace OPCAIC.Broker.Runner
 {
 	/// <summary>
-	///   Aggregates existing game modules in the worker
+	///     Aggregates existing game modules in the worker
 	/// </summary>
-	public class GameModuleRegistry : IGameModuleRegistry
+	public class DummyGameModuleRegistry : IGameModuleRegistry
 	{
 		private readonly Dictionary<string, IGameModule> modules;
 
-		public GameModuleRegistry() => modules = new Dictionary<string, IGameModule>();
+		public DummyGameModuleRegistry() => modules = new Dictionary<string, IGameModule>();
 
 		/// <inheritdoc />
 		public IGameModule FindGameModule(string game)
@@ -22,7 +23,7 @@ namespace OPCAIC.Worker.GameModules
 		public IEnumerable<IGameModule> GetAllModules() => modules.Values;
 
 		/// <summary>
-		///   Adds a module to the list of existing game modules.
+		///     Adds a module to the list of existing game modules.
 		/// </summary>
 		/// <param name="module"></param>
 		public void AddModule(IGameModule module) => modules.Add(module.GameName, module);

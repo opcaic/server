@@ -7,9 +7,9 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.Messaging.Test
 {
-	public class SimpleTest : BrokerWorkerTestBase
+	public class SimpleConnectorTest : BrokerWorkerConnectorTestBase
 	{
-		public SimpleTest(ITestOutputHelper output) : base(output) => CreateConnectors();
+		public SimpleConnectorTest(ITestOutputHelper output) : base(output) => CreateConnectors();
 
 		[Fact]
 		public void BrokerConnects()

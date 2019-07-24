@@ -21,14 +21,9 @@ namespace OPCAIC.Worker
 		}
 
 		/// <summary>
-		///   The application entrypoint.
+		///   The application entry point.
 		/// </summary>
-		public void Run()
-		{
-			worker.Run();
-		}
-
-		private async Task TestDownloader()
+		private async void Run()
 		{
 			await download.UploadAsync("/attachments/b.a", "a.a", false);
 			await download.UploadAsync("/exercises", "a.a");

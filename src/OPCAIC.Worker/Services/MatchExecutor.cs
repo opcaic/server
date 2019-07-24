@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Messaging.Messages;
 
@@ -12,9 +13,11 @@ namespace OPCAIC.Worker.Services
 		}
 
 		/// <inheritdoc />
-		protected override Task InternalExecute()
+		protected override Task InternalExecute(CancellationToken cancellationToken)
 		{
-			Result.Status = Status.Ok;
+			Result.JobStatus = JobStatus.Ok;
+			Logger.LogInformation("Executing...");
+			Thread.Sleep(1000);
 			return Task.CompletedTask;
 		}
 	}

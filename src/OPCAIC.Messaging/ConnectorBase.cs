@@ -131,7 +131,7 @@ namespace OPCAIC.Messaging
 		///   Breaks the socket thread loop, causing the thread to return from the
 		///   <see cref="EnterSocket" /> method.
 		/// </summary>
-		public void StopSocket() => SocketPoller.Stop();
+		public void StopSocket() => SocketPoller.StopAsync();
 
 		/// <summary>
 		///   Entry point for the consumer thread.
@@ -147,7 +147,7 @@ namespace OPCAIC.Messaging
 		///   Breaks the consumer thread loop, causing the thread to return from the
 		///   <see cref="EnterConsumer" /> method.
 		/// </summary>
-		public void StopConsumer() => ConsumerPoller.Stop();
+		public void StopConsumer() => ConsumerPoller.StopAsync();
 
 		/// <summary>
 		///   Performs the actual send of the given NetMQMessage.

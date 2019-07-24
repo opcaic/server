@@ -1,3 +1,4 @@
+using Moq;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.TestUtils;
 using OPCAIC.Worker.Services;
@@ -10,7 +11,11 @@ namespace OPCAIC.Worker.Test
 	{
 		/// <inheritdoc />
 		public MatchExecutorTest(ITestOutputHelper output) : base(output)
-			=> Services.Mock<IExecutionServices>();
+		{
+			Services.Mock<IExecutionServices>()
+				.Setup(s => s.GetWorkingDirectory(It.IsAny<WorkMessageBase>()))
+				.Returns(NewDirectory);
+		}
 
 		private MatchExecutor MatchExecutor => GetService<MatchExecutor>();
 
@@ -18,8 +23,8 @@ namespace OPCAIC.Worker.Test
 		public void ExecutesMatchSuccessfully()
 		{
 			// TODO: more tests once the executor is implemented
-			var result = MatchExecutor.Execute(new MatchExecutionRequest());
-			Assert.Equal(Status.Ok, result.Status);
+			var result = MatchExecutor.ExecuteAsync(new MatchExecutionRequest()).Result;
+			Assert.Equal(JobStatus.Ok, result.JobStatus);
 		}
 	}
 }

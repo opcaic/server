@@ -5,9 +5,9 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.Messaging.Test
 {
-	public class ConnectionTest : BrokerWorkerTestBase
+	public class ConnectionConnectorTest : BrokerWorkerConnectorTestBase
 	{
-		public ConnectionTest(ITestOutputHelper output) : base(output)
+		public ConnectionConnectorTest(ITestOutputHelper output) : base(output)
 		{
 			HeartbeatConfig.HeartbeatInterval = 10;
 			HeartbeatConfig.ReconnectIntervalInit = 10;

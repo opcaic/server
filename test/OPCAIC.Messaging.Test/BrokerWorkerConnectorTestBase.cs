@@ -8,14 +8,14 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.Messaging.Test
 {
-	public class BrokerWorkerTestBase : IDisposable
+	public class BrokerWorkerConnectorTestBase : IDisposable
 	{
 		protected static readonly double Timeout = 5000;
 
 		private readonly XUnitLoggerProvider loggerProvider;
 		public string ConnectionString = TestConnectionStringFactory.GetConnectionString();
 
-		public BrokerWorkerTestBase(ITestOutputHelper output)
+		public BrokerWorkerConnectorTestBase(ITestOutputHelper output)
 		{
 			output.WriteLine(ConnectionString);
 			loggerProvider = new XUnitLoggerProvider(output);

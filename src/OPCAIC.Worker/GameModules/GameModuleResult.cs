@@ -1,99 +1,40 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace OPCAIC.Worker.GameModules
 {
 	/// <summary>
-	/// Represents results of calling game module entrypoints.
+	///     Represents results of calling game module entry points.
 	/// </summary>
-	public enum GameModuleEntrypointResult
+	public enum GameModuleEntryPointResult
 	{
 		/// <summary>
-		/// Stage of the game module finished successfully, the result of the stage is Failure.
+		///     Unknown result, should never occur.
 		/// </summary>
-		Failure,
+		Unknown,
 
 		/// <summary>
-		/// Stage of the game module finished successfully, the result of the stage is Success.
+		///     Stage of the game module finished successfully, the result of the stage is Success.
 		/// </summary>
 		Success,
 
 		/// <summary>
-		/// Stage of the game module finished successfully, but the resulting file could not be found.
+		///     Stage of the game module finished successfully, the result of the stage is Failure.
 		/// </summary>
-		OutputNotFoundError,
+		Failure,
 
 		/// <summary>
-		/// Stage of the game module finished successfully, but the resulting file is in a wrong format.
+		///     Stage of the game module failed during runtime.
 		/// </summary>
-		OutputFormatError,
-
-		/// <summary>
-		/// Stage of the game module could not be started.
-		/// </summary>
-		ModuleStartError,
-
-		/// <summary>
-		/// Stage of the game module failed during runtime.
-		/// </summary>
-		ModuleRuntimeError,
-
-		/// <summary>
-		/// Stage of the game module was killed.
-		/// </summary>
-		ModuleKilledError,
-
-		/// <summary>
-		/// Stage of the game module finished successfully, the complete result is to-be-read from result file.
-		/// </summary>
-		Incomplete
+		ModuleError
 	}
 
 	/// <summary>
-	/// Represents full result of a stage of the game module.
+	///     Represents full result of a stage of the game module.
 	/// </summary>
-	public class GameModuleResult
+	public abstract class GameModuleResult
 	{
-		[JsonProperty("result")]
-		[JsonConverter(typeof(StringEnumConverter))]
-		public GameModuleEntrypointResult EntrypointResult { get; set; }
-
-		[JsonProperty("message")]
-		public string Message { get; set; }
-
-		[JsonProperty("log")]
-		public string Log { get; set; }
-
-		/// <summary>
-		/// Deserializes GameModuleResult object from json.
-		/// </summary>
-		/// <typeparam name="T">Any children class of GameModuleResult.</typeparam>
-		/// <param name="filePath">Path to the json.</param>
-		/// <returns>Deserializes GameModuleObject.</returns>
-		public static T GetGameModuleOutputFromJson<T>(string filePath)
-			where T : GameModuleResult, new()
-		{
-			T gmOutput = new T();
-			if (!File.Exists(filePath))
-			{
-				gmOutput.EntrypointResult = GameModuleEntrypointResult.OutputNotFoundError;
-				return gmOutput;
-			}
-
-			string json = File.ReadAllText(filePath);
-			gmOutput = JsonConvert.DeserializeObject<T>(json);
-			if (gmOutput == null)
-			{
-				gmOutput = new T();
-				gmOutput.EntrypointResult = GameModuleEntrypointResult.OutputFormatError;
-			}
-
-			return gmOutput;
-		}
+		public GameModuleEntryPointResult EntryPointResult { get; set; }
 	}
 
 	#region Children classes for outputs of the first three stages of a game module.
@@ -111,4 +52,45 @@ namespace OPCAIC.Worker.GameModules
 	}
 
 	#endregion
+
+	/// <summary>
+	///     Represents full result of the executor stage of the game module.
+	/// </summary>
+	public class ExecutorResult : GameModuleResult
+	{
+		/// <summary>
+		///     Results of the match.
+		/// </summary>
+		public MatchResult MatchResult { get; set; }
+	}
+
+	public class MatchResult
+	{
+		/// <summary>
+		///     Aggregated results for individual participating bots.
+		/// </summary>
+		public BotResult[] Results { get; set; }
+
+		/// <summary>
+		///     Additional properties.
+		/// </summary>
+		[JsonExtensionData]
+		public Dictionary<string, object> AdditionalInfo { get; set; } =
+			new Dictionary<string, object>();
+	}
+
+	public class BotResult
+	{
+		/// <summary>
+		///     Bots score int he given match, semantics depend on the tournament format.
+		/// </summary>
+		public double Score { get; set; }
+
+		/// <summary>
+		///     Additional properties.
+		/// </summary>
+		[JsonExtensionData]
+		public Dictionary<string, object> AdditionalInfo { get; set; } =
+			new Dictionary<string, object>();
+	}
 }

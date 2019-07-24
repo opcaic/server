@@ -24,6 +24,9 @@ namespace OPCAIC.Broker
 		private readonly List<WorkerEntry> workers;
 		private bool shuttingDown;
 
+		private Thread socketThread;
+		private Thread consumerThread;
+
 		public Broker(IBrokerConnector connector, ILogger<Broker> logger)
 		{
 			shuttingDown = false;
@@ -33,6 +36,12 @@ namespace OPCAIC.Broker
 			workers = new List<WorkerEntry>();
 			taskQueue = new SortedSet<WorkItem>();
 			RegisterHandlers();
+		}
+
+		private void SetupThreads()
+		{
+			socketThread = new Thread(connector.EnterSocket) {Name = $"{connector.Identity} - Socket"};
+			consumerThread = new Thread(connector.EnterConsumer) {Name = $"{connector.Identity} - Consumer"};
 		}
 
 		/// <inheritdoc />
@@ -59,7 +68,7 @@ namespace OPCAIC.Broker
 
 				// enqueue to worker with shortest queue
 				var worker = capableWorkers.FirstOrDefault(w => w.CurrentWorkItem == null);
-				if (!shuttingDown && worker != null)
+				if (worker != null)
 				{
 					DispatchWork(worker);
 				}
@@ -67,7 +76,7 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public void CancelWork(int id)
+		public void CancelWork(Guid id)
 		{
 			Schedule(() =>
 			{
@@ -75,7 +84,7 @@ namespace OPCAIC.Broker
 				var worker = workers.SingleOrDefault(w => w.CurrentWorkItem?.Payload.Id == id);
 				if (worker != null)
 				{
-					Reset(worker);
+					SetHeartbeat(worker);
 				}
 			});
 		}
@@ -84,8 +93,10 @@ namespace OPCAIC.Broker
 		public void StartBrokering()
 		{
 			shuttingDown = false;
-			connector.EnterSocketAsync();
-			connector.EnterConsumerAsync();
+			socketThread = new Thread(connector.EnterSocket) {Name = $"{connector.Identity} - Socket"};
+			consumerThread = new Thread(connector.EnterConsumer) {Name = $"{connector.Identity} - Consumer"};
+			socketThread.Start();
+			consumerThread.Start();
 		}
 
 		/// <inheritdoc />
@@ -109,29 +120,38 @@ namespace OPCAIC.Broker
 		public void StopBrokering(CancellationToken cancellationToken)
 		{
 			shuttingDown = true;
-			StopAllWorkers();
 
-			var sw = Stopwatch.StartNew();
+			// make sure no worker is running anything
+			Schedule(() =>
+			{
+				foreach (var worker in workers.Where(w => w.CurrentWorkItem != null))
+				{
+					CancelWork(worker);
+				}
+			});
 
-			// wait until all workers report stopped or grace period ends
-			while (IsExecutingAnything() && !cancellationToken.IsCancellationRequested)
+			bool force = false;
+			cancellationToken.Register(() => force = true);
+
+			// wait until all workers report stopped or grace period expires
+			while (!Volatile.Read(ref force) && IsExecutingAnything())
 			{
 				Thread.Sleep(1);
 			}
 
 			connector.StopSocket();
 			connector.StopConsumer();
-		}
-
-		public void StopAllWorkers()
-			=> Schedule(() =>
+			if (!cancellationToken.IsCancellationRequested)
 			{
-				// make sure no worker is running anything
-				foreach (var worker in workers.Where(w => w.CurrentWorkItem != null))
-				{
-					Reset(worker);
-				}
-			});
+				socketThread.Join();
+				consumerThread.Join();
+			}
+			else
+			{
+				socketThread.Abort();
+				consumerThread.Abort();
+			}
+		}
 
 		/// <inheritdoc />
 		public void ClearWorkQueue() => taskQueue.Clear();
@@ -179,6 +199,9 @@ namespace OPCAIC.Broker
 
 		private void DispatchWork(WorkerEntry worker)
 		{
+			if (shuttingDown)
+				return;
+
 			var work = taskQueue.FirstOrDefault(i => CanWorkerExecute(worker, i.Payload));
 			if (work == null)
 			{
@@ -222,6 +245,7 @@ namespace OPCAIC.Broker
 				logger.LogInformation($"Worker {worker.Identity} finished.");
 			}
 
+			// try dispatching next work item for this worker
 			DispatchWork(worker);
 		}
 
@@ -230,7 +254,7 @@ namespace OPCAIC.Broker
 			{
 				if (!identityToWorker.TryGetValue(identity, out var worker))
 				{
-					return; // ignore
+					return; // ignore, unknown workers are handled elsewhere
 				}
 
 				try
@@ -245,7 +269,9 @@ namespace OPCAIC.Broker
 			});
 
 		private void OnWorkerConnected(WorkerEntry worker, WorkerConnectMessage msg)
-			=> worker.Capabilities = msg.Capabilities;
+		{
+			worker.Capabilities = msg.Capabilities;
+		}
 
 		private void OnWorkerConnected(string identity)
 		{
@@ -258,15 +284,17 @@ namespace OPCAIC.Broker
 			var worker = new WorkerEntry(identity);
 			identityToWorker.Add(identity, worker);
 			workers.Add(worker);
+			SetHeartbeat(worker);
 
-			// make sure the worker is not executing anything
-			Reset(worker);
+			// make sure worker executes something
+			DispatchWork(worker);
 		}
 
-		private void Reset(WorkerEntry worker)
+		private void SetHeartbeat(WorkerEntry worker)
 		{
-			worker.CurrentWorkItem = null;
-			Send(worker, new WorkerResetMessage
+			logger.LogInformation($"Sending heartbeat config to {worker.Identity}");
+			CancelWork(worker);
+			Send(worker, new SetHeartbeatMessage
 			{
 				HeartbeatConfig = connector.HeartbeatConfig
 			});
@@ -284,24 +312,37 @@ namespace OPCAIC.Broker
 			}
 
 			logger.LogInformation($"Worker {identity} disconnected");
-			if (worker.CurrentWorkItem != null)
+			CancelWork(worker);
+		}
+
+		private void CancelWork(WorkerEntry worker)
+		{
+			Send(worker, new CancelTaskMessage());
+
+			if (worker.CurrentWorkItem != null && !shuttingDown)
 			{
-				logger.LogInformation($"Requeuing {identity}'s work item");
+				logger.LogInformation($"Requeueing {worker.Identity}'s work item");
 				// return back go queue (with original enqueue time)
 				taskQueue.Add(worker.CurrentWorkItem);
 			}
+
+			worker.CurrentWorkItem = null;
 		}
 
 		/// <inheritdoc />
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
+			logger.LogInformation("Starting Broker");
 			StartBrokering();
+			logger.LogInformation("Broker started");
 		}
 
 		/// <inheritdoc />
 		public async Task StopAsync(CancellationToken cancellationToken)
 		{
+			logger.LogInformation("Stopping Broker");
 			StopBrokering(cancellationToken);
+			logger.LogInformation("Broker stopped");
 		}
 	}
 }

@@ -42,17 +42,17 @@ namespace OPCAIC.Utils
 			=> That<ArgumentOutOfRangeException>(value >= 0, name);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void That<T>(bool condition, string message) where T : Exception
+		public static void That<T>(bool condition, params object[] ctorArgs) where T : Exception
 		{
-			Debug.Assert(message != null);
+			Debug.Assert(ctorArgs != null);
 			if (!condition)
 			{
-				ThrowHelper<T>(message);
+				ThrowHelper<T>(ctorArgs);
 			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static void ThrowHelper<T>(string arg) where T : Exception
-			=> throw ((T) Activator.CreateInstance(typeof(T), arg));
+		private static void ThrowHelper<T>(object[] ctorArgs) where T : Exception
+			=> throw ((T) Activator.CreateInstance(typeof(T), ctorArgs));
 	}
 }

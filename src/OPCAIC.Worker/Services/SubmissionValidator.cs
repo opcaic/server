@@ -1,9 +1,10 @@
 ﻿using System;
-using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Messaging.Messages;
-using OPCAIC.Utils;
+using OPCAIC.Worker.GameModules;
 
 namespace OPCAIC.Worker.Services
 {
@@ -11,39 +12,102 @@ namespace OPCAIC.Worker.Services
 		: JobExecutorBase<SubmissionValidationRequest, SubmissionValidationResult>
 	{
 		/// <inheritdoc />
-		public SubmissionValidator(ILogger<SubmissionValidator> logger, IExecutionServices services) :
+		public SubmissionValidator(ILogger<SubmissionValidator> logger,
+			IExecutionServices services) :
 			base(logger, services)
 		{
 		}
 
-		/// <inheritdoc />
-		protected override async Task InternalExecute()
+		private async Task RunSteps(CancellationToken cancellationToken)
 		{
-			Logger.LogInformation("Downloading submission");
-			var srcDir = new DirectoryInfo(PathTo(Constants.DirectoryNames.Source));
-            //var inDir = new DirectoryInfo(PathTo(Constants.DirectoryNames.Input));
-            //var outDir = new DirectoryInfo(PathTo(Constants.DirectoryNames.Output));
-            var binDir = Directory.CreateDirectory(PathTo(Constants.DirectoryNames.Binary));
+			Result.CheckerResult = await Invoke(nameof(IGameModule.Check), GameModule.Check,
+				cancellationToken);
+			if (Result.CheckerResult != Messaging.Messages.SubTaskResult.Ok)
+			{
+				return;
+			}
 
-            await Services.DownloadSubmission(Request.Path, srcDir.FullName);
-			Require.That<InvalidOperationException>(srcDir.Exists, "Failed to download sources");
+			Result.CompilerResult = await Invoke(nameof(IGameModule.Compile), GameModule.Compile,
+				cancellationToken);
+			if (Result.CompilerResult != Messaging.Messages.SubTaskResult.Ok)
+			{
+				return;
+			}
 
-			Logger.LogInformation("Invoking checker");
-			GameModule.Check(srcDir.FullName, WorkingDirectory.FullName);
-			var filename = PathTo(Constants.FileNames.CheckerResult);
-			Require.FileExists(filename, $"{Constants.FileNames.CheckerResult} was not produced");
+			Result.ValidatorResult = await Invoke(nameof(IGameModule.Validate), GameModule.Validate,
+				cancellationToken);
+			if (Result.ValidatorResult != Messaging.Messages.SubTaskResult.Ok)
+			{
+				return;
+			}
 
-			Logger.LogInformation("Invoking compiler");
-			GameModule.Compile(srcDir.FullName, binDir.FullName, WorkingDirectory.FullName);
-			filename = PathTo(Constants.FileNames.CompilerResult);
-			Require.FileExists(filename, $"{Constants.FileNames.CompilerResult} was not produced");
+			Result.JobStatus = JobStatus.Ok;
+		}
 
-			Logger.LogInformation("Invoking validator");
-			GameModule.Validate(binDir.FullName, WorkingDirectory.FullName);
-			filename = PathTo(Constants.FileNames.ValidatorResult);
-			Require.FileExists(filename, $"{Constants.FileNames.ValidatorResult} was not produced");
+		/// <inheritdoc />
+		protected override async Task InternalExecute(CancellationToken cancellationToken)
+		{
+			await DownloadSubmission(Request.Path);
 
-			Result.Status = Status.Ok;
+			await RunSteps(cancellationToken);
+
+			Logger.LogInformation("Submission validation completed.");
+		}
+
+		private async Task<SubTaskResult> Invoke<T>(
+			string name, Func<SubmissionInfo, string, CancellationToken, Task<T>> entryPoint,
+			CancellationToken cancellationToken) where T : GameModuleResult
+		{
+			using (Logger.EntryPointScope(name))
+			{
+				try
+				{
+					var result = await entryPoint(Submissions.Single(), OutputDirectory.FullName,
+						cancellationToken);
+
+					switch (result.EntryPointResult)
+					{
+						case GameModules.GameModuleEntryPointResult.Success:
+							Logger.LogInformation("{entrypoint} stage succeeded.", name);
+							Result.JobStatus = JobStatus.Ok;
+							return Messaging.Messages.SubTaskResult.Ok;
+
+						case GameModules.GameModuleEntryPointResult.Failure:
+							Logger.LogInformation("{entrypoint} stage failed.", name);
+							Result.JobStatus = JobStatus.Ok; // still success
+							return Messaging.Messages.SubTaskResult.NotOk;
+
+						case GameModules.GameModuleEntryPointResult.ModuleError:
+							Result.JobStatus = JobStatus.Error;
+							Logger.LogInformation(
+								"{entrypoint} stage invocation exited with an error {error}.",
+								name,
+								result.EntryPointResult);
+							return Messaging.Messages.SubTaskResult.ModuleError;
+
+						default:
+							throw new ArgumentOutOfRangeException();
+					}
+				}
+				catch (Exception e) when (e is TaskCanceledException || e is OperationCanceledException)
+				{
+					Logger.LogInformation("{entrypoint} stage was aborted.", name);
+					Result.JobStatus = JobStatus.Timeout;
+					return Messaging.Messages.SubTaskResult.Aborted;
+				}
+				catch (GameModuleException e)
+				{
+					Logger.LogWarning(e, "Invocation of {entrypoint} entrypoint failed with exception.", name);
+					Result.JobStatus = JobStatus.Error;
+					return Messaging.Messages.SubTaskResult.ModuleError;
+				}
+				catch (Exception e)
+				{
+					Logger.LogError(e, "Exception occured when invoking game module entry point.");
+					Result.JobStatus = JobStatus.Error;
+					return Messaging.Messages.SubTaskResult.PlatformError;
+				}
+			}
 		}
 	}
 }

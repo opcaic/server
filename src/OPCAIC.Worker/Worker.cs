@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
+using OPCAIC.Worker.Config;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
 
@@ -24,8 +25,8 @@ namespace OPCAIC.Worker
 		private readonly ExecutionConfig executionConfig;
 		private readonly ILogger logger;
 
-		private Thread SocketThread;
-		private Thread ConsumerThread;
+		private Thread socketThread;
+		private Thread consumerThread;
 
 		private readonly Random rand = new Random();
 		private readonly IServiceProvider serviceProvider;
@@ -40,13 +41,13 @@ namespace OPCAIC.Worker
 			this.serviceProvider = serviceProvider;
 			this.executionConfig = executionConfig.Value;
 
-			// setup threads
-			SocketThread = new Thread(connector.EnterSocket);
-			SocketThread.Name = $"{Identity} - Socket";
-			ConsumerThread = new Thread(connector.EnterConsumer);
-			ConsumerThread.Name = $"{Identity} - Consumer";
-
 			RegisterHandlers();
+		}
+
+		private void SetupThreads()
+		{
+			socketThread = new Thread(connector.EnterSocket) {Name = $"{Identity} - Socket"};
+			consumerThread = new Thread(connector.EnterConsumer) {Name = $"{Identity} - Consumer"};
 		}
 
 		private string Identity => connector.Identity;
@@ -57,14 +58,18 @@ namespace OPCAIC.Worker
 				ServeRequest<MatchExecutionRequest, MatchExecutionResult>);
 			connector.RegisterAsyncHandler<SubmissionValidationRequest>(
 				ServeRequest<SubmissionValidationRequest, SubmissionValidationResult>);
-			connector.RegisterHandler<WorkerResetMessage>(Reset);
+			connector.RegisterHandler<SetHeartbeatMessage>(SetHeartbeat);
+			connector.RegisterHandler<CancelTaskMessage>(CancelTask);
 		}
 
-		private void Reset(WorkerResetMessage msg)
+		private void SetHeartbeat(SetHeartbeatMessage msg)
 		{
-			logger.LogInformation($"{nameof(WorkerResetMessage)} received, resetting heartbeat config.");
+			logger.LogInformation("Resetting heartbeat config.");
 			connector.SetHeartbeatConfig(msg.HeartbeatConfig);
+		}
 
+		private void CancelTask(CancelTaskMessage _)
+		{
 			// claim ownership of the CTS
 			var cts = Interlocked.Exchange(ref currentTaskCts, null);
 			if (cts != null)
@@ -72,52 +77,77 @@ namespace OPCAIC.Worker
 				logger.LogInformation("Aborting current task");
 				cts.Cancel();
 				cts.Dispose();
+
 			}
+		}
+
+		private CancellationToken SetupCancellation()
+		{
+			// keep local (thread-safe) reference
+			var cts = new CancellationTokenSource(executionConfig.MaxTaskTimeout);
+			var token = cts.Token;
+			currentTaskCts = cts;
+			return token;
+		}
+
+		/// <summary>
+		///    Atomically releases current cancellation token source. Returns true if cancellation
+		///    was requested by the broker.
+		/// </summary>
+		/// <returns></returns>
+		private bool FinalizeCancellation()
+		{
+			// atomically dispose if it is still there
+			var cts = Interlocked.Exchange(ref currentTaskCts, null);
+			cts?.Dispose();
+			return cts == null;
 		}
 
 		private void ServeRequest<TRequest, TResult>(TRequest request)
 			where TResult : ReplyMessageBase, new() where TRequest : WorkMessageBase
 		{
-			TResult res = null;
 			Debug.Assert(currentTaskCts == null);
 
-			// keep local (thread-safe) reference
-			var cts = new CancellationTokenSource(executionConfig.MaxTaskTimeout);
-			currentTaskCts = cts;
+			// Make sure we always send non-null message
+			var response = new TResult
+			{
+				Id = request.Id,
+				JobStatus = JobStatus.Error
+			};
+
+			var token = SetupCancellation();
 
 			try
 			{
+				using (logger.TaskScope(request))
 				using (var scope = serviceProvider.CreateScope())
 				{
-					res = scope.ServiceProvider.GetRequiredService<IJobExecutor<TRequest, TResult>>()
-						.Execute(request, cts.Token);
+					var r = scope.ServiceProvider
+						.GetRequiredService<IJobExecutor<TRequest, TResult>>()
+						.ExecuteAsync(request, token).Result;
+
+					if (r != null)
+					{
+						response = r; 
+					}
 				}
 			}
 			catch (Exception e)
 			{
 				logger.LogError(e,
 					$"Exception occured when processing message of type {typeof(TRequest)}: {JsonConvert.SerializeObject(request)}");
+				response.JobStatus = JobStatus.Error;
 			}
 
-			// Make sure we always send non-null message
-			if (res == null)
+			var forced = FinalizeCancellation();
+			if (!forced) // do not send back cancelled tasks
 			{
-				res = new TResult
-				{
-					Id = request.Id,
-					Status = Status.Error
-				};
+				connector.SendMessage(response);
 			}
-
-			// atomically dispose of the cancellation token source
-			Interlocked.Exchange(ref currentTaskCts, null)?.Dispose();
-
-			connector.SendMessage(res);
 		}
 
 		public void Run()
 		{
-			logger.LogInformation("Starting Worker");
 			var t = new Thread(connector.EnterSocket);
 			t.Start();
 
@@ -128,9 +158,9 @@ namespace OPCAIC.Worker
 			t.Join();
 		}
 
-		public void InitConnection()
+		private void InitConnection()
 		{
-			logger.LogInformation($"[{Identity}] - Initiating connection");
+			logger.LogInformation($"Initiating connection");
 
 			connector.SendMessage(new WorkerConnectMessage
 			{
@@ -145,19 +175,23 @@ namespace OPCAIC.Worker
 		/// <inheritdoc />
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
-			logger.LogInformation("Starting Worker");
-			SocketThread.Start();
-			ConsumerThread.Start();
+			logger.LogInformation($"Starting Worker");
+			SetupThreads();
+			socketThread.Start();
+			consumerThread.Start();
+			InitConnection();
+			logger.LogInformation($"Worker started");
 		}
 
 		/// <inheritdoc />
 		public async Task StopAsync(CancellationToken cancellationToken)
 		{
-			logger.LogInformation("Shutting down Worker");
+			logger.LogInformation("Stopping Worker");
 			connector.StopSocket();
 			connector.StopConsumer();
-			SocketThread.Join();
-			ConsumerThread.Join();
+			socketThread.Join();
+			consumerThread.Join();
+			logger.LogInformation("Worker stopped");
 		}
 	}
 }
