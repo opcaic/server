@@ -13,8 +13,6 @@ namespace OPCAIC.Infrastructure.Entities
 
 		public string PasswordHash { get; set; }
 
-		public string RefreshToken { get; set; }
-
 		public long RoleId { get; set; }
 
 		public bool EmailVerified { get; set; }

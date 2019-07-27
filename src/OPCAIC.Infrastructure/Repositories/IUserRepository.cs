@@ -10,6 +10,6 @@ namespace OPCAIC.Infrastructure.Repositories
 		Task<UserIdentityDto> AuthenticateAsync(string email, string passwordHash, CancellationToken cancellationToken);
 		Task<UserIdentityDto[]> GetAsync(CancellationToken cancellationToken);
 		Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken);
-		Task<UserIdentityDto> UpdateTokenAsync(long id, string oldToken, string newToken, CancellationToken cancellationToken);
+		Task<UserIdentityDto> FindIdentityAsync(long id, CancellationToken cancellationToken);
 	}
 }

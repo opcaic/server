@@ -56,16 +56,12 @@ namespace OPCAIC.Infrastructure.Repositories
 			  .AnyAsync(cancellationToken);
 		}
 
-		public async Task<UserIdentityDto> UpdateTokenAsync(long id, string oldToken, string newToken, CancellationToken cancellationToken)
+		public Task<UserIdentityDto> FindIdentityAsync(long id, CancellationToken cancellationToken)
 		{
-			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
-			if (entity == null || (oldToken != null && entity.RefreshToken != oldToken))
-				return null;
-
-			entity.RefreshToken = newToken;
-			await Context.SaveChangesAsync(cancellationToken);
-
-			return Mapper.Map<UserIdentityDto>(entity);
+			return DbSet
+				.Where(row => row.Id == id)
+				.ProjectTo<UserIdentityDto>(Mapper.ConfigurationProvider)
+				.SingleOrDefaultAsync(cancellationToken);
 		}
 	}
 

@@ -29,6 +29,10 @@ namespace OPCAIC.ApiService.Middlewares
 			{
 				await WriteResponseAsync(context, ex);
 			}
+			catch (Exception ex)
+			{
+				await WriteResponseAsync(context, new ApiException(500, ex.Message));
+			}
 		}
 
 		private static async Task WriteResponseAsync(HttpContext context, ApiException apiException)
@@ -45,5 +49,7 @@ namespace OPCAIC.ApiService.Middlewares
 				await context.Response.WriteAsync(json, context.RequestAborted);
 			}
 		}
+
+
 	}
 }

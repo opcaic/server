@@ -10,11 +10,11 @@ namespace OPCAIC.Infrastructure.Repositories
 	public abstract class Repository<TEntity> : IDisposable, IRepository<TEntity>
 		where TEntity : Entity
 	{
-    protected Repository(DataContext context, IMapper mapper)
-    {
-      Context = context;
-      Mapper = mapper;
-    }
+		protected Repository(DataContext context, IMapper mapper)
+		{
+			Context = context;
+			Mapper = mapper;
+		}
 
 		/// <summary>
 		///   Underlying EF database context.
@@ -26,7 +26,7 @@ namespace OPCAIC.Infrastructure.Repositories
 		/// </summary>
 		protected DbSet<TEntity> DbSet => Context.Set<TEntity>();
 
-    protected IMapper Mapper { get; }
+		protected IMapper Mapper { get; }
 
 		/// <inheritdoc />
 		public void Dispose() => Context?.Dispose();
