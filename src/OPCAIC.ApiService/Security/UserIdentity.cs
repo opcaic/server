@@ -1,6 +1,6 @@
 ﻿namespace OPCAIC.ApiService.Security
 {
-	public class UserIdentity
+	public class UserIdentityModel
 	{
 		public long Id { get; set; }
 

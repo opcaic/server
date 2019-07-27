@@ -6,6 +6,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Dtos;
+using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.Repositories
@@ -15,13 +16,29 @@ namespace OPCAIC.Infrastructure.Repositories
 		public UserRepository(DataContext dataContext, IMapper mapper)
 		  : base(dataContext, mapper) { }
 
+		public async Task<ListDto<UserPreviewDto>> GetByFilterAsync(UserFilterDto filter, CancellationToken cancellationToken)
+		{
+			var query = DbSet.Filter(filter);
+
+			return new ListDto<UserPreviewDto>
+			{
+				List = await query
+					.Skip(filter.Offset)
+					.Take(filter.Count)
+					.ProjectTo<UserPreviewDto>(Mapper.ConfigurationProvider)
+					.ToListAsync(cancellationToken),
+				Total = await query.CountAsync(cancellationToken)
+			};
+		}
+
 		public async Task<long> CreateAsync(NewUserDto user, CancellationToken cancellationToken)
 		{
-			User entity = new User
+			var entity = new User
 			{
 				Email = user.Email,
-				FirstName = user.FirstName,
-				LastName = user.LastName,
+				Username = user.Username,
+				Organization = user.Organization,
+				LocalizationLanguage = user.LocalizationLanguage,
 				PasswordHash = user.PasswordHash,
 				RoleId = user.RoleId,
 				EmailVerified = false,
@@ -42,11 +59,24 @@ namespace OPCAIC.Infrastructure.Repositories
 			  .SingleOrDefaultAsync(cancellationToken);
 		}
 
-		public Task<UserIdentityDto[]> GetAsync(CancellationToken cancellationToken)
+		public async Task<UserDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken)
 		{
-			return DbSet
-			  .ProjectTo<UserIdentityDto>(Mapper.ConfigurationProvider)
-			  .ToArrayAsync(cancellationToken);
+			return await DbSet
+				.Where(row => row.Id == id)
+				.ProjectTo<UserDetailDto>(Mapper.ConfigurationProvider)
+				.SingleOrDefaultAsync(cancellationToken);
+		}
+
+		public async Task<bool> UpdateAsync(long id, UserProfileDto dto, CancellationToken cancellationToken)
+		{
+			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
+			if (entity == null)
+				return false;
+
+			entity.Organization = dto.Organization;
+			entity.LocalizationLanguage = dto.LocalizationLanguage;
+
+			return true;
 		}
 
 		public Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken)

@@ -11,7 +11,7 @@ namespace OPCAIC.ApiService.Controllers
 	{
 		protected void CheckTournamentAccess(long tournamentId, IIdentity idenity)
 		{
-			var user = idenity as UserIdentity;
+			var user = idenity as UserIdentityModel;
 			if (user == null)
 				throw new UnauthorizedExcepion($"User is not authorized");
 

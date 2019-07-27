@@ -53,9 +53,8 @@ namespace OPCAIC.ApiService.Utils
 
         context.Set<User>().Add(new User
         {
-          FirstName = "Admin",
-          LastName = "Opcaic",
-          RoleId = (long)ApiService.UserRole.Admin,
+          Username = "Admin",
+          RoleId = (long)UserRole.Admin,
           PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
           Email = "admin@opcaic.com",
           EmailVerified = true
