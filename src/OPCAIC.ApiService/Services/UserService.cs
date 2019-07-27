@@ -60,7 +60,7 @@ namespace OPCAIC.ApiService.Services
 
 			var tournamentIds = await userTournamentRepository.FindTournamentsByUserAsync(user.Id, cancellationToken);
 
-			var claim = new Claim("role", ((UserRole)user.RoleId).ToString());
+			var claim = new Claim(RolePolicy._PolicyName, ((UserRole)user.RoleId).ToString());
 			string accessToken = CreateToken(conf.Key, TimeSpan.FromMinutes(conf.AccessTokenExpirationSeconds), claim);
 
 			var refreshTokenClaim = new Claim("user", user.Id.ToString());
@@ -106,7 +106,7 @@ namespace OPCAIC.ApiService.Services
 			var refreshTokenClaim = new Claim("user", userId.ToString());
 			var newToken = CreateToken(conf.Key, TimeSpan.FromDays(conf.RefreshTokenExpirationDays), refreshTokenClaim);
 
-			var claim = new Claim("role", ((UserRole)identity.RoleId).ToString());
+			var claim = new Claim(RolePolicy._PolicyName, ((UserRole)identity.RoleId).ToString());
 			var accessToken = CreateToken(conf.Key, TimeSpan.FromSeconds(conf.AccessTokenExpirationSeconds), claim);
 
 			return new UserTokens

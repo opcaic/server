@@ -2,7 +2,7 @@
 {
 	public class RolePolicy
 	{
-		public const string _PolicyName = "rolePolicy";
+		public const string _PolicyName = "userRole";
 
 		public const string _Admin = "admin";
 		public const string _Organizer = "organizer";

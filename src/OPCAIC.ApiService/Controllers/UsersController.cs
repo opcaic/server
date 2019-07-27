@@ -39,6 +39,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(typeof(UserIdentity), (int)HttpStatusCode.OK)]
 		[ProducesResponseType((int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType((int)HttpStatusCode.Forbidden)]
+		[Authorize(RolePolicy._Admin)]
 		public Task<UserIdentityDto[]> GetUsers(CancellationToken cancellationToken)
 		{
 			return userService.GetAllAsync(cancellationToken);

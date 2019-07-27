@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace OPCAIC.ApiService
+namespace OPCAIC.ApiService.Exceptions
 {
 	public class ForbiddenException: ApiException
 	{
