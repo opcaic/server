@@ -13,7 +13,7 @@ using OPCAIC.ApiService.Exceptions;
 namespace OPCAIC.ApiService.Controllers
 {
 	[Route("api/tournaments")]
-	public class TournamentsController : ApiController
+	public class TournamentsController : ControllerBase
 	{
 		private readonly DataContext context;
 
@@ -50,8 +50,6 @@ namespace OPCAIC.ApiService.Controllers
 		[Authorize(RolePolicy._Organizer)]
 		public async Task UpdateTournament(int id, Tournament tournament)
 		{
-			CheckTournamentAccess(id, User.Identity);
-
 			if (id != tournament.Id)
 			{
 				throw new BadRequestException("Invalid model of tournament.");

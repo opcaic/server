@@ -76,6 +76,7 @@ namespace OPCAIC.Infrastructure.Repositories
 			entity.Organization = dto.Organization;
 			entity.LocalizationLanguage = dto.LocalizationLanguage;
 
+			await Context.SaveChangesAsync(cancellationToken);
 			return true;
 		}
 

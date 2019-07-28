@@ -130,7 +130,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task	UpdateAsync(long id, UserProfileModel model, CancellationToken cancellationToken)
+		public Task	UpdateAsync(long id, [FromBody] UserProfileModel model, CancellationToken cancellationToken)
 		{
 			return userService.UpdateAsync(id, model, cancellationToken);
 		}

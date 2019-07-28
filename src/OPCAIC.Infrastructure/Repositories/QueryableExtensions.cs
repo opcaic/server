@@ -20,8 +20,8 @@ namespace OPCAIC.Infrastructure.Repositories
 			if (filter.EmailVerified != null)
 				query = query.Where(row => row.EmailVerified == filter.EmailVerified.Value);
 
-			if (filter.Role != null)
-				query = query.Where(row => row.RoleId == filter.Role.Value);
+			if (filter.UserRole != null)
+				query = query.Where(row => row.RoleId == filter.UserRole.Value);
 
 			return query.SortBy(filter.SortBy, filter.Asc);
 		}

@@ -18,7 +18,7 @@
 
 		public string Username { get; set; }
 
-		public int? Role { get; set; }
+		public int? UserRole { get; set; }
 
 		public bool? EmailVerified { get; set; }
 	}

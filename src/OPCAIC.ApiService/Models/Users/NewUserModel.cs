@@ -8,7 +8,7 @@ namespace OPCAIC.ApiService.Models.Users
 		public string Email { get; set; }
 
 		[Required, MinLength(1)]
-		public string UserName { get; set; }
+		public string Username { get; set; }
 
 		[MinLength(1)]
 		public string Organization { get; set; }

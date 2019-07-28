@@ -22,7 +22,7 @@ namespace OPCAIC.ApiService.Models.Users
 		[MinLength(1)]
 		public string Username { get; set; }
 
-		public UserRole? Role { get; set; }
+		public UserRole? UserRole { get; set; }
 
 		public bool? EmailVerified { get; set; }
 	}
