@@ -31,7 +31,7 @@ than the stdout one.";
 			return 0;
 		}
 
-		public static int SleepFor(int ms, string a, string b)
+		public static int SleepFor(int ms, string inDir, string a, string b)
 		{
 			return SleepFor(ms);
 		}
@@ -41,39 +41,41 @@ than the stdout one.";
 			return code;
 		}
 
-		public static int ExitWithCode(int code, string a, string b)
+		public static int ExitWithCode(int code, string inDir, string a)
 		{
 			return code;
 		}
 
-		public static int ExitWithCode(int code, string a, string b, string c)
+		public static int ExitWithCode(int code, string inDir, string a, string b)
 		{
 			return code;
 		}
 
+		public static int ExitWithCode(int code, string inDir, string a, string b, string c)
+		{
+			return code;
+		}
 
-		public static int EchoArgs(string stdout, string stderr)
+		public static int EchoArgs(string inDir, string stdout, string stderr)
 		{
 			Console.WriteLine(stdout);
 			Console.Error.WriteLine(stderr);
 			return 0;
 		}
 
-		public static int SingleplayerExecute(int resultCount, string binDir, string outDir)
+		public static int SingleplayerExecute(int resultCount, string inDir, string binDir, string outDir)
 		{
-			Console.WriteLine("Executing in single-player");
-			File.WriteAllText(Path.Combine(outDir, "match-result.json"), @"{ 
+			Console.WriteLine($"Executing in single-player with {resultCount} players");
+			var contents = @"{ 
 	""results"": [" + string.Join(',',Enumerable.Repeat(@"
 		{
 			""Score"" : 1
 		}", resultCount)) + @"
 	]
-}");
+}";
+			Console.WriteLine(contents);
+			File.WriteAllText(Path.Combine(outDir, "match-result.json"), contents);
 			return 0;
-		}
-		public static int NullEntryPoint3(int exitCode, string a, string b, string c)
-		{
-			return exitCode;
 		}
 	}
 }

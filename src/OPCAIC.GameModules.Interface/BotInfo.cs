@@ -1,19 +1,19 @@
 ﻿using System.IO;
 
-namespace OPCAIC.Worker.Services
+namespace OPCAIC.GameModules.Interface
 {
 	/// <summary>
 	///     Working information about submission for evaluation purposes.
 	/// </summary>
-	public class SubmissionInfo
+	public class BotInfo
 	{
 		/// <summary>
-		///     Index of the submission (position in the match)
+		///     Index of the bot (position in the match)
 		/// </summary>
 		public int Index { get; set; }
 
 		/// <summary>
-		///     Directory with the source files for this submission.
+		///     Directory with the source files for this bot.
 		/// </summary>
 		public DirectoryInfo SourceDirectory { get; set; }
 

@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OPCAIC.GameModules.Interface\OPCAIC.GameModules.Interface.csproj" />
     <ProjectReference Include="..\OPCAIC.Messaging\OPCAIC.Messaging.csproj" />
     <ProjectReference Include="..\OPCAIC.Utils\OPCAIC.Utils.csproj" />
   </ItemGroup>

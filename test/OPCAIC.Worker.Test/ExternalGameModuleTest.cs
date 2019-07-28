@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GameModuleMock;
+using OPCAIC.GameModules.Interface;
 using OPCAIC.TestUtils;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
@@ -17,23 +18,26 @@ namespace OPCAIC.Worker.Test
 		protected ExternalGameModuleTest(ITestOutputHelper output) : base(output)
 		{
 			var logger = new XUnitLogger<ExternalGameModule>(output);
-			GameModuleConfiguration = new GameModuleConfiguration();
+			GameModuleConfiguration = new ExternalGameModuleConfiguration();
 			ExternalGameModule = new ExternalGameModule(logger, GameModuleConfiguration,
 				"GameModuleMock",
 				Directory.GetCurrentDirectory());
-			Submission = new SubmissionInfo
+			Bot = new BotInfo
 			{
 				SourceDirectory = NewDirectory(),
 				BinaryDirectory = NewDirectory()
 			};
 			OutputDir = NewDirectory();
+			config = new EntryPointConfiguration { AdditionalFiles = NewDirectory() };
 		}
 
-		protected GameModuleConfiguration GameModuleConfiguration { get; }
+		protected EntryPointConfiguration config;
+
+		protected ExternalGameModuleConfiguration GameModuleConfiguration { get; }
 
 		protected ExternalGameModule ExternalGameModule { get; }
 
-		protected SubmissionInfo Submission { get; }
+		protected BotInfo Bot { get; }
 
 		public DirectoryInfo OutputDir { get; }
 
@@ -68,20 +72,20 @@ namespace OPCAIC.Worker.Test
 			[Fact]
 			public async Task SimpleEntryPoint()
 			{
-				GameModuleConfiguration.Checker = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.EchoArgs(null, null));
+				GameModuleConfiguration.Compiler = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.EchoArgs(null, null, null));
 
-				var result = await ExternalGameModule.Check(Submission, OutputDir.FullName,
+				var result = await ExternalGameModule.Compile(config, Bot, OutputDir,
 					CancellationToken.None);
 
 				Assert.Equal(GameModuleEntryPointResult.Success, result.EntryPointResult);
 
 				var stdout = File.ReadAllText(Path.Combine(OutputDir.FullName,
-					$"{Constants.FileNames.CheckerPrefix}.{Submission.Index}{Constants.FileNames.StdoutLogSuffix}"));
+					$"{Constants.FileNames.CompilerPrefix}.{Bot.Index}{Constants.FileNames.StdoutLogSuffix}"));
 				var stderr = File.ReadAllText(Path.Combine(OutputDir.FullName,
-					$"{Constants.FileNames.CheckerPrefix}.{Submission.Index}{Constants.FileNames.StderrLogSuffix}"));
+					$"{Constants.FileNames.CompilerPrefix}.{Bot.Index}{Constants.FileNames.StderrLogSuffix}"));
 
-				Assert.Contains(Submission.SourceDirectory.FullName, stdout);
-				Assert.Contains(OutputDir.FullName, stderr);
+				Assert.Contains(Bot.SourceDirectory.FullName, stdout);
+				Assert.Contains(Bot.BinaryDirectory.FullName, stderr);
 			}
 
 			[Fact(Timeout = 1000)]
@@ -110,11 +114,11 @@ namespace OPCAIC.Worker.Test
 			public async Task MismatchedPlayerCount(int actualCount)
 			{
 				GameModuleConfiguration.Executor = ExternalGameModuleHelper.CreateEntryPoint(()
-						=> EntryPoints.SingleplayerExecute(actualCount, null, null));
+						=> EntryPoints.SingleplayerExecute(actualCount, null, null, null));
 
 				await Assert.ThrowsAsync<MalformedMatchResultException>(()
-					=> ExternalGameModule.Execute(Enumerable.Repeat(Submission, 1),
-						OutputDir.FullName, CancellationToken.None));
+					=> ExternalGameModule.Execute(config, Enumerable.Repeat(Bot, 1),
+						OutputDir, CancellationToken.None));
 
 				AssertLogsExist(Constants.FileNames.ExecutorPrefix);
 			}
@@ -122,11 +126,11 @@ namespace OPCAIC.Worker.Test
 			[Fact]
 			public async Task MissingResult()
 			{
-				GameModuleConfiguration.Executor = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.EchoArgs(null, null));
+				GameModuleConfiguration.Executor = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.EchoArgs(null, null, null));
 
 				await Assert.ThrowsAsync<GameModuleException>(()
-					=> ExternalGameModule.Execute(Enumerable.Repeat(Submission, 1),
-						OutputDir.FullName, CancellationToken.None));
+					=> ExternalGameModule.Execute(config, Enumerable.Repeat(Bot, 1),
+						OutputDir, CancellationToken.None));
 
 				AssertLogsExist(Constants.FileNames.ExecutorPrefix);
 			}
@@ -134,10 +138,10 @@ namespace OPCAIC.Worker.Test
 			[Fact]
 			public async Task SimpleExec()
 			{
-				GameModuleConfiguration.Executor = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.SingleplayerExecute(1, null, null));
+				GameModuleConfiguration.Executor = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.SingleplayerExecute(1, null, null, null));
 
-				await ExternalGameModule.Execute(Enumerable.Repeat(Submission, 1),
-					OutputDir.FullName, CancellationToken.None);
+				await ExternalGameModule.Execute(config, Enumerable.Repeat(Bot, 1),
+					OutputDir, CancellationToken.None);
 
 				AssertLogsExist(Constants.FileNames.ExecutorPrefix);
 			}

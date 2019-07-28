@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OPCAIC.GameModules.Interface;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 using OPCAIC.Worker.Config;
@@ -40,7 +41,7 @@ namespace OPCAIC.Worker.Services
 		/// <inheritdoc />
 		public void ArchiveDirectory(DirectoryInfo taskDirectory)
 		{
-			logger.LogTrace("Archiving directory {directory}", taskDirectory);
+			logger.LogTrace("Archiving task directory");
 			Require.ArgNotNull(taskDirectory, nameof(taskDirectory));
 			Require.That<ArgumentException>(taskDirectory.Exists, "Directory does not exist");
 

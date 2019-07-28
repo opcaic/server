@@ -3,7 +3,7 @@
 	/// <summary>
 	///     Configuration of a single entry point of a module
 	/// </summary>
-	public class EntryPointConfiguration
+	public class ExternalEntryPointConfiguration
 	{
 		/// <summary>
 		///     Path to the executable to start.

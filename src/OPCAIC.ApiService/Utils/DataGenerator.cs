@@ -53,6 +53,7 @@ namespace OPCAIC.ApiService.Utils
 
 				context.Set<User>().Add(new User
 				{
+					Id = 1,
 					FirstName = "Admin",
 					LastName = "Opcaic",
 					RoleId = 1,
@@ -64,7 +65,7 @@ namespace OPCAIC.ApiService.Utils
 				context.Set<Submission>().Add(new Submission()
 				{
 					AuthorId = 1,
-					TournamentId = 1,
+					TournamentId = 1
 				});
 
 				context.SaveChanges();

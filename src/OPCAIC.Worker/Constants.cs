@@ -3,6 +3,7 @@
 	internal static class Constants
 	{
 		public const int GameModuleNegativeExitCode = 200;
+
 		public static class DirectoryNames
 		{
 			public static string Source => "src";
@@ -28,14 +29,6 @@
 			public static string ExecutorPrefix => "execute";
 			public static string StdoutLogSuffix => ".stdout";
 			public static string StderrLogSuffix => ".stderr";
-		}
-
-		public static class LogProperties
-		{
-			public static string TaskId => "TaskId";
-			public static string Game => "Game";
-			public static string EntryPoint => "EntryPoint";
-			public static string ConnectorIdentity => "Identity";
 		}
 	}
 }

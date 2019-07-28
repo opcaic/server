@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using OPCAIC.Worker.GameModules;
-using OPCAIC.Worker.Services;
+using OPCAIC.GameModules.Interface;
 
 namespace OPCAIC.Broker.Runner
 {
@@ -22,7 +22,8 @@ namespace OPCAIC.Broker.Runner
 		public string GameName { get; }
 
 		/// <inheritdoc />
-		public async Task<CheckerResult> Check(SubmissionInfo submission, string outputDir,
+		public async Task<CheckerResult> Check(EntryPointConfiguration config, BotInfo bot,
+			DirectoryInfo outputDir,
 			CancellationToken cancellationToken)
 		{
 			using (logger.BeginScope("Check"))
@@ -35,7 +36,8 @@ namespace OPCAIC.Broker.Runner
 		}
 
 		/// <inheritdoc />
-		public async Task<CompilerResult> Compile(SubmissionInfo submission, string outputDir,
+		public async Task<CompilerResult> Compile(EntryPointConfiguration config, BotInfo bot,
+			DirectoryInfo outputDir,
 			CancellationToken cancellationToken)
 		{
 			using (logger.BeginScope("Compile"))
@@ -49,7 +51,8 @@ namespace OPCAIC.Broker.Runner
 
 
 		/// <inheritdoc />
-		public async Task<ValidatorResult> Validate(SubmissionInfo submission, string outputDir,
+		public async Task<ValidatorResult> Validate(EntryPointConfiguration config, BotInfo bot,
+			DirectoryInfo outputDir,
 			CancellationToken cancellationToken)
 		{
 			using (logger.BeginScope("Validate"))
@@ -62,8 +65,9 @@ namespace OPCAIC.Broker.Runner
 		}
 
 		/// <inheritdoc />
-		public async Task<ExecutorResult> Execute(IEnumerable<SubmissionInfo> submissions,
-			string outputDir, CancellationToken cancellationToken)
+		public async Task<ExecutorResult> Execute(EntryPointConfiguration config,
+			IEnumerable<BotInfo> submissions,
+			DirectoryInfo outputDir, CancellationToken cancellationToken)
 		{
 			using (logger.BeginScope("Execute"))
 			{

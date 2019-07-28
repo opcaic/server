@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
@@ -22,7 +23,7 @@ namespace OPCAIC.TestUtils
 			Func<TState, Exception, string> formatter)
 		{
 			output.WriteLine(
-				$"{LevelToString(logLevel)}: {DateTime.Now.TimeOfDay} - {categoryName}\n" +
+				$"{LevelToString(logLevel)}: [{Thread.CurrentThread.ManagedThreadId}] {DateTime.Now.TimeOfDay} - {categoryName}\n" +
 				$"      {formatter(state, exception)}" + (exception != null ? "\n" +
 				$"      {exception}": ""));
 

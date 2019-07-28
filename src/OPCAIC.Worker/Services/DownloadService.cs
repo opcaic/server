@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using OPCAIC.Messaging.Messages;
@@ -33,7 +34,7 @@ namespace OPCAIC.Worker.Services
 		public void Dispose() => webClient?.Dispose();
 
 		/// <inheritdoc />
-		public async Task DownloadSubmission(long submissionId, string path)
+		public async Task DownloadSubmission(long submissionId, string path, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			Debug.Assert(submissionId > 0);
 			Require.ArgNotNull(path, nameof(path));
@@ -47,7 +48,8 @@ namespace OPCAIC.Worker.Services
 		}
 
 		/// <inheritdoc />
-		public Task UploadValidationResults(long validationId, string path) 
+		public Task UploadValidationResults(long validationId, string path,
+			CancellationToken cancellationToken = default(CancellationToken)) 
 		{
 			Require.ArgNotNull(path, nameof(path));
 			var outputDirectory = new DirectoryInfo(path);
@@ -65,6 +67,13 @@ namespace OPCAIC.Worker.Services
 			}
 
 			return webClient.UploadDataTaskAsync($"results/{validationId}", stream.ToArray());
+		}
+
+		/// <inheritdoc />
+		public Task UploadMatchResults(long executionId, string path,
+			CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

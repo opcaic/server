@@ -11,6 +11,6 @@ namespace OPCAIC.Messaging.Messages
 		/// <summary>
 		///   Id of the submission of this bot.
 		/// </summary>
-		public string SubmissionId { get; set; }
+		public long SubmissionId { get; set; }
 	}
 }

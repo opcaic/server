@@ -10,8 +10,8 @@ namespace GameModuleMock
 {
 	public static class ExternalGameModuleHelper
 	{
-		public static EntryPointConfiguration CreateEntryPoint(Expression<Func<int>> invocation)
-			=> new EntryPointConfiguration
+		public static ExternalEntryPointConfiguration CreateEntryPoint(Expression<Func<int>> invocation)
+			=> new ExternalEntryPointConfiguration
 			{ // this should be platform independent :)
 				Executable = "dotnet",
 				Arguments = new[] {$"{nameof(GameModuleMock)}.dll"}

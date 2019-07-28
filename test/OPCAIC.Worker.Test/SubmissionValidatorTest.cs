@@ -1,56 +1,19 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using OPCAIC.GameModules.Interface;
 using OPCAIC.Messaging.Messages;
-using OPCAIC.TestUtils;
-using OPCAIC.Worker.Config;
-using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace OPCAIC.Worker.Test
 {
-	public class SubmissionValidatorTest : ServiceTestBase
+	public class SubmissionValidatorTest : JobExecutorTest
 	{
-		private readonly Mock<IGameModule> gameModuleMock;
-		private readonly Mock<IDownloadService> downloadServiceMock;
-		private readonly Mock<IExecutionServices> executionServicesMock;
-		private DirectoryInfo ArchiveDirectory { get; }
-		private DirectoryInfo WorkingDirectory { get; }
-
 		private SubmissionValidationRequest Request { get; }
 		/// <inheritdoc />
 		public SubmissionValidatorTest(ITestOutputHelper output) : base(output)
 		{
-			ArchiveDirectory = NewDirectory();
-			WorkingDirectory = NewDirectory();
-
-			Services.Configure<ExecutionConfig>(cfg =>
-			{
-				cfg.ArchiveDirectoryRoot = ArchiveDirectory.FullName;
-				cfg.WorkingDirectoryRoot = WorkingDirectory.FullName;
-				cfg.MaxTaskTimeout = 10000;
-			});
-
-			gameModuleMock = Services.Mock<IGameModule>();
-			executionServicesMock = Services.Mock<IExecutionServices>();
-
-			executionServicesMock
-				.Setup(s => s.GetGameModule(It.IsAny<string>()))
-				.Returns(gameModuleMock.Object);
-
-			executionServicesMock
-				.Setup(s => s.GetWorkingDirectory(It.IsAny<WorkMessageBase>()))
-				.Returns(NewDirectory);
-
-			downloadServiceMock = Services.Mock<IDownloadService>();
-			downloadServiceMock
-				.Setup(s => s.DownloadSubmission(It.IsAny<long>(), It.IsAny<string>()))
-				// just some nonempty submission
-				.Callback((long _, string l) => File.WriteAllText(Path.Combine(l, "a"), "random content"));
 
 			Request = new SubmissionValidationRequest
 			{
@@ -65,9 +28,9 @@ namespace OPCAIC.Worker.Test
 		[Fact]
 		public async Task ExecutesMatchSuccessfully()
 		{
-			gameModuleMock.SetupChecker(GameModuleEntryPointResult.Success);
-			gameModuleMock.SetupCompiler(GameModuleEntryPointResult.Success);
-			gameModuleMock.SetupValidator(GameModuleEntryPointResult.Success);
+			GameModuleMock.SetupChecker().Returns(GameModuleEntryPointResult.Success);
+			GameModuleMock.SetupCompiler().Returns(GameModuleEntryPointResult.Success);
+			GameModuleMock.SetupValidator().Returns(GameModuleEntryPointResult.Success);
 
 			var result = await SubmissionValidator.ExecuteAsync(Request);
 			Assert.Equal(JobStatus.Ok, result.JobStatus);
@@ -82,9 +45,9 @@ namespace OPCAIC.Worker.Test
 			int i = 0;
 			GameModuleEntryPointResult ResultFactory() => i == successfulStages ? GameModuleEntryPointResult.Failure: GameModuleEntryPointResult.Success;
 
-			if (i++ < successfulStages) gameModuleMock.SetupChecker(ResultFactory());
-			if (i++ < successfulStages) gameModuleMock.SetupCompiler(ResultFactory());
-			if (i++ < successfulStages) gameModuleMock.SetupValidator(ResultFactory());
+			if (i++ < successfulStages) GameModuleMock.SetupChecker().Returns(ResultFactory());
+			if (i++ < successfulStages) GameModuleMock.SetupCompiler().Returns(ResultFactory());
+			if (i++ < successfulStages) GameModuleMock.SetupValidator().Returns(ResultFactory());
 
 			var result = await SubmissionValidator.ExecuteAsync(Request);
 			Assert.Equal(JobStatus.Ok, result.JobStatus); // still should return Ok
@@ -103,7 +66,7 @@ namespace OPCAIC.Worker.Test
 		[Fact]
 		public async Task ThrowsOnTaskCancelled()
 		{
-			gameModuleMock.SetupChecker().Throws<OperationCanceledException>();
+			GameModuleMock.SetupChecker().Throws<OperationCanceledException>();
 
 			var result = await SubmissionValidator.ExecuteAsync(Request);
 
@@ -116,7 +79,7 @@ namespace OPCAIC.Worker.Test
 		[Fact]
 		public async Task ReportsModuleErrorException()
 		{
-			gameModuleMock.SetupChecker().Throws<GameModuleException>();
+			GameModuleMock.SetupChecker().Throws<GameModuleException>();
 
 			var result = await SubmissionValidator.ExecuteAsync(Request);
 
@@ -129,7 +92,7 @@ namespace OPCAIC.Worker.Test
 		[Fact]
 		public async Task ReportsModuleError()
 		{
-			gameModuleMock.SetupChecker(GameModuleEntryPointResult.ModuleError);
+			GameModuleMock.SetupChecker().Returns(GameModuleEntryPointResult.ModuleError);
 
 			var result = await SubmissionValidator.ExecuteAsync(Request);
 
@@ -142,7 +105,7 @@ namespace OPCAIC.Worker.Test
 		[Fact]
 		public async Task ReportsPlatformError()
 		{
-			gameModuleMock.SetupChecker().Throws<Exception>();
+			GameModuleMock.SetupChecker().Throws<Exception>();
 
 			var result = await SubmissionValidator.ExecuteAsync(Request);
 
@@ -155,8 +118,8 @@ namespace OPCAIC.Worker.Test
 		/// <inheritdoc />
 		protected override void Dispose(bool disposing)
 		{
-			gameModuleMock.VerifyAll();
-			executionServicesMock.VerifyAll();
+			GameModuleMock.VerifyAll();
+			ExecutionServicesMock.VerifyAll();
 
 			base.Dispose(disposing);
 		}

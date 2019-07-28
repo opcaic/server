@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,7 +17,8 @@ namespace OPCAIC.Broker.Runner
 	public class DummyDownloadService : IDownloadService
 	{
 		private readonly ILogger<DummyDownloadService> logger;
-		private readonly DirectoryInfo resultsDir;
+		private readonly DirectoryInfo validationsDir;
+		private readonly DirectoryInfo executionsDir;
 		private readonly DirectoryInfo storageDir;
 		private readonly DirectoryInfo submissionsDir;
 
@@ -27,11 +29,13 @@ namespace OPCAIC.Broker.Runner
 			// HACK: reuse field for server address as storage path
 			storageDir = new DirectoryInfo(config.Value.ServerAddress);
 			submissionsDir = storageDir.CreateSubdirectory("submissions");
-			resultsDir = storageDir.CreateSubdirectory("results");
+			validationsDir = storageDir.CreateSubdirectory("validations");
+			executionsDir = storageDir.CreateSubdirectory("executions");
 		}
 
 		/// <inheritdoc />
-		public Task DownloadSubmission(long submissionId, string path)
+		public Task DownloadSubmission(long submissionId, string path,
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			logger.LogInformation($"Downloading submission {submissionId} to {path}");
 			var submissionDir = submissionsDir.GetDirectories(submissionId.ToString())
@@ -47,11 +51,26 @@ namespace OPCAIC.Broker.Runner
 		}
 
 		/// <inheritdoc />
-		public Task UploadValidationResults(long validationId, string path)
+		public Task UploadValidationResults(long validationId, string path,
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
-			logger.LogInformation($"Uploading results for {validationId} to {path}");
+			logger.LogInformation($"Uploading validation results for {validationId} to {path}");
 
-			var destinationPath = Path.Combine(resultsDir.FullName, validationId.ToString());
+			return DoUpload(validationsDir, validationId, path);
+		}
+
+		/// <inheritdoc />
+		public Task UploadMatchResults(long executionId, string path,
+			CancellationToken cancellationToken = default(CancellationToken))
+		{
+			logger.LogInformation($"Uploading match results for {executionId} to {path}");
+
+			return DoUpload(executionsDir, executionId, path);
+		}
+
+		private Task DoUpload(DirectoryInfo target, long id, string source)
+		{
+			var destinationPath = Path.Combine(target.FullName, id.ToString());
 
 			// make sure the directory is empty
 			if (Directory.Exists(destinationPath))
@@ -59,7 +78,7 @@ namespace OPCAIC.Broker.Runner
 
 			Directory.CreateDirectory(destinationPath);
 
-			CopyDirectory(path, destinationPath);
+			CopyDirectory(source, destinationPath);
 			return Task.CompletedTask;
 		}
 

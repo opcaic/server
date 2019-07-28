@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace OPCAIC.Worker.Services
 {
@@ -12,15 +13,27 @@ namespace OPCAIC.Worker.Services
 		/// </summary>
 		/// <param name="submissionId">Unique id of the submission.</param>
 		/// <param name="path">Path to the target directory.</param>
+		/// <param name="cancellationToken">Cancellation token to be used if the task should be cancelled.</param>
 		/// <returns></returns>
-		Task DownloadSubmission(long submissionId, string path);
+		Task DownloadSubmission(long submissionId, string path, CancellationToken cancellationToken = default(CancellationToken));
 
 		/// <summary>
 		///     Uploads contents of a folder as a result of submission validation.
 		/// </summary>
 		/// <param name="validationId">Unique id of the validation.</param>
 		/// <param name="path">Path to the result directory.</param>
+		/// <param name="cancellationToken">Cancellation token to be used if the task should be cancelled.</param>
 		/// <returns></returns>
-		Task UploadValidationResults(long validationId, string path);
+		Task UploadValidationResults(long validationId, string path,
+			CancellationToken cancellationToken = default(CancellationToken));
+
+		/// <summary>
+		///     Uploads contents of a folder as a result of submission validation.
+		/// </summary>
+		/// <param name="executionId">Unique id of the match execution.</param>
+		/// <param name="path">Path to the result directory.</param>
+		/// <param name="cancellationToken">Cancellation token to be used if the task should be cancelled.</param>
+		/// <returns></returns>
+		Task UploadMatchResults(long executionId, string path, CancellationToken cancellationToken = default(CancellationToken));
 	}
 }

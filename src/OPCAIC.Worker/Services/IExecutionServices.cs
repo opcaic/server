@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using OPCAIC.GameModules.Interface;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker.GameModules;
 
@@ -12,13 +13,6 @@ namespace OPCAIC.Worker.Services
 		/// <param name="request">The message defining the task.</param>
 		/// <returns></returns>
 		DirectoryInfo GetWorkingDirectory(WorkMessageBase request);
-
-		/// <summary>
-		///     Gets the game identified by the given name.
-		/// </summary>
-		/// <param name="game">The string name of the game</param>
-		/// <returns></returns>
-		IGameModule GetGameModule(string game);
 
 		/// <summary>
 		///     Archives the contents of the given directory.

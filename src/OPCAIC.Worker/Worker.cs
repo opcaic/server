@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
+using OPCAIC.Utils;
 using OPCAIC.Worker.Config;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
@@ -64,7 +65,7 @@ namespace OPCAIC.Worker
 
 		private void SetHeartbeat(SetHeartbeatMessage msg)
 		{
-			logger.LogInformation("Resetting heartbeat config.");
+			logger.LogInformation(LoggingEvents.WorkerConnection, "Resetting heartbeat config.");
 			connector.SetHeartbeatConfig(msg.HeartbeatConfig);
 		}
 
@@ -74,7 +75,7 @@ namespace OPCAIC.Worker
 			var cts = Interlocked.Exchange(ref currentTaskCts, null);
 			if (cts != null)
 			{
-				logger.LogInformation("Aborting current task");
+				logger.LogInformation(LoggingEvents.JobAborted, "Aborting current task");
 				cts.Cancel();
 				cts.Dispose();
 
@@ -106,43 +107,47 @@ namespace OPCAIC.Worker
 		private async Task ServeRequest<TRequest, TResult>(TRequest request)
 			where TResult : ReplyMessageBase, new() where TRequest : WorkMessageBase
 		{
-			Debug.Assert(currentTaskCts == null);
-
-			// Make sure we always send non-null message
-			var response = new TResult
+			using (logger.TaskScope(request))
 			{
-				Id = request.Id,
-				JobStatus = JobStatus.Error
-			};
+				Debug.Assert(currentTaskCts == null);
 
-			var token = SetupCancellation();
-
-			try
-			{
-				using (logger.TaskScope(request))
-				using (var scope = serviceProvider.CreateScope())
+				// Make sure we always send non-null message
+				var response = new TResult
 				{
-					var r = await scope.ServiceProvider
-						.GetRequiredService<IJobExecutor<TRequest, TResult>>()
-						.ExecuteAsync(request, token);
+					Id = request.Id,
+					JobStatus = JobStatus.Error
+				};
 
-					if (r != null)
+				var token = SetupCancellation();
+
+				try
+				{
+					using (var scope = serviceProvider.CreateScope())
 					{
-						response = r; 
+						var r = await scope.ServiceProvider
+							.GetRequiredService<IJobExecutor<TRequest, TResult>>()
+							.ExecuteAsync(request, token);
+
+						if (r != null)
+						{
+							response = r;
+						}
 					}
 				}
-			}
-			catch (Exception e)
-			{
-				logger.LogError(e,
-					$"Exception occured when processing message of type {typeof(TRequest)}: {JsonConvert.SerializeObject(request)}");
-				response.JobStatus = JobStatus.Error;
-			}
+				catch (Exception e)
+				{
+					logger.LogError(LoggingEvents.JobExecutionFailure, e,
+						$"Exception occured when processing message" +
+						$"{{{LoggingTags.JobPayload}}}",
+						JsonConvert.SerializeObject(request));
+					response.JobStatus = JobStatus.Error;
+				}
 
-			var forced = FinalizeCancellation();
-			if (!forced) // do not send back cancelled tasks
-			{
-				connector.SendMessage(response);
+				var forced = FinalizeCancellation();
+				if (!forced) // do not send back cancelled tasks
+				{
+					connector.SendMessage(response);
+				}
 			}
 		}
 
@@ -160,7 +165,7 @@ namespace OPCAIC.Worker
 
 		private void InitConnection()
 		{
-			logger.LogInformation($"Initiating connection");
+			logger.LogInformation(LoggingEvents.WorkerConnection, $"Initiating connection");
 
 			connector.SendMessage(new WorkerConnectMessage
 			{
@@ -175,23 +180,23 @@ namespace OPCAIC.Worker
 		/// <inheritdoc />
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
-			logger.LogInformation($"Starting Worker");
+			logger.LogInformation(LoggingEvents.Startup, $"Starting Worker");
 			SetupThreads();
 			socketThread.Start();
 			consumerThread.Start();
 			InitConnection();
-			logger.LogInformation($"Worker started");
+			logger.LogInformation(LoggingEvents.Startup, $"Worker started");
 		}
 
 		/// <inheritdoc />
 		public async Task StopAsync(CancellationToken cancellationToken)
 		{
-			logger.LogInformation("Stopping Worker");
+			logger.LogInformation(LoggingEvents.Startup, "Stopping Worker");
 			connector.StopSocket();
 			connector.StopConsumer();
 			socketThread.Join();
 			consumerThread.Join();
-			logger.LogInformation("Worker stopped");
+			logger.LogInformation(LoggingEvents.Startup, "Worker stopped");
 		}
 	}
 }

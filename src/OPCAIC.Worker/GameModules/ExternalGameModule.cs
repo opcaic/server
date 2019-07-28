@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using OPCAIC.GameModules.Interface;
 using OPCAIC.Utils;
 using OPCAIC.Worker.Services;
 
@@ -16,66 +18,75 @@ namespace OPCAIC.Worker.GameModules
 	/// </summary>
 	public class ExternalGameModule : IGameModule
 	{
-		private readonly GameModuleConfiguration config;
 		private readonly ILogger logger;
+		private readonly ExternalGameModuleConfiguration moduleConfig;
 		private readonly string rootDir;
 
 		/// <summary>
 		///     Creates a new external game module object.
 		/// </summary>
 		/// <param name="logger">Logger of the game module.</param>
-		/// <param name="config">Configuration listing the entry point names.</param>
+		/// <param name="moduleConfig">Configuration listing the entry point names.</param>
 		/// <param name="gameName">Name of the game represented by the module.</param>
 		/// <param name="rootDir">Root (working) directory of the game.</param>
-		public ExternalGameModule(ILogger logger, GameModuleConfiguration config, string gameName,
+		public ExternalGameModule(ILogger logger, ExternalGameModuleConfiguration moduleConfig,
+			string gameName,
 			string rootDir)
 		{
 			this.logger = logger;
 			this.rootDir = rootDir;
 			GameName = gameName;
-			this.config = config;
+			this.moduleConfig = moduleConfig;
 		}
 
 		/// <inheritdoc />
 		public string GameName { get; }
 
 		/// <inheritdoc />
-		public async Task<CheckerResult> Check(SubmissionInfo submission, string outputDir,
+		public async Task<CheckerResult> Check(EntryPointConfiguration config, BotInfo bot,
+			DirectoryInfo outputDir,
 			CancellationToken cancellationToken)
 		{
-			Require.ArgNotNull(submission, nameof(submission));
+			Require.ArgNotNull(config, nameof(config));
+			Require.ArgNotNull(bot, nameof(bot));
 			Require.ArgNotNull(outputDir, nameof(outputDir));
 
-			var logPrefix = Path.Combine(outputDir,
-				$"{Constants.FileNames.CheckerPrefix}.{submission.Index}");
+			var logPrefix = Path.Combine(outputDir.FullName,
+				$"{Constants.FileNames.CheckerPrefix}.{bot.Index}");
 			var procStart = new GameModuleProcessArgs
 			{
 				WorkingDirectory = rootDir,
-				EntryPoint = config.Checker,
-				Arguments = {submission.SourceDirectory.FullName, outputDir}
+				EntryPoint = moduleConfig.Checker,
+				Arguments =
+				{
+					config.AdditionalFiles.FullName,
+					bot.SourceDirectory.FullName,
+				}
 			};
 
 			return await InvokeGameModule<CheckerResult>(procStart, logPrefix, cancellationToken);
 		}
 
 		/// <inheritdoc />
-		public Task<CompilerResult> Compile(SubmissionInfo submission, string outputDir,
+		public Task<CompilerResult> Compile(EntryPointConfiguration config, BotInfo bot,
+			DirectoryInfo outputDir,
 			CancellationToken cancellationToken)
 		{
-			Require.ArgNotNull(submission, nameof(submission));
+			Require.ArgNotNull(config, nameof(config));
+			Require.ArgNotNull(bot, nameof(bot));
 			Require.ArgNotNull(outputDir, nameof(outputDir));
 
-			var logPrefix = Path.Combine(outputDir,
-				$"{Constants.FileNames.CompilerPrefix}.{submission.Index}");
+			var logPrefix = Path.Combine(outputDir.FullName,
+				$"{Constants.FileNames.CompilerPrefix}.{bot.Index}");
 			var procStart = new GameModuleProcessArgs
 			{
 				WorkingDirectory = rootDir,
-				EntryPoint = config.Compiler,
+				EntryPoint = moduleConfig.Compiler,
 				Arguments =
 				{
-					submission.SourceDirectory.FullName,
-					submission.BinaryDirectory.FullName,
-					outputDir
+					config.AdditionalFiles.FullName,
+					bot.SourceDirectory.FullName,
+					bot.BinaryDirectory.FullName,
 				}
 			};
 
@@ -83,41 +94,53 @@ namespace OPCAIC.Worker.GameModules
 		}
 
 		/// <inheritdoc />
-		public Task<ValidatorResult> Validate(SubmissionInfo submission, string outputDir,
+		public Task<ValidatorResult> Validate(EntryPointConfiguration config, BotInfo bot,
+			DirectoryInfo outputDir,
 			CancellationToken cancellationToken)
 		{
-			Require.ArgNotNull(submission, nameof(submission));
+			Require.ArgNotNull(config, nameof(config));
+			Require.ArgNotNull(bot, nameof(bot));
 			Require.ArgNotNull(outputDir, nameof(outputDir));
 
-			var logPrefix = Path.Combine(outputDir,
-				$"{Constants.FileNames.ValidatorPrefix}.{submission.Index}");
+			var logPrefix = Path.Combine(outputDir.FullName,
+				$"{Constants.FileNames.ValidatorPrefix}.{bot.Index}");
 			var procStart = new GameModuleProcessArgs
 			{
 				WorkingDirectory = rootDir,
-				EntryPoint = config.Validator,
-				Arguments = {submission.BinaryDirectory.FullName, outputDir}
+				EntryPoint = moduleConfig.Validator,
+				Arguments =
+				{
+					config.AdditionalFiles.FullName,
+					bot.BinaryDirectory.FullName,
+				}
 			};
 
 			return InvokeGameModule<ValidatorResult>(procStart, logPrefix, cancellationToken);
 		}
 
 		/// <inheritdoc />
-		public async Task<ExecutorResult> Execute(IEnumerable<SubmissionInfo> submissions,
-			string outputDir,
+		public async Task<ExecutorResult> Execute(EntryPointConfiguration config,
+			IEnumerable<BotInfo> submissions,
+			DirectoryInfo outputDir,
 			CancellationToken cancellationToken)
 		{
-			Require.NotEmpty<ArgumentException>(submissions, nameof(submissions));
+			Require.ArgNotNull(config, nameof(config));
+			Require.ArgNotNull(submissions, nameof(submissions));
 			Require.ArgNotNull(outputDir, nameof(outputDir));
 
-			var logPrefix = Path.Combine(outputDir, Constants.FileNames.ExecutorPrefix);
+			var binDirs = submissions.Select(s => s.BinaryDirectory.FullName).ToList();
+			Require.NotEmpty<ArgumentException>(binDirs, nameof(submissions));
+
+			var logPrefix = Path.Combine(outputDir.FullName, Constants.FileNames.ExecutorPrefix);
 			var procStart = new GameModuleProcessArgs
 			{
 				WorkingDirectory = rootDir,
-				EntryPoint = config.Executor,
-				// 1..N participating bots
-				Arguments = submissions.Select(s => s.BinaryDirectory.FullName).ToList()
+				EntryPoint = moduleConfig.Executor,
+				Arguments = { config.AdditionalFiles.FullName }
 			};
-			procStart.Arguments.Add(outputDir);
+			// 1..N participating bots
+			procStart.Arguments.AddRange(binDirs);
+			procStart.Arguments.Add(outputDir.FullName);
 
 			var entryPointRes =
 				await InvokeGameModule<ExecutorResult>(procStart, logPrefix, cancellationToken);
@@ -126,25 +149,28 @@ namespace OPCAIC.Worker.GameModules
 			{
 				logger.LogInformation("Reading results file");
 				entryPointRes.MatchResult = ReadMatchResult(
-					Path.Combine(outputDir, Constants.FileNames.ExecutorResult),
-					procStart.Arguments.Count - 1);
+					Path.Combine(outputDir.FullName, Constants.FileNames.ExecutorResult),
+					binDirs.Count);
 			}
 
 			return entryPointRes;
 		}
 
+		/// <inheritdoc />
+		public Task Clean(CancellationToken cancellationToken) => Task.CompletedTask;
+
 		/// <summary>
-		///     Reads and validates an instance of <see cref="MatchResult"/> from the file in the given path.
+		///     Reads and validates an instance of <see cref="MatchResult" /> from the file in the given path.
 		/// </summary>
 		/// <param name="path">Path to the result file.</param>
 		/// <param name="expectedResultCount">Expected number of results for validation.</param>
 		/// <returns></returns>
 		private static MatchResult ReadMatchResult(string path, int expectedResultCount)
 		{
-			MatchResult res;
+			JsonMatchResult res;
 			try
 			{
-				res = JsonHelper.DeserializeWithExtra<MatchResult>(
+				res = JsonHelper.DeserializeWithExtra<JsonMatchResult>(
 					File.ReadAllText(path));
 			}
 			catch (Exception e)
@@ -154,14 +180,21 @@ namespace OPCAIC.Worker.GameModules
 
 			if (res.Results.Length != expectedResultCount)
 			{
-				throw new MalformedMatchResultException("Number of results does not match the number of players.");
+				throw new MalformedMatchResultException(
+					"Number of results does not match the number of players.");
 			}
 
-			return res;
+			return new MatchResult
+			{
+				Results = res.Results.Select(r => new BotResult
+				{
+					Score = r.Score,
+					HasCrashed = false, // TODO
+					AdditionalInfo = r.AdditionalInfo
+				}).ToArray(),
+				AdditionalInfo = res.AdditionalInfo
+			};
 		}
-
-		/// <inheritdoc />
-		public Task Clean(CancellationToken cancellationToken) => Task.CompletedTask;
 
 		/// <summary>
 		///     Invokes game module entry point and returns its result.
@@ -205,7 +238,7 @@ namespace OPCAIC.Worker.GameModules
 							$"Invalid {nameof(GameModuleEntryPointResult)}: {exitCode}.");
 				}
 
-				logger.LogInformation("Entry point finished with '{processResult}'", exitCode);
+				logger.LogInformation("Entry point finished with '{}'", exitCode);
 
 				return result;
 			}
@@ -246,22 +279,23 @@ namespace OPCAIC.Worker.GameModules
 
 				if (!process.Start())
 				{
-					throw new GameModuleProcessStartException("Unable to start game module process.");
+					throw new GameModuleProcessStartException(
+						"Unable to start game module process.");
 				}
 
-				logger.LogInformation("Process started, PID: {pid}", process.Id);
+				logger.LogInformation($"Process started, PID: {{{LoggingTags.GameModuleProcessId}}}", process.Id);
 
 				process.OutputDataReceived += (_, e) =>
 				{
 					args.StandardOutput.WriteLine(e.Data);
-					logger.LogInformation("[stdout]: {0}", e.Data);
+					logger.LogInformation("[stdout]: {}", e.Data);
 				};
 				process.BeginOutputReadLine();
 
 				process.ErrorDataReceived += (_, e) =>
 				{
 					args.StandardError.WriteLine(e.Data);
-					logger.LogInformation("[stderr]: {0}", e.Data);
+					logger.LogInformation("[stderr]: {}", e.Data);
 				};
 				process.BeginErrorReadLine();
 
@@ -285,7 +319,7 @@ namespace OPCAIC.Worker.GameModules
 
 			void ExitHandler(object sender, EventArgs eventArgs)
 			{
-				logger.LogInformation("Exited with exit code {exitcode}", process.ExitCode);
+				logger.LogInformation($"Exited with exit code {{{LoggingTags.GameModuleProcessExitCode}}}", process.ExitCode);
 				// try to set result, can fail if the task was cancelled in the meantime
 				tcs.TrySetResult(ExitCodeToProcessResult(process.ExitCode));
 			}
@@ -301,11 +335,11 @@ namespace OPCAIC.Worker.GameModules
 
 				using (cancellationToken.Register(() =>
 				{
-					logger.LogWarning("Cancellation requested, killing process {pid}", process.Id);
 					try
 					{
+						logger.LogWarning($"Cancellation requested, killing process {{{LoggingTags.GameModuleProcessId}}}", process.Id);
 						process.Kill();
-						tcs.SetCanceled();
+						tcs.TrySetCanceled();
 					}
 					catch (InvalidOperationException)
 					{
@@ -333,11 +367,29 @@ namespace OPCAIC.Worker.GameModules
 			{
 				case 0:
 					return GameModuleEntryPointResult.Success;
-				case Constants.GameModuleNegativeExitCode: 
+				case Constants.GameModuleNegativeExitCode:
 					return GameModuleEntryPointResult.Failure;
 				default:
 					return GameModuleEntryPointResult.ModuleError;
 			}
+		}
+
+		private class JsonBotResult
+		{
+			public double Score { get; set; }
+
+			[JsonExtensionData]
+			public Dictionary<string, object> AdditionalInfo { get; } =
+				new Dictionary<string, object>();
+		}
+
+		private class JsonMatchResult
+		{
+			public JsonBotResult[] Results { get; set; }
+
+			[JsonExtensionData]
+			public Dictionary<string, object> AdditionalInfo { get; } =
+				new Dictionary<string, object>();
 		}
 	}
 }

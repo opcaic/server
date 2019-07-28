@@ -5,6 +5,8 @@
 	/// </summary>
 	public enum SubTaskResult
 	{
+		// !!! Do not reorder the members, their value should always be in ascending order of severity
+
 		/// <summary>
 		///     Unknown, task wasn't run.
 		/// </summary>
@@ -21,6 +23,11 @@
 		NotOk,
 
 		/// <summary>
+		///     Execution of the sub-task was aborted.
+		/// </summary>
+		Aborted,
+
+		/// <summary>
 		///     Sub-task Failed due to responsible module.
 		/// </summary>
 		ModuleError,
@@ -29,10 +36,5 @@
 		///     Execution of the sub-task failed  due to error in the platform.
 		/// </summary>
 		PlatformError,
-
-		/// <summary>
-		///     Execution of the sub-task was aborted.
-		/// </summary>
-		Aborted
 	}
 }

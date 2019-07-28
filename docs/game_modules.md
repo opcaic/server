@@ -26,46 +26,54 @@ Note that some files are not produced when only validation of submission is perf
 
 ## Game module interface
 
-This section lists the expected behavior from the game module implementation:
+This section lists the expected behavior from the game module implementation. Following behavior is
+same for all entry points.
+
+Logs:
+- Standard tex output should be logged to stdout, this should preferably be short.
+- Stderr stream can be used for more detailed logs, which can be used for debugging.
+
+Exit value:
+- `0` if the action finished successfully
+- `200` if the the action finished successfully, but with negative result. This value should be used
+  to indicate e.g. that the validation was unsuccessfull.
+- Any other value indicates an error inside the game module, This should happen only when the game
+  module's implementation is buggy.
 
 ### Checker entrypoint
 
 Input arguments:
-> [In folder] [Bot src folder]
+
+    [In folder] [Bot src folder]
 
 Outputs: 
-- None, only log to stdout
-
-Exit value: nonzero when failed
+- None
 
 ### Compiler entrypoint
 
 Input arguments:
-> [In folder] [Bot src folder] [Bot bin folder]
+
+    [In folder] [Bot src folder] [Bot bin folder]
 
 Outputs: 
 - Store any files needed for execution to provided bin folder
-- log to stdout
-
-Exit value: nonzero when failed
 
 ### Validator entrypoint
 
 Input arguments:
-> [In folder] [Bot bin folder] 
+
+    [In folder] [Bot bin folder] 
 
 Outputs: 
-- None, only log to stdout
-
-Exit value: nonzero when failed
+- None
 
 ### Executor entrypoint
 
 Input arguments:
-> [In folder] [bin root folder] [out folder]
+
+    [In folder] [Bot 0 bin folder]...[Bot N bin folder] [Out folder]
 
 Outputs:
-- Store logs to out directory (perhaps even bot-specific logs)
+- If applicable, store bot-specific logs into provided output folder, names should be in format
+  `bot.[index].log`, where `[index]` is the zero-based index of the folder the bot came from.
 - store result.json to output directory
-
-Exit value: nonzero when failed

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using OPCAIC.GameModules.Interface;
 
 namespace OPCAIC.Worker.GameModules
 {

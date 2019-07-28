@@ -16,7 +16,7 @@ namespace OPCAIC.Worker.GameModules
 		/// <summary>
 		///     Entry point to be executed.
 		/// </summary>
-		public EntryPointConfiguration EntryPoint { get; set; }
+		public ExternalEntryPointConfiguration EntryPoint { get; set; }
 
 		/// <summary>
 		///     Arguments to the program being run.

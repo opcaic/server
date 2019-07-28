@@ -63,6 +63,10 @@ namespace OPCAIC.Worker.Test
 	""Executor"": {
 		""Executable"": ""cmd.exe"",
 		""Arguments"": [""/C"", ""dir""]
+	},
+	""Cleanup"": {
+		""Executable"": ""cmd.exe"",
+		""Arguments"": [""/C"", ""dir""]
 	}
 }";
 
@@ -99,6 +103,10 @@ namespace OPCAIC.Worker.Test
 		""Arguments"": [""/C"", ""dir""]
 	},
 	""Executor"": {
+		""Executable"": ""cmd.exe"",
+		""Arguments"": [""/C"", ""dir""]
+	},
+	""Cleanup"": {
 		""Executable"": ""cmd.exe"",
 		""Arguments"": [""/C"", ""dir""]
 	}

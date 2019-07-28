@@ -51,7 +51,7 @@ namespace OPCAIC.Broker.Runner
 		private readonly List<Worker.Worker> workers;
 		private bool stop;
 
-		private GameModuleConfiguration moduleConfiguration = new GameModuleConfiguration
+		private ExternalGameModuleConfiguration moduleConfiguration = new ExternalGameModuleConfiguration
 		{
 			Checker = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.ExitWithCode(0)),
 			Validator = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.ExitWithCode(0)),

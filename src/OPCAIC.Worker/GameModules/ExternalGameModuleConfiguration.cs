@@ -3,26 +3,31 @@
 	/// <summary>
 	///     Configuration of the external game module.
 	/// </summary>
-	public class GameModuleConfiguration
+	public class ExternalGameModuleConfiguration
 	{
 		/// <summary>
 		///     Configuration of the checker entry point.
 		/// </summary>
-		public EntryPointConfiguration Checker { get; set; }
+		public ExternalEntryPointConfiguration Checker { get; set; }
 
 		/// <summary>
 		///     Configuration of the compiler entry point.
 		/// </summary>
-		public EntryPointConfiguration Compiler { get; set; }
+		public ExternalEntryPointConfiguration Compiler { get; set; }
 
 		/// <summary>
 		///     Configuration of the validator entry point.
 		/// </summary>
-		public EntryPointConfiguration Validator { get; set; }
+		public ExternalEntryPointConfiguration Validator { get; set; }
 
 		/// <summary>
 		///     Configuration of the Executor entry point.
 		/// </summary>
-		public EntryPointConfiguration Executor { get; set; }
+		public ExternalEntryPointConfiguration Executor { get; set; }
+
+		/// <summary>
+		///     Configuration of the Cleanup entry point.
+		/// </summary>
+		public ExternalEntryPointConfiguration Cleanup { get; set; }
 	}
 }

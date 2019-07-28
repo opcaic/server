@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using OPCAIC.GameModules.Interface;
 using OPCAIC.Worker.GameModules;
 
 namespace OPCAIC.Broker.Runner
@@ -18,6 +19,9 @@ namespace OPCAIC.Broker.Runner
 			modules.TryGetValue(game, out var module);
 			return module;
 		}
+
+		/// <inheritdoc />
+		public IGameModule TryFindGameModule(string game) => modules[game];
 
 		/// <inheritdoc />
 		public IEnumerable<IGameModule> GetAllModules() => modules.Values;
