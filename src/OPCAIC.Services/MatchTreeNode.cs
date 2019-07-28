@@ -8,7 +8,7 @@ namespace OPCAIC.Services
 	public class MatchTreeNode
 	{
 		/// <inheritdoc />
-		public MatchTreeNode(MatchTreeLink firstPlayerLink, MatchTreeLink secondPlayerLink, int matchId)
+		public MatchTreeNode(MatchTreeLink firstPlayerLink, MatchTreeLink secondPlayerLink, int matchIndex)
 		{
 			Debug.Assert(firstPlayerLink.TargetNode == null);
 			Debug.Assert(secondPlayerLink.TargetNode == null);
@@ -17,7 +17,7 @@ namespace OPCAIC.Services
 			firstPlayerLink.TargetNode = this;
 			SecondPlayerLink = secondPlayerLink;
 			secondPlayerLink.TargetNode = this;
-			MatchId = matchId;
+			MatchIndex = matchIndex;
 
 			WinnerLink = new MatchTreeLink(this, MatchTreeLinkType.Winner);
 			LooserLink = new MatchTreeLink(this, MatchTreeLinkType.Looser);
@@ -46,6 +46,6 @@ namespace OPCAIC.Services
 		/// <summary>
 		///   Unique identifier of the match inside a tournament.
 		/// </summary>
-		public int MatchId { get; }
+		public int MatchIndex { get; }
 	}
 }

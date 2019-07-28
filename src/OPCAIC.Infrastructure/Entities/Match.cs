@@ -1,40 +1,54 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Utils;
 
 namespace OPCAIC.Infrastructure.Entities
 {
+	/// <summary>
+	///     Represents a single match in a tournament.
+	/// </summary>
 	public class Match : SoftDeletableEntity
 	{
 		/// <summary>
-		///   Id of the tournament this match belongs to. In combination with <see cref="Entity.Id"/>
-		///   uniquely identifies a match.
+		///     Index of the match in a tournament.
+		/// </summary>
+		public long Index { get; set; }
+
+		/// <summary>
+		///     Id of the tournament to which this match belongs.
 		/// </summary>
 		public long TournamentId { get; set; }
 
 		/// <summary>
-		///   Tournament this match belongs to.
+		///     Tournament this match belongs to.
 		/// </summary>
-		public Tournament Tournament { get; set; }
+		[Required]
+		public virtual Tournament Tournament { get; set; }
 
 		/// <summary>
-		///   The <see cref="MatchState"/> this match is in.
+		///     Reference to mapping table of matches and their participants.
 		/// </summary>
-		public MatchState MatchState { get; set; }
+		public virtual IList<SubmissionParticipation> Participations { get; set; }
 
 		/// <summary>
-		///   List of execution attempts for this match.
+		///     List of participating submissions.
+		/// </summary>
+		[NotMapped]
+		public IEnumerable<Submission> Submissions => Participations.Select(p => p.Submission);
+
+		/// <summary>
+		///     List of execution attempts for this match.
 		/// </summary>
 		public virtual IList<MatchExecution> Executions { get; set; }
 
 		/// <summary>
-		///   List of participating submissions.
+		///     Last execution of this match.
 		/// </summary>
-		public virtual IList<Submission> Participants { get; set; }
-
-		/// <summary>
-		///   Last execution of this match.
-		/// </summary>
-		public MatchExecution LastExecution => Executions?.ArgMaxOrDefault(e => e.Executed);
+		[NotMapped]
+		public MatchExecution LastExecution
+			=> Executions?.AsQueryable().OrderBy(e => e.Created).FirstOrDefault();
 	}
 }

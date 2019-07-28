@@ -3,7 +3,7 @@
 	public interface ISoftDeletable
 	{
 		/// <summary>
-		///   Flag whether the entity should be considered deleted (so we never actually delete any data).
+		///     Flag whether the entity should be considered deleted (so we never actually delete any data).
 		/// </summary>
 		bool IsDeleted { get; set; }
 	}

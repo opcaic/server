@@ -6,8 +6,8 @@ using OPCAIC.Infrastructure.Enums;
 namespace OPCAIC.Services
 {
 	/// <summary>
-	///   Generator for the matrix of matches (each pair of submission will compete against each other
-	///   in some match).
+	///     Generator for the matrix of matches (each pair of submission will compete against each other
+	///     in some match).
 	/// </summary>
 	public class TableMatchGenerator : IMatchGenerator
 	{
@@ -26,9 +26,13 @@ namespace OPCAIC.Services
 			{
 				matches.Add(new Match
 				{
-					MatchState = MatchState.Waiting,
+					Index = matches.Count,
 					Tournament = tournament,
-					Participants = new[] {submissions[i], submissions[j]}
+					Participations = new[]
+					{
+						new SubmissionParticipation {Submission = submissions[i]},
+						new SubmissionParticipation {Submission = submissions[j]}
+					}
 				});
 			}
 

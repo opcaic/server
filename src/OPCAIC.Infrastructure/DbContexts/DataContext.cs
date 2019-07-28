@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.DbContexts
@@ -18,53 +18,75 @@ namespace OPCAIC.Infrastructure.DbContexts
 		{
 		}
 
+		public DbSet<Game> Games { get; set; }
 		public DbSet<Tournament> Tournaments { get; set; }
 		public DbSet<Match> Matches { get; set; }
 		public DbSet<MatchExecution> MatchExecutions { get; set; }
 		public DbSet<Submission> Submissions { get; set; }
+		public DbSet<SubmissionValidation> SubmissionValidations { get; set; }
 		public DbSet<SubmissionMatchResult> SubmissionsMatchResults { get; set; }
 		public DbSet<User> Users { get; set; }
 		public DbSet<UserRole> UserRoles { get; set; }
 
 		/// <inheritdoc />
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+			=> optionsBuilder.UseLazyLoadingProxies();
+
+		/// <inheritdoc />
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			base.OnModelCreating(modelBuilder);
-			AssertEntityTypesHaveCorrectBaseClass(modelBuilder.Model.GetEntityTypes());
 			RegisterSoftDeleteQueryFilters(modelBuilder);
-
-			// specify composite keys
-			modelBuilder.Entity<Match>().HasKey(m => new {m.Id, m.TournamentId});
+			ConfigureEntities(modelBuilder);
 		}
 
-		/// <summary>
-		///   Application code relies on the fact that all entities derive from <see cref="IChangeTrackable" />,
-		///   this function is just a sanity check.
-		/// </summary>
-		/// <param name="types"></param>
-		[Conditional("DEBUG")]
-		private void AssertEntityTypesHaveCorrectBaseClass(IEnumerable<IMutableEntityType> types)
+		private static void ConfigureEntities(ModelBuilder modelBuilder)
 		{
-			foreach (var type in types)
-				Debug.Assert(
-					typeof(IChangeTrackable).IsAssignableFrom(type.ClrType),
-					$"Type '{type.ClrType}' used in {nameof(DataContext)} does not derive from {typeof(IChangeTrackable)}.");
+			var method = typeof(ModelBuilder)
+				.GetMethods(BindingFlags.Instance | BindingFlags.Public)
+				.Single(m =>
+					m.Name == nameof(modelBuilder.Entity) &&
+					m.ContainsGenericParameters &&
+					m.GetParameters().Length == 1);
+
+			// call modelBuilder.Entity<TEntity>(TEntity.OnModelCreating) for all types which have this method.
+			foreach (var type in modelBuilder.Model.GetEntityTypes())
+			{
+				var clrType = type.ClrType;
+				var configureMethod = clrType.GetMethod(nameof(OnModelCreating),
+					BindingFlags.Static | BindingFlags.DeclaredOnly | BindingFlags.NonPublic);
+
+				if (configureMethod == null)
+				{
+					// no special configuration for this type
+					continue;
+				}
+
+				// Construct Action<EntityModelBuilder<TEntity>> argument type for the Entity call
+				var delegateType = typeof(Action<>).MakeGenericType(
+					typeof(EntityTypeBuilder<>).MakeGenericType(clrType));
+
+				// actual method call
+				method.MakeGenericMethod(clrType).Invoke(
+					modelBuilder,
+					new object[] { configureMethod.CreateDelegate(delegateType) });
+			}
 		}
 
 		private static void RegisterSoftDeleteQueryFilters(ModelBuilder modelBuilder)
 		{
 			var property = typeof(ISoftDeletable).GetProperty(nameof(ISoftDeletable.IsDeleted));
 
-			foreach (var types in modelBuilder.Model.GetEntityTypes()
+			foreach (var type in modelBuilder.Model.GetEntityTypes()
 				.Where(t => typeof(ISoftDeletable).IsAssignableFrom(t.ClrType)))
 			{
 				// construct (e => !e.isDeleted) expression
-				var parameterExpression = Expression.Parameter(types.ClrType);
+				var parameterExpression = Expression.Parameter(type.ClrType);
 				var memberAccess =
 					Expression.MakeMemberAccess(parameterExpression, property);
 				var negation = Expression.Not(memberAccess);
 				var lambda = Expression.Lambda(negation, parameterExpression);
-				types.QueryFilter = lambda;
+				type.QueryFilter = lambda;
 			}
 		}
 

@@ -3,7 +3,7 @@
 	/// <summary>
 	///   State of a match.
 	/// </summary>
-	public enum MatchState
+	public enum MatchExecutionState
 	{
 		/// <summary>
 		///   Unknown state, should never occur.

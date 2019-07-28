@@ -17,7 +17,11 @@ namespace OPCAIC.Services.Test.MatchGeneration
 			Submissions = Enumerable.Range(0, participants).Select(i => new Submission()
 			{
 				Id = i,
-				Author = i.ToString(),
+				Author = new User()
+				{
+					Id = i,
+					FirstName = i.ToString()
+				},
 				IsActive = true
 			}).ToList()
 		};

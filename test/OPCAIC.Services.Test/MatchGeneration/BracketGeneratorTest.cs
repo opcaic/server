@@ -106,9 +106,9 @@ namespace OPCAIC.Services.Test.MatchGeneration
 				toExecute.RemoveAt(matchIdx);
 
 				// basic checks
-				Assert.Equal(2, match.Participants.Count);
-				Assert.NotEqual(match.Participants[0], match.Participants[1]);
-				Assert.True(match.Participants.All(p => p != null));
+				Assert.Equal(2, match.Participations.Count);
+				Assert.NotEqual(match.Participations[0], match.Participations[1]);
+				Assert.True(match.Participations.All(p => p?.Submission != null));
 
 				// execute the match
 				var execution = ExecuteMatch(match, executionId++, resultPicker(match));
@@ -127,18 +127,13 @@ namespace OPCAIC.Services.Test.MatchGeneration
 			{
 				Id = id,
 				MatchId = match.Id,
-				TournamentId = match.TournamentId,
 				Created = DateTime.Today,
 				Updated = DateTime.Now,
-				Executed = DateTime.Now,
+				Finished = DateTime.Now,
 				BotResults = Enumerable.Range(0, 2).Select(i =>
 					new SubmissionMatchResult
 					{
-						SubmissionId = match.Participants[i].Id,
-						Submission = match.Participants[i],
-						Id = i,
-						MatchId = match.Id,
-						TournamentId = match.TournamentId,
+						Submission = match.Participations[i].Submission,
 						ExecutionId = id,
 						Score = result == i ? 1 : 0
 					}).ToList()
@@ -156,9 +151,8 @@ namespace OPCAIC.Services.Test.MatchGeneration
 
 			foreach (var match in matches)
 			{
-				Assert.Equal(MatchState.Waiting, match.MatchState);
-				Assert.Equal(2, match.Participants.Count);
-				Assert.Contains(string.Join("+", match.Participants.Select(p => p.Author)),
+				Assert.Equal(2, match.Participations.Count);
+				Assert.Contains(string.Join("+", match.Submissions.Select(p => p.Author.FirstName)),
 					new[] {"0+3", "1+2"});
 			}
 		}
@@ -175,9 +169,8 @@ namespace OPCAIC.Services.Test.MatchGeneration
 
 			foreach (var match in matches)
 			{
-				Assert.Equal(MatchState.Waiting, match.MatchState);
-				Assert.Equal(2, match.Participants.Count);
-				Assert.Contains(string.Join("+", match.Participants.Select(p => p.Author)),
+				Assert.Equal(2, match.Participations.Count);
+				Assert.Contains(string.Join("+", match.Submissions.Select(p => p.Author.FirstName)),
 					new[] {"3+4", "2+5"});
 			}
 		}

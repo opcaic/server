@@ -32,7 +32,7 @@ namespace OPCAIC.Services
 		///   has not been executed yet.
 		/// </summary>
 		/// <param name="link">The link to the submission.</param>
-		/// <param name="matches">Matches executed so far.</param>
+		/// <param name="matches">Matches executed so far, lookup by their index.</param>
 		/// <param name="submissions">All submissions participating in the match.</param>
 		/// <returns></returns>
 		private static Submission GetLinkedSubmission(MatchTreeLink link,
@@ -43,8 +43,7 @@ namespace OPCAIC.Services
 			{
 				case MatchTreeLinkType.Winner:
 				case MatchTreeLinkType.Looser:
-					var execution = matches.GetValueOrDefault(link.SourceNode.MatchId)?
-						.Executions?.ArgMaxOrDefault(e => e.Executed);
+					var execution = matches.GetValueOrDefault(link.SourceNode.MatchIndex)?.LastExecution;
 					return link.Type == MatchTreeLinkType.Winner
 						? execution?.BotResults.ArgMaxOrDefault(r => r.Score).Submission
 						: execution?.BotResults.ArgMinOrDefault(r => r.Score).Submission;
@@ -74,7 +73,7 @@ namespace OPCAIC.Services
 				var doNextLevel = false;
 				foreach (var matchNode in treeLevel)
 				{
-					if (matchNode == null || queuedMatches.ContainsKey(matchNode.MatchId))
+					if (matchNode == null || queuedMatches.ContainsKey(matchNode.MatchIndex))
 					{
 						doNextLevel = true;
 						continue;
@@ -89,11 +88,14 @@ namespace OPCAIC.Services
 					{
 						matches.Add(new Match
 						{
-							Id = matchNode.MatchId,
-							MatchState = MatchState.Waiting,
+							Index = matchNode.MatchIndex,
 							Tournament = tournament,
 							TournamentId = tournament.Id,
-							Participants = new[] {firstPlayer, secondPlayer}
+							Participations = new[]
+							{
+								new SubmissionParticipation{Submission = firstPlayer},
+								new SubmissionParticipation{Submission = secondPlayer}
+							}
 						});
 					}
 				}
@@ -115,10 +117,9 @@ namespace OPCAIC.Services
 		/// <returns></returns>
 		protected static Submission GetMatchWinner(Match match)
 		{
-			Debug.Assert(match.Participants.Count == 2);
+			Debug.Assert(match.Participations.Count == 2);
 
-			return match.Executions?.ArgMaxOrDefault(e => e.Executed)?
-				.BotResults.ArgMax(r => r.Score).Submission;
+			return match.LastExecution?.BotResults.ArgMax(r => r.Score).Submission;
 		}
 	}
 
@@ -134,29 +135,35 @@ namespace OPCAIC.Services
 		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
 		{
 			var tree = matchTreeFactory.GetDoubleEliminationTree(tournament.Submissions.Count);
-			var queued = MatchRepository.AllMatchesFromTournament(tournament.Id).ToDictionary(m => m.Id);
+			var queued = MatchRepository.AllMatchesFromTournament(tournament.Id).ToDictionary(m => m.Index);
 
 			if (tree.Final == null)
 			{
 				return (Enumerable.Empty<Match>(), true); // edge case
 			}
 
-			if (queued.TryGetValue(tree.Final.MatchId, out var match) &&
+			if (queued.TryGetValue(tree.Final.MatchIndex, out var match) &&
 				GetMatchWinner(match) != null)
 			{
 				// if final has been already finished, check if the additional match is needed
-				if (match.Participants[0].Id != GetMatchWinner(match).Id &&
+				if (match.Participations[0].SubmissionId != GetMatchWinner(match).Id &&
 					queued.Count == tree.MatchNodesById.Count)
 				{
 					// winner comes from losers bracket, and needs to win twice in order for the tournament to be fair
 					// tie breaker already scheduled
+					var participations = match.Participations
+						.Reverse() // switch the sides
+						.Select(p => new SubmissionParticipation
+						{
+							Submission = p.Submission
+						}).ToList(); 
+
 					var m = new Match
 					{
-						Id = tree.MatchNodesById.Count,
-						MatchState = MatchState.Waiting,
+						Index = tree.MatchNodesById.Count,
 						Tournament = tournament,
 						TournamentId = tournament.Id,
-						Participants = match.Participants.Reverse().ToList() // switch the sides
+						Participations = participations
 					};
 
 					return (Enumerable.Repeat(m, 1), false); // last match
@@ -187,7 +194,7 @@ namespace OPCAIC.Services
 		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
 		{
 			var tree = matchTreeFactory.GetSingleEliminationTree(tournament.Submissions.Count, true);
-			var queued = MatchRepository.AllMatchesFromTournament(tournament.Id).ToDictionary(m => m.Id);
+			var queued = MatchRepository.AllMatchesFromTournament(tournament.Id).ToDictionary(m => m.Index);
 			var matches = GenerateInternal(tournament, tree, queued);
 
 			return (matches, tree.MatchNodesById.Count == queued.Count + matches.Count);

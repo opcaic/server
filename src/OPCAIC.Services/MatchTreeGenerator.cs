@@ -152,7 +152,7 @@ namespace OPCAIC.Services
 			}
 
 			return new DoubleEliminationTree(
-				levels.SelectMany(i => i).Where(i => i != null).ToDictionary(m => m.MatchId),
+				levels.SelectMany(i => i).Where(i => i != null).ToDictionary(m => m.MatchIndex),
 				levels,
 				finale,
 				winnersFinal,
@@ -228,7 +228,7 @@ namespace OPCAIC.Services
 			}
 
 			return new SingleEliminationTree(
-				levels.SelectMany(i => i).Where(i => i != null).ToDictionary(m => m.MatchId),
+				levels.SelectMany(i => i).Where(i => i != null).ToDictionary(m => m.MatchIndex),
 				levels,
 				final);
 		}
