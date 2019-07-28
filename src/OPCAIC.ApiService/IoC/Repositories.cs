@@ -7,7 +7,10 @@ namespace OPCAIC.ApiService.IoC
 	{
 		public static void AddRepositories(this IServiceCollection serviceCollection)
 		{
-			serviceCollection.AddTransient<IUserRepository, UserRepository>();
+			serviceCollection
+				.AddTransient<IUserRepository, UserRepository>()
+				.AddTransient<IMatchRepository, MatchRepository>()
+				.AddTransient<ISubmissionRepository, SubmissionRepository>();
 		}
 	}
 }

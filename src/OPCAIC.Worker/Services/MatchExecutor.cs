@@ -8,9 +8,13 @@ namespace OPCAIC.Worker.Services
 	internal class MatchExecutor : JobExecutorBase<MatchExecutionRequest, MatchExecutionResult>
 	{
 		/// <inheritdoc />
-		public MatchExecutor(ILogger<MatchExecutor> logger, IExecutionServices services) : base(logger, services)
+		public MatchExecutor(ILogger<MatchExecutor> logger, IExecutionServices services,
+			IDownloadService downloadService) : base(logger, services, downloadService)
 		{
 		}
+
+		/// <inheritdoc />
+		protected override Task DoUploadResults() => Task.CompletedTask;
 
 		/// <inheritdoc />
 		protected override Task InternalExecute(CancellationToken cancellationToken)

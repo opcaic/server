@@ -11,10 +11,10 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.Worker.Test
 {
-	public class GameModuleLoaderTests : ServiceTestBase
+	public class GameModuleLoaderTest : ServiceTestBase
 	{
 		/// <inheritdoc />
-		public GameModuleLoaderTests(ITestOutputHelper output) : base(output)
+		public GameModuleLoaderTest(ITestOutputHelper output) : base(output)
 		{
 			// hook to logger to know when exception has been logged
 			loggerMock = Services.MockLogger<GameModuleLoader>();

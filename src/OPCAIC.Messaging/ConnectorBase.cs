@@ -10,28 +10,28 @@ using OPCAIC.Messaging.Utils;
 namespace OPCAIC.Messaging
 {
 	/// <summary>
-	///   Base class for NetMQ based connectors.
+	///     Base class for NetMQ based connectors.
 	/// </summary>
 	/// <typeparam name="TSocket">Type of the underlying NetMQ socket.</typeparam>
 	/// <typeparam name="TItem">Base type of the sent messages.</typeparam>
 	public abstract class ConnectorBase<TSocket, TItem> : IDisposable where TSocket : NetMQSocket
 	{
 		/// <summary>
-		///   Poller for workload tasks.
+		///     Poller for workload tasks.
 		/// </summary>
 		protected readonly NetMQPoller ConsumerPoller;
 
 		private readonly IHandlerSet<TItem> handlerSet;
 
 		/// <summary>
-		///   Logger of this class.
+		///     Logger of this class.
 		/// </summary>
 		protected readonly ILogger Logger;
 
 		private readonly ISocketFactory<TSocket> socketFactory;
 
 		/// <summary>
-		///   Poller for tasks concerning the actual NetMQSocket.
+		///     Poller for tasks concerning the actual NetMQSocket.
 		/// </summary>
 		protected readonly NetMQPoller SocketPoller;
 
@@ -54,22 +54,23 @@ namespace OPCAIC.Messaging
 		}
 
 		/// <summary>
-		///   Heartbeat configuration.
+		///     Heartbeat configuration.
 		/// </summary>
 		public HeartbeatConfig HeartbeatConfig { get; private set; }
 
 		/// <summary>
-		///   Identity used for communication.
+		///     Identity used for communication.
 		/// </summary>
 		public string Identity => socketFactory.Identity;
 
+
 		/// <summary>
-		///   The underlying NetMQ Socket.
+		///     The underlying NetMQ Socket.
 		/// </summary>
 		protected TSocket Socket { get; private set; }
 
 		/// <summary>
-		///   Sets heartbeat configuration for this connector.
+		///     Sets heartbeat configuration for this connector.
 		/// </summary>
 		/// <param name="config"></param>
 		public void SetHeartbeatConfig(HeartbeatConfig config)
@@ -80,24 +81,24 @@ namespace OPCAIC.Messaging
 		}
 
 		/// <summary>
-		///   Updates the necessary state when heartbeat configuration changes.
+		///     Updates the necessary state when heartbeat configuration changes.
 		/// </summary>
 		/// <param name="config"></param>
 		protected abstract void OnHeartbeatConfigChanged(HeartbeatConfig config);
 
 		/// <summary>
-		///   Invoked when a new message is received. This should not be used to receive messages, but
-		///   only for notifications.
+		///     Invoked when a new message is received. This should not be used to receive messages, but
+		///     only for notifications.
 		/// </summary>
 		public event EventHandler<TItem> ReceivedMessage;
 
 		/// <summary>
-		///   Invoked when received a message of type for which no handler was registered.
+		///     Invoked when received a message of type for which no handler was registered.
 		/// </summary>
 		public event EventHandler<TItem> UnhandledMessage;
 
 		/// <summary>
-		///   Resets connection by creating a new socket.
+		///     Resets connection by creating a new socket.
 		/// </summary>
 		protected void ResetConnection()
 		{
@@ -110,47 +111,45 @@ namespace OPCAIC.Messaging
 			}
 
 			Socket = socketFactory.CreateSocket();
-			Socket.ReceiveReady += (_, args) => OnSocketReceive(args.Socket.ReceiveMultipartMessage());
+			Socket.ReceiveReady +=
+				async (_, args) => await OnSocketReceive(args.Socket.ReceiveMultipartMessage());
 			SocketPoller.Add(Socket);
 		}
 
 		/// <summary>
-		///   Entry point for the poller thread.
+		///     Entry point for the poller thread.
 		/// </summary>
-		public void EnterSocket()
-		{
-			SocketPoller.Run();
-		}
+		public void EnterSocket() => SocketPoller.Run();
 
 		/// <summary>
-		///   Creates a new thread for the socket poller.
+		///     Creates a new thread for the socket poller.
 		/// </summary>
 		public void EnterSocketAsync() => SocketPoller.RunAsync();
 
 		/// <summary>
-		///   Breaks the socket thread loop, causing the thread to return from the
-		///   <see cref="EnterSocket" /> method.
+		///     Breaks the socket thread loop, causing the thread to return from the
+		///     <see cref="EnterSocket" /> method.
 		/// </summary>
 		public void StopSocket() => SocketPoller.StopAsync();
 
 		/// <summary>
-		///   Entry point for the consumer thread.
+		///     Entry point for the consumer thread.
 		/// </summary>
 		public void EnterConsumer() => ConsumerPoller.Run();
 
 		/// <summary>
-		///   Creates a new thread for the consumer poller.
+		///     Creates a new thread for the consumer poller.
 		/// </summary>
 		public void EnterConsumerAsync() => ConsumerPoller.RunAsync();
 
 		/// <summary>
-		///   Breaks the consumer thread loop, causing the thread to return from the
-		///   <see cref="EnterConsumer" /> method.
+		///     Breaks the consumer thread loop, causing the thread to return from the
+		///     <see cref="EnterConsumer" /> method.
 		/// </summary>
 		public void StopConsumer() => ConsumerPoller.StopAsync();
 
 		/// <summary>
-		///   Performs the actual send of the given NetMQMessage.
+		///     Performs the actual send of the given NetMQMessage.
 		/// </summary>
 		/// <param name="msg">Message to send.</param>
 		protected void DirectSend(NetMQMessage msg)
@@ -166,61 +165,51 @@ namespace OPCAIC.Messaging
 		}
 
 		/// <summary>
-		///   Callback for received NetMQMessages for creating more processable messages.
+		///     Callback for received NetMQMessages for creating more processable messages.
 		/// </summary>
 		/// <param name="msg">The received message.</param>
 		/// <returns></returns>
 		protected abstract TItem ReceiveMessage(NetMQMessage msg);
 
 		/// <summary>
-		///   Adds a new message handler.
+		///     Adds a new message handler.
 		/// </summary>
 		/// <param name="handler">The handler.</param>
 		protected void AddHandler(HandlerInfo<TItem> handler) => handlerSet.AddHandler(handler);
 
 		/// <summary>
-		///   Enqueues a new task to be done by the socket thread.
+		///     Enqueues a new task to be done by the socket thread.
 		/// </summary>
 		/// <param name="task">The action to be performed in the task.</param>
 		/// <returns>Task which can be awaited for completion</returns>
-		protected Task EnqueueSocketTask(Action task)
-		{
-			var t = new Task(task);
-			t.Start(SocketPoller);
-			return t;
-		}
+		protected void EnqueueSocketTask(Action task) => new Task(task).Start(SocketPoller);
 
 		/// <summary>
-		///   Enqueues a new task to be done by the consumer thread.
+		///     Enqueues a new task to be done by the consumer thread.
 		/// </summary>
 		/// <param name="task">The action to be performed in the task.</param>
 		/// <returns>Task which can be awaited for completion</returns>
-		protected Task EnqueueConsumerTask(Action task)
-		{
-			var t = new Task(task);
-			t.Start(ConsumerPoller);
-			return t;
-		}
+		protected void EnqueueConsumerTask(Action task) => new Task(task).Start(ConsumerPoller);
 
 		/// <summary>
-		///   Enqueues a new task to be done by the consumer thread.
+		///     Enqueues a new task to be done by the consumer thread.
 		/// </summary>
 		/// <param name="task">The task.</param>
 		protected void EnqueueConsumerTask(Task task) => task.Start(ConsumerPoller);
 
 		/// <summary>
-		///   Debug assert which checks if the caller is running in socket thread.
+		///     Debug assert which checks if the caller is running in socket thread.
 		/// </summary>
 		protected void AssertSocketThread()
 			=> Debug.Assert(SocketPoller.CanExecuteTaskInline, "Not called from the socket thread");
 
 		/// <summary>
-		///   Debug assert which checks if the caller is running in the consumer thread.
+		///     Debug assert which checks if the caller is running in the consumer thread.
 		/// </summary>
 		protected void AssertConsumerThread()
 			=> Debug.Assert(ConsumerPoller.CanExecuteTaskInline, "Not called from the work thread");
 
-		private void OnSocketReceive(NetMQMessage msg)
+		private async Task OnSocketReceive(NetMQMessage msg)
 		{
 			AssertSocketThread();
 			// avoid calling msg.ToString if debug is off
@@ -244,12 +233,12 @@ namespace OPCAIC.Messaging
 			else if (handler.IsSync)
 			{
 				// execute locally
-				handler.Handler(item);
+				await handler.Handler(item);
 			}
 			else
 			{
 				// queue execution on worker thread
-				EnqueueConsumerTask(() => handler.Handler(item));
+				EnqueueConsumerTask(async () => await handler.Handler(item));
 			}
 
 			EnqueueConsumerTask(() => OnMessageReceived(item));

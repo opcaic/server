@@ -61,6 +61,12 @@ namespace OPCAIC.ApiService.Utils
 					EmailVerified = true
 				});
 
+				context.Set<Submission>().Add(new Submission()
+				{
+					AuthorId = 1,
+					TournamentId = 1,
+				});
+
 				context.SaveChanges();
 			}
 		}

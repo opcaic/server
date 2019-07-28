@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 using OPCAIC.Worker.Config;
 
@@ -29,68 +33,38 @@ namespace OPCAIC.Worker.Services
 		public void Dispose() => webClient?.Dispose();
 
 		/// <inheritdoc />
-		public Task DownloadAsync(string serverPath, string localPath)
+		public async Task DownloadSubmission(long submissionId, string path)
 		{
-			Require.ArgNotNull(serverPath, nameof(serverPath));
-			Require.ArgNotNull(localPath, nameof(localPath));
+			Debug.Assert(submissionId > 0);
+			Require.ArgNotNull(path, nameof(path));
 
-			return webClient.DownloadFileTaskAsync(
-				serverPath,
-				localPath);
+			var bytes = await webClient.DownloadDataTaskAsync($"submissions/{submissionId}");
+
+			using (var archive = new ZipArchive(new MemoryStream(bytes), ZipArchiveMode.Read))
+			{
+				archive.ExtractToDirectory(path);
+			}
 		}
 
 		/// <inheritdoc />
-		public Task<byte[]> DownloadBinaryAsync(string serverPath)
+		public Task UploadValidationResults(long validationId, string path) 
 		{
-			Require.ArgNotNull(serverPath, nameof(serverPath));
+			Require.ArgNotNull(path, nameof(path));
+			var outputDirectory = new DirectoryInfo(path);
+			Require.That<ArgumentException>(outputDirectory.Exists, "Directory does not exist");
 
-			return webClient.DownloadDataTaskAsync(serverPath);
-		}
+			var stream = new MemoryStream();
+			using (var archive = new ZipArchive(stream, ZipArchiveMode.Create))
+			{
+				foreach (var fileInfo in outputDirectory.GetFiles("*", SearchOption.AllDirectories))
+				{
+					archive.CreateEntryFromFile(
+						fileInfo.FullName,
+						Path.GetRelativePath(outputDirectory.FullName, fileInfo.FullName));
+				}
+			}
 
-		/// <inheritdoc />
-		public Task<string> DownloadTextAsync(string serverPath)
-		{
-			Require.ArgNotNull(serverPath, nameof(serverPath));
-
-			return webClient.DownloadStringTaskAsync(serverPath);
-		}
-
-		/// <inheritdoc />
-		public async Task UploadAsync(string serverPath, string localPath, bool post)
-		{
-			Require.ArgNotNull(serverPath, nameof(serverPath));
-			Require.ArgNotNull(localPath, nameof(localPath));
-
-			var res = await webClient.UploadFileTaskAsync(
-				serverPath,
-				post ? "POST" : "PUT",
-				localPath);
-
-			Console.WriteLine(Encoding.ASCII.GetString(res));
-		}
-
-		/// <inheritdoc />
-		public Task UploadBinaryAsync(string serverPath, byte[] data, bool post)
-		{
-			Require.ArgNotNull(serverPath, nameof(serverPath));
-			Require.ArgNotNull(data, nameof(data));
-
-			return webClient.UploadDataTaskAsync(
-				serverPath,
-				post ? "POST" : "PUT",
-				data);
-		}
-
-		/// <inheritdoc />
-		public Task UploadTextAsync(string serverPath, string data, bool post)
-		{
-			Require.ArgNotNull(serverPath, nameof(serverPath));
-			Require.ArgNotNull(data, nameof(data));
-
-			return webClient.UploadStringTaskAsync(
-				serverPath,
-				post ? "POST" : "PUT",
-				data);
+			return webClient.UploadDataTaskAsync($"results/{validationId}", stream.ToArray());
 		}
 	}
 }

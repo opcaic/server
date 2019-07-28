@@ -16,6 +16,7 @@ namespace OPCAIC.Worker.Test
 	public class IntegrationTest : ExternalGameModuleTest
 	{
 		private readonly Mock<IExecutionServices> executionServicesMock;
+		private readonly Mock<IDownloadService> downloadServiceMock;
 		private readonly WorkerConnectorHelper connectorHelper;
 
 		private DirectoryInfo ArchiveDirectory { get; }
@@ -44,9 +45,11 @@ namespace OPCAIC.Worker.Test
 			executionServicesMock.Setup(s => s.GetGameModule(It.IsAny<string>())).Returns(ExternalGameModule);
 			executionServicesMock.Setup(s => s.GetWorkingDirectory(It.IsAny<WorkMessageBase>()))
 				.Returns(NewDirectory);
-			executionServicesMock
-				.Setup(s => s.DownloadSubmission(It.IsAny<string>(), It.IsAny<string>()))
-				.Callback((string _, string l) => File.WriteAllText(Path.Combine(l, "a"), "random content"));
+
+			downloadServiceMock = Services.Mock<IDownloadService>();
+			downloadServiceMock
+				.Setup(s => s.DownloadSubmission(It.IsAny<long>(), It.IsAny<string>()))
+				.Callback((long _, string l) => File.WriteAllText(Path.Combine(l, "a"), "random content"));
 
 			var reg = Services.Mock<IGameModuleRegistry>();
 			reg.Setup(r => r.GetAllModules()).Returns(new[] {ExternalGameModule});
@@ -59,12 +62,12 @@ namespace OPCAIC.Worker.Test
 		[InlineData(0, 0, Constants.GameModuleNegativeExitCode)]
 		public void Test(int check, int compile, int validate)
 		{
-			GameModuleConfiguration.Checker =
-				CreateEntryPoint(() => EntryPoints.ExitWithCode(check, null, null));
-			GameModuleConfiguration.Compiler =
-				CreateEntryPoint(() => EntryPoints.ExitWithCode(compile, null, null, null));
-			GameModuleConfiguration.Validator =
-				CreateEntryPoint(() => EntryPoints.ExitWithCode(validate, null, null));
+			GameModuleConfiguration.Checker = ExternalGameModuleHelper.CreateEntryPoint(
+				() => EntryPoints.ExitWithCode(check, null, null));
+			GameModuleConfiguration.Compiler = ExternalGameModuleHelper.CreateEntryPoint(
+				() => EntryPoints.ExitWithCode(compile, null, null, null));
+			GameModuleConfiguration.Validator = ExternalGameModuleHelper.CreateEntryPoint(
+				() => EntryPoints.ExitWithCode(validate, null, null));
 
 			connectorHelper.SetupConsumerReceive(new SubmissionValidationRequest { Game = "", Id = Guid.NewGuid() });
 

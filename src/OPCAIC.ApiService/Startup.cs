@@ -12,6 +12,7 @@ using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Middlewares;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Services;
 
 namespace OPCAIC.ApiService
 {
@@ -70,6 +71,7 @@ namespace OPCAIC.ApiService
 					});
 			});
 
+			services.Configure<StorageConfiguration>(Configuration.GetSection("Storage")); 
 			// TODO: replace with real database
 			services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("Dummy"));
 

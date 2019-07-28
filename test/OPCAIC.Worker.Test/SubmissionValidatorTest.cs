@@ -15,8 +15,9 @@ namespace OPCAIC.Worker.Test
 {
 	public class SubmissionValidatorTest : ServiceTestBase
 	{
-		private Mock<IGameModule> gameModuleMock;
-		private Mock<IExecutionServices> executionServicesMock;
+		private readonly Mock<IGameModule> gameModuleMock;
+		private readonly Mock<IDownloadService> downloadServiceMock;
+		private readonly Mock<IExecutionServices> executionServicesMock;
 		private DirectoryInfo ArchiveDirectory { get; }
 		private DirectoryInfo WorkingDirectory { get; }
 
@@ -45,16 +46,17 @@ namespace OPCAIC.Worker.Test
 				.Setup(s => s.GetWorkingDirectory(It.IsAny<WorkMessageBase>()))
 				.Returns(NewDirectory);
 
-			executionServicesMock
-				.Setup(s => s.DownloadSubmission(It.IsAny<string>(), It.IsAny<string>()))
+			downloadServiceMock = Services.Mock<IDownloadService>();
+			downloadServiceMock
+				.Setup(s => s.DownloadSubmission(It.IsAny<long>(), It.IsAny<string>()))
 				// just some nonempty submission
-				.Callback((string _, string l) => File.WriteAllText(Path.Combine(l, "a"), "random content"));
+				.Callback((long _, string l) => File.WriteAllText(Path.Combine(l, "a"), "random content"));
 
 			Request = new SubmissionValidationRequest
 			{
 				Game = "MockGame",
 				Id = Guid.NewGuid(),
-				Path = "RandomPath"
+				SubmissionId = 42
 			};
 		}
 

@@ -103,7 +103,7 @@ namespace OPCAIC.Worker
 			return cts == null;
 		}
 
-		private void ServeRequest<TRequest, TResult>(TRequest request)
+		private async Task ServeRequest<TRequest, TResult>(TRequest request)
 			where TResult : ReplyMessageBase, new() where TRequest : WorkMessageBase
 		{
 			Debug.Assert(currentTaskCts == null);
@@ -122,9 +122,9 @@ namespace OPCAIC.Worker
 				using (logger.TaskScope(request))
 				using (var scope = serviceProvider.CreateScope())
 				{
-					var r = scope.ServiceProvider
+					var r = await scope.ServiceProvider
 						.GetRequiredService<IJobExecutor<TRequest, TResult>>()
-						.ExecuteAsync(request, token).Result;
+						.ExecuteAsync(request, token);
 
 					if (r != null)
 					{

@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\OPCAIC.Worker\OPCAIC.Worker.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="GameModuleMock.runtimeconfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

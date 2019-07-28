@@ -56,31 +56,5 @@ namespace OPCAIC.Worker.Test
 
 			Assert.Throws<GameModuleNotFoundException>(() => ExecutionServices.GetGameModule("game"));
 		}
-
-		[Fact]
-		public async Task SuccessfullyDownloadsSubmission()
-		{
-			const string fileContents = "ABCD";
-			const string fileName = "a";
-			var memstream = new MemoryStream();
-
-			using (var archive = new ZipArchive(memstream, ZipArchiveMode.Create))
-			using (var stream = new StreamWriter(archive.CreateEntry(fileName).Open()))
-			{
-				stream.Write(fileContents);
-			}
-
-			downloadService.Setup(s => s.DownloadBinaryAsync(It.IsAny<string>()))
-				.ReturnsAsync(memstream.ToArray());
-			await ExecutionServices.DownloadSubmission("ignored", workdir.FullName);
-
-			var file = workdir.GetFiles().SingleOrDefault();
-			Assert.NotNull(file);
-			Assert.Equal(fileName, file.Name);
-			using (var stream = file.OpenText())
-			{
-				Assert.Equal(fileContents, stream.ReadToEnd());
-			}
-		}
 	}
 }

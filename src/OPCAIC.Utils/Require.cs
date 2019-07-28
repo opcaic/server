@@ -42,6 +42,14 @@ namespace OPCAIC.Utils
 			=> That<ArgumentOutOfRangeException>(value >= 0, name);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void That<T>(bool condition, string message) where T : Exception 
+			=> That<T>(condition, (object) message);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void That<T>(bool condition, FormattableString message) where T : Exception
+			=> That<T>(condition, message.ToString());
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void That<T>(bool condition, params object[] ctorArgs) where T : Exception
 		{
 			Debug.Assert(ctorArgs != null);

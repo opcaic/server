@@ -15,13 +15,19 @@ namespace OPCAIC.Worker.Services
 	internal abstract class JobExecutorBase<TRequest, TResult> : IJobExecutor<TRequest, TResult>
 		where TRequest : WorkMessageBase where TResult : ReplyMessageBase, new()
 	{
-		protected JobExecutorBase(ILogger logger, IExecutionServices services)
+		protected JobExecutorBase(ILogger logger, IExecutionServices services, IDownloadService downloadService)
 		{
 			Services = services;
+			DownloadService = downloadService;
 			Logger = logger;
 			Result = new TResult();
 			Submissions = new List<SubmissionInfo>();
 		}
+
+		/// <summary>
+		///     Service for downloading/uploading files.
+		/// </summary>
+		public IDownloadService DownloadService { get; }
 
 		/// <summary>
 		///     Various useful services.
@@ -102,7 +108,7 @@ namespace OPCAIC.Worker.Services
 			finally
 			{
 				// cleanup
-//				await Services.UploadResults(request, OutputDirectory);
+				await UploadResults();
 				Services.ArchiveDirectory(TaskDirectory);
 				TaskDirectory.Delete(true);
 			}
@@ -111,9 +117,24 @@ namespace OPCAIC.Worker.Services
 			return Result;
 		}
 
-		protected async Task<SubmissionInfo> DownloadSubmission(string serverPath)
+		protected abstract Task DoUploadResults();
+
+		private async Task UploadResults()
 		{
-			Logger.LogInformation($"Downloading submission '{serverPath}'");
+			try
+			{
+				await DoUploadResults();
+			}
+			catch(Exception e)
+			{
+				Logger.LogError(e, "Failed to upload results");
+				// do not rethrow, there are other things that need to be done.
+			}
+		}
+
+		protected async Task<SubmissionInfo> DownloadSubmission(long submissionId)
+		{
+			Logger.LogInformation($"Downloading submission '{submissionId}'");
 			var index = Submissions.Count;
 			var info = new SubmissionInfo()
 			{
@@ -122,7 +143,7 @@ namespace OPCAIC.Worker.Services
 				SourceDirectory = SourcesDirectory.CreateSubdirectory(index.ToString())
 			};
 			Submissions.Add(info);
-            await Services.DownloadSubmission(serverPath, info.SourceDirectory.FullName);
+            await DownloadService.DownloadSubmission(submissionId, info.SourceDirectory.FullName);
 			Require.That<InvalidOperationException>(
 				info.SourceDirectory.Exists && info.SourceDirectory.EnumerateFileSystemInfos().Any(),
 				"No files found in the downloaded submission");

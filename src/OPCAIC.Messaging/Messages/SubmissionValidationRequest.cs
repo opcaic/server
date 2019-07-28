@@ -6,8 +6,13 @@
 	public class SubmissionValidationRequest : WorkMessageBase
 	{
 		/// <summary>
-		///   Path to the submission files
+		///   Id of the validated submission.
 		/// </summary>
-		public string Path { get; set; }
+		public long SubmissionId { get; set; }
+
+		/// <summary>
+		///   Id of the validation.
+		/// </summary>
+		public long ValidationId { get; set; }
 	}
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +32,14 @@ namespace OPCAIC.Infrastructure.Repositories
 
 		/// <inheritdoc />
 		public void Dispose() => Context?.Dispose();
+
+		/// <inheritdoc />
+		public Task<bool> ExistsAsync(long id, CancellationToken cancellationToken = default)
+			=> DbSet.AnyAsync(e => e.Id == id, cancellationToken);
+
+		/// <inheritdoc />
+		public bool Exists(long id) 
+			=> DbSet.Any(e => e.Id == id);
 
 		/// <inheritdoc />
 		public void Delete(TEntity entity) => DbSet.Remove(entity);

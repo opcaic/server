@@ -59,7 +59,7 @@ namespace OPCAIC.Worker.GameModules
 		}
 
 		/// <inheritdoc />
-		public async Task<CompilerResult> Compile(SubmissionInfo submission, string outputDir,
+		public Task<CompilerResult> Compile(SubmissionInfo submission, string outputDir,
 			CancellationToken cancellationToken)
 		{
 			Require.ArgNotNull(submission, nameof(submission));
@@ -79,11 +79,11 @@ namespace OPCAIC.Worker.GameModules
 				}
 			};
 
-			return await InvokeGameModule<CompilerResult>(procStart, logPrefix, cancellationToken);
+			return InvokeGameModule<CompilerResult>(procStart, logPrefix, cancellationToken);
 		}
 
 		/// <inheritdoc />
-		public async Task<ValidatorResult> Validate(SubmissionInfo submission, string outputDir,
+		public Task<ValidatorResult> Validate(SubmissionInfo submission, string outputDir,
 			CancellationToken cancellationToken)
 		{
 			Require.ArgNotNull(submission, nameof(submission));
@@ -98,7 +98,7 @@ namespace OPCAIC.Worker.GameModules
 				Arguments = {submission.BinaryDirectory.FullName, outputDir}
 			};
 
-			return await InvokeGameModule<ValidatorResult>(procStart, logPrefix, cancellationToken);
+			return InvokeGameModule<ValidatorResult>(procStart, logPrefix, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -205,7 +205,7 @@ namespace OPCAIC.Worker.GameModules
 							$"Invalid {nameof(GameModuleEntryPointResult)}: {exitCode}.");
 				}
 
-				logger.LogInformation("Entry point  finished with '{processResult}'", exitCode);
+				logger.LogInformation("Entry point finished with '{processResult}'", exitCode);
 
 				return result;
 			}
@@ -286,6 +286,7 @@ namespace OPCAIC.Worker.GameModules
 			void ExitHandler(object sender, EventArgs eventArgs)
 			{
 				logger.LogInformation("Exited with exit code {exitcode}", process.ExitCode);
+				// try to set result, can fail if the task was cancelled in the meantime
 				tcs.TrySetResult(ExitCodeToProcessResult(process.ExitCode));
 			}
 
@@ -301,8 +302,15 @@ namespace OPCAIC.Worker.GameModules
 				using (cancellationToken.Register(() =>
 				{
 					logger.LogWarning("Cancellation requested, killing process {pid}", process.Id);
-					process.Kill();
-					tcs.SetCanceled();
+					try
+					{
+						process.Kill();
+						tcs.SetCanceled();
+					}
+					catch (InvalidOperationException)
+					{
+						// process was already finished and tcs fulfilled, ignore
+					}
 				}))
 				{
 					return await tcs.Task.ConfigureAwait(false);

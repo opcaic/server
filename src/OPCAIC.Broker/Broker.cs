@@ -330,19 +330,23 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public async Task StartAsync(CancellationToken cancellationToken)
+		public Task StartAsync(CancellationToken cancellationToken)
 		{
 			logger.LogInformation("Starting Broker");
 			StartBrokering();
 			logger.LogInformation("Broker started");
+
+			return Task.CompletedTask;
 		}
 
 		/// <inheritdoc />
-		public async Task StopAsync(CancellationToken cancellationToken)
+		public Task StopAsync(CancellationToken cancellationToken)
 		{
 			logger.LogInformation("Stopping Broker");
 			StopBrokering(cancellationToken);
 			logger.LogInformation("Broker stopped");
+
+			return Task.CompletedTask;
 		}
 	}
 }

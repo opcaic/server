@@ -42,12 +42,28 @@ namespace OPCAIC.Messaging
 		void RegisterAsyncHandler<T>(Action<string, T> handler);
 
 		/// <summary>
+		///   Registers a handler to be invoked on consumer thread when a message of given type is
+		///   received.
+		/// </summary>
+		/// <typeparam name="T">Type of the handled message.</typeparam>
+		/// <param name="handler">The handler.</param>
+		void RegisterAsyncHandler<T>(Func<string, T, Task> handler);
+
+		/// <summary>
 		///   Registers a handler to be invoked on socket thread when a message of given type is
 		///   received.
 		/// </summary>
 		/// <typeparam name="T">Type of the handled message.</typeparam>
 		/// <param name="handler">The handler.</param>
 		void RegisterHandler<T>(Action<string, T> handler);
+
+		/// <summary>
+		///   Registers a handler to be invoked on socket thread when a message of given type is
+		///   received.
+		/// </summary>
+		/// <typeparam name="T">Type of the handled message.</typeparam>
+		/// <param name="handler">The handler.</param>
+		void RegisterHandler<T>(Func<string, T, Task> handler);
 
 		/// <summary>
 		///   Sends a message to the specified worker with given payload.

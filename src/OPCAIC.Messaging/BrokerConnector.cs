@@ -12,13 +12,14 @@ using OPCAIC.Messaging.Utils;
 namespace OPCAIC.Messaging
 {
 	/// <summary>
-	///   NetMQ connector for the broker node.
+	///     NetMQ connector for the broker node.
 	/// </summary>
 	public class BrokerConnector : ConnectorBase<RouterSocket, ReceivedMessage>, IBrokerConnector
 	{
 		private readonly Dictionary<string, WorkerConnection> workers;
 
-		public BrokerConnector(IOptions<BrokerConnectorConfig> config, ILogger<BrokerConnector> logger)
+		public BrokerConnector(IOptions<BrokerConnectorConfig> config,
+			ILogger<BrokerConnector> logger)
 			: base(
 				config.Value.Identity,
 				new RouterSocketFactory(config.Value.Identity, config.Value.ListeningAddress),
@@ -27,23 +28,21 @@ namespace OPCAIC.Messaging
 				logger)
 			=> workers = new Dictionary<string, WorkerConnection>();
 
-		/// <inheritdoc cref="IBrokerConnector"/>
+		/// <inheritdoc cref="IBrokerConnector" />
 		public event EventHandler<WorkerConnectionEventArgs> WorkerDisconnected;
 
-		/// <inheritdoc cref="IBrokerConnector"/>
+		/// <inheritdoc cref="IBrokerConnector" />
 		public event EventHandler<WorkerConnectionEventArgs> WorkerConnected;
 
-		/// <inheritdoc cref="IBrokerConnector"/>
+		/// <inheritdoc cref="IBrokerConnector" />
 		public void RegisterAsyncHandler<T>(Action<string, T> handler)
-			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
-				msg => handler(msg.Sender, (T) msg.Payload), false));
+			=> RegisterAsyncHandler(WrapAction(handler));
 
-		/// <inheritdoc cref="IBrokerConnector"/>
+		/// <inheritdoc cref="IBrokerConnector" />
 		public void RegisterHandler<T>(Action<string, T> handler)
-			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
-				msg => handler(msg.Sender, (T) msg.Payload), true));
+			=> RegisterHandler(WrapAction(handler));
 
-		/// <inheritdoc cref="IBrokerConnector"/>
+		/// <inheritdoc cref="IBrokerConnector" />
 		public void SendMessage(string recipient, object payload)
 			=> EnqueueSocketTask(() =>
 			{
@@ -57,8 +56,31 @@ namespace OPCAIC.Messaging
 				DirectSend(CreateMessage(recipient, payload));
 			});
 
-		/// <inheritdoc cref="IBrokerConnector"/>
+		/// <inheritdoc cref="IBrokerConnector" />
 		public void EnqueueTask(Task task) => EnqueueConsumerTask(task);
+
+		/// <inheritdoc cref="IBrokerConnector" />
+		public void RegisterAsyncHandler<T>(Func<string, T, Task> handler)
+			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
+				msg => handler(msg.Sender, (T)msg.Payload), false));
+
+		/// <summary>
+		///     Wraps the given action into a simple async action.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="handler"></param>
+		/// <returns></returns>
+		private static Func<string, T, Task> WrapAction<T>(Action<string, T> handler)
+			=> (i, p) =>
+			{
+				handler(i, p);
+				return Task.CompletedTask;
+			};
+
+		/// <inheritdoc cref="IBrokerConnector" />
+		public void RegisterHandler<T>(Func<string, T, Task> handler)
+			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
+				msg => handler(msg.Sender, (T)msg.Payload), true));
 
 		/// <inheritdoc />
 		protected override void OnHeartbeatConfigChanged(HeartbeatConfig config)
@@ -120,19 +142,15 @@ namespace OPCAIC.Messaging
 		private void OnWorkerDisconnected(WorkerConnection worker)
 		{
 			AssertConsumerThread();
-			WorkerDisconnected?.Invoke(this, new WorkerConnectionEventArgs
-			{
-				Identity = worker.Identity
-			});
+			WorkerDisconnected?.Invoke(this,
+				new WorkerConnectionEventArgs {Identity = worker.Identity});
 		}
 
 		private void OnWorkerConnected(WorkerConnection worker)
 		{
 			AssertConsumerThread();
-			WorkerConnected?.Invoke(this, new WorkerConnectionEventArgs
-			{
-				Identity = worker.Identity
-			});
+			WorkerConnected?.Invoke(this,
+				new WorkerConnectionEventArgs {Identity = worker.Identity});
 		}
 
 		private void OnHeartbeatTimeout(WorkerConnection worker)

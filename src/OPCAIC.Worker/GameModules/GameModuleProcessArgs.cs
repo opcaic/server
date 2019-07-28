@@ -6,7 +6,7 @@ namespace OPCAIC.Worker.GameModules
 	/// <summary>
 	///     Simplified set of arguments used to start a process.
 	/// </summary>
-	internal class GameModuleProcessArgs
+	public class GameModuleProcessArgs
 	{
 		/// <summary>
 		///     Working directory of the process.

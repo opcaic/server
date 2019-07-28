@@ -12,6 +12,7 @@ namespace OPCAIC.Worker.Test
 		/// <inheritdoc />
 		public MatchExecutorTest(ITestOutputHelper output) : base(output)
 		{
+			Services.Mock<IDownloadService>();
 			Services.Mock<IExecutionServices>()
 				.Setup(s => s.GetWorkingDirectory(It.IsAny<WorkMessageBase>()))
 				.Returns(NewDirectory);

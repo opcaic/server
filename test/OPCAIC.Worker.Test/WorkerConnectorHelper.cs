@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Moq;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
@@ -47,8 +48,9 @@ namespace OPCAIC.Worker.Test
 
 		public void SetupConsumerReceive<TRequest>(TRequest request) where TRequest : WorkMessageBase
 		{
-			Mock.Setup(c => c.RegisterAsyncHandler(It.IsAny<Action<TRequest>>()))
-				.Callback((Action<TRequest> h) => asyncHandlers[typeof(TRequest)] = o => h((TRequest) o));
+			Mock.Setup(c => c.RegisterAsyncHandler(It.IsAny<Func<TRequest, Task>>()))
+				.Callback((Func<TRequest, Task> h)
+					=> asyncHandlers[typeof(TRequest)] = o => h((TRequest)o).Wait());
 
 			consumerActions += () => CallAsyncHandler(request);
 		}
