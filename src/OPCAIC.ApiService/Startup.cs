@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Middlewares;
+using OPCAIC.ApiService.Security;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Services;
@@ -20,10 +22,7 @@ namespace OPCAIC.ApiService
 	{
 		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-		public Startup(IConfiguration configuration)
-		{
-			Configuration = configuration;
-		}
+		public Startup(IConfiguration configuration) => Configuration = configuration;
 
 		public IConfiguration Configuration { get; }
 
@@ -38,7 +37,7 @@ namespace OPCAIC.ApiService
 				config.RootPath = Configuration.GetValue<string>("SPA_ROOT") ?? "wwwroot";
 			});
 
-			var key = Configuration.GetValue<string>(ConfigNames.SecurityKey);
+			var conf = Configuration.GetSecurityConfiguration();
 
 			services.AddAuthentication(x =>
 				{
@@ -48,16 +47,19 @@ namespace OPCAIC.ApiService
 				.AddJwtBearer(x =>
 				{
 					x.RequireHttpsMetadata = false;
-					x.SaveToken = true;
+					x.SaveToken = false;
 					x.TokenValidationParameters = new TokenValidationParameters
 					{
 						ValidateIssuerSigningKey = true,
 						IssuerSigningKey =
-							new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
+							new SymmetricSecurityKey(Encoding.ASCII.GetBytes(conf.Key)),
 						ValidateIssuer = false,
-						ValidateAudience = false
+						ValidateAudience = false,
+						ClockSkew = TimeSpan.Zero
 					};
 				});
+
+			services.AddAuthorization(AuthorizationConfiguration.Setup);
 
 			services.AddCors(options =>
 			{

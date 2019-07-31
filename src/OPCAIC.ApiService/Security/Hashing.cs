@@ -9,10 +9,7 @@ namespace OPCAIC.ApiService.Security
 		private static readonly byte[] salt = new byte[128 / 8];
 		private static readonly Random rnd = new Random(4242);
 
-		static Hashing()
-		{
-			rnd.NextBytes(salt);
-		}
+		static Hashing() => rnd.NextBytes(salt);
 
 		public static string HashPassword(string password)
 		{

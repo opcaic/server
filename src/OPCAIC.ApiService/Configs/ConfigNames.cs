@@ -2,6 +2,6 @@
 {
 	public static class ConfigNames
 	{
-		public const string SecurityKey = "SecurityKey";
+		public const string Security = "Security";
 	}
 }

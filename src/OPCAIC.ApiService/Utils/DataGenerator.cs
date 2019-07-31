@@ -51,22 +51,34 @@ namespace OPCAIC.ApiService.Utils
 					}
 				);
 
-				context.Set<User>().Add(new User
-				{
-					Id = 1,
-					FirstName = "Admin",
-					LastName = "Opcaic",
-					RoleId = 1,
-					PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
-					Email = "admin@opcaic.com",
-					EmailVerified = true
-				});
-
-				context.Set<Submission>().Add(new Submission()
-				{
-					AuthorId = 1,
-					TournamentId = 1
-				});
+				context.Set<User>().AddRange(
+					new User
+					{
+						FirstName = "Admin",
+						LastName = "Opcaic",
+						RoleId = (long)UserRole.Admin,
+						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
+						Email = "admin@opcaic.com",
+						EmailVerified = true
+					},
+					new User
+					{
+						FirstName = "Organizer",
+						LastName = "Opcaic",
+						RoleId = (long)UserRole.Organizer,
+						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
+						Email = "organizer@opcaic.com",
+						EmailVerified = true
+					},
+					new User
+					{
+						FirstName = "User",
+						LastName = "Opcaic",
+						RoleId = (long)UserRole.User,
+						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
+						Email = "user@opcaic.com",
+						EmailVerified = true
+					});
 
 				context.SaveChanges();
 			}

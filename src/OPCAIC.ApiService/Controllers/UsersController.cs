@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
@@ -29,7 +30,7 @@ namespace OPCAIC.ApiService.Controllers
 		}
 
 		/// <summary>
-		///     Returns lists of users
+		///   Returns lists of users
 		/// </summary>
 		/// <returns>array of all users</returns>
 		/// <response code="401">User is not authorized.</response>
@@ -38,13 +39,12 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(typeof(UserIdentity), (int)HttpStatusCode.OK)]
 		[ProducesResponseType((int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType((int)HttpStatusCode.Forbidden)]
+		[Authorize(RolePolicy.Admin)]
 		public Task<UserIdentityDto[]> GetUsers(CancellationToken cancellationToken)
-		{
-			return userService.GetAllAsync(cancellationToken);
-		}
+			=> userService.GetAllAsync(cancellationToken);
 
 		/// <summary>
-		///     Generates login token and returns model of current user
+		///   Generates login token and returns model of current user
 		/// </summary>
 		/// <param name="credentials"></param>
 		/// <param name="cancellationToken"></param>
@@ -67,13 +67,29 @@ namespace OPCAIC.ApiService.Controllers
 		}
 
 		/// <summary>
-		///     Creates new user and returns his id
+		///		Generates and returns new authorization tokens.
+		/// </summary>
+		/// <param name="userId">id of signed user</param>
+		/// <param name="model">current refresh token</param>
+		/// <param name="cancellationToken"></param>
+		/// <response code="200">returns new authorization tokens</response>
+		/// <response code="401">refresh token invalid or expired</response>
+		[AllowAnonymous]
+		[HttpPost("{userId}/refresh")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public Task<UserTokens> RefreshAsync(long userId, [FromBody] RefreshToken model,
+			CancellationToken cancellationToken)
+			=> userService.RefreshTokens(userId, model.Token, cancellationToken);
+
+		/// <summary>
+		///  Creates new user and returns his id
 		/// </summary>
 		/// <param name="model"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		[HttpPost]
 		[AllowAnonymous]
+		[HttpPost]
 		public async Task<IActionResult> PostAsync([FromBody] NewUserModel model,
 			CancellationToken cancellationToken)
 		{

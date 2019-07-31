@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Repositories;
@@ -17,6 +18,8 @@ namespace OPCAIC.ApiService.Services
 	public class UserService : IUserService
 	{
 		private readonly IConfiguration configuration;
+
+		private readonly JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
 		private readonly IUserRepository userRepository;
 
 		public UserService(IConfiguration configuration, IUserRepository userRepository)
@@ -38,9 +41,7 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		public Task<UserIdentityDto[]> GetAllAsync(CancellationToken cancellationToken)
-		{
-			return userRepository.GetAsync(cancellationToken);
-		}
+			=> userRepository.GetAsync(cancellationToken);
 
 		public async Task<UserIdentity> AuthenticateAsync(string email, string passwordHash,
 			CancellationToken cancellationToken)
@@ -52,27 +53,78 @@ namespace OPCAIC.ApiService.Services
 				return null;
 			}
 
-			var jwtTokenHandler = new JwtSecurityTokenHandler();
+			var conf = configuration.GetSecurityConfiguration();
 
-			var key = configuration.GetValue<string>(ConfigNames.SecurityKey);
+			var claim = new Claim(RolePolicy.PolicyName, ((UserRole)user.RoleId).ToString());
+			var accessToken = CreateToken(conf.Key,
+				TimeSpan.FromMinutes(conf.AccessTokenExpirationMinutes), claim);
 
-			var tokenDescriptor = new SecurityTokenDescriptor
-			{
-				Subject = new ClaimsIdentity(new[] {new Claim("user", user.Id.ToString())}),
-				Expires = DateTime.Now.AddHours(1),
-				SigningCredentials = new SigningCredentials(
-					new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
-					SecurityAlgorithms.HmacSha256Signature)
-			};
-			var token = jwtTokenHandler.CreateToken(tokenDescriptor);
+			var refreshTokenClaim = new Claim("user", user.Id.ToString());
+			var refreshToken = CreateToken(conf.Key,
+				TimeSpan.FromDays(conf.RefreshTokenExpirationDays), refreshTokenClaim);
 
 			return new UserIdentity
 			{
 				Id = user.Id,
 				Email = user.Email,
 				Role = (UserRole)user.RoleId,
-				Token = jwtTokenHandler.WriteToken(token)
+				RefreshToken = refreshToken,
+				AccessToken = accessToken
 			};
 		}
+
+		public async Task<UserTokens> RefreshTokens(long userId, string oldToken,
+			CancellationToken cancellationToken)
+		{
+			var conf = configuration.GetSecurityConfiguration();
+
+			try
+			{
+				var principal = tokenHandler.ValidateToken(oldToken,
+					GetValidationParameters(conf.Key), out var token);
+			}
+			catch (Exception ex)
+			{
+				throw new UnauthorizedExcepion(ex.Message);
+			}
+
+			var identity = await userRepository.FindIdentityAsync(userId, cancellationToken);
+
+			var refreshTokenClaim = new Claim("user", userId.ToString());
+			var newToken = CreateToken(conf.Key, TimeSpan.FromDays(conf.RefreshTokenExpirationDays),
+				refreshTokenClaim);
+
+			var claim = new Claim(RolePolicy.PolicyName, ((UserRole)identity.RoleId).ToString());
+			var accessToken = CreateToken(conf.Key,
+				TimeSpan.FromSeconds(conf.AccessTokenExpirationMinutes), claim);
+
+			return new UserTokens {RefreshToken = newToken, AccessToken = accessToken};
+		}
+
+		private static TokenValidationParameters GetValidationParameters(string key)
+			=> new TokenValidationParameters
+			{
+				ValidateLifetime = true,
+				ValidateAudience = false,
+				ValidateIssuer = false,
+				IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+			};
+
+		private string CreateToken(string key, TimeSpan expiresIn, params Claim[] claims)
+		{
+			var tokenDescriptor = new SecurityTokenDescriptor
+			{
+				Subject = new ClaimsIdentity(claims),
+				Expires = DateTime.Now.Add(expiresIn),
+				SigningCredentials = new SigningCredentials(CreateSymmetricKey(key),
+					SecurityAlgorithms.HmacSha256Signature)
+			};
+			var token = tokenHandler.CreateToken(tokenDescriptor);
+
+			return tokenHandler.WriteToken(token);
+		}
+
+		private SecurityKey CreateSymmetricKey(string key)
+			=> new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
 	}
 }

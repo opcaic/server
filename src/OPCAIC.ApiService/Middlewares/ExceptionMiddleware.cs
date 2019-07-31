@@ -9,10 +9,7 @@ namespace OPCAIC.ApiService.Middlewares
 	{
 		private readonly RequestDelegate next;
 
-		public ExceptionMiddleware(RequestDelegate next)
-		{
-			this.next = next;
-		}
+		public ExceptionMiddleware(RequestDelegate next) => this.next = next;
 
 		public async Task InvokeAsync(HttpContext context)
 		{
@@ -28,6 +25,10 @@ namespace OPCAIC.ApiService.Middlewares
 			catch (ApiException ex)
 			{
 				await WriteResponseAsync(context, ex);
+			}
+			catch (Exception ex)
+			{
+				await WriteResponseAsync(context, new ApiException(500, ex.Message));
 			}
 		}
 
