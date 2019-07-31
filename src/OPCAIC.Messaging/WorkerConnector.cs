@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetMQ;
@@ -50,12 +51,31 @@ namespace OPCAIC.Messaging
 		public event EventHandler Disconnected;
 
 		/// <inheritdoc cref="IWorkerConnector"/>
-		public void RegisterAsyncHandler<T>(Action<T> handler)
+		public void RegisterAsyncHandler<T>(Func<T, Task> handler)
 			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), false));
+
+		/// <summary>
+		///   Wraps the given action into a simple async action.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="handler"></param>
+		/// <returns></returns>
+		private static Func<T, Task> WrapAction<T>(Action<T> handler) => p =>
+		{
+			handler(p);
+			return Task.CompletedTask;
+		};
+
+		public void RegisterAsyncHandler<T>(Action<T> handler)
+			=> RegisterAsyncHandler(WrapAction(handler));
+
+		/// <inheritdoc cref="IWorkerConnector"/>
+		public void RegisterHandler<T>(Func<T, Task> handler)
+			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), true));
 
 		/// <inheritdoc cref="IWorkerConnector"/>
 		public void RegisterHandler<T>(Action<T> handler)
-			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), true));
+			=> RegisterHandler(WrapAction(handler));
 
 		/// <inheritdoc cref="IWorkerConnector"/>
 		public void SendMessage(object payload)

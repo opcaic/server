@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using OPCAIC.Messaging.Config;
 
 namespace OPCAIC.Messaging
@@ -37,6 +38,14 @@ namespace OPCAIC.Messaging
 		/// </summary>
 		/// <typeparam name="T">Type of the handled message.</typeparam>
 		/// <param name="handler">The handler.</param>
+		void RegisterAsyncHandler<T>(Func<T, Task> handler);
+
+		/// <summary>
+		///   Registers a handler to be invoked on consumer thread when a message of given type is
+		///   received.
+		/// </summary>
+		/// <typeparam name="T">Type of the handled message.</typeparam>
+		/// <param name="handler">The handler.</param>
 		void RegisterAsyncHandler<T>(Action<T> handler);
 
 		/// <summary>
@@ -45,7 +54,16 @@ namespace OPCAIC.Messaging
 		/// </summary>
 		/// <typeparam name="T">Type of the handled message.</typeparam>
 		/// <param name="handler">The handler.</param>
+		void RegisterHandler<T>(Func<T, Task> handler);
+
+		/// <summary>
+		///   Registers a handler to be invoked on socket thread when a message of given type is
+		///   received.
+		/// </summary>
+		/// <typeparam name="T">Type of the handled message.</typeparam>
+		/// <param name="handler">The handler.</param>
 		void RegisterHandler<T>(Action<T> handler);
+
 
 		/// <summary>
 		///   Sends a message with given payload to the broker.

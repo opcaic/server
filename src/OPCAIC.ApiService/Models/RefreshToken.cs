@@ -7,7 +7,8 @@ namespace OPCAIC.ApiService.Models
 		/// <summary>
 		/// current refresh token of user
 		/// </summary>
-		[Required, MinLength(1)]
+		[Required]
+		[MinLength(1)]
 		public string Token { get; set; }
 	}
 }

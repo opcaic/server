@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using AutoMapper;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Entities;
@@ -18,7 +19,7 @@ namespace OPCAIC.Infrastructure.Repositories
 		public TEntity Find(long id) => DbSet.Find(id);
 
 		/// <inheritdoc />
-		public Task<TEntity> FindAsync(long id) => DbSet.FindAsync(id);
+		public Task<TEntity> FindAsync(long id, CancellationToken cancellationToken) => DbSet.FindAsync(id);
 
 		/// <inheritdoc />
 		public void Delete(long id)

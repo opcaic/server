@@ -8,13 +8,10 @@ namespace OPCAIC.ApiService
 {
 	public static class MapperConfigurationFactory
 	{
-		public static MapperConfiguration Create()
+		public static MapperConfiguration Create() => new MapperConfiguration(exp =>
 		{
-			return new MapperConfiguration(exp =>
-			{
-				exp.AddUserMapping();
-			});
-		}
+			exp.AddUserMapping();
+		});
 
 		private static void AddUserMapping(this IMapperConfigurationExpression exp)
 		{

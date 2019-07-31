@@ -21,21 +21,11 @@ namespace OPCAIC.Worker
 		}
 
 		/// <summary>
-		///   The application entrypoint.
+		///   The application entry point.
 		/// </summary>
 		public void Run()
 		{
 			worker.Run();
-		}
-
-		private async Task TestDownloader()
-		{
-			await download.UploadAsync("/attachments/b.a", "a.a", false);
-			await download.UploadAsync("/exercises", "a.a");
-			await download.UploadAsync("/results/b.a", "a.a", false);
-			await download.UploadAsync("/submissions/b.a", "a.a");
-			await download.DownloadAsync("/exercises/da39a3ee5e6b4b0d3255bfef95601890afd80709", "b.a");
-			Console.WriteLine("Success");
 		}
 
 		/// <inheritdoc />

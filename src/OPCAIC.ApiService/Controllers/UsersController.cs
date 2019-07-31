@@ -33,7 +33,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(typeof(ListModel<UserPreviewModel>), (int)HttpStatusCode.OK)]
 		[ProducesResponseType((int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType((int)HttpStatusCode.Forbidden)]
-		[Authorize(RolePolicy._Admin)]
+		[Authorize(RolePolicy.Admin)]
 		public Task<ListModel<UserPreviewModel>> GetUsersAsync(UserFilterModel filter, CancellationToken cancellationToken)
 		{
 			return userService.GetByFilterAsync(filter, cancellationToken);

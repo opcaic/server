@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Moq;
+using Xunit.Abstractions;
 
 namespace OPCAIC.TestUtils
 {
@@ -12,6 +14,12 @@ namespace OPCAIC.TestUtils
 	public class MockingServiceCollection : IServiceCollection
 	{
 		private readonly ServiceCollection serviceCollection = new ServiceCollection();
+		private readonly ITestOutputHelper output;
+
+		public MockingServiceCollection(ITestOutputHelper output)
+		{
+			this.output = output;
+		}
 
 		/// <inheritdoc />
 		public IEnumerator<ServiceDescriptor> GetEnumerator() => serviceCollection.GetEnumerator();
@@ -62,6 +70,15 @@ namespace OPCAIC.TestUtils
 			var mock = new Mock<T>(behavior);
 			serviceCollection.RemoveAll(typeof(T));
 			serviceCollection.AddSingleton(mock.Object);
+			return mock;
+		}
+
+		public Mock<ILogger> MockLogger<T>(MockBehavior behavior = MockBehavior.Default)
+			where T : class
+		{
+			var mock = new Mock<ILogger>(behavior);
+			serviceCollection.RemoveAll(typeof(ILogger<T>));
+			serviceCollection.AddSingleton<ILogger<T>>(new XUnitLogger<T>(output, mock.Object));
 			return mock;
 		}
 	}

@@ -20,11 +20,10 @@ namespace OPCAIC.Services.Test.MatchGeneration
 			Assert.Equal(3, matches.Count());
 			foreach (var match in matches)
 			{
-				Assert.Equal(MatchState.Waiting, match.MatchState);
-				Assert.Equal(1, match.Participants.Count);
+				Assert.Equal(1, match.Participations.Count);
 			}
 
-			Assert.Equal(new[] {"0", "1", "2"}, matches.Select(m => m.Participants.Single().Author));
+			Assert.Equal(new[] {"0", "1", "2"}, matches.Select(m => m.Participations.Single().Submission.Author.FirstName));
 		}
 	}
 }

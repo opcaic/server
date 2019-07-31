@@ -14,6 +14,7 @@ using OPCAIC.ApiService.Middlewares;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Services;
 
 namespace OPCAIC.ApiService
 {
@@ -21,10 +22,7 @@ namespace OPCAIC.ApiService
 	{
 		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-		public Startup(IConfiguration configuration)
-		{
-			Configuration = configuration;
-		}
+		public Startup(IConfiguration configuration) => Configuration = configuration;
 
 		public IConfiguration Configuration { get; }
 
@@ -49,11 +47,12 @@ namespace OPCAIC.ApiService
 				.AddJwtBearer(x =>
 				{
 					x.RequireHttpsMetadata = false;
-					x.SaveToken = false;			
+					x.SaveToken = false;
 					x.TokenValidationParameters = new TokenValidationParameters
 					{
 						ValidateIssuerSigningKey = true,
-						IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(conf.Key)),
+						IssuerSigningKey =
+							new SymmetricSecurityKey(Encoding.ASCII.GetBytes(conf.Key)),
 						ValidateIssuer = false,
 						ValidateAudience = false,
 						ClockSkew = TimeSpan.Zero
@@ -74,6 +73,7 @@ namespace OPCAIC.ApiService
 					});
 			});
 
+			services.Configure<StorageConfiguration>(Configuration.GetSection("Storage")); 
 			// TODO: replace with real database
 			services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("Dummy"));
 

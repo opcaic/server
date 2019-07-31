@@ -92,13 +92,13 @@ namespace OPCAIC.ApiService.Services
 
 			var conf = configuration.GetSecurityConfiguration();
 
-			var tournamentIds = await userTournamentRepository.FindTournamentsByUserAsync(user.Id, cancellationToken);
-
-			var claim = new Claim(RolePolicy._PolicyName, ((UserRole)user.RoleId).ToString());
-			string accessToken = CreateToken(conf.Key, TimeSpan.FromMinutes(conf.AccessTokenExpirationSeconds), claim);
+			var claim = new Claim(RolePolicy.PolicyName, ((UserRole)user.RoleId).ToString());
+			var accessToken = CreateToken(conf.Key,
+				TimeSpan.FromMinutes(conf.AccessTokenExpirationMinutes), claim);
 
 			var refreshTokenClaim = new Claim("user", user.Id.ToString());
-			string refreshToken = CreateToken(conf.Key, TimeSpan.FromDays(conf.RefreshTokenExpirationDays), refreshTokenClaim);
+			var refreshToken = CreateToken(conf.Key,
+				TimeSpan.FromDays(conf.RefreshTokenExpirationDays), refreshTokenClaim);
 
 			return new UserIdentityModel
 			{
@@ -106,29 +106,19 @@ namespace OPCAIC.ApiService.Services
 				Email = user.Email,
 				Role = (UserRole)user.RoleId,
 				RefreshToken = refreshToken,
-				AccessToken = accessToken,
-				ManagedTournamentIds = tournamentIds
+				AccessToken = accessToken
 			};
 		}
 
-		private static TokenValidationParameters GetValidationParameters(string key)
-		{
-			return new TokenValidationParameters()
-			{
-				ValidateLifetime = true, 
-				ValidateAudience = false, 
-				ValidateIssuer = false, 
-				IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)) 
-			};
-		}
-
-		public async Task<UserTokens> RefreshTokens(long userId, string oldToken, CancellationToken cancellationToken)
+		public async Task<UserTokens> RefreshTokens(long userId, string oldToken,
+			CancellationToken cancellationToken)
 		{
 			var conf = configuration.GetSecurityConfiguration();
 
 			try
 			{
-				var principal = tokenHandler.ValidateToken(oldToken, GetValidationParameters(conf.Key), out var token);
+				var principal = tokenHandler.ValidateToken(oldToken,
+					GetValidationParameters(conf.Key), out var token);
 			}
 			catch (Exception ex)
 			{
@@ -136,19 +126,26 @@ namespace OPCAIC.ApiService.Services
 			}
 
 			var identity = await userRepository.FindIdentityAsync(userId, cancellationToken);
-							   
+
 			var refreshTokenClaim = new Claim("user", userId.ToString());
-			var newToken = CreateToken(conf.Key, TimeSpan.FromDays(conf.RefreshTokenExpirationDays), refreshTokenClaim);
+			var newToken = CreateToken(conf.Key, TimeSpan.FromDays(conf.RefreshTokenExpirationDays),
+				refreshTokenClaim);
 
-			var claim = new Claim(RolePolicy._PolicyName, ((UserRole)identity.RoleId).ToString());
-			var accessToken = CreateToken(conf.Key, TimeSpan.FromSeconds(conf.AccessTokenExpirationSeconds), claim);
+			var claim = new Claim(RolePolicy.PolicyName, ((UserRole)identity.RoleId).ToString());
+			var accessToken = CreateToken(conf.Key,
+				TimeSpan.FromSeconds(conf.AccessTokenExpirationMinutes), claim);
 
-			return new UserTokens
-			{
-				RefreshToken = newToken,
-				AccessToken = accessToken
-			};
+			return new UserTokens {RefreshToken = newToken, AccessToken = accessToken};
 		}
+
+		private static TokenValidationParameters GetValidationParameters(string key)
+			=> new TokenValidationParameters
+			{
+				ValidateLifetime = true,
+				ValidateAudience = false,
+				ValidateIssuer = false,
+				IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+			};
 
 		private string CreateToken(string key, TimeSpan expiresIn, params Claim[] claims)
 		{
@@ -156,7 +153,8 @@ namespace OPCAIC.ApiService.Services
 			{
 				Subject = new ClaimsIdentity(claims),
 				Expires = DateTime.Now.Add(expiresIn),
-				SigningCredentials = new SigningCredentials(CreateSymmetricKey(key), SecurityAlgorithms.HmacSha256Signature)
+				SigningCredentials = new SigningCredentials(CreateSymmetricKey(key),
+					SecurityAlgorithms.HmacSha256Signature)
 			};
 			var token = tokenHandler.CreateToken(tokenDescriptor);
 
@@ -164,8 +162,6 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		private SecurityKey CreateSymmetricKey(string key)
-		{
-			return new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
-		}
+			=> new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
 	}
 }

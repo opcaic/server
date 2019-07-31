@@ -2,11 +2,11 @@
 {
 	public class RolePolicy
 	{
-		public const string _PolicyName = "userRole";
+		public const string PolicyName = "userRole";
 
-		public const string _Admin = "admin";
-		public const string _Organizer = "organizer";
-		public const string _User = "user";
-		public const string _Public = "public";
+		public const string Admin = "admin";
+		public const string Organizer = "organizer";
+		public const string User = "user";
+		public const string Public = "public";
 	}
 }

@@ -9,8 +9,8 @@ namespace OPCAIC.Messaging.Messages
 	public class BotInfo
 	{
 		/// <summary>
-		///   Path on server where the submission files for this bot are stored
+		///   Id of the submission of this bot.
 		/// </summary>
-		public string SubmissionPath { get; set; }
+		public long SubmissionId { get; set; }
 	}
 }

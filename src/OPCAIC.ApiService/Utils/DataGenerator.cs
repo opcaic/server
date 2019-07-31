@@ -54,7 +54,8 @@ namespace OPCAIC.ApiService.Utils
 				context.Set<User>().AddRange(
 					new User
 					{
-						Username = "Admin",
+						FirstName = "Admin",
+						LastName = "Opcaic",
 						RoleId = (long)UserRole.Admin,
 						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 						Email = "admin@opcaic.com",
@@ -62,7 +63,8 @@ namespace OPCAIC.ApiService.Utils
 					},
 					new User
 					{
-						Username = "Organizer",
+						FirstName = "Organizer",
+						LastName = "Opcaic",
 						RoleId = (long)UserRole.Organizer,
 						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 						Email = "organizer@opcaic.com",
@@ -70,13 +72,13 @@ namespace OPCAIC.ApiService.Utils
 					},
 					new User
 					{
-						Username = "User",
+						FirstName = "User",
+						LastName = "Opcaic",
 						RoleId = (long)UserRole.User,
 						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 						Email = "user@opcaic.com",
 						EmailVerified = true
-					}
-				);
+					});
 
 				context.SaveChanges();
 			}

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Services;
 
 namespace OPCAIC.ApiService.IoC
 {
@@ -7,7 +8,9 @@ namespace OPCAIC.ApiService.IoC
 	{
 		public static void AddServices(this IServiceCollection services)
 		{
-			services.AddTransient<IUserService, UserService>();
+			services
+				.AddTransient<IUserService, UserService>()
+				.AddTransient<IStorageService, StorageService>();
 		}
 	}
 }

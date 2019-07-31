@@ -17,22 +17,16 @@ namespace OPCAIC.ApiService.Controllers
 	{
 		private readonly DataContext context;
 
-		public TournamentsController(DataContext context)
-		{
-			this.context = context;
-		}
+		public TournamentsController(DataContext context) => this.context = context;
 
 
 		[HttpGet]
-		[Authorize(RolePolicy._User)]
+		[Authorize(RolePolicy.User)]
 		[ProducesResponseType(typeof(Tournament), (int)HttpStatusCode.OK)]
-		public async Task<Tournament[]> GetTournaments()
-		{
-			return context.Set<Tournament>().ToArray();
-		}
+		public async Task<Tournament[]> GetTournaments() => context.Set<Tournament>().ToArray();
 
 		[HttpGet("{id}")]
-		[Authorize(RolePolicy._User)]
+		[Authorize(RolePolicy.User)]
 		public async Task<Tournament> GetTournament(int id, CancellationToken cancellationToken)
 		{
 			var tournament = await context.Set<Tournament>()
@@ -47,7 +41,7 @@ namespace OPCAIC.ApiService.Controllers
 		}
 
 		[HttpPut("{id}")]
-		[Authorize(RolePolicy._Organizer)]
+		[Authorize(RolePolicy.Organizer)]
 		public async Task UpdateTournament(int id, Tournament tournament)
 		{
 			if (id != tournament.Id)

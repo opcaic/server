@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace OPCAIC.Worker.Services
 {
@@ -8,52 +9,31 @@ namespace OPCAIC.Worker.Services
 	public interface IDownloadService
 	{
 		/// <summary>
-		///   Downloads a given file and saves it to provided path.
+		///     Downloads the submission archive and unpacks it to given path.
 		/// </summary>
-		/// <param name="serverPath">Path of the file on the server.</param>
-		/// <param name="localPath">Path where the downloaded file should be stored.</param>
+		/// <param name="submissionId">Unique id of the submission.</param>
+		/// <param name="path">Path to the target directory.</param>
+		/// <param name="cancellationToken">Cancellation token to be used if the task should be cancelled.</param>
 		/// <returns></returns>
-		Task DownloadAsync(string serverPath, string localPath);
+		Task DownloadSubmission(long submissionId, string path, CancellationToken cancellationToken = default(CancellationToken));
 
 		/// <summary>
-		///   Downloads a given file and returns it as raw bytes.
+		///     Uploads contents of a folder as a result of submission validation.
 		/// </summary>
-		/// <param name="serverPath">Path of the file on the server.</param>
+		/// <param name="validationId">Unique id of the validation.</param>
+		/// <param name="path">Path to the result directory.</param>
+		/// <param name="cancellationToken">Cancellation token to be used if the task should be cancelled.</param>
 		/// <returns></returns>
-		Task<byte[]> DownloadBinaryAsync(string serverPath);
+		Task UploadValidationResults(long validationId, string path,
+			CancellationToken cancellationToken = default(CancellationToken));
 
 		/// <summary>
-		///   Downloads a given file and returns it as text string.
+		///     Uploads contents of a folder as a result of submission validation.
 		/// </summary>
-		/// <param name="serverPath">Path of the file on the server.</param>
+		/// <param name="executionId">Unique id of the match execution.</param>
+		/// <param name="path">Path to the result directory.</param>
+		/// <param name="cancellationToken">Cancellation token to be used if the task should be cancelled.</param>
 		/// <returns></returns>
-		Task<string> DownloadTextAsync(string serverPath);
-
-		/// <summary>
-		///   Uploads a file to the given path on the file server.
-		/// </summary>
-		/// <param name="serverPath">Path where the file should be saved on the server.</param>
-		/// <param name="localPath">Path to the file to be uploaded.</param>
-		/// <param name="post">If true, POST method is used, otherwise PUT</param>
-		/// <returns></returns>
-		Task UploadAsync(string serverPath, string localPath, bool post = true);
-
-		/// <summary>
-		///   Uploads raw byte buffer to the given path on the file server.
-		/// </summary>
-		/// <param name="serverPath">Path where the file should be saved on the server.</param>
-		/// <param name="data">Raw data to be uploaded.</param>
-		/// <param name="post">If true, POST method is used, otherwise PUT</param>
-		/// <returns></returns>
-		Task UploadBinaryAsync(string serverPath, byte[] data, bool post = true);
-
-		/// <summary>
-		///   Uploads a text string as a file to the given path on the file server.
-		/// </summary>
-		/// <param name="serverPath">Path where the file should be saved on the server.</param>
-		/// <param name="data">Raw data to be uploaded.</param>
-		/// <param name="post">If true, POST method is used, otherwise PUT</param>
-		/// <returns></returns>
-		Task UploadTextAsync(string serverPath, string data, bool post = true);
+		Task UploadMatchResults(long executionId, string path, CancellationToken cancellationToken = default(CancellationToken));
 	}
 }

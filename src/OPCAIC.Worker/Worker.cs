@@ -10,6 +10,8 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
+using OPCAIC.Utils;
+using OPCAIC.Worker.Config;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
 
@@ -24,8 +26,8 @@ namespace OPCAIC.Worker
 		private readonly ExecutionConfig executionConfig;
 		private readonly ILogger logger;
 
-		private Thread SocketThread;
-		private Thread ConsumerThread;
+		private Thread socketThread;
+		private Thread consumerThread;
 
 		private readonly Random rand = new Random();
 		private readonly IServiceProvider serviceProvider;
@@ -40,13 +42,13 @@ namespace OPCAIC.Worker
 			this.serviceProvider = serviceProvider;
 			this.executionConfig = executionConfig.Value;
 
-			// setup threads
-			SocketThread = new Thread(connector.EnterSocket);
-			SocketThread.Name = $"{Identity} - Socket";
-			ConsumerThread = new Thread(connector.EnterConsumer);
-			ConsumerThread.Name = $"{Identity} - Consumer";
-
 			RegisterHandlers();
+		}
+
+		private void SetupThreads()
+		{
+			socketThread = new Thread(connector.EnterSocket) {Name = $"{Identity} - Socket"};
+			consumerThread = new Thread(connector.EnterConsumer) {Name = $"{Identity} - Consumer"};
 		}
 
 		private string Identity => connector.Identity;
@@ -57,67 +59,100 @@ namespace OPCAIC.Worker
 				ServeRequest<MatchExecutionRequest, MatchExecutionResult>);
 			connector.RegisterAsyncHandler<SubmissionValidationRequest>(
 				ServeRequest<SubmissionValidationRequest, SubmissionValidationResult>);
-			connector.RegisterHandler<WorkerResetMessage>(Reset);
+			connector.RegisterHandler<SetHeartbeatMessage>(SetHeartbeat);
+			connector.RegisterHandler<CancelTaskMessage>(CancelTask);
 		}
 
-		private void Reset(WorkerResetMessage msg)
+		private void SetHeartbeat(SetHeartbeatMessage msg)
 		{
-			logger.LogInformation($"{nameof(WorkerResetMessage)} received, resetting heartbeat config.");
+			logger.LogInformation(LoggingEvents.WorkerConnection, "Resetting heartbeat config.");
 			connector.SetHeartbeatConfig(msg.HeartbeatConfig);
+		}
 
+		private void CancelTask(CancelTaskMessage _)
+		{
 			// claim ownership of the CTS
 			var cts = Interlocked.Exchange(ref currentTaskCts, null);
 			if (cts != null)
 			{
-				logger.LogInformation("Aborting current task");
+				logger.LogInformation(LoggingEvents.JobAborted, "Aborting current task");
 				cts.Cancel();
 				cts.Dispose();
+
 			}
 		}
 
-		private void ServeRequest<TRequest, TResult>(TRequest request)
-			where TResult : ReplyMessageBase, new() where TRequest : WorkMessageBase
+		private CancellationToken SetupCancellation()
 		{
-			TResult res = null;
-			Debug.Assert(currentTaskCts == null);
-
 			// keep local (thread-safe) reference
 			var cts = new CancellationTokenSource(executionConfig.MaxTaskTimeout);
+			var token = cts.Token;
 			currentTaskCts = cts;
+			return token;
+		}
 
-			try
-			{
-				using (var scope = serviceProvider.CreateScope())
-				{
-					res = scope.ServiceProvider.GetRequiredService<IJobExecutor<TRequest, TResult>>()
-						.Execute(request, cts.Token);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.LogError(e,
-					$"Exception occured when processing message of type {typeof(TRequest)}: {JsonConvert.SerializeObject(request)}");
-			}
+		/// <summary>
+		///    Atomically releases current cancellation token source. Returns true if cancellation
+		///    was requested by the broker.
+		/// </summary>
+		/// <returns></returns>
+		private bool FinalizeCancellation()
+		{
+			// atomically dispose if it is still there
+			var cts = Interlocked.Exchange(ref currentTaskCts, null);
+			cts?.Dispose();
+			return cts == null;
+		}
 
-			// Make sure we always send non-null message
-			if (res == null)
+		private async Task ServeRequest<TRequest, TResult>(TRequest request)
+			where TResult : ReplyMessageBase, new() where TRequest : WorkMessageBase
+		{
+			using (logger.TaskScope(request))
 			{
-				res = new TResult
+				Debug.Assert(currentTaskCts == null);
+
+				// Make sure we always send non-null message
+				var response = new TResult
 				{
 					Id = request.Id,
-					Status = Status.Error
+					JobStatus = JobStatus.Error
 				};
+
+				var token = SetupCancellation();
+
+				try
+				{
+					using (var scope = serviceProvider.CreateScope())
+					{
+						var r = await scope.ServiceProvider
+							.GetRequiredService<IJobExecutor<TRequest, TResult>>()
+							.ExecuteAsync(request, token);
+
+						if (r != null)
+						{
+							response = r;
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					logger.LogError(LoggingEvents.JobExecutionFailure, e,
+						$"Exception occured when processing message" +
+						$"{{{LoggingTags.JobPayload}}}",
+						JsonConvert.SerializeObject(request));
+					response.JobStatus = JobStatus.Error;
+				}
+
+				var forced = FinalizeCancellation();
+				if (!forced) // do not send back cancelled tasks
+				{
+					connector.SendMessage(response);
+				}
 			}
-
-			// atomically dispose of the cancellation token source
-			Interlocked.Exchange(ref currentTaskCts, null)?.Dispose();
-
-			connector.SendMessage(res);
 		}
 
 		public void Run()
 		{
-			logger.LogInformation("Starting Worker");
 			var t = new Thread(connector.EnterSocket);
 			t.Start();
 
@@ -128,9 +163,9 @@ namespace OPCAIC.Worker
 			t.Join();
 		}
 
-		public void InitConnection()
+		private void InitConnection()
 		{
-			logger.LogInformation($"[{Identity}] - Initiating connection");
+			logger.LogInformation(LoggingEvents.WorkerConnection, $"Initiating connection");
 
 			connector.SendMessage(new WorkerConnectMessage
 			{
@@ -145,19 +180,23 @@ namespace OPCAIC.Worker
 		/// <inheritdoc />
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
-			logger.LogInformation("Starting Worker");
-			SocketThread.Start();
-			ConsumerThread.Start();
+			logger.LogInformation(LoggingEvents.Startup, $"Starting Worker");
+			SetupThreads();
+			socketThread.Start();
+			consumerThread.Start();
+			InitConnection();
+			logger.LogInformation(LoggingEvents.Startup, $"Worker started");
 		}
 
 		/// <inheritdoc />
 		public async Task StopAsync(CancellationToken cancellationToken)
 		{
-			logger.LogInformation("Shutting down Worker");
+			logger.LogInformation(LoggingEvents.Startup, "Stopping Worker");
 			connector.StopSocket();
 			connector.StopConsumer();
-			SocketThread.Join();
-			ConsumerThread.Join();
+			socketThread.Join();
+			consumerThread.Join();
+			logger.LogInformation(LoggingEvents.Startup, "Worker stopped");
 		}
 	}
 }

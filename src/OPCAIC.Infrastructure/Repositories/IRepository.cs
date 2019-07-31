@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
@@ -8,6 +9,20 @@ namespace OPCAIC.Infrastructure.Repositories
 	/// <typeparam name="TEntity"></typeparam>
 	public interface IRepository<TEntity>
 	{
+		/// <summary>
+		///   Checks that entity with given id exists.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
+		Task<bool> ExistsAsync(long id, CancellationToken cancellationToken = default);
+
+		/// <summary>
+		///   Checks that entity with given id exists.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
+		bool Exists(long id);
+
 		/// <summary>
 		///   Deletes given entity from the repository.
 		/// </summary>

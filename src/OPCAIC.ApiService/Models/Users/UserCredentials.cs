@@ -4,7 +4,8 @@ namespace OPCAIC.ApiService.Models.Users
 {
 	public class UserCredentialsModel
 	{
-		[Required, EmailAddress]
+		[Required]
+		[EmailAddress]
 		public string Email { get; set; }
 
 		[Required]

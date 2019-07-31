@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace OPCAIC.Messaging.Commands
 {
@@ -8,7 +9,7 @@ namespace OPCAIC.Messaging.Commands
 	/// <typeparam name="TPayload"></typeparam>
 	public class HandlerInfo<TPayload>
 	{
-		public HandlerInfo(Type discriminator, Action<TPayload> handler, bool isSync)
+		public HandlerInfo(Type discriminator, Func<TPayload, Task> handler, bool isSync)
 		{
 			Handler = handler;
 			IsSync = isSync;
@@ -18,7 +19,7 @@ namespace OPCAIC.Messaging.Commands
 		/// <summary>
 		///   The actual handler ofr the message.
 		/// </summary>
-		public Action<TPayload> Handler { get; }
+		public Func<TPayload, Task> Handler { get; }
 
 		/// <summary>
 		///   Type of the handled messages.

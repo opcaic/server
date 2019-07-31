@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
+using Xunit;
 using Xunit.Sdk;
 
 namespace OPCAIC.TestUtils
@@ -49,6 +51,13 @@ namespace OPCAIC.TestUtils
 			{
 				throw new XunitException("The event was not signaled in given time");
 			}
+		}
+
+		public static void FileExists(string path)
+		{
+			Debug.Assert(path != null);
+
+			Assert.True(File.Exists(path), $"File '{path}' does not exist.");
 		}
 	}
 }

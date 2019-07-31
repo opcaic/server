@@ -1,25 +1,127 @@
+using System;
+using System.Threading.Tasks;
+using OPCAIC.GameModules.Interface;
 using OPCAIC.Messaging.Messages;
-using OPCAIC.TestUtils;
 using OPCAIC.Worker.Services;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace OPCAIC.Worker.Test
 {
-	public class SubmissionValidatorTest : ServiceTestBase
+	public class SubmissionValidatorTest : JobExecutorTest
 	{
+		private SubmissionValidationRequest Request { get; }
 		/// <inheritdoc />
 		public SubmissionValidatorTest(ITestOutputHelper output) : base(output)
-			=> Services.Mock<IExecutionServices>();
+		{
+
+			Request = new SubmissionValidationRequest
+			{
+				Game = "MockGame",
+				Id = Guid.NewGuid(),
+				SubmissionId = 42
+			};
+		}
 
 		private SubmissionValidator SubmissionValidator => GetService<SubmissionValidator>();
 
-		[Fact(Skip = "Not Implemented")]
-		public void ExecutesMatchSuccessfully()
+		[Fact]
+		public async Task ExecutesMatchSuccessfully()
 		{
-			// TODO: more tests once the executor is implemented
-			var result = SubmissionValidator.Execute(new SubmissionValidationRequest());
-			Assert.Equal(Status.Ok, result.Status);
+			GameModuleMock.SetupChecker().Returns(GameModuleEntryPointResult.Success);
+			GameModuleMock.SetupCompiler().Returns(GameModuleEntryPointResult.Success);
+			GameModuleMock.SetupValidator().Returns(GameModuleEntryPointResult.Success);
+
+			var result = await SubmissionValidator.ExecuteAsync(Request);
+			Assert.Equal(JobStatus.Ok, result.JobStatus);
+		}
+
+		[Theory]
+		[InlineData(1)]
+		[InlineData(2)]
+		[InlineData(3)]
+		public async Task ExecutesUntilUserError(int successfulStages)
+		{
+			int i = 0;
+			GameModuleEntryPointResult ResultFactory() => i == successfulStages ? GameModuleEntryPointResult.Failure: GameModuleEntryPointResult.Success;
+
+			if (i++ < successfulStages) GameModuleMock.SetupChecker().Returns(ResultFactory());
+			if (i++ < successfulStages) GameModuleMock.SetupCompiler().Returns(ResultFactory());
+			if (i++ < successfulStages) GameModuleMock.SetupValidator().Returns(ResultFactory());
+
+			var result = await SubmissionValidator.ExecuteAsync(Request);
+			Assert.Equal(JobStatus.Ok, result.JobStatus); // still should return Ok
+
+			i = 0;
+
+			SubTaskResult ResultSelector()
+				=> ++i < successfulStages ? SubTaskResult.Ok :
+					i == successfulStages ? SubTaskResult.NotOk : SubTaskResult.Unknown;
+
+			Assert.Equal(ResultSelector(), result.CheckerResult); 
+			Assert.Equal(ResultSelector(), result.CompilerResult); 
+			Assert.Equal(ResultSelector(), result.ValidatorResult); 
+		}
+
+		[Fact]
+		public async Task ThrowsOnTaskCancelled()
+		{
+			GameModuleMock.SetupChecker().Throws<OperationCanceledException>();
+
+			var result = await SubmissionValidator.ExecuteAsync(Request);
+
+			Assert.Equal(JobStatus.Timeout, result.JobStatus); 
+			Assert.Equal(SubTaskResult.Aborted, result.CheckerResult);
+			Assert.Equal(SubTaskResult.Unknown, result.CompilerResult);
+			Assert.Equal(SubTaskResult.Unknown, result.ValidatorResult);
+		}
+
+		[Fact]
+		public async Task ReportsModuleErrorException()
+		{
+			GameModuleMock.SetupChecker().Throws<GameModuleException>();
+
+			var result = await SubmissionValidator.ExecuteAsync(Request);
+
+			Assert.Equal(JobStatus.Error, result.JobStatus); 
+			Assert.Equal(SubTaskResult.ModuleError, result.CheckerResult);
+			Assert.Equal(SubTaskResult.Unknown, result.CompilerResult);
+			Assert.Equal(SubTaskResult.Unknown, result.ValidatorResult);
+		}
+
+		[Fact]
+		public async Task ReportsModuleError()
+		{
+			GameModuleMock.SetupChecker().Returns(GameModuleEntryPointResult.ModuleError);
+
+			var result = await SubmissionValidator.ExecuteAsync(Request);
+
+			Assert.Equal(JobStatus.Error, result.JobStatus); 
+			Assert.Equal(SubTaskResult.ModuleError, result.CheckerResult);
+			Assert.Equal(SubTaskResult.Unknown, result.CompilerResult);
+			Assert.Equal(SubTaskResult.Unknown, result.ValidatorResult);
+		}
+
+		[Fact]
+		public async Task ReportsPlatformError()
+		{
+			GameModuleMock.SetupChecker().Throws<Exception>();
+
+			var result = await SubmissionValidator.ExecuteAsync(Request);
+
+			Assert.Equal(JobStatus.Error, result.JobStatus); 
+			Assert.Equal(SubTaskResult.PlatformError, result.CheckerResult);
+			Assert.Equal(SubTaskResult.Unknown, result.CompilerResult);
+			Assert.Equal(SubTaskResult.Unknown, result.ValidatorResult);
+		}
+
+		/// <inheritdoc />
+		protected override void Dispose(bool disposing)
+		{
+			GameModuleMock.VerifyAll();
+			ExecutionServicesMock.VerifyAll();
+
+			base.Dispose(disposing);
 		}
 	}
 }

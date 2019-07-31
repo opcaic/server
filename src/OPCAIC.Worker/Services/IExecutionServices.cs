@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using System.Threading.Tasks;
+using OPCAIC.GameModules.Interface;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker.GameModules;
 
@@ -7,8 +7,17 @@ namespace OPCAIC.Worker.Services
 {
 	public interface IExecutionServices
 	{
+		/// <summary>
+		///     Gets working directory for the given work task.
+		/// </summary>
+		/// <param name="request">The message defining the task.</param>
+		/// <returns></returns>
 		DirectoryInfo GetWorkingDirectory(WorkMessageBase request);
-		IGameModule GetGameModule(string game);
-		Task DownloadSubmission(string serverPath, string localPath);
+
+		/// <summary>
+		///     Archives the contents of the given directory.
+		/// </summary>
+		/// <param name="taskDirectory">Directory to be archived.</param>
+		void ArchiveDirectory(DirectoryInfo taskDirectory);
 	}
 }

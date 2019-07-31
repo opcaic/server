@@ -1,9 +1,11 @@
 ﻿using System;
-using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using OPCAIC.GameModules.Interface;
 using OPCAIC.Messaging.Messages;
-using OPCAIC.Utils;
+using OPCAIC.Worker.GameModules;
 
 namespace OPCAIC.Worker.Services
 {
@@ -11,39 +13,49 @@ namespace OPCAIC.Worker.Services
 		: JobExecutorBase<SubmissionValidationRequest, SubmissionValidationResult>
 	{
 		/// <inheritdoc />
-		public SubmissionValidator(ILogger<SubmissionValidator> logger, IExecutionServices services) :
-			base(logger, services)
+		public SubmissionValidator(ILogger<SubmissionValidator> logger, IExecutionServices services,
+			IDownloadService downloadService, IGameModuleRegistry registry) : base(logger, services, downloadService, registry)
 		{
 		}
+
+		private async Task<SubTaskResult> RunSteps()
+		{
+			var sub = Submissions.Single();
+
+			Response.CheckerResult = await Check(sub);
+			if (Response.CheckerResult != SubTaskResult.Ok)
+			{
+				return Response.CheckerResult;
+			}
+
+			Response.CompilerResult = await Compile(sub);
+			sub.CompilerResult = Response.CompilerResult;
+			if (Response.CompilerResult != SubTaskResult.Ok)
+			{
+				return Response.CompilerResult;
+			}
+
+			Response.ValidatorResult = await Validate(sub);
+
+			return Response.ValidatorResult;
+		}
+
+		/// <inheritdoc />
+		protected override IDisposable CreateLoggingScope(SubmissionValidationRequest request)
+			=> Logger.SubmissionValidationScope(request);
+
+		/// <inheritdoc />
+		protected override async Task DoUploadResults() 
+			=> await DownloadService.UploadValidationResults(Request.ValidationId, OutputDirectory.FullName, CancellationToken);
 
 		/// <inheritdoc />
 		protected override async Task InternalExecute()
 		{
-			Logger.LogInformation("Downloading submission");
-			var srcDir = new DirectoryInfo(PathTo(Constants.DirectoryNames.Source));
-            //var inDir = new DirectoryInfo(PathTo(Constants.DirectoryNames.Input));
-            //var outDir = new DirectoryInfo(PathTo(Constants.DirectoryNames.Output));
-            var binDir = Directory.CreateDirectory(PathTo(Constants.DirectoryNames.Binary));
+			await DownloadSubmission(Request.SubmissionId);
 
-            await Services.DownloadSubmission(Request.Path, srcDir.FullName);
-			Require.That<InvalidOperationException>(srcDir.Exists, "Failed to download sources");
+			Response.JobStatus = SelectJobStatus(await RunSteps());
 
-			Logger.LogInformation("Invoking checker");
-			GameModule.Check(srcDir.FullName, WorkingDirectory.FullName);
-			var filename = PathTo(Constants.FileNames.CheckerResult);
-			Require.FileExists(filename, $"{Constants.FileNames.CheckerResult} was not produced");
-
-			Logger.LogInformation("Invoking compiler");
-			GameModule.Compile(srcDir.FullName, binDir.FullName, WorkingDirectory.FullName);
-			filename = PathTo(Constants.FileNames.CompilerResult);
-			Require.FileExists(filename, $"{Constants.FileNames.CompilerResult} was not produced");
-
-			Logger.LogInformation("Invoking validator");
-			GameModule.Validate(binDir.FullName, WorkingDirectory.FullName);
-			filename = PathTo(Constants.FileNames.ValidatorResult);
-			Require.FileExists(filename, $"{Constants.FileNames.ValidatorResult} was not produced");
-
-			Result.Status = Status.Ok;
+			Logger.LogInformation("Submission validation completed.");
 		}
 	}
 }

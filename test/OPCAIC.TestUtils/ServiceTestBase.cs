@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit.Abstractions;
@@ -6,19 +7,21 @@ using Xunit.Abstractions;
 namespace OPCAIC.TestUtils
 {
 	/// <summary>
-	///   Base class for services which require mocking and composition via dependency injection.
+	///     Base class for services which require mocking and composition via dependency injection.
 	/// </summary>
-	public class ServiceTestBase
+	public abstract class ServiceTestBase : IDisposable
 	{
-		protected ITestOutputHelper Output;
+		private readonly TestDirectoryManager directoryManager;
+		protected readonly ITestOutputHelper Output;
 		private ServiceProvider provider;
 		private MockingServiceCollection services;
 
 		public ServiceTestBase(ITestOutputHelper output)
 		{
 			Output = output;
+			directoryManager = new TestDirectoryManager();
 
-			services = new MockingServiceCollection();
+			services = new MockingServiceCollection(output);
 			services
 				.AddXUnitLogging(output);
 		}
@@ -29,7 +32,15 @@ namespace OPCAIC.TestUtils
 					$"Cannot access {nameof(Services)} after the service provider has been built");
 
 
-		protected IServiceProvider ServiceProvider => provider ?? (provider = BuildServiceProvider());
+		protected IServiceProvider ServiceProvider
+			=> provider ?? (provider = BuildServiceProvider());
+
+		/// <inheritdoc />
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
 		private ServiceProvider BuildServiceProvider()
 		{
@@ -39,8 +50,8 @@ namespace OPCAIC.TestUtils
 		}
 
 		/// <summary>
-		///   Gets an instance of service registered for type <see cref="T" />. After this call, it is
-		///   no longer possible to access the <see cref="Services" /> Property.
+		///     Gets an instance of service registered for type <see cref="T" />. After this call, it is
+		///     no longer possible to access the <see cref="Services" /> Property.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
@@ -56,7 +67,7 @@ namespace OPCAIC.TestUtils
 
 
 		/// <summary>
-		///   Starts a new thread wrapped in a helper to correctly handle uncaught exceptions.
+		///     Starts a new thread wrapped in a helper to correctly handle uncaught exceptions.
 		/// </summary>
 		/// <param name="action">Main code of the thread.</param>
 		/// <param name="description">Optional name of the thread.</param>
@@ -69,7 +80,7 @@ namespace OPCAIC.TestUtils
 		}
 
 		/// <summary>
-		///   Performs given code block withing new service provider scope and disposes of it afterwards.
+		///     Performs given code block withing new service provider scope and disposes of it afterwards.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <param name="call"></param>
@@ -78,6 +89,21 @@ namespace OPCAIC.TestUtils
 			using (var scope = ServiceProvider.CreateScope())
 			{
 				call(scope.ServiceProvider.GetRequiredService<T>());
+			}
+		}
+
+		/// <summary>
+		///     Creates a new directory, which will be automatically deleted on test teardown.
+		/// </summary>
+		/// <returns></returns>
+		protected DirectoryInfo NewDirectory() => directoryManager.GetNewDirectory();
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				provider?.Dispose();
+				directoryManager.Dispose();
 			}
 		}
 	}

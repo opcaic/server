@@ -1,93 +1,159 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using OPCAIC.Messaging;
-using OPCAIC.Messaging.Messages;
-using OPCAIC.Worker;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using GameModuleMock;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OPCAIC.Messaging.Config;
+using OPCAIC.Messaging.Messages;
+using OPCAIC.Worker.Config;
 using OPCAIC.Worker.GameModules;
+using OPCAIC.Worker.Services;
 
 namespace OPCAIC.Broker.Runner
 {
+	public static class ServiceReplacementHelpers
+	{
+		public static IServiceCollection ReplaceTransient<TService, TImpl>(this IServiceCollection services)
+			where TService : class where TImpl : class, TService
+			=> services
+				.RemoveAll<TService>()
+				.AddTransient<TService, TImpl>();
+
+		public static IServiceCollection ReplaceSingleton<TService>(
+			this IServiceCollection services, TService singleton)
+			where TService : class 
+			=> services
+				.RemoveAll<TService>()
+				.AddSingleton<TService>(singleton);
+		public static IServiceCollection ReplaceSingleton<TService, TImpl>(
+			this IServiceCollection services)
+			where TService : class where TImpl : class, TService
+			=> services
+				.RemoveAll<TService>()
+				.AddSingleton<TService, TImpl>();
+	}
+
 	public class Application : IHostedService
 	{
 		private static readonly Random rand = new Random(42);
 		private readonly IBroker broker;
+		private readonly AppConfig config;
 		private readonly ILogger logger;
 		private readonly IServiceProvider serviceProvider;
-		private readonly AppConfig config;
-		private bool stop = false;
+		private readonly Thread thread;
+		private readonly List<Worker.Worker> workers;
+		private bool stop;
 
-		public Application(ILogger<Application> logger, IApplicationLifetime lifetime, IBroker broker, IServiceProvider serviceProvider, IOptions<AppConfig> config)
+		private ExternalGameModuleConfiguration moduleConfiguration = new ExternalGameModuleConfiguration
+		{
+			Checker = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.ExitWithCode(0)),
+			Validator = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.ExitWithCode(0)),
+			Compiler = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.ExitWithCode(0)),
+			Executor = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.ExitWithCode(0))
+		};
+
+		public Application(ILogger<Application> logger, IApplicationLifetime lifetime,
+			IBroker broker, IServiceProvider serviceProvider, IOptions<AppConfig> config)
 		{
 			this.broker = broker;
 			this.logger = logger;
 			this.serviceProvider = serviceProvider;
 			this.config = config.Value;
+			workers = new List<Worker.Worker>();
+			thread = new Thread(Main);
 		}
 
-		private void StartWorkers()
+		/// <inheritdoc />
+		public async Task StartAsync(CancellationToken cancellationToken)
 		{
+			await StartWorkers();
+			thread.Start();
+		}
+
+		/// <inheritdoc />
+		public async Task StopAsync(CancellationToken cancellationToken)
+		{
+			stop = true;
+			cancellationToken.Register(thread.Abort);
+			await Task.WhenAll(workers.Select(w => w.StopAsync(cancellationToken)));
+			thread.Join();
+		}
+
+		private async Task StartWorkers()
+		{
+			var ctx = new HostBuilderContext(new Dictionary<object, object>())
+			{
+				Configuration = serviceProvider.GetRequiredService<IConfiguration>()
+			};
+
 			foreach (var worker in config.WorkerSet.Workers ?? Enumerable.Empty<WorkerConfig>())
 			{
-				// bootstrap with custom configs
-				var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-				var services = new ServiceCollection()
-					.AddSingleton(worker)
-					.Configure<WorkerConnectorConfig>(cfg =>
-					{
-						cfg.Identity = worker.Identity;
-						cfg.BrokerAddress = config.WorkerSet.BrokerAddress;
-						cfg.HeartbeatConfig = config.Broker.HeartbeatConfig;
-					})
-					.AddLogging(builder => builder.Services.AddSingleton<ILoggerFactory>(loggerFactory));
-
-//				Worker.Startup.ConfigureServices(services);
-
-				// replace with our custom module registry
-				var registry = new GameModuleRegistry();
-				foreach (var game in worker.Supportedgames)
-					registry.AddModule(new DummyGameModule(game));
-				services.RemoveAll(typeof(IGameModuleRegistry))
-					.AddSingleton<IGameModuleRegistry>(registry);
-
-				var sp = services.BuildServiceProvider();
-				Thread t = new Thread(() =>
-				{
-					while (true)
-					{
-						using (var scope = sp.CreateScope())
-						{
-							scope.ServiceProvider.GetRequiredService<Worker.Worker>().Run();
-						}
-						Thread.Sleep(5000);
-					}
-				});
-
-				t.Start();
+				var newWorker = NewWorker(worker, ctx);
+				await newWorker.StartAsync(new CancellationToken());
 			}
 		}
 
-		public void Run()
+		private Worker.Worker NewWorker(WorkerConfig worker, HostBuilderContext ctx)
 		{
-//			StartWorkers();
-			RunBroker();
+			// bootstrap with custom configs
+			var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+			var services = new ServiceCollection()
+				.AddSingleton(worker)
+				.Configure<WorkerConnectorConfig>(cfg =>
+				{
+					cfg.Identity = worker.Identity;
+					cfg.BrokerAddress = config.WorkerSet.BrokerAddress;
+					cfg.HeartbeatConfig = config.Broker.HeartbeatConfig;
+				})
+				.AddLogging(builder
+					=> builder.Services.AddSingleton<ILoggerFactory>(
+						new IdentityAwareLoggerFactory(loggerFactory, worker.Identity)));
+
+			// use same worker services as the real worker (with exceptions below)
+			Worker.Startup.ConfigureServices(ctx, services);
+			services.Configure<ExecutionConfig>(cfg =>
+			{
+				cfg.WorkingDirectoryRoot = $"./wrkdir/{worker.Identity}";
+				cfg.ArchiveDirectoryRoot = $"./archive/{worker.Identity}";
+			});
+
+			// replace with our custom module registry
+			var registry = new DummyGameModuleRegistry();
+			foreach (var game in worker.Supportedgames)
+			{
+				registry.AddModule(new ExternalGameModule(loggerFactory.CreateLogger(game), moduleConfiguration, game, "."));
+//				registry.AddModule(new DummyGameModule(game, loggerFactory.CreateLogger(game)));
+			}
+
+			services
+				.ReplaceSingleton<IGameModuleRegistry>(registry)
+				.ReplaceSingleton<IDownloadService, DummyDownloadService>()
+				.Configure<FileServerConfig>(cfg =>
+				{
+					// use your own directory with examples
+					cfg.ServerAddress = "D:/opcaic/testfiles/";
+				});
+
+			// finally, start worker
+			var sp = services.BuildServiceProvider();
+			var newWorker = sp.GetRequiredService<Worker.Worker>();
+			workers.Add(newWorker);
+			return newWorker;
 		}
 
-		private void RunBroker()
+		private void Main()
 		{
-			List<ReplyMessageBase> results = new List<ReplyMessageBase>();
+			var results = new List<ReplyMessageBase>();
 
 			var i = 0;
-			broker.RegisterHandler<MatchExecutionResult>(a =>
+			broker.RegisterHandler<SubmissionValidationResult>(a =>
 			{
 				logger.LogInformation($"Finished: {a.Id}");
 				results.Add(a);
@@ -97,13 +163,19 @@ namespace OPCAIC.Broker.Runner
 			{
 				Thread.Sleep(50);
 				if (broker.GetUnfinishedTasksCount() > 20)
+				{
 					continue;
+				}
+
 				try
 				{
-					broker.EnqueueWork(new MatchExecutionRequest
+					i++;
+					broker.EnqueueWork(new SubmissionValidationRequest
 					{
-						Game = config.Games[rand.Next(config.Games.Length)],
-						Id = ++i
+						Id = Guid.NewGuid(),
+						SubmissionId = 1,
+						ValidationId = i,
+						Game = config.Games[rand.Next(config.Games.Length)]
 					});
 				}
 				catch (Exception e)
@@ -119,19 +191,6 @@ namespace OPCAIC.Broker.Runner
 			}
 
 			Console.WriteLine($"Completed: {results.Count}/200 tasks");
-		}
-
-		/// <inheritdoc />
-		public async Task StartAsync(CancellationToken cancellationToken)
-		{
-			Task.Factory.StartNew(Run);
-			return;
-		}
-
-		/// <inheritdoc />
-		public async Task StopAsync(CancellationToken cancellationToken)
-		{
-			stop = true;
 		}
 	}
 }

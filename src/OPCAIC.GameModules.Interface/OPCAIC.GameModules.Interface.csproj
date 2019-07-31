@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>OPCAIC.GameModules.Interface</AssemblyName>
+    <RootNamespace>OPCAIC.GameModules.Interface</RootNamespace>
+  </PropertyGroup>
+
+</Project>

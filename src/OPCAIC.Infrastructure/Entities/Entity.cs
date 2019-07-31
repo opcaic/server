@@ -1,24 +1,19 @@
-﻿using OPCAIC.Infrastructure.Entities;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using Remotion.Linq.Parsing.Structure.IntermediateModel;
 
 namespace OPCAIC.Infrastructure.Entities
 {
 	/// <summary>
-	///   Base class for entities identifiable by a single unique Id.
+	///     Base class for entities with timestamp tracking
 	/// </summary>
-	public abstract class Entity : IChangeTrackable
+	public abstract class Entity : EntityBase, IChangeTrackable
 	{
-		/// <summary>
-		///   Primary key of this entity
-		/// </summary>
-		public long Id { get; set; }
-
 		/// <inheritdoc />
 		public DateTime Created { get; set; }
 
 		/// <inheritdoc />
+		[ConcurrencyCheck]
 		public DateTime Updated { get; set; }
 	}
 }
