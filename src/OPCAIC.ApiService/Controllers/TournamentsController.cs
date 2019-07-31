@@ -3,34 +3,56 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Entities;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OPCAIC.Infrastructure.DbContexts;
-using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.Security;
+using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Infrastructure.Dtos;
+using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Infrastructure.Repositories;
 
 namespace OPCAIC.ApiService.Controllers
 {
 	[Route("api/tournaments")]
 	public class TournamentsController : ControllerBase
 	{
-		private readonly DataContext context;
+		private readonly ITournamentRepository tournamentRepository;
 
-		public TournamentsController(DataContext context) => this.context = context;
+		public TournamentsController(ITournamentRepository tournamentRepository)
+		{
+			this.tournamentRepository = tournamentRepository;
+		}
 
 
+		/// <summary>
+		///     Gets general information about all tournaments.
+		/// </summary>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		[HttpGet]
 		[Authorize(RolePolicy.User)]
-		[ProducesResponseType(typeof(Tournament), (int)HttpStatusCode.OK)]
-		public async Task<Tournament[]> GetTournaments() => context.Set<Tournament>().ToArray();
+		[ProducesResponseType(typeof(TournamentInfoDto), StatusCodes.Status200OK)]
+		public Task<TournamentInfoDto[]> GetTournaments(CancellationToken cancellationToken)
+		{
+			return tournamentRepository.GetAllTournamentsInfo(cancellationToken);
+		}
 
+		/// <summary>
+		///     Gets general information about the selected tournament.
+		/// </summary>
+		/// <param name="id">Id of the tournament</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		[HttpGet("{id}")]
 		[Authorize(RolePolicy.User)]
-		public async Task<Tournament> GetTournament(int id, CancellationToken cancellationToken)
+		[ProducesResponseType(typeof(TournamentInfoDto), StatusCodes.Status200OK)]
+		public async Task<TournamentInfoDto> GetTournament(long id, CancellationToken cancellationToken)
 		{
-			var tournament = await context.Set<Tournament>()
-				.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+			var tournament = await tournamentRepository.GetAllTournamentInfo(id, cancellationToken);
 
 			if (tournament == null)
 			{
@@ -40,17 +62,25 @@ namespace OPCAIC.ApiService.Controllers
 			return tournament;
 		}
 
+		/// <summary>
+		///     Updates information about the tournament.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="tournament"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		[HttpPut("{id}")]
 		[Authorize(RolePolicy.Organizer)]
-		public async Task UpdateTournament(int id, Tournament tournament)
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public Task UpdateTournament(long id, TournamentInfoDto tournament, CancellationToken cancellationToken)
 		{
 			if (id != tournament.Id)
 			{
 				throw new BadRequestException("Invalid model of tournament.");
 			}
 
-			context.Entry(tournament).State = EntityState.Modified;
-			context.SaveChanges();
+			return tournamentRepository.UpdateTournament(tournament, cancellationToken);
 		}
 	}
 }

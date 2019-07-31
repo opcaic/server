@@ -11,6 +11,9 @@ namespace OPCAIC.ApiService
 		public static MapperConfiguration Create() => new MapperConfiguration(exp =>
 		{
 			exp.AddUserMapping();
+			exp.AddTournamentMapping();
+			exp.AddSubmissionMapping();
+			exp.AddMatchMapping();
 		});
 
 		private static void AddUserMapping(this IMapperConfigurationExpression exp)
@@ -21,6 +24,21 @@ namespace OPCAIC.ApiService
 					opt => opt.MapFrom(usr => Hashing.HashPassword(usr.Password)));
 
 			exp.CreateMap<User, UserIdentityDto>();
+		}
+
+		private static void AddTournamentMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<Tournament, TournamentInfoDto>();
+		}
+
+		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<Submission, SubmissionStorageDto>();
+		}
+
+		private static void AddMatchMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
 		}
 	}
 }
