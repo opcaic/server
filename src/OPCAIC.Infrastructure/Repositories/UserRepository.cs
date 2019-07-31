@@ -87,6 +87,13 @@ namespace OPCAIC.Infrastructure.Repositories
 			  .AnyAsync(cancellationToken);
 		}
 
+		public Task<bool> ExistsByUsernameAsync(string username, CancellationToken cancellationToken)
+		{
+			return DbSet
+			  .Where(row => row.Username == username)
+			  .AnyAsync(cancellationToken);
+		}
+
 		public Task<UserIdentityDto> FindIdentityAsync(long id, CancellationToken cancellationToken)
 		{
 			return DbSet

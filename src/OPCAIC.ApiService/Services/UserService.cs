@@ -13,7 +13,6 @@ using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
-using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
@@ -42,6 +41,11 @@ namespace OPCAIC.ApiService.Services
 			if (await userRepository.ExistsByEmailAsync(user.Email, cancellationToken))
 			{
 				throw new ConflictException("user-email-conflict");
+			}
+
+			if (await userRepository.ExistsByUsernameAsync(user.Username, cancellationToken))
+			{
+				throw new ConflictException("user-username-conflict");
 			}
 
 			var dto = mapper.Map<NewUserDto>(user);
@@ -135,7 +139,7 @@ namespace OPCAIC.ApiService.Services
 			var accessToken = CreateToken(conf.Key,
 				TimeSpan.FromSeconds(conf.AccessTokenExpirationMinutes), claim);
 
-			return new UserTokens {RefreshToken = newToken, AccessToken = accessToken};
+			return new UserTokens { RefreshToken = newToken, AccessToken = accessToken };
 		}
 
 		private static TokenValidationParameters GetValidationParameters(string key)

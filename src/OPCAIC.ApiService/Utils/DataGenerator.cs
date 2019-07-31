@@ -56,6 +56,8 @@ namespace OPCAIC.ApiService.Utils
 					{
 						FirstName = "Admin",
 						LastName = "Opcaic",
+						Created = DateTime.Now,
+						Username = "admin",
 						RoleId = (long)UserRole.Admin,
 						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 						Email = "admin@opcaic.com",
@@ -65,6 +67,8 @@ namespace OPCAIC.ApiService.Utils
 					{
 						FirstName = "Organizer",
 						LastName = "Opcaic",
+						Created = DateTime.Now,
+						Username = "organizer",
 						RoleId = (long)UserRole.Organizer,
 						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 						Email = "organizer@opcaic.com",
@@ -74,6 +78,8 @@ namespace OPCAIC.ApiService.Utils
 					{
 						FirstName = "User",
 						LastName = "Opcaic",
+						Created = DateTime.Now,
+						Username = "user",
 						RoleId = (long)UserRole.User,
 						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 						Email = "user@opcaic.com",

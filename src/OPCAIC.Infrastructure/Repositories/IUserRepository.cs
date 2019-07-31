@@ -13,6 +13,7 @@ namespace OPCAIC.Infrastructure.Repositories
 		Task<UserDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken);
 		Task<bool> UpdateAsync(long id, UserProfileDto dto, CancellationToken cancellationToken);
 		Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken);
+		Task<bool> ExistsByUsernameAsync(string username, CancellationToken cancellationToken);
 		Task<UserIdentityDto> FindIdentityAsync(long id, CancellationToken cancellationToken);
 	}
 }
