@@ -17,6 +17,11 @@ namespace OPCAIC.Infrastructure.Entities
 		public string Email { get; set; }
 
 		/// <summary>
+		///		Nickname chosen by user.
+		/// </summary>
+		public string Username { get; set; }
+
+		/// <summary>
 		///     First name of the user.
 		/// </summary>
 		[MaxLength(StringLengths.UserFirstName)]
@@ -45,16 +50,14 @@ namespace OPCAIC.Infrastructure.Entities
 		/// </summary>
 		public long RoleId { get; set; }
 
-    public bool EmailVerified { get; set; }
+		public string LocalizationLanguage { get; set; }
 
-    public string LocalizationLanguage { get; set; }
+		public string Organization { get; set; }
 
-    public string Organization { get; set; }
-
-    /// <summary>
-    ///     The role of this user.
-    /// </summary>
-    [ForeignKey(nameof(RoleId))]
+		/// <summary>
+		///     The role of this user.
+		/// </summary>
+		[ForeignKey(nameof(RoleId))]
 		public virtual UserRole Role { get; set; }
 
 		/// <summary>
