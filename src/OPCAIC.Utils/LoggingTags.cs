@@ -2,6 +2,9 @@
 {
 	public static class LoggingTags
 	{
+		public const string MachineName = "machine_name";
+		public const string AppVersion = "app_version";
+
 		public const string JobId = "JobId";
 		public const string JobPayload = "JobPayload";
 		public const string JobType = "JobType";
