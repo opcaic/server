@@ -12,7 +12,8 @@ namespace OPCAIC.ApiService.IoC
 				.AddTransient<IMatchRepository, MatchRepository>()
 				.AddTransient<ISubmissionRepository, SubmissionRepository>()
 				.AddTransient<IUserTournamentRepository, UserTournamentRepository>()
-				.AddTransient<IGameRepository, GameRepository>();
+				.AddTransient<IGameRepository, GameRepository>()
+				.AddTransient<ITournamentRepository, TournamentRepository>();
     }
   }
 }
