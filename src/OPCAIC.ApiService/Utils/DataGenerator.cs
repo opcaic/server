@@ -51,6 +51,29 @@ namespace OPCAIC.ApiService.Utils
 				  }
 				);
 
+				context.Set<Game>().AddRange(
+					new Game()
+					{
+						Name = "Chess",
+						Created = DateTime.Now
+					},
+					new Game()
+					{
+						Name = "2048",
+						Created = DateTime.Now
+					},
+					new Game()
+					{
+						Name = "Dota",
+						Created = DateTime.Now
+					},
+					new Game()
+					{
+						Name = "Tic-Tao-Toe",
+						Created = DateTime.Now
+					}
+				);
+
 				context.Set<User>().AddRange(
 					new User
 					{

@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Infrastructure.Dtos.Games;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
 
@@ -11,6 +13,7 @@ namespace OPCAIC.ApiService
 		public static MapperConfiguration Create() => new MapperConfiguration(exp =>
 		{
 			exp.AddUserMapping();
+			exp.AddGameMapping();
 		});
 
 		private static void AddUserMapping(this IMapperConfigurationExpression exp)
@@ -29,6 +32,20 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<UserProfileModel, UserProfileDto>();
 			exp.CreateMap<UserFilterModel, UserFilterDto>();
+		}
+
+		private static void AddGameMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<NewGameModel, NewGameDto>();
+
+			exp.CreateMap<Game, GamePreviewDto>();
+			exp.CreateMap<Game, GameDetailDto>();
+
+			exp.CreateMap<GamePreviewDto, GamePreviewModel>();
+			exp.CreateMap<GameDetailDto, GameDetailModel>();
+
+			exp.CreateMap<UpdateGameModel, UpdateGameDto>();
+			exp.CreateMap<GameFilterModel, GameFilterDto>();
 		}
 	}
 }
