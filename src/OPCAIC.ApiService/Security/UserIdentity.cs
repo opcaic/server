@@ -1,6 +1,6 @@
 ﻿namespace OPCAIC.ApiService.Security
 {
-	public class UserIdentity
+	public class UserIdentityModel
 	{
 		public long Id { get; set; }
 
@@ -11,5 +11,7 @@
 		public string AccessToken { get; set; }
 
 		public UserRole Role { get; set; }
+
+		public long[] ManagedTournamentIds { get; set; }
 	}
 }

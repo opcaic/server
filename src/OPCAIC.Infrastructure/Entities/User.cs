@@ -17,6 +17,11 @@ namespace OPCAIC.Infrastructure.Entities
 		public string Email { get; set; }
 
 		/// <summary>
+		///		Nickname chosen by user.
+		/// </summary>
+		public string Username { get; set; }
+
+		/// <summary>
 		///     First name of the user.
 		/// </summary>
 		[MaxLength(StringLengths.UserFirstName)]
@@ -44,6 +49,10 @@ namespace OPCAIC.Infrastructure.Entities
 		///     Id of the role of this user.
 		/// </summary>
 		public long RoleId { get; set; }
+
+		public string LocalizationLanguage { get; set; }
+
+		public string Organization { get; set; }
 
 		/// <summary>
 		///     The role of this user.
