@@ -1,8 +1,15 @@
-﻿using Microsoft.AspNetCore;
+﻿using System;
+using System.Linq;
+using System.Reflection;
+using Gelf.Extensions.Logging;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Utils;
 using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService
 {
@@ -27,6 +34,27 @@ namespace OPCAIC.ApiService
 
 		public static IWebHostBuilder CreateWebHostBuilder(string[] args)
 			=> WebHost.CreateDefaultBuilder(args)
-				.UseStartup<Startup>();
+				.UseStartup<Startup>()
+				.ConfigureLogging((context, builder) =>
+				{
+					builder.AddConfiguration(context.Configuration.GetSection("Logging"))
+						.AddConsole()
+						.AddDebug();
+
+					// use Graylog logging if configured
+					if (context.Configuration.GetSection("Logging:GELF").Exists())
+					{
+						builder.AddGelf(options =>
+						{
+							// Optional customization applied on top of settings in Logging:GELF configuration section.
+							options.LogSource = options.LogSource ?? context.HostingEnvironment.ApplicationName;
+							options.AdditionalFields[LoggingTags.MachineName] = Environment.MachineName;
+							options.AdditionalFields[LoggingTags.AppVersion] = Assembly
+								.GetEntryAssembly()
+								.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+								.InformationalVersion;
+						});
+					}
+				});
 	}
 }

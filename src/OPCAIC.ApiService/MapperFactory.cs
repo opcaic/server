@@ -3,6 +3,7 @@ using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Games;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
@@ -15,8 +16,10 @@ namespace OPCAIC.ApiService
 		public static MapperConfiguration Create() => new MapperConfiguration(exp =>
 		{
 			exp.AddUserMapping();
-			exp.AddGameMapping();
 			exp.AddTournamentMapping();
+			exp.AddSubmissionMapping();
+			exp.AddMatchMapping();
+			exp.AddGameMapping();
 		});
 
 		private static void AddUserMapping(this IMapperConfigurationExpression exp)
@@ -66,6 +69,16 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<Game, GameReferenceDto>();
 			exp.CreateMap<GameReferenceDto, GameReferenceModel>();
+		}
+
+		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<Submission, SubmissionStorageDto>();
+		}
+
+		private static void AddMatchMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
 		}
 	}
 }
