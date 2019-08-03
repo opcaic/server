@@ -12,6 +12,7 @@ using OPCAIC.ApiService.Services;
 namespace OPCAIC.ApiService.Controllers
 {
 	[Route("api/tournaments")]
+	[ApiController]
 	public class TournamentsController : ControllerBase
 	{
 		private readonly ITournamentsService tournamentsService;
@@ -28,7 +29,7 @@ namespace OPCAIC.ApiService.Controllers
 		[Authorize(RolePolicy.Organizer)]
 		[HttpGet(Name = nameof(GetTournamentsAsync))]
 		[ProducesResponseType(typeof(ListModel<TournamentPreviewModel>), (int)HttpStatusCode.OK)]
-		public Task<ListModel<TournamentPreviewModel>> GetTournamentsAsync(TournamentFilterModel filter, CancellationToken cancellationToken)
+		public Task<ListModel<TournamentPreviewModel>> GetTournamentsAsync([FromQuery] TournamentFilterModel filter, CancellationToken cancellationToken)
 		{
 			return tournamentsService.GetByFilterAsync(filter, cancellationToken);
 		}

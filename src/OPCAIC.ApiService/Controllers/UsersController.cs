@@ -14,6 +14,7 @@ namespace OPCAIC.ApiService.Controllers
 {
 	[Route("api/users")]
 	[Authorize]
+	[ApiController]
 	public class UsersController : ControllerBase
 	{
 		private readonly IUserService userService;
@@ -34,7 +35,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType((int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType((int)HttpStatusCode.Forbidden)]
 		[Authorize(RolePolicy.Admin)]
-		public Task<ListModel<UserPreviewModel>> GetUsersAsync(UserFilterModel filter, CancellationToken cancellationToken)
+		public Task<ListModel<UserPreviewModel>> GetUsersAsync([FromQuery] UserFilterModel filter, CancellationToken cancellationToken)
 		{
 			return userService.GetByFilterAsync(filter, cancellationToken);
 		}
