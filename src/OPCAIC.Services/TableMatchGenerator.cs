@@ -15,6 +15,9 @@ namespace OPCAIC.Services
 		public TournamentFormat Format => TournamentFormat.Table;
 
 		/// <inheritdoc />
+		public GameType GameType => GameType.TwoPlayer;
+
+		/// <inheritdoc />
 		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
 		{
 			var submissions = tournament.GetActiveSubmissions().ToList();

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using OPCAIC.Infrastructure.Enums;
 
@@ -19,7 +20,13 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Description of the tournament.
 		/// </summary>
+		[MaxLength(StringLengths.TournamentDescription)]
 		public string Description { get; set; }
+
+		/// <summary>
+		///     Rules of the tournament.
+		/// </summary>
+		public string Rules { get; set; }
 
 		/// <summary>
 		///     Id of the game this tournament is in.
@@ -50,5 +57,30 @@ namespace OPCAIC.Infrastructure.Entities
 		///     Ranking strategy in this tournament.
 		/// </summary>
 		public TournamentRankingStrategy RankingStrategy { get; set; }
+
+		/// <summary>
+		///     Availability of this tournament.
+		/// </summary>
+		public TournamentAvailability Availability { get; set; }
+
+		/// <summary>
+		///     State of the tournament.
+		/// </summary>
+		public TournamentState State { get; set; }
+
+		/// <summary>
+		///     When the tournament was published on the website.
+		/// </summary>
+		public DateTime Published { get; set; }
+
+		/// <summary>
+		///     When the tournament's evaluation started (or will start in case of deadline tournaments).
+		/// </summary>
+		public DateTime EvaluationStarted { get; set; }
+		
+		/// <summary>
+		///     When the evaluation finished.
+		/// </summary>
+		public DateTime EvaluationFinished { get; set; }
 	}
 }

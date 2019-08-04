@@ -2,8 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using OPCAIC.Infrastructure.Enums;
-using OPCAIC.Utils;
 
 namespace OPCAIC.Infrastructure.Entities
 {
@@ -50,5 +48,10 @@ namespace OPCAIC.Infrastructure.Entities
 		[NotMapped]
 		public MatchExecution LastExecution
 			=> Executions?.AsQueryable().OrderBy(e => e.Created).FirstOrDefault();
+
+		/// <summary>
+		///     Results of the match's last execution.
+		/// </summary>
+		public IList<SubmissionMatchResult> MatchResults => LastExecution.BotResults;
 	}
 }

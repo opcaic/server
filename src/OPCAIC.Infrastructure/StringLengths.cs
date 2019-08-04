@@ -1,9 +1,13 @@
-﻿namespace OPCAIC.Infrastructure
+﻿using System.Data;
+
+namespace OPCAIC.Infrastructure
 {
 	public static class StringLengths
 	{
 		public const int GameName = 30;
+		public const int GameDescription = 150;
 		public const int TournamentName = 30;
+		public const int TournamentDescription = 150;
 		public const int UserEmail = 50;
 		public const int UserFirstName = 50;
 		public const int UserLastName = 50;

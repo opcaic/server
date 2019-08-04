@@ -132,6 +132,9 @@ namespace OPCAIC.Services
 		public TournamentFormat Format => TournamentFormat.DoubleElimination;
 
 		/// <inheritdoc />
+		public GameType GameType => GameType.TwoPlayer;
+
+		/// <inheritdoc />
 		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
 		{
 			var tree = matchTreeFactory.GetDoubleEliminationTree(tournament.Submissions.Count);
@@ -189,6 +192,9 @@ namespace OPCAIC.Services
 	{
 		/// <inheritdoc />
 		public TournamentFormat Format => TournamentFormat.SingleElimination;
+
+		/// <inheritdoc />
+		public GameType GameType => GameType.TwoPlayer;
 
 		/// <inheritdoc />
 		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
