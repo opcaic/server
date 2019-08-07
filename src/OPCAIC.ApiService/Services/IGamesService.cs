@@ -10,7 +10,8 @@ namespace OPCAIC.ApiService.Services
 	{
 		Task<long> CreateAsync(NewGameModel game, CancellationToken cancellationToken);
 
-		Task<ListModel<GamePreviewModel>> GetByFilterAsync(GameFilterModel filter, CancellationToken cancellationToken);
+		Task<ListModel<GamePreviewModel>> GetByFilterAsync(GameFilterModel filter,
+			CancellationToken cancellationToken);
 
 		Task<GameDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken);
 

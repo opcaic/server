@@ -4,10 +4,13 @@ namespace OPCAIC.ApiService.Models.Users
 {
 	public class NewUserModel
 	{
-		[EmailAddress, Required, MinLength(1)]
+		[EmailAddress]
+		[Required]
+		[MinLength(1)]
 		public string Email { get; set; }
 
-		[Required, MinLength(1)]
+		[Required]
+		[MinLength(1)]
 		public string Username { get; set; }
 
 		[MinLength(1)]
@@ -15,7 +18,8 @@ namespace OPCAIC.ApiService.Models.Users
 
 		public string LocalizationLanguage { get; set; }
 
-		[Required, MinLength(6)]
+		[Required]
+		[MinLength(6)]
 		public string Password { get; set; }
 	}
 }

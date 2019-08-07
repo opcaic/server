@@ -9,7 +9,8 @@ namespace OPCAIC.ApiService.Services
 	{
 		Task<long> CreateAsync(NewTournamentModel tournament, CancellationToken cancellationToken);
 
-		Task<ListModel<TournamentPreviewModel>> GetByFilterAsync(TournamentFilterModel filter, CancellationToken cancellationToken);
+		Task<ListModel<TournamentPreviewModel>> GetByFilterAsync(TournamentFilterModel filter,
+			CancellationToken cancellationToken);
 
 		Task<TournamentDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken);
 

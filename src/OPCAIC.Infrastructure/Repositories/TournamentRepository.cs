@@ -29,7 +29,6 @@ namespace OPCAIC.Infrastructure.Repositories
                 Scope = tournament.Scope,
                 RankingStrategy = tournament.RankingStrategy,
                 GameId = tournament.GameId,
-                Game = Context.Games.Single(x => x.Id == tournament.GameId) // TODO: should this be here?
 			};
 
 			DbSet.Add(entity);
@@ -57,9 +56,9 @@ namespace OPCAIC.Infrastructure.Repositories
 		}
 
 		/// <inheritdoc />
-		public async Task<TournamentDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken)
+		public Task<TournamentDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken)
 		{
-			return await DbSet
+			return DbSet
 				.Where(row => row.Id == id)
 				.ProjectTo<TournamentDetailDto>(Mapper.ConfigurationProvider)
 				.SingleOrDefaultAsync(cancellationToken);
@@ -76,7 +75,6 @@ namespace OPCAIC.Infrastructure.Repositories
 			entity.Name = dto.Name;
 			entity.Description = dto.Description;
 			entity.GameId = dto.GameId;
-			entity.Game = Context.Games.Single(x => x.Id == dto.GameId); // TODO: is this correct?
 			entity.Format = dto.Format;
 			entity.Scope = dto.Scope;
 			entity.RankingStrategy = dto.RankingStrategy;

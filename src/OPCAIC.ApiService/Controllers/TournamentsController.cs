@@ -17,9 +17,7 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly ITournamentsService tournamentsService;
 
 		public TournamentsController(ITournamentsService tournamentsService)
-		{
-			this.tournamentsService = tournamentsService;
-		}
+			=> this.tournamentsService = tournamentsService;
 
 		/// <summary>
 		///   Returns lists of tournaments
@@ -28,10 +26,12 @@ namespace OPCAIC.ApiService.Controllers
 		[Authorize(RolePolicy.Organizer)]
 		[HttpGet(Name = nameof(GetTournamentsAsync))]
 		[ProducesResponseType(typeof(ListModel<TournamentPreviewModel>), (int)HttpStatusCode.OK)]
-		public Task<ListModel<TournamentPreviewModel>> GetTournamentsAsync(TournamentFilterModel filter, CancellationToken cancellationToken)
-		{
-			return tournamentsService.GetByFilterAsync(filter, cancellationToken);
-		}
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		public Task<ListModel<TournamentPreviewModel>> GetTournamentsAsync(
+			TournamentFilterModel filter, CancellationToken cancellationToken)
+			=> tournamentsService.GetByFilterAsync(filter, cancellationToken);
 
 		/// <summary>
 		///  Creates new tournament and returns its id
@@ -44,10 +44,14 @@ namespace OPCAIC.ApiService.Controllers
 		[HttpPost]
 		[ProducesResponseType(typeof(IdModel), StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> PostAsync([FromBody] NewTournamentModel model, CancellationToken cancellationToken)
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status409Conflict)]
+		public async Task<IActionResult> PostAsync([FromBody] NewTournamentModel model,
+			CancellationToken cancellationToken)
 		{
 			var id = await tournamentsService.CreateAsync(model, cancellationToken);
-			return CreatedAtRoute(nameof(GetTournamentsAsync), new IdModel { Id = id });
+			return CreatedAtRoute(nameof(GetTournamentsAsync), new IdModel {Id = id});
 		}
 
 		/// <summary>
@@ -66,10 +70,9 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task<TournamentDetailModel> GetTournamentByIdAsync(long id, CancellationToken cancellationToken)
-		{
-			return tournamentsService.GetByIdAsync(id, cancellationToken);
-		}
+		public Task<TournamentDetailModel> GetTournamentByIdAsync(long id,
+			CancellationToken cancellationToken)
+			=> tournamentsService.GetByIdAsync(id, cancellationToken);
 
 		/// <summary>
 		///		Updates tournament data by id.
@@ -84,12 +87,12 @@ namespace OPCAIC.ApiService.Controllers
 		[Authorize(RolePolicy.Organizer)]
 		[HttpPut("{id}")]
 		[ProducesResponseType(typeof(TournamentDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task UpdateAsync(long id, [FromBody] UpdateTournamentModel model, CancellationToken cancellationToken)
-		{
-			return tournamentsService.UpdateAsync(id, model, cancellationToken);
-		}
+		public Task UpdateAsync(long id, [FromBody] UpdateTournamentModel model,
+			CancellationToken cancellationToken)
+			=> tournamentsService.UpdateAsync(id, model, cancellationToken);
 	}
 }

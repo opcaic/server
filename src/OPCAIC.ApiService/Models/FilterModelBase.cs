@@ -5,10 +5,12 @@ namespace OPCAIC.ApiService.Models
 {
 	public abstract class FilterModelBase
 	{
-		[Required, MinValue(0)]
+		[Required]
+		[MinValue(0)]
 		public int Offset { get; set; }
 
-		[Required, Range(1, 100)]
+		[Required]
+		[Range(1, 100)]
 		public int Count { get; set; }
 
 		[MinLength(1)]

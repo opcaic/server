@@ -1,11 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OPCAIC.Infrastructure;
 using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.ApiService.Models.Tournaments
 {
 	public class UpdateTournamentModel
 	{
-		[Required, MinLength(1)]
+		[Required]
+		[MinLength(1)]
+		[MaxLength(StringLengths.TournamentName)]
 		public string Name { get; set; }
 
 		public string Description { get; set; }

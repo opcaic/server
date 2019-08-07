@@ -6,13 +6,10 @@ namespace OPCAIC.ApiService.IoC
 {
 	public static class Services
 	{
-		public static void AddServices(this IServiceCollection services)
-		{
-			services
-				.AddTransient<IUserService, UserService>()
-				.AddTransient<IStorageService, StorageService>()
-				.AddTransient<IGamesService, GamesService>()
-				.AddTransient<ITournamentsService, TournamentsService>();
-		}
+		public static void AddServices(this IServiceCollection services) => services
+			.AddTransient<IUserService, UserService>()
+			.AddTransient<IStorageService, StorageService>()
+			.AddTransient<IGamesService, GamesService>()
+			.AddTransient<ITournamentsService, TournamentsService>();
 	}
 }
