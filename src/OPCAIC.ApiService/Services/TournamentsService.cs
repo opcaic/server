@@ -26,7 +26,7 @@ namespace OPCAIC.ApiService.Services
 		public async Task<long> CreateAsync(NewTournamentModel tournament,
 			CancellationToken cancellationToken)
 		{
-			// TODO: check if game with a given id exists, also maybe check enums
+			// TODO(ON): check if game with a given id exists, also maybe check enums
 
 			var dto = mapper.Map<NewTournamentDto>(tournament);
 
