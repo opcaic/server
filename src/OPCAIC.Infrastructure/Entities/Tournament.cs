@@ -20,7 +20,6 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Description of the tournament.
 		/// </summary>
-		[MaxLength(StringLengths.TournamentDescription)]
 		public string Description { get; set; }
 
 		/// <summary>

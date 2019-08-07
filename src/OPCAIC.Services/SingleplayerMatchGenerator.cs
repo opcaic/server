@@ -12,10 +12,7 @@ namespace OPCAIC.Services
 	{
 		/// <inheritdoc />
 		public TournamentFormat Format => TournamentFormat.SinglePlayer;
-
-		/// <inheritdoc />
-		public GameType GameType => GameType.SinglePlayer;
-
+		
 		/// <inheritdoc />
 		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
 		{

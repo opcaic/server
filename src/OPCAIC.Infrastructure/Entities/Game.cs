@@ -21,7 +21,6 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Description of the game.
 		/// </summary>
-		[MaxLength(StringLengths.GameDescription)]
 		public string Description { get; set; }
 
 		/// <summary>

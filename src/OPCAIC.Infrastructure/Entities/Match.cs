@@ -48,10 +48,5 @@ namespace OPCAIC.Infrastructure.Entities
 		[NotMapped]
 		public MatchExecution LastExecution
 			=> Executions?.AsQueryable().OrderBy(e => e.Created).FirstOrDefault();
-
-		/// <summary>
-		///     Results of the match's last execution.
-		/// </summary>
-		public IList<SubmissionMatchResult> MatchResults => LastExecution.BotResults;
 	}
 }
