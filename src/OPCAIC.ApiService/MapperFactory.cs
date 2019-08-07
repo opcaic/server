@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Infrastructure.Dtos;
+using OPCAIC.Infrastructure.Dtos.Documents;
 using OPCAIC.Infrastructure.Dtos.Games;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
@@ -18,9 +20,24 @@ namespace OPCAIC.ApiService
 			exp.AddUserMapping();
 			exp.AddTournamentMapping();
 			exp.AddSubmissionMapping();
+			exp.AddDocumentMapping();
 			exp.AddMatchMapping();
 			exp.AddGameMapping();
 		});
+
+		private static void AddDocumentMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<NewDocumentModel, NewDocumentDto>();
+
+			exp.CreateMap<Document, DocumentDetailDto>();
+			exp.CreateMap<DocumentDetailDto, DocumentDetailModel>();
+
+			exp.CreateMap<UpdateDocumentModel, UpdateDocumentDto>();
+			exp.CreateMap<DocumentFilterModel, DocumentFilterDto>();
+
+			exp.CreateMap<Tournament, TournamentReferenceDto>();
+			exp.CreateMap<TournamentReferenceDto, TournamentReferenceModel>();
+		}
 
 		private static void AddUserMapping(this IMapperConfigurationExpression exp)
 		{

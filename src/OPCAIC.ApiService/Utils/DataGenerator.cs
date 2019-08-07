@@ -109,6 +109,9 @@ namespace OPCAIC.ApiService.Utils
 					});
 
 				context.SaveChanges();
+
+				context.Set<Document>();
+				context.SaveChanges();
 			}
 		}
 	}

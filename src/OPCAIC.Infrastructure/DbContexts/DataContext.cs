@@ -21,6 +21,7 @@ namespace OPCAIC.Infrastructure.DbContexts
 		public DbSet<Game> Games { get; set; }
 		public DbSet<Tournament> Tournaments { get; set; }
 		public DbSet<Match> Matches { get; set; }
+		public DbSet<Document> Documents { get; set; }
 		public DbSet<MatchExecution> MatchExecutions { get; set; }
 		public DbSet<Submission> Submissions { get; set; }
 		public DbSet<SubmissionValidation> SubmissionValidations { get; set; }
