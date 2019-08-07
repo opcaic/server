@@ -86,13 +86,13 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="id">Id of document to update.</param>
 		/// <param name="model">New model of document.</param>
 		/// <param name="cancellationToken"></param>
-		/// <response code="200">User was successfully updated.</response>
+		/// <response code="200">Document was successfully updated.</response>
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
 		[Authorize(RolePolicy.Organizer)]
 		[HttpPut("{id}")]
-		[ProducesResponseType(typeof(TournamentDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(DocumentDetailModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
