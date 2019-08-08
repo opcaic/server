@@ -1,14 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 
 namespace OPCAIC.ApiService.Models.Users
 {
 	public class UserCredentialsModel
 	{
-		[Required]
-		[EmailAddress]
+		[ApiRequired]
+		[ApiEmailAddress]
 		public string Email { get; set; }
 
-		[Required]
+		[ApiRequired]
 		public string Password { get; set; }
 	}
 }

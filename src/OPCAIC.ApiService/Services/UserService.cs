@@ -12,6 +12,7 @@ using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
+using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
@@ -40,12 +41,12 @@ namespace OPCAIC.ApiService.Services
 		{
 			if (await userRepository.ExistsByEmailAsync(user.Email, cancellationToken))
 			{
-				throw new ConflictException("user-email-conflict");
+				throw new ConflictException(ValidationErrorCodes.UserEmailConflict, null, nameof(user.Email));
 			}
 
 			if (await userRepository.ExistsByUsernameAsync(user.Username, cancellationToken))
 			{
-				throw new ConflictException("user-username-conflict");
+				throw new ConflictException(ValidationErrorCodes.UserUsernameConflict, null, nameof(user.Username));
 			}
 
 			var dto = mapper.Map<NewUserDto>(user);
@@ -126,7 +127,7 @@ namespace OPCAIC.ApiService.Services
 			}
 			catch (Exception ex)
 			{
-				throw new UnauthorizedExcepion(ex.Message);
+				throw new UnauthorizedException(ex.Message);
 			}
 
 			var identity = await userRepository.FindIdentityAsync(userId, cancellationToken);

@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using OPCAIC.ApiService.Validation;
+using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 
 namespace OPCAIC.ApiService.Models
 {
 	public abstract class FilterModelBase
 	{
-		[Required, MinValue(0)]
+		[Required, ApiMinValue(0)]
 		public int Offset { get; set; }
 
 		[Required, Range(1, 100)]

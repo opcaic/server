@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Services;
 
@@ -12,7 +13,8 @@ namespace OPCAIC.ApiService.IoC
 				.AddTransient<IUserService, UserService>()
 				.AddTransient<IStorageService, StorageService>()
 				.AddTransient<IGamesService, GamesService>()
-				.AddTransient<ITournamentsService, TournamentsService>();
+				.AddTransient<ITournamentsService, TournamentsService>()
+				.AddScoped<IModelValidationService, ModelValidationService>();
 		}
 	}
 }
