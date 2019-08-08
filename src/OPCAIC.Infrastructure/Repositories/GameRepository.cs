@@ -51,9 +51,9 @@ namespace OPCAIC.Infrastructure.Repositories
 		}
 
 		/// <inheritdoc />
-		public async Task<GameDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken)
+		public Task<GameDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken)
 		{
-			return await DbSet
+			return DbSet
 				.Where(row => row.Id == id)
 				.ProjectTo<GameDetailDto>(Mapper.ConfigurationProvider)
 				.SingleOrDefaultAsync(cancellationToken);

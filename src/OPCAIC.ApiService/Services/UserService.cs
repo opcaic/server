@@ -28,7 +28,8 @@ namespace OPCAIC.ApiService.Services
 
 		private readonly JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
 
-		public UserService(IConfiguration configuration, IMapper mapper, IUserRepository userRepository, IUserTournamentRepository userTournamentRepository)
+		public UserService(IConfiguration configuration, IMapper mapper,
+			IUserRepository userRepository, IUserTournamentRepository userTournamentRepository)
 		{
 			this.configuration = configuration;
 			this.mapper = mapper;
@@ -55,7 +56,8 @@ namespace OPCAIC.ApiService.Services
 #warning TODO - Send verification email
 		}
 
-		public async Task<ListModel<UserPreviewModel>> GetByFilterAsync(UserFilterModel filter, CancellationToken cancellationToken)
+		public async Task<ListModel<UserPreviewModel>> GetByFilterAsync(UserFilterModel filter,
+			CancellationToken cancellationToken)
 		{
 			var filterDto = mapper.Map<UserFilterDto>(filter);
 
@@ -68,27 +70,34 @@ namespace OPCAIC.ApiService.Services
 			};
 		}
 
-		public async Task<UserDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public async Task<UserDetailModel> GetByIdAsync(long id,
+			CancellationToken cancellationToken)
 		{
 			var dto = await userRepository.FindByIdAsync(id, cancellationToken);
 			if (dto == null)
+			{
 				throw new NotFoundException(nameof(User), id);
+			}
 
 			return mapper.Map<UserDetailModel>(dto);
 		}
 
-		public async Task UpdateAsync(long id, UserProfileModel model, CancellationToken cancellationToken)
+		public async Task UpdateAsync(long id, UserProfileModel model,
+			CancellationToken cancellationToken)
 		{
 			var dto = mapper.Map<UserProfileDto>(model);
 
 			if (!await userRepository.UpdateAsync(id, dto, cancellationToken))
+			{
 				throw new NotFoundException(nameof(User), id);
+			}
 		}
 
 		public async Task<UserIdentityModel> AuthenticateAsync(string email, string passwordHash,
 			CancellationToken cancellationToken)
 		{
-			var user = await userRepository.AuthenticateAsync(email, passwordHash, cancellationToken);
+			var user =
+				await userRepository.AuthenticateAsync(email, passwordHash, cancellationToken);
 			if (user == null)
 			{
 				return null;
@@ -139,7 +148,7 @@ namespace OPCAIC.ApiService.Services
 			var accessToken = CreateToken(conf.Key,
 				TimeSpan.FromMinutes(conf.AccessTokenExpirationMinutes), claim);
 
-			return new UserTokens { RefreshToken = newToken, AccessToken = accessToken };
+			return new UserTokens {RefreshToken = newToken, AccessToken = accessToken};
 		}
 
 		private static TokenValidationParameters GetValidationParameters(string key)

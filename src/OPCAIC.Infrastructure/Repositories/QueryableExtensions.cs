@@ -78,6 +78,7 @@ namespace OPCAIC.Infrastructure.Repositories
 			if (filter.Name != null)
 				query = query.Where(row => row.Name.ToUpper().StartsWith(filter.Name.ToUpper()));
 
+			// TODO(ON): check how sql queries are generated and whether it is optimal or not (comparing nullable types instead of using .Value)
 			if (filter.GameId != null)
 				query = query.Where(row => row.GameId == filter.GameId);
 

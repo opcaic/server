@@ -30,8 +30,10 @@ namespace OPCAIC.ApiService
 					opt => opt.MapFrom(usr => Hashing.HashPassword(usr.Password)));
 
 			exp.CreateMap<User, UserIdentityDto>();
-			exp.CreateMap<User, UserPreviewDto>().ForMember(usr => usr.UserRole, opt => opt.MapFrom(usr => usr.RoleId));
-			exp.CreateMap<User, UserDetailDto>().ForMember(usr => usr.UserRole, opt => opt.MapFrom(usr => usr.RoleId));
+			exp.CreateMap<User, UserPreviewDto>().ForMember(usr => usr.UserRole,
+				opt => opt.MapFrom(usr => usr.RoleId));
+			exp.CreateMap<User, UserDetailDto>().ForMember(usr => usr.UserRole,
+				opt => opt.MapFrom(usr => usr.RoleId));
 
 			exp.CreateMap<UserPreviewDto, UserPreviewModel>();
 			exp.CreateMap<UserDetailDto, UserDetailModel>();
@@ -72,13 +74,9 @@ namespace OPCAIC.ApiService
 		}
 
 		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)
-		{
-			exp.CreateMap<Submission, SubmissionStorageDto>();
-		}
+			=> exp.CreateMap<Submission, SubmissionStorageDto>();
 
 		private static void AddMatchMapping(this IMapperConfigurationExpression exp)
-		{
-			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
-		}
+			=> exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
 	}
 }

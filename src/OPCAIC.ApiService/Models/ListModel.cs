@@ -2,7 +2,7 @@
 
 namespace OPCAIC.ApiService.Models
 {
-	public class ListModel<T> where T: class
+	public class ListModel<T> where T : class
 	{
 		public IEnumerable<T> List { get; set; }
 
