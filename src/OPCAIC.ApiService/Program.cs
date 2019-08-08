@@ -47,8 +47,10 @@ namespace OPCAIC.ApiService
 						builder.AddGelf(options =>
 						{
 							// Optional customization applied on top of settings in Logging:GELF configuration section.
-							options.LogSource = options.LogSource ?? context.HostingEnvironment.ApplicationName;
-							options.AdditionalFields[LoggingTags.MachineName] = Environment.MachineName;
+							options.LogSource = options.LogSource ??
+								context.HostingEnvironment.ApplicationName;
+							options.AdditionalFields[LoggingTags.MachineName] =
+								Environment.MachineName;
 							options.AdditionalFields[LoggingTags.AppVersion] = Assembly
 								.GetEntryAssembly()
 								.GetCustomAttribute<AssemblyInformationalVersionAttribute>()

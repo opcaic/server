@@ -1,37 +1,18 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Xsl;
 using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
-	public interface ITournamentRepository : IRepository<Tournament>
+	public interface ITournamentRepository
 	{
-		/// <summary>
-		///     Gets general information about all tournaments.
-		/// </summary>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
-		Task<TournamentInfoDto[]> GetAllTournamentsInfo(
-			CancellationToken cancellationToken = default);
+		Task<long> CreateAsync(NewTournamentDto tournament, CancellationToken cancellationToken);
 
-		/// <summary>
-		///     Gets general information about the tournament with given id, returns null if no such tournament exists.
-		/// </summary>
-		/// <param name="id">Id of the tournament.</param>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
-		Task<TournamentInfoDto> GetAllTournamentInfo(long id,
-			CancellationToken cancellationToken = default);
+		Task<ListDto<TournamentPreviewDto>> GetByFilterAsync(TournamentFilterDto filter, CancellationToken cancellationToken);
 
-		/// <summary>
-		///     Creates or updates tournament based on the general information about it.
-		/// </summary>
-		/// <param name="tournament">The tournament to be updated.</param>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
-		Task UpdateTournament(TournamentInfoDto tournament,
-			CancellationToken cancellationToken = default);
+		Task<TournamentDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken);
+
+		Task<bool> UpdateAsync(long id, UpdateTournamentDto dto, CancellationToken cancellationToken);
 	}
 }

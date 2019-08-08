@@ -18,10 +18,7 @@ namespace OPCAIC.ApiService.Controllers
 	{
 		private readonly IUserService userService;
 
-		public UsersController(IUserService userService)
-		{
-			this.userService = userService;
-		}
+		public UsersController(IUserService userService) => this.userService = userService;
 
 		/// <summary>
 		///   Returns lists of users
@@ -34,10 +31,9 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType((int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType((int)HttpStatusCode.Forbidden)]
 		[Authorize(RolePolicy.Admin)]
-		public Task<ListModel<UserPreviewModel>> GetUsersAsync(UserFilterModel filter, CancellationToken cancellationToken)
-		{
-			return userService.GetByFilterAsync(filter, cancellationToken);
-		}
+		public Task<ListModel<UserPreviewModel>> GetUsersAsync(UserFilterModel filter,
+			CancellationToken cancellationToken)
+			=> userService.GetByFilterAsync(filter, cancellationToken);
 
 		/// <summary>
 		///   Generates login token and returns model of current user
@@ -49,7 +45,8 @@ namespace OPCAIC.ApiService.Controllers
 		[HttpPost("login")]
 		[ProducesResponseType(typeof(UserIdentityModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public async Task<UserIdentityModel> LoginAsync([FromBody] UserCredentialsModel credentials, CancellationToken cancellationToken)
+		public async Task<UserIdentityModel> LoginAsync([FromBody] UserCredentialsModel credentials,
+			CancellationToken cancellationToken)
 		{
 			var user = await userService.AuthenticateAsync(credentials.Email,
 				Hashing.HashPassword(credentials.Password), cancellationToken);
@@ -73,10 +70,9 @@ namespace OPCAIC.ApiService.Controllers
 		[HttpPost("{userId}/refresh")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public Task<UserTokens> RefreshAsync(long userId, [FromBody] RefreshToken model, CancellationToken cancellationToken)
-		{
-			return userService.RefreshTokens(userId, model.Token, cancellationToken);
-		}
+		public Task<UserTokens> RefreshAsync(long userId, [FromBody] RefreshToken model,
+			CancellationToken cancellationToken)
+			=> userService.RefreshTokens(userId, model.Token, cancellationToken);
 
 		/// <summary>
 		///  Creates new user and returns his id
@@ -89,10 +85,11 @@ namespace OPCAIC.ApiService.Controllers
 		[HttpPost]
 		[ProducesResponseType(typeof(IdModel), StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> PostAsync([FromBody] NewUserModel model, CancellationToken cancellationToken)
+		public async Task<IActionResult> PostAsync([FromBody] NewUserModel model,
+			CancellationToken cancellationToken)
 		{
-			long id = await userService.CreateAsync(model, cancellationToken);
-			return CreatedAtRoute(nameof(GetUsersAsync), new IdModel { Id = id });
+			var id = await userService.CreateAsync(model, cancellationToken);
+			return CreatedAtRoute(nameof(GetUsersAsync), new IdModel {Id = id});
 		}
 
 		/// <summary>
@@ -111,9 +108,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public Task<UserDetailModel> GetUserByIdAsync(long id, CancellationToken cancellationToken)
-		{
-			return userService.GetByIdAsync(id, cancellationToken);
-		}
+			=> userService.GetByIdAsync(id, cancellationToken);
 
 		/// <summary>
 		///		Updates user data by id.
@@ -130,9 +125,8 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task	UpdateAsync(long id, [FromBody] UserProfileModel model, CancellationToken cancellationToken)
-		{
-			return userService.UpdateAsync(id, model, cancellationToken);
-		}
+		public Task UpdateAsync(long id, [FromBody] UserProfileModel model,
+			CancellationToken cancellationToken)
+			=> userService.UpdateAsync(id, model, cancellationToken);
 	}
 }

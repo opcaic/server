@@ -46,7 +46,5 @@ namespace OPCAIC.ApiService.Middlewares
 				await context.Response.WriteAsync(json, context.RequestAborted);
 			}
 		}
-
-
 	}
 }

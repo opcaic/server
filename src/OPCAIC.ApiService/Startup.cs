@@ -73,7 +73,7 @@ namespace OPCAIC.ApiService
 					});
 			});
 
-			services.Configure<StorageConfiguration>(Configuration.GetSection("Storage")); 
+			services.Configure<StorageConfiguration>(Configuration.GetSection("Storage"));
 			// TODO: replace with real database
 			services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("Dummy"));
 

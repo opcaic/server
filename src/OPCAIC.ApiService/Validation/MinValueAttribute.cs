@@ -10,15 +10,14 @@ namespace OPCAIC.ApiService.Validation
 
 		public bool IsStrict { get; set; } = false;
 
-		public MinValueAttribute(double minValue)
-		{
-			fMinValue = minValue;
-		}
+		public MinValueAttribute(double minValue) => fMinValue = minValue;
 
 		public override bool IsValid(object value)
 		{
 			if (value == null)
+			{
 				return true;
+			}
 
 			if (value is IConvertible)
 			{
@@ -37,8 +36,6 @@ namespace OPCAIC.ApiService.Validation
 		}
 
 		public override string FormatErrorMessage(string name)
-		{
-			return $"The value of {name} is lower than {fMinValue}.";
-		}
+			=> $"The value of {name} is lower than {fMinValue}.";
 	}
 }

@@ -22,7 +22,8 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly ISubmissionRepository submissionRepository;
 		private readonly IMatchRepository matchRepository;
 
-		public FileController(IStorageService storage, ISubmissionRepository submissionRepository, IMatchRepository matchRepository)
+		public FileController(IStorageService storage, ISubmissionRepository submissionRepository,
+			IMatchRepository matchRepository)
 		{
 			this.storage = storage;
 			this.submissionRepository = submissionRepository;
@@ -44,11 +45,15 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType((int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType((int)HttpStatusCode.Forbidden)]
 		[ProducesResponseType((int)HttpStatusCode.UnprocessableEntity)]
-		public async Task<IActionResult> UploadSubmission(IFormFile archive, long id, CancellationToken cancellationToken)
+		public async Task<IActionResult> UploadSubmission(IFormFile archive, long id,
+			CancellationToken cancellationToken)
 		{
-			var sub = await submissionRepository.FindSubmissionForStorageAsync(id, cancellationToken);
+			var sub = await submissionRepository.FindSubmissionForStorageAsync(id,
+				cancellationToken);
 			if (sub == null || archive == null || Path.GetExtension(archive.FileName) != ".zip")
+			{
 				return UnprocessableEntity();
+			}
 
 			using (var stream = storage.WriteSubmissionArchive(sub))
 			{
@@ -69,15 +74,21 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType((int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType((int)HttpStatusCode.Forbidden)]
 		[ProducesResponseType((int)HttpStatusCode.NotFound)]
-		public async Task<IActionResult> DownloadSubmission(long id, CancellationToken cancellationToken)
+		public async Task<IActionResult> DownloadSubmission(long id,
+			CancellationToken cancellationToken)
 		{
-			var sub = await submissionRepository.FindSubmissionForStorageAsync(id, cancellationToken);
+			var sub = await submissionRepository.FindSubmissionForStorageAsync(id,
+				cancellationToken);
 			if (sub == null)
+			{
 				return NotFound();
+			}
 
 			var stream = storage.ReadSubmissionArchive(sub);
 			if (stream == null)
+			{
 				return NotFound();
+			}
 
 			return File(stream, gzipMimeType);
 		}
@@ -94,11 +105,14 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType((int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType((int)HttpStatusCode.Forbidden)]
 		[ProducesResponseType((int)HttpStatusCode.UnprocessableEntity)]
-		public async Task<IActionResult> UploadResult(IFormFile archive, long id, CancellationToken cancellationToken)
+		public async Task<IActionResult> UploadResult(IFormFile archive, long id,
+			CancellationToken cancellationToken)
 		{
 			var me = await matchRepository.FindExecutionForStorageAsync(id, cancellationToken);
 			if (me == null || archive == null || Path.GetExtension(archive.FileName) != ".zip")
+			{
 				return UnprocessableEntity();
+			}
 
 			using (var stream = storage.WriteMatchResultArchive(me))
 			{
@@ -123,11 +137,15 @@ namespace OPCAIC.ApiService.Controllers
 		{
 			var me = await matchRepository.FindExecutionForStorageAsync(id, cancellationToken);
 			if (me == null)
+			{
 				return NotFound();
+			}
 
 			var stream = storage.ReadMatchResultArchive(me);
 			if (stream == null)
+			{
 				return NotFound();
+			}
 
 			return File(stream, gzipMimeType);
 		}

@@ -1,11 +1,10 @@
-﻿using OPCAIC.Infrastructure.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using OPCAIC.Infrastructure.Enums;
 
-namespace OPCAIC.Infrastructure.Dtos
+namespace OPCAIC.Infrastructure.Dtos.Tournaments
 {
-	public class TournamentInfoDto
+	public class NewTournamentDto
 	{
-		public long Id { get; set; }
-
 		public string Name { get; set; }
 
 		public string Description { get; set; }
