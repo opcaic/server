@@ -146,7 +146,7 @@ namespace OPCAIC.ApiService.Services
 
 			var claim = new Claim(RolePolicy.PolicyName, ((UserRole)identity.RoleId).ToString());
 			var accessToken = CreateToken(conf.Key,
-				TimeSpan.FromSeconds(conf.AccessTokenExpirationMinutes), claim);
+				TimeSpan.FromMinutes(conf.AccessTokenExpirationMinutes), claim);
 
 			return new UserTokens {RefreshToken = newToken, AccessToken = accessToken};
 		}
