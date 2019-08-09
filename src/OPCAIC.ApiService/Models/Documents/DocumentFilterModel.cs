@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OPCAIC.ApiService.Models.Documents
 {
-	public class DocumentFilterModel
+	public class DocumentFilterModel : FilterModelBase
 	{
 		[MinLength(1)]
 		public string Name { get; set; }
