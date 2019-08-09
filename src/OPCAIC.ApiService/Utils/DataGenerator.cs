@@ -22,10 +22,10 @@ namespace OPCAIC.ApiService.Utils
 				}
 
 				context.Set<Game>().AddRange(
-					new Game() {Name = "Chess", Created = DateTime.Now},
-					new Game() {Name = "2048", Created = DateTime.Now},
-					new Game() {Name = "Dota", Created = DateTime.Now},
-					new Game() {Name = "Tic-Tao-Toe", Created = DateTime.Now}
+					new Game {Name = "Chess", Created = DateTime.Now},
+					new Game {Name = "2048", Created = DateTime.Now},
+					new Game {Name = "Dota", Created = DateTime.Now},
+					new Game {Name = "Tic-Tao-Toe", Created = DateTime.Now}
 				);
 
 				context.SaveChanges();
@@ -39,7 +39,7 @@ namespace OPCAIC.ApiService.Utils
 						Created = DateTime.Now,
 						Format = TournamentFormat.Elo,
 						RankingStrategy = TournamentRankingStrategy.Maximum,
-						Scope = TournamentScope.Ongoing,
+						Scope = TournamentScope.Ongoing
 					},
 					new Tournament
 					{
@@ -49,7 +49,7 @@ namespace OPCAIC.ApiService.Utils
 						Created = DateTime.Now,
 						Format = TournamentFormat.SinglePlayer,
 						RankingStrategy = TournamentRankingStrategy.Maximum,
-						Scope = TournamentScope.Ongoing,
+						Scope = TournamentScope.Ongoing
 					},
 					new Tournament
 					{
@@ -59,7 +59,7 @@ namespace OPCAIC.ApiService.Utils
 						Created = DateTime.Now,
 						Format = TournamentFormat.SingleElimination,
 						RankingStrategy = TournamentRankingStrategy.Maximum,
-						Scope = TournamentScope.Deadline,
+						Scope = TournamentScope.Deadline
 					},
 					new Tournament
 					{
@@ -69,7 +69,7 @@ namespace OPCAIC.ApiService.Utils
 						Created = DateTime.Now,
 						Format = TournamentFormat.Elo,
 						RankingStrategy = TournamentRankingStrategy.Maximum,
-						Scope = TournamentScope.Ongoing,
+						Scope = TournamentScope.Ongoing
 					}
 				);
 
@@ -110,7 +110,31 @@ namespace OPCAIC.ApiService.Utils
 
 				context.SaveChanges();
 
-				context.Set<Document>();
+				context.Set<Document>().AddRange(
+					new Document
+					{
+						Name = "2048 short description",
+						Tournament =
+							context.Set<Tournament>()
+								.Single(x => x.Name == "2048 single player"),
+						TournamentId =
+							context.Set<Tournament>()
+								.Single(x => x.Name == "2048 single player").Id,
+						Content =
+							"2048 is a really _easy_ and _fun_ game. The only rule is that you can merge **two blocks with same number** to create a block with **twice as big number**. The more blocks you merge the blocks, the better!"
+					},
+					new Document
+					{
+						Name = "ELO short description",
+						Tournament =
+							context.Set<Tournament>()
+								.Single(x => x.Name == "Chess ELO tournament"),
+						TournamentId =
+							context.Set<Tournament>()
+								.Single(x => x.Name == "Chess ELO tournament").Id,
+						Content =
+							"Elo is a statistical method of ranking players' abilities. In that system, every player is given a number of **Elo points** representing his skill, and after each match, points of _both_ participating players are updated according to the _expectability_ of the match outcome."
+					});
 				context.SaveChanges();
 			}
 		}

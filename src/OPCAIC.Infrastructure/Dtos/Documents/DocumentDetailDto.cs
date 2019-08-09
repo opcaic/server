@@ -10,6 +10,8 @@ namespace OPCAIC.Infrastructure.Dtos.Documents
 
 		public string Name { get; set; }
 
+		public string Content { get; set; }
+
 		public TournamentReferenceDto Tournament { get; set; }
 
 		public DateTime Created { get; set; }
