@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using OPCAIC.Infrastructure.Dtos.Documents;
 using OPCAIC.Infrastructure.Dtos.Games;
+using OPCAIC.Infrastructure.Dtos.Matches;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
@@ -172,6 +173,46 @@ namespace OPCAIC.Infrastructure.Repositories
 					return query.Sort(row => row.Created, asc);
 				case DocumentFilterDto.SortByName:
 					return query.Sort(row => row.Name, asc);
+				default:
+					return query.Sort(row => row.Id, asc);
+			}
+		}
+
+		#endregion
+
+		#region Matches
+
+		public static IQueryable<Match> Filter(this IQueryable<Match> query,
+			MatchFilterDto filter)
+		{
+			if (filter.TournamentId != null)
+			{
+				query = query.Where(row => row.Tournament.Id == filter.TournamentId);
+			}
+
+			if (filter.UserId != null)
+			{
+				query = query.Where(row
+					=> row.Participators.Any(p => p.Id == filter.UserId));
+			}
+
+			if (filter.Executed != null)
+			{
+				query = query.Where(row => row.LastExecution != null);
+			}
+
+			return query.SortBy(filter.SortBy, filter.Asc);
+		}
+
+		private static IQueryable<Match> SortBy(this IQueryable<Match> query, string sortBy,
+			bool asc)
+		{
+			switch (sortBy)
+			{
+				case MatchFilterDto.SortByCreated:
+					return query.Sort(row => row.Created, asc);
+				case MatchFilterDto.SortByUpdated:
+					return query.Sort(row => row.Updated, asc);
 				default:
 					return query.Sort(row => row.Id, asc);
 			}

@@ -95,7 +95,8 @@ namespace OPCAIC.Services
 							{
 								new SubmissionParticipation{Submission = firstPlayer},
 								new SubmissionParticipation{Submission = secondPlayer}
-							}
+							},
+							Participators = submissions.ConvertAll(s => s.Author)
 						});
 					}
 				}

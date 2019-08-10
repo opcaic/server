@@ -11,6 +11,7 @@ namespace OPCAIC.ApiService.IoC
 			.AddTransient<IStorageService, StorageService>()
 			.AddTransient<IGamesService, GamesService>()
 			.AddTransient<ITournamentsService, TournamentsService>()
-			.AddTransient<IDocumentService, DocumentService>();
+			.AddTransient<IDocumentService, DocumentService>()
+			.AddTransient<IMatchService, MatchService>();
 	}
 }

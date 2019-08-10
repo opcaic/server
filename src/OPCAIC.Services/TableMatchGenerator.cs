@@ -32,7 +32,8 @@ namespace OPCAIC.Services
 					{
 						new SubmissionParticipation {Submission = submissions[i]},
 						new SubmissionParticipation {Submission = submissions[j]}
-					}
+					},
+					Participators = submissions.ConvertAll(s => s.Author)
 				});
 			}
 

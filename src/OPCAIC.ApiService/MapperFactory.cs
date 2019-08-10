@@ -1,12 +1,15 @@
 ﻿using AutoMapper;
+using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Models.Games;
+using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Documents;
 using OPCAIC.Infrastructure.Dtos.Games;
+using OPCAIC.Infrastructure.Dtos.Matches;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
@@ -94,6 +97,19 @@ namespace OPCAIC.ApiService
 			=> exp.CreateMap<Submission, SubmissionStorageDto>();
 
 		private static void AddMatchMapping(this IMapperConfigurationExpression exp)
-			=> exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
+		{
+			exp.CreateMap<Match, MatchDetailDto>();
+
+			exp.CreateMap<MatchDetailDto, MatchDetailModel>();
+			exp.CreateMap<MatchFilterModel, MatchFilterDto>();
+
+			exp.CreateMap<User, UserReferenceDto>();
+			exp.CreateMap<UserReferenceDto, UserReferenceModel>();
+
+			exp.CreateMap<SubmissionMatchResult, SubmissionMatchResultReferenceDto>();
+			exp.CreateMap<SubmissionMatchResultReferenceDto, SubmissionMatchResultReferenceModel>();
+
+			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
+		}
 	}
 }

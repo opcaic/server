@@ -2,8 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using OPCAIC.Infrastructure.Enums;
-using OPCAIC.Utils;
 
 namespace OPCAIC.Infrastructure.Entities
 {
@@ -40,6 +38,11 @@ namespace OPCAIC.Infrastructure.Entities
 		public IEnumerable<Submission> Submissions => Participations.Select(p => p.Submission);
 
 		/// <summary>
+		///     Authors of the participating submissions.
+		/// </summary>
+		public virtual IList<User> Participators { get; set; }
+
+		/// <summary>
 		///     List of execution attempts for this match.
 		/// </summary>
 		public virtual IList<MatchExecution> Executions { get; set; }
@@ -47,8 +50,13 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Last execution of this match.
 		/// </summary>
-		[NotMapped]
-		public MatchExecution LastExecution
+		public virtual MatchExecution LastExecution
 			=> Executions?.AsQueryable().OrderBy(e => e.Created).FirstOrDefault();
+
+		/// <summary>
+		///     Results of this match.
+		/// </summary>
+		public virtual IList<SubmissionMatchResult> Results
+			=> LastExecution?.BotResults;
 	}
 }

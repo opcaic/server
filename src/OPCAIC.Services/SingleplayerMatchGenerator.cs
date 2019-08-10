@@ -24,6 +24,10 @@ namespace OPCAIC.Services
 				Participations = new[]
 				{
 					new SubmissionParticipation {Submission = s}
+				},
+				Participators = new[]
+				{
+					s.Author
 				}
 			}).ToList();
 

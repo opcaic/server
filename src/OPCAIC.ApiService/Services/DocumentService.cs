@@ -43,8 +43,8 @@ namespace OPCAIC.ApiService.Services
 			return new ListModel<DocumentDetailModel>
 			{
 				Total = dto.Total,
-				List = dto.List.Select(tournament
-					=> mapper.Map<DocumentDetailModel>(tournament))
+				List = dto.List.Select(document
+					=> mapper.Map<DocumentDetailModel>(document))
 			};
 		}
 

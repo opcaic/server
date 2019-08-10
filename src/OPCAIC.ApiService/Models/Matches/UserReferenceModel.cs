@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OPCAIC.ApiService.Models.Documents
+namespace OPCAIC.ApiService.Models.Matches
 {
-	public class TournamentReferenceModel
+	public class UserReferenceModel
 	{
 		public long Id { get; set; }
-
-		public string Name { get; set; }
+		public string Username { get; set; }
 	}
 }
