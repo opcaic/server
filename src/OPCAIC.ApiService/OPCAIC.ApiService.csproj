@@ -31,4 +31,8 @@
     <ProjectReference Include="..\OPCAIC.Utils\OPCAIC.Utils.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Documents\" />
+  </ItemGroup>
+
 </Project>

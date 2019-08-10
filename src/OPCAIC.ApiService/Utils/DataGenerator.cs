@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -134,6 +135,69 @@ namespace OPCAIC.ApiService.Utils
 								.Single(x => x.Name == "Chess ELO tournament").Id,
 						Content =
 							"Elo is a statistical method of ranking players' abilities. In that system, every player is given a number of **Elo points** representing his skill, and after each match, points of _both_ participating players are updated according to the _expectability_ of the match outcome."
+					});
+				context.SaveChanges();
+
+				context.Set<Match>().AddRange(
+					new Match
+					{
+						TournamentId = context.Set<Tournament>()
+							.Single(x => x.Name == "Chess ELO tournament").Id,
+						Tournament = context.Set<Tournament>()
+							.Single(x => x.Name == "Chess ELO tournament"),
+						Index = 1,
+						Participators =
+							new List<User>
+							{
+								context.Set<User>().Single(x => x.Username == "admin"),
+								context.Set<User>().Single(x => x.Username == "organizer")
+							},
+						Executions = new List<MatchExecution>
+						{
+							new MatchExecution
+							{
+								Created = DateTime.Now,
+								BotResults = new List<SubmissionMatchResult>
+								{
+									new SubmissionMatchResult
+									{
+										Score = 1.0,
+										AdditionalDataJson =
+											"{message = \"Admin won\"}"
+									}
+								}
+							}
+						}
+					},
+					new Match
+					{
+						TournamentId = context.Set<Tournament>()
+							.Single(x => x.Name == "Chess ELO tournament").Id,
+						Tournament = context.Set<Tournament>()
+							.Single(x => x.Name == "Chess ELO tournament"),
+						Index = 2,
+						Participators =
+							new List<User>
+							{
+								context.Set<User>().Single(x => x.Username == "admin"),
+								context.Set<User>().Single(x => x.Username == "organizer")
+							},
+						Executions = new List<MatchExecution>
+						{
+							new MatchExecution
+							{
+								Created = DateTime.Now,
+								BotResults = new List<SubmissionMatchResult>
+								{
+									new SubmissionMatchResult
+									{
+										Score = -1.0,
+										AdditionalDataJson =
+											"{message = \"Organizer won\"}"
+									}
+								}
+							}
+						}
 					});
 				context.SaveChanges();
 			}

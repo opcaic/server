@@ -1,4 +1,5 @@
-﻿using OPCAIC.Infrastructure.Dtos;
+﻿using System.Collections.Generic;
+using OPCAIC.Infrastructure.Dtos;
 
 namespace OPCAIC.ApiService.Models.Matches
 {
@@ -7,7 +8,7 @@ namespace OPCAIC.ApiService.Models.Matches
 		public long Id { get; set; }
 		public long Index { get; set; }
 		public TournamentReferenceModel Tournament { get; set; }
-		public ListDto<UserReferenceModel> Participators { get; set; }
-		public ListDto<SubmissionMatchResultReferenceModel> Results { get; set; }
+		public IList<UserReferenceModel> Participators { get; set; }
+		public IList<SubmissionMatchResultReferenceModel> Results { get; set; }
 	}
 }

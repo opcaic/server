@@ -12,11 +12,11 @@ using OPCAIC.ApiService.Services;
 namespace OPCAIC.ApiService.Controllers
 {
 	[Route("api/matches")]
-	public class MatchController
+	public class MatchController : ControllerBase
 	{
 		private readonly IMatchService matchService;
 
-		public MatchController(MatchService matchService) => this.matchService = matchService;
+		public MatchController(IMatchService matchService) => this.matchService = matchService;
 
 		/// <summary>
 		///     Get filtered list of matches.

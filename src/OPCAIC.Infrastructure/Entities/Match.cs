@@ -50,13 +50,15 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Last execution of this match.
 		/// </summary>
-		public virtual MatchExecution LastExecution
+		[NotMapped]
+		public MatchExecution LastExecution
 			=> Executions?.AsQueryable().OrderBy(e => e.Created).FirstOrDefault();
 
 		/// <summary>
 		///     Results of this match.
 		/// </summary>
-		public virtual IList<SubmissionMatchResult> Results
+		[NotMapped]
+		public IList<SubmissionMatchResult> Results
 			=> LastExecution?.BotResults;
 	}
 }
