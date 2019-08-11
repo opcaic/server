@@ -130,7 +130,7 @@ namespace OPCAIC.Services
 	{
 		/// <inheritdoc />
 		public TournamentFormat Format => TournamentFormat.DoubleElimination;
-
+		
 		/// <inheritdoc />
 		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
 		{
@@ -189,7 +189,7 @@ namespace OPCAIC.Services
 	{
 		/// <inheritdoc />
 		public TournamentFormat Format => TournamentFormat.SingleElimination;
-
+		
 		/// <inheritdoc />
 		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
 		{
