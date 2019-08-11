@@ -52,7 +52,8 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
-		public async Task<GameDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public async Task<GameDetailModel> GetByIdAsync(long id,
+			CancellationToken cancellationToken)
 		{
 			var dto = await gameRepository.FindByIdAsync(id, cancellationToken);
 
@@ -65,7 +66,8 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
-		public async Task UpdateAsync(long id, UpdateGameModel model, CancellationToken cancellationToken)
+		public async Task UpdateAsync(long id, UpdateGameModel model,
+			CancellationToken cancellationToken)
 		{
 			if (await gameRepository.ExistsByName(model.Name, cancellationToken))
 			{

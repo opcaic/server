@@ -17,10 +17,7 @@ namespace OPCAIC.ApiService.Controllers
 	{
 		private readonly IGamesService gamesService;
 
-		public GamesController(IGamesService gamesService)
-		{
-			this.gamesService = gamesService;
-		}
+		public GamesController(IGamesService gamesService) => this.gamesService = gamesService;
 
 		/// <summary>
 		///   Returns lists of games
@@ -29,10 +26,12 @@ namespace OPCAIC.ApiService.Controllers
 		[Authorize(RolePolicy.Organizer)]
 		[HttpGet(Name = nameof(GetGamesAsync))]
 		[ProducesResponseType(typeof(ListModel<GamePreviewModel>), (int)HttpStatusCode.OK)]
-		public Task<ListModel<GamePreviewModel>> GetGamesAsync([FromQuery] GameFilterModel filter, CancellationToken cancellationToken)
-		{
-			return gamesService.GetByFilterAsync(filter, cancellationToken);
-		}
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		public Task<ListModel<GamePreviewModel>> GetGamesAsync([FromQuery] GameFilterModel filter,
+			CancellationToken cancellationToken)
+			=> gamesService.GetByFilterAsync(filter, cancellationToken);
 
 		/// <summary>
 		///  Creates new game and returns its id
@@ -45,10 +44,14 @@ namespace OPCAIC.ApiService.Controllers
 		[HttpPost]
 		[ProducesResponseType(typeof(IdModel), StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> PostAsync([FromBody] NewGameModel model, CancellationToken cancellationToken)
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status409Conflict)]
+		public async Task<IActionResult> PostAsync([FromBody] NewGameModel model,
+			CancellationToken cancellationToken)
 		{
 			var id = await gamesService.CreateAsync(model, cancellationToken);
-			return CreatedAtRoute(nameof(GetGamesAsync), new IdModel { Id = id });
+			return CreatedAtRoute(nameof(GetGamesAsync), new IdModel {Id = id});
 		}
 
 		/// <summary>
@@ -68,9 +71,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public Task<GameDetailModel> GetGameByIdAsync(long id, CancellationToken cancellationToken)
-		{
-			return gamesService.GetByIdAsync(id, cancellationToken);
-		}
+			=> gamesService.GetByIdAsync(id, cancellationToken);
 
 		/// <summary>
 		///		Updates game data by id.
@@ -85,12 +86,12 @@ namespace OPCAIC.ApiService.Controllers
 		[Authorize(RolePolicy.Admin)]
 		[HttpPut("{id}")]
 		[ProducesResponseType(typeof(GameDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task UpdateAsync(long id, [FromBody] UpdateGameModel model, CancellationToken cancellationToken)
-		{
-			return gamesService.UpdateAsync(id, model, cancellationToken);
-		}
+		public Task UpdateAsync(long id, [FromBody] UpdateGameModel model,
+			CancellationToken cancellationToken)
+			=> gamesService.UpdateAsync(id, model, cancellationToken);
 	}
 }

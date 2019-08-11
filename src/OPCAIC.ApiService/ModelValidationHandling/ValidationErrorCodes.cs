@@ -8,6 +8,8 @@
 
 		public static string MinLengthError => "field-min-length";
 
+		public static string MaxLengthError => "field-max-length";
+
 		public static string MinValueError => "field-min-value";
 
 		public static string RequiredError => "field-required";

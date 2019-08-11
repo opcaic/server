@@ -1,4 +1,5 @@
 ﻿using OPCAIC.ApiService.ModelValidationHandling.Attributes;
+using OPCAIC.Infrastructure;
 using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.ApiService.Models.Tournaments
@@ -7,6 +8,7 @@ namespace OPCAIC.ApiService.Models.Tournaments
 	{
 		[ApiRequired]
 		[ApiMinLength(1)]
+		[ApiMaxLength(StringLengths.TournamentName)]
 		public string Name { get; set; }
 
 		public string Description { get; set; }
