@@ -101,6 +101,61 @@ namespace OPCAIC.Infrastructure.Repositories
 				.ProjectTo<UserIdentityDto>(Mapper.ConfigurationProvider)
 				.SingleOrDefaultAsync(cancellationToken);
 		}
+
+		public async Task<bool> UpdatePasswordKeyAsync(string email, string key, CancellationToken cancellationToken)
+		{
+			var entity = await DbSet.SingleOrDefaultAsync(row => row.Email == email, cancellationToken);
+			if (entity == null)
+				return false;
+
+			entity.PasswordKey = key;
+			await Context.SaveChangesAsync(cancellationToken);
+			return true;
+		}
+
+		public Task<UserPasswordDto> FindPasswordDataAsync(string email, CancellationToken cancellationToken)
+		{
+			return DbSet
+				.Where(row => row.Email == email)
+				.ProjectTo<UserPasswordDto>(Mapper.ConfigurationProvider)
+				.SingleOrDefaultAsync(cancellationToken);
+		}
+
+		public async Task UpdatePasswordDataAsync(long id, UserPasswordDto dto, CancellationToken cancellationToken)
+		{
+			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
+
+			entity.PasswordHash = dto.PasswordHash;
+			entity.PasswordKey = dto.PasswordKey;
+			await Context.SaveChangesAsync(cancellationToken);
+		}
+
+		public async Task<bool> UpdateEmailVerifiedAsync(string email, bool emailVerified, CancellationToken cancellationToken)
+		{
+			var entity = await DbSet.SingleOrDefaultAsync(row => row.Email == email, cancellationToken);
+			if (entity == null)
+				return false;
+
+			entity.EmailVerified = emailVerified;
+			await Context.SaveChangesAsync(cancellationToken);
+			return true;
+		}
+
+		public Task<EmailRecipientDto> FindRecipientAsync(long id, CancellationToken cancellationToken)
+		{
+			return DbSet
+				.Where(row => row.Id == id)
+				.ProjectTo<EmailRecipientDto>(Mapper.ConfigurationProvider)
+				.SingleOrDefaultAsync(cancellationToken);
+		}
+
+		public Task<EmailRecipientDto> FindRecipientAsync(string email, CancellationToken cancellationToken)
+		{
+			return DbSet
+				.Where(row => row.Email == email)
+				.ProjectTo<EmailRecipientDto>(Mapper.ConfigurationProvider)
+				.SingleOrDefaultAsync(cancellationToken);
+		}
 	}
 
 }

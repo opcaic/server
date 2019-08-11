@@ -18,6 +18,8 @@ namespace OPCAIC.Infrastructure.DbContexts
 		{
 		}
 
+		public DbSet<Email> Emails { get; set; }
+		public DbSet<EmailTemplate> EmailTemplates { get; set; }
 		public DbSet<Game> Games { get; set; }
 		public DbSet<Tournament> Tournaments { get; set; }
 		public DbSet<Match> Matches { get; set; }

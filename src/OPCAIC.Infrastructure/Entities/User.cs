@@ -41,6 +41,11 @@ namespace OPCAIC.Infrastructure.Entities
 		public string PasswordHash { get; set; }
 
 		/// <summary>
+		///		Key used to reset user's password.
+		/// </summary>
+		public string PasswordKey { get; set; }
+
+		/// <summary>
 		///     Flag whether the <see cref="Email" /> has been verified.
 		/// </summary>
 		public bool EmailVerified { get; set; }

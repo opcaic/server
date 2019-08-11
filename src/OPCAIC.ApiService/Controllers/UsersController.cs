@@ -1,14 +1,18 @@
 ﻿using System.Net;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Infrastructure.Emails;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -16,9 +20,18 @@ namespace OPCAIC.ApiService.Controllers
 	[Authorize]
 	public class UsersController : ControllerBase
 	{
+		private readonly IConfiguration configuration;
+		private readonly IEmailService emailService;
+		private readonly ITokenService tokenService;
 		private readonly IUserService userService;
 
-		public UsersController(IUserService userService) => this.userService = userService;
+		public UsersController(IConfiguration configuration, IEmailService emailService, ITokenService tokenService, IUserService userService)
+		{
+			this.configuration = configuration;
+			this.emailService = emailService;
+			this.tokenService = tokenService;
+			this.userService = userService;
+		}
 
 		/// <summary>
 		///   Returns lists of users
@@ -88,8 +101,16 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> PostAsync([FromBody] NewUserModel model,
 			CancellationToken cancellationToken)
 		{
-			var id = await userService.CreateAsync(model, cancellationToken);
-			return CreatedAtRoute(nameof(GetUsersAsync), new IdModel {Id = id});
+			long id = await userService.CreateAsync(model, cancellationToken);
+
+			string token = tokenService.CreateToken(configuration.GetSecurityConfiguration().Key, null, new Claim("email", model.Email));
+
+			string serverBaseUrl = configuration.GetServerBaseUrl();
+			string verificationUrl = $"{serverBaseUrl}/emailVerification?email={model.Email}&token={token}";
+
+			await emailService.SendEmailVerificationEmailAsync(id, verificationUrl, cancellationToken);
+
+			return CreatedAtRoute(nameof(GetUsersAsync), new IdModel { Id = id });
 		}
 
 		/// <summary>
@@ -125,8 +146,61 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task UpdateAsync(long id, [FromBody] UserProfileModel model,
-			CancellationToken cancellationToken)
-			=> userService.UpdateAsync(id, model, cancellationToken);
+		public Task	UpdateAsync(long id, [FromBody] UserProfileModel model, CancellationToken cancellationToken)
+		{
+			return userService.UpdateAsync(id, model, cancellationToken);
+		}
+
+		/// <summary>
+		///		Creates random key, which can be used to password reset and sends to user's email.
+		/// </summary>
+		/// <param name="email">email of user, whose password will be reset</param>
+		/// <param name="cancellationToken"></param>
+		/// <response code="200">Key was created and email sent to user.</response>
+		/// <response code="400">User with given email was not found.</response>
+		[HttpPut("passwordReset")]
+		[AllowAnonymous]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task PutPasswordResetAsync(string email, CancellationToken cancellationToken)
+		{
+			string resetUrl = await userService.CreateResetUrlAsync(email, cancellationToken);
+
+			await emailService.SendPasswordResetEmailAsync(email, resetUrl, cancellationToken);
+		}
+
+		/// <summary>
+		///		Changes user's password, if secret provided in model is correct.
+		/// </summary>
+		/// <param name="email">email of user, whose password will be changed</param>
+		/// <param name="model">secret for change and new password</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		[HttpPut("password")]
+		[AllowAnonymous]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status409Conflict)]
+		public Task PutPasswordAsync(string email, [FromBody] NewPasswordModel model, CancellationToken cancellationToken)
+		{
+			return userService.UpdatePasswordAsync(email, model, cancellationToken);
+		}
+
+		/// <summary>
+		///		Verifies user's email, if he provided valid token created by server.
+		/// </summary>
+		/// <param name="email">email of user, which verifies his email</param>
+		/// <param name="token">verification token created by server</param>
+		/// <param name="cancellationToken"></param>
+		[HttpGet("emailVerification")]
+		[AllowAnonymous]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status409Conflict)]
+		public async Task<IActionResult> GetEmailVerification(string email, string token, CancellationToken cancellationToken)
+		{
+			await userService.TryVerifyEmailAsync(email, token, cancellationToken);
+			return NoContent();
+		}
 	}
 }

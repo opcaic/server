@@ -15,11 +15,10 @@ namespace OPCAIC.ApiService.Services
 
 		Task<UserDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken);
 		Task UpdateAsync(long id, UserProfileModel model, CancellationToken cancellationToken);
-
-		Task<UserIdentityModel> AuthenticateAsync(string email, string passwordHash,
-			CancellationToken cancellationToken);
-
-		Task<UserTokens> RefreshTokens(long userId, string oldToken,
-			CancellationToken cancellationToken);
+		Task<UserIdentityModel> AuthenticateAsync(string email, string passwordHash, CancellationToken cancellationToken);
+		Task<UserTokens> RefreshTokens(long userId, string oldToken, CancellationToken cancellationToken);
+		Task<string> CreateResetUrlAsync(string email, CancellationToken cancellationToken);
+		Task UpdatePasswordAsync(string email, NewPasswordModel model, CancellationToken cancellationToken);
+		Task TryVerifyEmailAsync(string email, string token, CancellationToken cancellationToken);
 	}
 }
