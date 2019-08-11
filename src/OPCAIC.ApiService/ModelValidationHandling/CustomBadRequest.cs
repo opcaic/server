@@ -21,6 +21,7 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 			Detail = "The inputs supplied to the API are invalid";
 			ConstructErrorMessages(context);
 		}
+
 		private void ConstructErrorMessages(ActionContext context)
 		{
 			foreach (var (key, value) in context.ModelState)
