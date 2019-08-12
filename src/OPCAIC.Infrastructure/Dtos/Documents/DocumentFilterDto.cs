@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OPCAIC.Infrastructure.Dtos.Documents
+﻿namespace OPCAIC.Infrastructure.Dtos.Documents
 {
 	public class DocumentFilterDto : FilterDtoBase
 	{

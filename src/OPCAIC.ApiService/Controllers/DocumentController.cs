@@ -33,7 +33,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public Task<ListModel<DocumentDetailModel>> GetDocumentsAsync(
-			DocumentFilterModel filter, CancellationToken cancellationToken)
+			[FromQuery] DocumentFilterModel filter, CancellationToken cancellationToken)
 			=> documentService.GetByFilterAsync(filter, cancellationToken);
 
 		/// <summary>

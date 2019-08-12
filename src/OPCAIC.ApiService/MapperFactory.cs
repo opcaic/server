@@ -34,9 +34,6 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<UpdateDocumentModel, UpdateDocumentDto>();
 			exp.CreateMap<DocumentFilterModel, DocumentFilterDto>();
-
-			exp.CreateMap<Tournament, TournamentReferenceDto>();
-			exp.CreateMap<TournamentReferenceDto, TournamentReferenceModel>();
 		}
 
 		private static void AddUserMapping(this IMapperConfigurationExpression exp)
@@ -79,6 +76,9 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<Tournament, TournamentPreviewDto>();
 			exp.CreateMap<Tournament, TournamentDetailDto>();
+			exp.CreateMap<Tournament, TournamentReferenceDto>();
+
+			exp.CreateMap<TournamentReferenceDto, TournamentReferenceModel>();
 
 			exp.CreateMap<TournamentPreviewDto, TournamentPreviewModel>();
 			exp.CreateMap<TournamentDetailDto, TournamentDetailModel>();

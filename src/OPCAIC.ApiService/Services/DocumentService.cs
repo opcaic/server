@@ -43,8 +43,7 @@ namespace OPCAIC.ApiService.Services
 			return new ListModel<DocumentDetailModel>
 			{
 				Total = dto.Total,
-				List = dto.List.Select(tournament
-					=> mapper.Map<DocumentDetailModel>(tournament))
+				List = dto.List.Select(doc => mapper.Map<DocumentDetailModel>(doc))
 			};
 		}
 
@@ -66,8 +65,6 @@ namespace OPCAIC.ApiService.Services
 		public async Task UpdateAsync(long id, UpdateDocumentModel model,
 			CancellationToken cancellationToken)
 		{
-			// TODO: check if there is a document with that id
-
 			var dto = mapper.Map<UpdateDocumentDto>(model);
 
 			if (!await documentRepository.UpdateAsync(id, dto, cancellationToken))
