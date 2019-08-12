@@ -1,13 +1,10 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
@@ -23,16 +20,15 @@ namespace OPCAIC.ApiService.Services
 	{
 		private readonly IConfiguration configuration;
 		private readonly IMapper mapper;
+		private readonly ITokenService tokenService;
 		private readonly IUserRepository userRepository;
 		private readonly IUserTournamentRepository userTournamentRepository;
 
-		private readonly JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-
-		public UserService(IConfiguration configuration, IMapper mapper,
-			IUserRepository userRepository, IUserTournamentRepository userTournamentRepository)
+		public UserService(IConfiguration configuration, IMapper mapper, ITokenService tokenService, IUserRepository userRepository, IUserTournamentRepository userTournamentRepository)
 		{
 			this.configuration = configuration;
 			this.mapper = mapper;
+			this.tokenService = tokenService;
 			this.userRepository = userRepository;
 			this.userTournamentRepository = userTournamentRepository;
 		}
@@ -52,8 +48,6 @@ namespace OPCAIC.ApiService.Services
 			var dto = mapper.Map<NewUserDto>(user);
 
 			return await userRepository.CreateAsync(dto, cancellationToken);
-
-#warning TODO - Send verification email
 		}
 
 		public async Task<ListModel<UserPreviewModel>> GetByFilterAsync(UserFilterModel filter,
@@ -106,12 +100,10 @@ namespace OPCAIC.ApiService.Services
 			var conf = configuration.GetSecurityConfiguration();
 
 			var claim = new Claim(RolePolicy.PolicyName, ((UserRole)user.RoleId).ToString());
-			var accessToken = CreateToken(conf.Key,
-				TimeSpan.FromMinutes(conf.AccessTokenExpirationMinutes), claim);
+			var accessToken = tokenService.CreateToken(conf.Key, TimeSpan.FromMinutes(conf.AccessTokenExpirationMinutes), claim);
 
 			var refreshTokenClaim = new Claim("user", user.Id.ToString());
-			var refreshToken = CreateToken(conf.Key,
-				TimeSpan.FromDays(conf.RefreshTokenExpirationDays), refreshTokenClaim);
+			var refreshToken = tokenService.CreateToken(conf.Key, TimeSpan.FromDays(conf.RefreshTokenExpirationDays), refreshTokenClaim);
 
 			return new UserIdentityModel
 			{
@@ -128,53 +120,66 @@ namespace OPCAIC.ApiService.Services
 		{
 			var conf = configuration.GetSecurityConfiguration();
 
-			try
-			{
-				var principal = tokenHandler.ValidateToken(oldToken,
-					GetValidationParameters(conf.Key), out var token);
-			}
-			catch (Exception ex)
-			{
-				throw new UnauthorizedExcepion(ex.Message);
-			}
+			if (tokenService.ValidateToken(conf.Key, oldToken) == null)
+				throw new UnauthorizedExcepion("invalid-token");
 
 			var identity = await userRepository.FindIdentityAsync(userId, cancellationToken);
 
 			var refreshTokenClaim = new Claim("user", userId.ToString());
-			var newToken = CreateToken(conf.Key, TimeSpan.FromDays(conf.RefreshTokenExpirationDays),
-				refreshTokenClaim);
+			var newToken = tokenService.CreateToken(conf.Key, TimeSpan.FromDays(conf.RefreshTokenExpirationDays), refreshTokenClaim);
 
 			var claim = new Claim(RolePolicy.PolicyName, ((UserRole)identity.RoleId).ToString());
-			var accessToken = CreateToken(conf.Key,
-				TimeSpan.FromSeconds(conf.AccessTokenExpirationMinutes), claim);
+			var accessToken = tokenService.CreateToken(conf.Key, TimeSpan.FromSeconds(conf.AccessTokenExpirationMinutes), claim);
 
 			return new UserTokens {RefreshToken = newToken, AccessToken = accessToken};
 		}
 
-		private static TokenValidationParameters GetValidationParameters(string key)
-			=> new TokenValidationParameters
-			{
-				ValidateLifetime = true,
-				ValidateAudience = false,
-				ValidateIssuer = false,
-				IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-			};
-
-		private string CreateToken(string key, TimeSpan expiresIn, params Claim[] claims)
+		public async Task<string> CreateResetUrlAsync(string email, CancellationToken cancellationToken)
 		{
-			var tokenDescriptor = new SecurityTokenDescriptor
-			{
-				Subject = new ClaimsIdentity(claims),
-				Expires = DateTime.Now.Add(expiresIn),
-				SigningCredentials = new SigningCredentials(CreateSymmetricKey(key),
-					SecurityAlgorithms.HmacSha256Signature)
-			};
-			var token = tokenHandler.CreateToken(tokenDescriptor);
+			string key = Hashing.CreateKey(32);
 
-			return tokenHandler.WriteToken(token);
+			if (!await userRepository.UpdatePasswordKeyAsync(email, key, cancellationToken))
+				throw new BadRequestException($"User with email {email} was not found.");
+
+			string appBaseUrl = configuration.GetAppBaseUrl();
+
+			return $"{appBaseUrl}/passwordReset?email={email}&key={key}";
 		}
 
-		private SecurityKey CreateSymmetricKey(string key)
-			=> new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
+		public async Task UpdatePasswordAsync(string email, NewPasswordModel model, CancellationToken cancellationToken)
+		{
+			var passwordData = await userRepository.FindPasswordDataAsync(email, cancellationToken);
+			if (passwordData == null)
+				throw new BadRequestException($"User with email {email} was not found.");
+			
+			if (model.OldPassword != null)
+			{
+				if (Hashing.HashPassword(model.OldPassword) != passwordData.PasswordHash)
+					throw new ConflictException("old-password-conflict");
+			}
+			else
+			{
+				if (model.PasswordKey != passwordData.PasswordKey)
+					throw new ConflictException("password-key-conflict");
+			}
+
+			await userRepository.UpdatePasswordDataAsync(passwordData.Id, new UserPasswordDto
+			{
+				PasswordHash = Hashing.HashPassword(model.NewPassword),
+				PasswordKey = null
+			}, cancellationToken);
+		}
+
+		public async Task TryVerifyEmailAsync(string email, string token, CancellationToken cancellationToken)
+		{
+			var conf = configuration.GetSecurityConfiguration();
+
+			var claims = tokenService.ValidateToken(conf.Key, token);
+			if (claims == null || !claims.Any(claim => claim.Type == "email" && claim.Value == email))
+				throw new BadRequestException("Invalid verification token.");
+
+			if (!await userRepository.UpdateEmailVerifiedAsync(email, true, cancellationToken))
+				throw new ConflictException("User with given email was not found.");
+		}
 	}
 }

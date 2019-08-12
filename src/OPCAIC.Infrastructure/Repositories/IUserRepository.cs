@@ -15,5 +15,11 @@ namespace OPCAIC.Infrastructure.Repositories
 		Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken);
 		Task<bool> ExistsByUsernameAsync(string username, CancellationToken cancellationToken);
 		Task<UserIdentityDto> FindIdentityAsync(long id, CancellationToken cancellationToken);
+		Task<bool> UpdatePasswordKeyAsync(string email, string key, CancellationToken cancellationToken);
+		Task<UserPasswordDto> FindPasswordDataAsync(string email, CancellationToken cancellationToken);
+		Task UpdatePasswordDataAsync(long id, UserPasswordDto dto, CancellationToken cancellationToken);
+		Task<bool> UpdateEmailVerifiedAsync(string email, bool emailVerified, CancellationToken cancellationToken);
+		Task<EmailRecipientDto> FindRecipientAsync(long id, CancellationToken cancellationToken);
+		Task<EmailRecipientDto> FindRecipientAsync(string email, CancellationToken cancellationToken);
 	}
 }

@@ -83,7 +83,8 @@ namespace OPCAIC.ApiService.Utils
 						RoleId = (long)UserRole.Admin,
 						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 						Email = "admin@opcaic.com",
-						EmailVerified = true
+						EmailVerified = true,
+						LocalizationLanguage = "cs"
 					},
 					new User
 					{
@@ -94,7 +95,8 @@ namespace OPCAIC.ApiService.Utils
 						RoleId = (long)UserRole.Organizer,
 						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 						Email = "organizer@opcaic.com",
-						EmailVerified = true
+						EmailVerified = false,
+						LocalizationLanguage = "en"
 					},
 					new User
 					{
@@ -105,8 +107,11 @@ namespace OPCAIC.ApiService.Utils
 						RoleId = (long)UserRole.User,
 						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 						Email = "user@opcaic.com",
-						EmailVerified = true
+						EmailVerified = true,
+						LocalizationLanguage = "cs"
 					});
+
+				AddEmailTemplates(context);
 
 				context.SaveChanges();
 
@@ -137,6 +142,41 @@ namespace OPCAIC.ApiService.Utils
 					});
 				context.SaveChanges();
 			}
+		}
+
+		private static void AddEmailTemplates(DataContext context)
+		{
+			context.EmailTemplates.AddRange(new[]
+			{
+				new EmailTemplate
+				{
+					LanguageCode = "cs",
+					Name = "userVerificationEmail",
+					SubjectTemplate = "Ověření emailu",
+					BodyTemplate = "<html><body>Ověřte svůj email na této adrese: {{VerificationUrl}}.</body></html>"
+				},
+				new EmailTemplate
+				{
+					LanguageCode = "en",
+					Name = "userVerificationEmail",
+					SubjectTemplate = "Email verification",
+					BodyTemplate = "<html><body>Verify your email by clicking on address: {{VerificationUrl}}.</body></html>"
+				},
+				new EmailTemplate
+				{
+					LanguageCode = "cs",
+					Name = "passwordResetEmail",
+					SubjectTemplate = "Zapomenuté heslo",
+					BodyTemplate = "<html><body>Přesuňte se na stránku změny hesla kliknutím na odkaz: {{ResetUrl}}.</body></html>"
+				},
+				new EmailTemplate
+				{
+					LanguageCode = "en",
+					Name = "passwordResetEmail",
+					SubjectTemplate = "Password reset",
+					BodyTemplate = "<html><body>Move to page, where you can change your password by clicking on: {{ResetUrl}}.</body></html>"
+				}
+			});
 		}
 	}
 }

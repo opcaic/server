@@ -10,7 +10,7 @@ using OPCAIC.Infrastructure.Entities;
 namespace OPCAIC.Infrastructure.Repositories
 {
 	public abstract class Repository<TEntity> : IDisposable, IRepository<TEntity>
-		where TEntity : Entity
+		where TEntity : EntityBase
 	{
 		protected Repository(DataContext context, IMapper mapper)
 		{

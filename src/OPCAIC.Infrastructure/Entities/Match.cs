@@ -2,8 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using OPCAIC.Infrastructure.Enums;
-using OPCAIC.Utils;
 
 namespace OPCAIC.Infrastructure.Entities
 {
