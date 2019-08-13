@@ -6,24 +6,23 @@ namespace OPCAIC.Services.Test.MatchGeneration
 	public static class TournamentDataGenerator
 	{
 		/// <summary>
-		///   Generates a tournament for tests purposes. Participants have ascending ids from 0 to N,
-		///   the Authors name is same as id.
+		///     Generates a tournament for tests purposes. Participants have ascending ids from 0 to N,
+		///     the Authors name is same as id.
 		/// </summary>
 		/// <param name="participants">Number of participants in the tournament.</param>
 		/// <returns></returns>
-		public static Tournament Generate(int participants) => new Tournament
+		public static Tournament Generate(int participants)
 		{
-			Id = 1,
-			Submissions = Enumerable.Range(0, participants).Select(i => new Submission()
+			return new Tournament
 			{
-				Id = i,
-				Author = new User()
+				Id = 1,
+				Submissions = Enumerable.Range(0, participants).Select(i => new Submission
 				{
 					Id = i,
-					FirstName = i.ToString()
-				},
-				IsActive = true
-			}).ToList()
-		};
+					Author = new User {Id = i, FirstName = i.ToString()},
+					IsActive = true
+				}).ToList()
+			};
+		}
 	}
 }

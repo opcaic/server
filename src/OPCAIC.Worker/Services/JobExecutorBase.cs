@@ -221,7 +221,10 @@ namespace OPCAIC.Worker.Services
 
 		protected Task<(SubTaskResult status, ExecutorResult result)>
 			Execute(IEnumerable<SubmissionData> subs)
-			=> Invoke(nameof(IGameModule.Execute), GameModule.Execute, subs.Select(s => s.BotInfo));
+		{
+			return Invoke(nameof(IGameModule.Execute), GameModule.Execute,
+				subs.Select(s => s.BotInfo));
+		}
 
 		private async Task<(SubTaskResult status, T result)> Invoke<T, U>(string name,
 			Func<EntryPointConfiguration, U, DirectoryInfo, CancellationToken, Task<T>> entryPoint,
@@ -234,7 +237,8 @@ namespace OPCAIC.Worker.Services
 				SubTaskResult status;
 				try
 				{
-					result = await entryPoint(EntryPointConfig, botOrBots, OutputDirectory, CancellationToken);
+					result = await entryPoint(EntryPointConfig, botOrBots, OutputDirectory,
+						CancellationToken);
 
 					switch (result.EntryPointResult)
 					{

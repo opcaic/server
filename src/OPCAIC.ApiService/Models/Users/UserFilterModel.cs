@@ -1,5 +1,5 @@
-﻿using OPCAIC.ApiService.Validation;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using OPCAIC.ApiService.Validation;
 
 namespace OPCAIC.ApiService.Models.Users
 {

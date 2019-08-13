@@ -41,9 +41,13 @@ namespace OPCAIC.ApiService.Configs
 		}
 
 		public static void SetupSwaggerUi(SwaggerUIOptions options)
-			=> options.SwaggerEndpoint(DocumentEndpoint, DocumentName);
+		{
+			options.SwaggerEndpoint(DocumentEndpoint, DocumentName);
+		}
 
 		public static void SetupSwagger(SwaggerOptions options)
-			=> options.RouteTemplate = DocumentRouteTemplate;
+		{
+			options.RouteTemplate = DocumentRouteTemplate;
+		}
 	}
 }

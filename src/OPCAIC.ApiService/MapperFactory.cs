@@ -17,17 +17,20 @@ namespace OPCAIC.ApiService
 {
 	public static class MapperConfigurationFactory
 	{
-		public static MapperConfiguration Create() => new MapperConfiguration(exp =>
+		public static MapperConfiguration Create()
 		{
-			exp.AddUserMapping();
-			exp.AddTournamentMapping();
-			exp.AddSubmissionMapping();
-			exp.AddDocumentMapping();
-			exp.AddMatchMapping();
-			exp.AddEmailMapping();
-			exp.AddEmailTemplateMapping();
-			exp.AddGameMapping();
-		});
+			return new MapperConfiguration(exp =>
+			{
+				exp.AddUserMapping();
+				exp.AddTournamentMapping();
+				exp.AddSubmissionMapping();
+				exp.AddDocumentMapping();
+				exp.AddMatchMapping();
+				exp.AddEmailMapping();
+				exp.AddEmailTemplateMapping();
+				exp.AddGameMapping();
+			});
+		}
 
 		private static void AddDocumentMapping(this IMapperConfigurationExpression exp)
 		{
@@ -48,10 +51,10 @@ namespace OPCAIC.ApiService
 					opt => opt.MapFrom(usr => Hashing.HashPassword(usr.Password)));
 
 			exp.CreateMap<User, UserIdentityDto>();
-			exp.CreateMap<User, UserPreviewDto>().ForMember(usr => usr.UserRole, 
-        opt => opt.MapFrom(usr => usr.RoleId));
-			exp.CreateMap<User, UserDetailDto>().ForMember(usr => usr.UserRole, 
-        opt => opt.MapFrom(usr => usr.RoleId));
+			exp.CreateMap<User, UserPreviewDto>().ForMember(usr => usr.UserRole,
+				opt => opt.MapFrom(usr => usr.RoleId));
+			exp.CreateMap<User, UserDetailDto>().ForMember(usr => usr.UserRole,
+				opt => opt.MapFrom(usr => usr.RoleId));
 			exp.CreateMap<User, EmailRecipientDto>();
 			exp.CreateMap<User, UserPasswordDto>();
 
@@ -97,7 +100,9 @@ namespace OPCAIC.ApiService
 		}
 
 		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)
-			=> exp.CreateMap<Submission, SubmissionStorageDto>();
+		{
+			exp.CreateMap<Submission, SubmissionStorageDto>();
+		}
 
 		private static void AddMatchMapping(this IMapperConfigurationExpression exp)
 		{

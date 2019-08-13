@@ -3,7 +3,7 @@
 namespace OPCAIC.Services
 {
 	/// <summary>
-	///   Link between matches in a match tree.
+	///     Link between matches in a match tree.
 	/// </summary>
 	public class MatchTreeLink
 	{
@@ -22,24 +22,24 @@ namespace OPCAIC.Services
 		}
 
 		/// <summary>
-		///   If <see cref="Type" /> is <see cref="MatchTreeLinkType.Winner" /> or
-		///   <see cref="MatchTreeLinkType.Looser" />, contains the match whose winner or looser is linked.
+		///     If <see cref="Type" /> is <see cref="MatchTreeLinkType.Winner" /> or
+		///     <see cref="MatchTreeLinkType.Looser" />, contains the match whose winner or looser is linked.
 		/// </summary>
 		public MatchTreeNode SourceNode { get; }
 
 		/// <summary>
-		///   If <see cref="Type" /> is <see cref="MatchTreeLinkType.Seed" />, contains the seed of the target
-		///   player.
+		///     If <see cref="Type" /> is <see cref="MatchTreeLinkType.Seed" />, contains the seed of the target
+		///     player.
 		/// </summary>
 		public int SourceSeed { get; }
 
 		/// <summary>
-		///   Match to which the linked competitor should continue.
+		///     Match to which the linked competitor should continue.
 		/// </summary>
 		public MatchTreeNode TargetNode { get; set; }
 
 		/// <summary>
-		///   Type of the link
+		///     Type of the link
 		/// </summary>
 		public MatchTreeLinkType Type { get; }
 	}

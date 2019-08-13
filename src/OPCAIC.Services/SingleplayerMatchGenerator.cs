@@ -12,7 +12,7 @@ namespace OPCAIC.Services
 	{
 		/// <inheritdoc />
 		public TournamentFormat Format => TournamentFormat.SinglePlayer;
-		
+
 		/// <inheritdoc />
 		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
 		{
@@ -21,10 +21,7 @@ namespace OPCAIC.Services
 			{
 				Index = i++,
 				Tournament = tournament,
-				Participations = new[]
-				{
-					new SubmissionParticipation {Submission = s}
-				}
+				Participations = new[] {new SubmissionParticipation {Submission = s}}
 			}).ToList();
 
 			return (matches, true);

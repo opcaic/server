@@ -19,22 +19,32 @@ namespace OPCAIC.TestUtils
 		}
 
 		/// <inheritdoc />
-		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception,
+		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
+			Exception exception,
 			Func<TState, Exception, string> formatter)
 		{
 			output.WriteLine(
 				$"{LevelToString(logLevel)}: [{Thread.CurrentThread.ManagedThreadId}] {DateTime.Now.TimeOfDay} - {categoryName}\n" +
-				$"      {formatter(state, exception)}" + (exception != null ? "\n" +
-				$"      {exception}": ""));
+				$"      {formatter(state, exception)}" +
+				(exception != null
+					? "\n" +
+					$"      {exception}"
+					: ""));
 
 			nested?.Log(logLevel, eventId, state, exception, formatter);
 		}
 
 		/// <inheritdoc />
-		public bool IsEnabled(LogLevel logLevel) => true;
+		public bool IsEnabled(LogLevel logLevel)
+		{
+			return true;
+		}
 
 		/// <inheritdoc />
-		public IDisposable BeginScope<TState>(TState state) => new Scope();
+		public IDisposable BeginScope<TState>(TState state)
+		{
+			return new Scope();
+		}
 
 		private static string LevelToString(LogLevel level)
 		{

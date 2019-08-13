@@ -9,6 +9,9 @@ namespace OPCAIC.Messaging.Utils
 		{
 		}
 
-		public override RouterSocket CreateRawSocket() => new RouterSocket();
+		public override RouterSocket CreateRawSocket()
+		{
+			return new RouterSocket();
+		}
 	}
 }

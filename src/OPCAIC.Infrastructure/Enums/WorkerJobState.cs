@@ -33,6 +33,6 @@
 		/// <summary>
 		///     Execution of the job has finished.
 		/// </summary>
-		Finished,
+		Finished
 	}
 }

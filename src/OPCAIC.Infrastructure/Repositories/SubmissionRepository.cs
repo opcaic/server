@@ -20,8 +20,10 @@ namespace OPCAIC.Infrastructure.Repositories
 		/// <inheritdoc />
 		public Task<SubmissionStorageDto> FindSubmissionForStorageAsync(long id,
 			CancellationToken cancellationToken = default)
-			=> DbSet.Where(s => s.Id == id)
+		{
+			return DbSet.Where(s => s.Id == id)
 				.ProjectTo<SubmissionStorageDto>(Mapper.ConfigurationProvider)
 				.SingleOrDefaultAsync(cancellationToken);
+		}
 	}
 }

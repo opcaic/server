@@ -9,15 +9,6 @@ namespace OPCAIC.Infrastructure.Entities
 	/// </summary>
 	public class MatchExecution : SoftDeletableEntity, IWorkerJob
 	{
-		/// <inheritdoc />
-		public Guid JobId { get; set; }
-
-		/// <inheritdoc />
-		public WorkerJobState State { get; set; }
-
-		/// <inheritdoc />
-		public DateTime? Finished { get; set; }
-
 		/// <summary>
 		///     Unique Id of the match.
 		/// </summary>
@@ -42,5 +33,14 @@ namespace OPCAIC.Infrastructure.Entities
 		///     Additional key-value data for this match provided by the game module. Serialized as a JSON object.
 		/// </summary>
 		public string AdditionalDataJson { get; set; }
+
+		/// <inheritdoc />
+		public Guid JobId { get; set; }
+
+		/// <inheritdoc />
+		public WorkerJobState State { get; set; }
+
+		/// <inheritdoc />
+		public DateTime? Finished { get; set; }
 	}
 }

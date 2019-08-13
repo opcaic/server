@@ -7,6 +7,7 @@ namespace OPCAIC.Infrastructure.Repositories
 {
 	public interface ISubmissionRepository : ISimpleLookupRepository<Submission>
 	{
-		Task<SubmissionStorageDto> FindSubmissionForStorageAsync(long id, CancellationToken cancellationToken = default);
+		Task<SubmissionStorageDto> FindSubmissionForStorageAsync(long id,
+			CancellationToken cancellationToken = default);
 	}
 }

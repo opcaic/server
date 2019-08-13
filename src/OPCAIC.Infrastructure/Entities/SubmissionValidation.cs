@@ -7,18 +7,9 @@ namespace OPCAIC.Infrastructure.Entities
 	///     Result of a validation process of a submission.
 	/// </summary>
 	public class SubmissionValidation : SoftDeletableEntity, IWorkerJob
-	{ 
-		/// <inheritdoc />
-		public Guid JobId { get; set; }
-
-		/// <inheritdoc />
-		public WorkerJobState State { get; set; }
-
-		/// <inheritdoc />
-		public DateTime? Finished { get; set; }
-
+	{
 		/// <summary>
-		///    Id of the validated submission.
+		///     Id of the validated submission.
 		/// </summary>
 		public long SubmissionId { get; set; }
 
@@ -41,5 +32,14 @@ namespace OPCAIC.Infrastructure.Entities
 		///     Result of the validator game module entry point.
 		/// </summary>
 		public GameModuleEntryPointResult ValidatorResult { get; set; }
+
+		/// <inheritdoc />
+		public Guid JobId { get; set; }
+
+		/// <inheritdoc />
+		public WorkerJobState State { get; set; }
+
+		/// <inheritdoc />
+		public DateTime? Finished { get; set; }
 	}
 }

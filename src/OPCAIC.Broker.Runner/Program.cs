@@ -5,10 +5,14 @@ namespace OPCAIC.Broker.Runner
 {
 	internal static class Program
 	{
-		public static void Main(string[] args) => CreateHostBuilder(args).Build().Run();
+		public static void Main(string[] args)
+		{
+			CreateHostBuilder(args).Build().Run();
+		}
 
 		public static IHostBuilder CreateHostBuilder(string[] args)
-			=> new HostBuilder().ConfigureAppConfiguration((host, config) =>
+		{
+			return new HostBuilder().ConfigureAppConfiguration((host, config) =>
 				{
 					var env = host.HostingEnvironment;
 
@@ -21,5 +25,6 @@ namespace OPCAIC.Broker.Runner
 				.ConfigureLogging(Startup.ConfigureLogging)
 				.ConfigureServices(Startup.ConfigureServices)
 				.UseConsoleLifetime();
+		}
 	}
 }

@@ -34,6 +34,8 @@ namespace OPCAIC.Infrastructure.Entities
 		public GameType GameType { get; set; }
 
 		internal static void OnModelCreating(EntityTypeBuilder<Game> builder)
-			=> builder.HasIndex(g => g.Name).IsUnique();
+		{
+			builder.HasIndex(g => g.Name).IsUnique();
+		}
 	}
 }

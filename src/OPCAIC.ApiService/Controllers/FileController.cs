@@ -1,8 +1,6 @@
 ﻿using System.IO;
 using System.Net;
-using System.Net.Mime;
 using System.Threading;
-using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,9 +16,12 @@ namespace OPCAIC.ApiService.Controllers
 	{
 		public const string gzipMimeType = "application/x-zip-compressed";
 
+		private const string SubmissionsRoute = "submissions";
+		private const string MatchResultsRoute = "results";
+		private readonly IMatchRepository matchRepository;
+
 		private readonly IStorageService storage;
 		private readonly ISubmissionRepository submissionRepository;
-		private readonly IMatchRepository matchRepository;
 
 		public FileController(IStorageService storage, ISubmissionRepository submissionRepository,
 			IMatchRepository matchRepository)
@@ -29,9 +30,6 @@ namespace OPCAIC.ApiService.Controllers
 			this.submissionRepository = submissionRepository;
 			this.matchRepository = matchRepository;
 		}
-
-		private const string SubmissionsRoute = "submissions";
-		private const string MatchResultsRoute = "results";
 
 		/// <summary>
 		///     Uploads a zip archive as as source code for the given submission.

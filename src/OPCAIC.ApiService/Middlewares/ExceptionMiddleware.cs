@@ -9,7 +9,10 @@ namespace OPCAIC.ApiService.Middlewares
 	{
 		private readonly RequestDelegate next;
 
-		public ExceptionMiddleware(RequestDelegate next) => this.next = next;
+		public ExceptionMiddleware(RequestDelegate next)
+		{
+			this.next = next;
+		}
 
 		public async Task InvokeAsync(HttpContext context)
 		{

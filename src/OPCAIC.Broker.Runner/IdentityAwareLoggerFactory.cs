@@ -4,8 +4,8 @@ namespace OPCAIC.Broker.Runner
 {
 	public class IdentityAwareLoggerFactory : ILoggerFactory
 	{
-		private readonly ILoggerFactory innerFactory;
 		private readonly string identity;
+		private readonly ILoggerFactory innerFactory;
 
 		public IdentityAwareLoggerFactory(ILoggerFactory innerFactory, string identity)
 		{
@@ -14,12 +14,21 @@ namespace OPCAIC.Broker.Runner
 		}
 
 		/// <inheritdoc />
-		public void Dispose() => innerFactory.Dispose();
+		public void Dispose()
+		{
+			innerFactory.Dispose();
+		}
 
 		/// <inheritdoc />
-		public ILogger CreateLogger(string categoryName) => innerFactory.CreateLogger($"({identity}) - {categoryName}");
+		public ILogger CreateLogger(string categoryName)
+		{
+			return innerFactory.CreateLogger($"({identity}) - {categoryName}");
+		}
 
 		/// <inheritdoc />
-		public void AddProvider(ILoggerProvider provider) => innerFactory.AddProvider(provider);
+		public void AddProvider(ILoggerProvider provider)
+		{
+			innerFactory.AddProvider(provider);
+		}
 	}
 }

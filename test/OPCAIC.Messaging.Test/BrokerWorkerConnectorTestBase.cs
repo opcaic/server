@@ -34,30 +34,38 @@ namespace OPCAIC.Messaging.Test
 		private ThreadHelper WorkerSocketThread { get; }
 		protected HeartbeatConfig HeartbeatConfig { get; }
 
-		public void Dispose() => KillAll();
+		public void Dispose()
+		{
+			KillAll();
+		}
 
-		private ILogger<T> GetLogger<T>() => loggerProvider.CreateLogger<T>();
+		private ILogger<T> GetLogger<T>()
+		{
+			return loggerProvider.CreateLogger<T>();
+		}
 
 		protected void CreateBroker()
 		{
 			KillBroker();
-			Broker = new BrokerConnector(Options.Create(new BrokerConnectorConfig
-			{
-				Identity = "Broker",
-				ListeningAddress = ConnectionString,
-				HeartbeatConfig = HeartbeatConfig
-			}), GetLogger<BrokerConnector>());
+			Broker = new BrokerConnector(
+				Options.Create(new BrokerConnectorConfig
+				{
+					Identity = "Broker",
+					ListeningAddress = ConnectionString,
+					HeartbeatConfig = HeartbeatConfig
+				}), GetLogger<BrokerConnector>());
 		}
 
 		protected void CreateWorker()
 		{
 			KillWorker();
-			Worker = new WorkerConnector(Options.Create(new WorkerConnectorConfig
-			{
-				Identity = "Worker",
-				BrokerAddress = ConnectionString,
-				HeartbeatConfig = HeartbeatConfig
-			}), GetLogger<WorkerConnector>());
+			Worker = new WorkerConnector(
+				Options.Create(new WorkerConnectorConfig
+				{
+					Identity = "Worker",
+					BrokerAddress = ConnectionString,
+					HeartbeatConfig = HeartbeatConfig
+				}), GetLogger<WorkerConnector>());
 		}
 
 		protected void CreateConnectors()

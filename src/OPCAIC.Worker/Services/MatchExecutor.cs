@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,12 +23,16 @@ namespace OPCAIC.Worker.Services
 
 		/// <inheritdoc />
 		protected override IDisposable CreateLoggingScope(MatchExecutionRequest request)
-			=> Logger.MatchExecutionScope(request);
+		{
+			return Logger.MatchExecutionScope(request);
+		}
 
 		/// <inheritdoc />
 		protected override Task DoUploadResults()
-			=> DownloadService.UploadMatchResults(Request.ExecutionId, OutputDirectory.FullName,
+		{
+			return DownloadService.UploadMatchResults(Request.ExecutionId, OutputDirectory.FullName,
 				CancellationToken);
+		}
 
 		/// <inheritdoc />
 		protected override async Task InternalExecute()
@@ -70,7 +73,7 @@ namespace OPCAIC.Worker.Services
 		private void PrepareResponse()
 		{
 			Response.BotResults = new MessageBotResult[Request.Bots.Count];
-			for (int i = 0; i < Response.BotResults.Length; i++)
+			for (var i = 0; i < Response.BotResults.Length; i++)
 			{
 				Response.BotResults[i] = new MessageBotResult();
 			}

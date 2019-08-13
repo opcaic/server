@@ -14,9 +14,12 @@ namespace OPCAIC.Infrastructure.Repositories
 	public class UserRepository : Repository<User>, IUserRepository
 	{
 		public UserRepository(DataContext dataContext, IMapper mapper)
-		  : base(dataContext, mapper) { }
+			: base(dataContext, mapper)
+		{
+		}
 
-		public async Task<ListDto<UserPreviewDto>> GetByFilterAsync(UserFilterDto filter, CancellationToken cancellationToken)
+		public async Task<ListDto<UserPreviewDto>> GetByFilterAsync(UserFilterDto filter,
+			CancellationToken cancellationToken)
 		{
 			var query = DbSet.Filter(filter);
 
@@ -41,7 +44,7 @@ namespace OPCAIC.Infrastructure.Repositories
 				LocalizationLanguage = user.LocalizationLanguage,
 				PasswordHash = user.PasswordHash,
 				RoleId = user.RoleId,
-				EmailVerified = false,
+				EmailVerified = false
 			};
 
 			DbSet.Add(entity);
@@ -51,12 +54,13 @@ namespace OPCAIC.Infrastructure.Repositories
 			return entity.Id;
 		}
 
-		public Task<UserIdentityDto> AuthenticateAsync(string email, string passwordHash, CancellationToken cancellationToken)
+		public Task<UserIdentityDto> AuthenticateAsync(string email, string passwordHash,
+			CancellationToken cancellationToken)
 		{
 			return DbSet
-			  .Where(row => row.Email == email && row.PasswordHash == passwordHash)
-			  .ProjectTo<UserIdentityDto>(Mapper.ConfigurationProvider)
-			  .SingleOrDefaultAsync(cancellationToken);
+				.Where(row => row.Email == email && row.PasswordHash == passwordHash)
+				.ProjectTo<UserIdentityDto>(Mapper.ConfigurationProvider)
+				.SingleOrDefaultAsync(cancellationToken);
 		}
 
 		public async Task<UserDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken)
@@ -67,11 +71,14 @@ namespace OPCAIC.Infrastructure.Repositories
 				.SingleOrDefaultAsync(cancellationToken);
 		}
 
-		public async Task<bool> UpdateAsync(long id, UserProfileDto dto, CancellationToken cancellationToken)
+		public async Task<bool> UpdateAsync(long id, UserProfileDto dto,
+			CancellationToken cancellationToken)
 		{
 			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
 			if (entity == null)
+			{
 				return false;
+			}
 
 			entity.Organization = dto.Organization;
 			entity.LocalizationLanguage = dto.LocalizationLanguage;
@@ -83,15 +90,16 @@ namespace OPCAIC.Infrastructure.Repositories
 		public Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken)
 		{
 			return DbSet
-			  .Where(row => row.Email == email)
-			  .AnyAsync(cancellationToken);
+				.Where(row => row.Email == email)
+				.AnyAsync(cancellationToken);
 		}
 
-		public Task<bool> ExistsByUsernameAsync(string username, CancellationToken cancellationToken)
+		public Task<bool> ExistsByUsernameAsync(string username,
+			CancellationToken cancellationToken)
 		{
 			return DbSet
-			  .Where(row => row.Username == username)
-			  .AnyAsync(cancellationToken);
+				.Where(row => row.Username == username)
+				.AnyAsync(cancellationToken);
 		}
 
 		public Task<UserIdentityDto> FindIdentityAsync(long id, CancellationToken cancellationToken)
@@ -102,18 +110,23 @@ namespace OPCAIC.Infrastructure.Repositories
 				.SingleOrDefaultAsync(cancellationToken);
 		}
 
-		public async Task<bool> UpdatePasswordKeyAsync(string email, string key, CancellationToken cancellationToken)
+		public async Task<bool> UpdatePasswordKeyAsync(string email, string key,
+			CancellationToken cancellationToken)
 		{
-			var entity = await DbSet.SingleOrDefaultAsync(row => row.Email == email, cancellationToken);
+			var entity =
+				await DbSet.SingleOrDefaultAsync(row => row.Email == email, cancellationToken);
 			if (entity == null)
+			{
 				return false;
+			}
 
 			entity.PasswordKey = key;
 			await Context.SaveChangesAsync(cancellationToken);
 			return true;
 		}
 
-		public Task<UserPasswordDto> FindPasswordDataAsync(string email, CancellationToken cancellationToken)
+		public Task<UserPasswordDto> FindPasswordDataAsync(string email,
+			CancellationToken cancellationToken)
 		{
 			return DbSet
 				.Where(row => row.Email == email)
@@ -121,7 +134,8 @@ namespace OPCAIC.Infrastructure.Repositories
 				.SingleOrDefaultAsync(cancellationToken);
 		}
 
-		public async Task UpdatePasswordDataAsync(long id, UserPasswordDto dto, CancellationToken cancellationToken)
+		public async Task UpdatePasswordDataAsync(long id, UserPasswordDto dto,
+			CancellationToken cancellationToken)
 		{
 			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
 
@@ -130,18 +144,23 @@ namespace OPCAIC.Infrastructure.Repositories
 			await Context.SaveChangesAsync(cancellationToken);
 		}
 
-		public async Task<bool> UpdateEmailVerifiedAsync(string email, bool emailVerified, CancellationToken cancellationToken)
+		public async Task<bool> UpdateEmailVerifiedAsync(string email, bool emailVerified,
+			CancellationToken cancellationToken)
 		{
-			var entity = await DbSet.SingleOrDefaultAsync(row => row.Email == email, cancellationToken);
+			var entity =
+				await DbSet.SingleOrDefaultAsync(row => row.Email == email, cancellationToken);
 			if (entity == null)
+			{
 				return false;
+			}
 
 			entity.EmailVerified = emailVerified;
 			await Context.SaveChangesAsync(cancellationToken);
 			return true;
 		}
 
-		public Task<EmailRecipientDto> FindRecipientAsync(long id, CancellationToken cancellationToken)
+		public Task<EmailRecipientDto> FindRecipientAsync(long id,
+			CancellationToken cancellationToken)
 		{
 			return DbSet
 				.Where(row => row.Id == id)
@@ -149,7 +168,8 @@ namespace OPCAIC.Infrastructure.Repositories
 				.SingleOrDefaultAsync(cancellationToken);
 		}
 
-		public Task<EmailRecipientDto> FindRecipientAsync(string email, CancellationToken cancellationToken)
+		public Task<EmailRecipientDto> FindRecipientAsync(string email,
+			CancellationToken cancellationToken)
 		{
 			return DbSet
 				.Where(row => row.Email == email)
@@ -157,5 +177,4 @@ namespace OPCAIC.Infrastructure.Repositories
 				.SingleOrDefaultAsync(cancellationToken);
 		}
 	}
-
 }

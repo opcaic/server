@@ -9,6 +9,9 @@ namespace OPCAIC.Messaging.Utils
 		{
 		}
 
-		public override DealerSocket CreateRawSocket() => new DealerSocket();
+		public override DealerSocket CreateRawSocket()
+		{
+			return new DealerSocket();
+		}
 	}
 }

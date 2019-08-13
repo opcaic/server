@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OPCAIC.Infrastructure.Dtos.Users
+﻿namespace OPCAIC.Infrastructure.Dtos.Users
 {
 	public class UserCreatedDto
 	{

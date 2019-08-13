@@ -57,11 +57,7 @@ namespace OPCAIC.Worker.GameModules
 			{
 				WorkingDirectory = rootDir,
 				EntryPoint = moduleConfig.Checker,
-				Arguments =
-				{
-					config.AdditionalFiles.FullName,
-					bot.SourceDirectory.FullName,
-				}
+				Arguments = {config.AdditionalFiles.FullName, bot.SourceDirectory.FullName}
 			};
 
 			return await InvokeGameModule<CheckerResult>(procStart, logPrefix, cancellationToken);
@@ -86,7 +82,7 @@ namespace OPCAIC.Worker.GameModules
 				{
 					config.AdditionalFiles.FullName,
 					bot.SourceDirectory.FullName,
-					bot.BinaryDirectory.FullName,
+					bot.BinaryDirectory.FullName
 				}
 			};
 
@@ -108,11 +104,7 @@ namespace OPCAIC.Worker.GameModules
 			{
 				WorkingDirectory = rootDir,
 				EntryPoint = moduleConfig.Validator,
-				Arguments =
-				{
-					config.AdditionalFiles.FullName,
-					bot.BinaryDirectory.FullName,
-				}
+				Arguments = {config.AdditionalFiles.FullName, bot.BinaryDirectory.FullName}
 			};
 
 			return InvokeGameModule<ValidatorResult>(procStart, logPrefix, cancellationToken);
@@ -136,7 +128,7 @@ namespace OPCAIC.Worker.GameModules
 			{
 				WorkingDirectory = rootDir,
 				EntryPoint = moduleConfig.Executor,
-				Arguments = { config.AdditionalFiles.FullName }
+				Arguments = {config.AdditionalFiles.FullName}
 			};
 			// 1..N participating bots
 			procStart.Arguments.AddRange(binDirs);
@@ -157,7 +149,10 @@ namespace OPCAIC.Worker.GameModules
 		}
 
 		/// <inheritdoc />
-		public Task Clean(CancellationToken cancellationToken) => Task.CompletedTask;
+		public Task Clean(CancellationToken cancellationToken)
+		{
+			return Task.CompletedTask;
+		}
 
 		/// <summary>
 		///     Reads and validates an instance of <see cref="MatchResult" /> from the file in the given path.
@@ -283,7 +278,8 @@ namespace OPCAIC.Worker.GameModules
 						"Unable to start game module process.");
 				}
 
-				logger.LogInformation($"Process started, PID: {{{LoggingTags.GameModuleProcessId}}}", process.Id);
+				logger.LogInformation(
+					$"Process started, PID: {{{LoggingTags.GameModuleProcessId}}}", process.Id);
 
 				process.OutputDataReceived += (_, e) =>
 				{
@@ -319,7 +315,9 @@ namespace OPCAIC.Worker.GameModules
 
 			void ExitHandler(object sender, EventArgs eventArgs)
 			{
-				logger.LogInformation($"Exited with exit code {{{LoggingTags.GameModuleProcessExitCode}}}", process.ExitCode);
+				logger.LogInformation(
+					$"Exited with exit code {{{LoggingTags.GameModuleProcessExitCode}}}",
+					process.ExitCode);
 				// try to set result, can fail if the task was cancelled in the meantime
 				tcs.TrySetResult(ExitCodeToProcessResult(process.ExitCode));
 			}
@@ -337,7 +335,9 @@ namespace OPCAIC.Worker.GameModules
 				{
 					try
 					{
-						logger.LogWarning($"Cancellation requested, killing process {{{LoggingTags.GameModuleProcessId}}}", process.Id);
+						logger.LogWarning(
+							$"Cancellation requested, killing process {{{LoggingTags.GameModuleProcessId}}}",
+							process.Id);
 						process.Kill();
 						tcs.TrySetCanceled();
 					}

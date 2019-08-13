@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace OPCAIC.Worker.Services
 {
 	/// <summary>
-	///   Provides methods for downloading files from file server.
+	///     Provides methods for downloading files from file server.
 	/// </summary>
 	public interface IDownloadService
 	{
@@ -15,7 +15,8 @@ namespace OPCAIC.Worker.Services
 		/// <param name="path">Path to the target directory.</param>
 		/// <param name="cancellationToken">Cancellation token to be used if the task should be cancelled.</param>
 		/// <returns></returns>
-		Task DownloadSubmission(long submissionId, string path, CancellationToken cancellationToken = default(CancellationToken));
+		Task DownloadSubmission(long submissionId, string path,
+			CancellationToken cancellationToken = default);
 
 		/// <summary>
 		///     Uploads contents of a folder as a result of submission validation.
@@ -25,7 +26,7 @@ namespace OPCAIC.Worker.Services
 		/// <param name="cancellationToken">Cancellation token to be used if the task should be cancelled.</param>
 		/// <returns></returns>
 		Task UploadValidationResults(long validationId, string path,
-			CancellationToken cancellationToken = default(CancellationToken));
+			CancellationToken cancellationToken = default);
 
 		/// <summary>
 		///     Uploads contents of a folder as a result of submission validation.
@@ -34,6 +35,7 @@ namespace OPCAIC.Worker.Services
 		/// <param name="path">Path to the result directory.</param>
 		/// <param name="cancellationToken">Cancellation token to be used if the task should be cancelled.</param>
 		/// <returns></returns>
-		Task UploadMatchResults(long executionId, string path, CancellationToken cancellationToken = default(CancellationToken));
+		Task UploadMatchResults(long executionId, string path,
+			CancellationToken cancellationToken = default);
 	}
 }

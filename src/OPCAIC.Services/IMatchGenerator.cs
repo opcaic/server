@@ -13,7 +13,7 @@ namespace OPCAIC.Services
 		///     Tournament format this generator is for.
 		/// </summary>
 		TournamentFormat Format { get; }
-		
+
 		/// <summary>
 		///     Generates new matches based on the current tournament state. The returned matches are
 		///     *not* added to the queue as of yet. Also, in some cases it is not possible to generate all

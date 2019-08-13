@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Games;
-using OPCAIC.ApiService.Models.Users;
 
 namespace OPCAIC.ApiService.Services
 {

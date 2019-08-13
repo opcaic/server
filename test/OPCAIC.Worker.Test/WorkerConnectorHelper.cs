@@ -14,7 +14,9 @@ namespace OPCAIC.Worker.Test
 
 		private Action consumerActions;
 		private Action socketActions;
-		private Dictionary<Type, Action<object>> syncHandlers = new Dictionary<Type, Action<object>>();
+
+		private readonly Dictionary<Type, Action<object>> syncHandlers =
+			new Dictionary<Type, Action<object>>();
 
 		public WorkerConnectorHelper(Mock<IWorkerConnector> mock)
 		{
@@ -46,7 +48,8 @@ namespace OPCAIC.Worker.Test
 			syncHandlers[typeof(T)](arg);
 		}
 
-		public void SetupConsumerReceive<TRequest>(TRequest request) where TRequest : WorkMessageBase
+		public void SetupConsumerReceive<TRequest>(TRequest request)
+			where TRequest : WorkMessageBase
 		{
 			Mock.Setup(c => c.RegisterAsyncHandler(It.IsAny<Func<TRequest, Task>>()))
 				.Callback((Func<TRequest, Task> h)
@@ -55,14 +58,21 @@ namespace OPCAIC.Worker.Test
 			consumerActions += () => CallAsyncHandler(request);
 		}
 
-		public void SetupConsumer(Action action) => consumerActions += action;
+		public void SetupConsumer(Action action)
+		{
+			consumerActions += action;
+		}
 
-		public void SetupSocket(Action action) => socketActions += action;
+		public void SetupSocket(Action action)
+		{
+			socketActions += action;
+		}
 
 		public void SetupSocketReceive<TRequest>(TRequest request)
 		{
 			Mock.Setup(c => c.RegisterHandler(It.IsAny<Action<TRequest>>()))
-				.Callback((Action<TRequest> h) => syncHandlers[typeof(TRequest)] = o => h((TRequest) o));
+				.Callback((Action<TRequest> h)
+					=> syncHandlers[typeof(TRequest)] = o => h((TRequest)o));
 
 			socketActions += () => CallHandler(request);
 		}
@@ -73,7 +83,7 @@ namespace OPCAIC.Worker.Test
 			{
 				consumerActions?.Invoke();
 			}
-			catch 
+			catch
 			{
 				// do nothing
 			}
@@ -85,7 +95,7 @@ namespace OPCAIC.Worker.Test
 			{
 				socketActions?.Invoke();
 			}
-			catch 
+			catch
 			{
 				// do nothing
 			}

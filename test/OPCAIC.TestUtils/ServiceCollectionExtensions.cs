@@ -8,7 +8,7 @@ namespace OPCAIC.TestUtils
 	public static class ServiceCollectionExtensions
 	{
 		/// <summary>
-		///   Enables logging via <see cref="ILogger" /> interfaces into xUnits <see cref="ITestOutputHelper" />.
+		///     Enables logging via <see cref="ILogger" /> interfaces into xUnits <see cref="ITestOutputHelper" />.
 		/// </summary>
 		/// <param name="services">Service collection into which register logging.</param>
 		/// <param name="output">Output for the test in question.</param>

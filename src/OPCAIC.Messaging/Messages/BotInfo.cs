@@ -3,13 +3,13 @@
 namespace OPCAIC.Messaging.Messages
 {
 	/// <summary>
-	///   Class giving information about the bots in a match.
+	///     Class giving information about the bots in a match.
 	/// </summary>
 	[Serializable]
 	public class BotInfo
 	{
 		/// <summary>
-		///   Id of the submission of this bot.
+		///     Id of the submission of this bot.
 		/// </summary>
 		public long SubmissionId { get; set; }
 	}

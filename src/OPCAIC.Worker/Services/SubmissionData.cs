@@ -1,5 +1,4 @@
-﻿using OPCAIC.GameModules.Interface;
-using OPCAIC.Messaging.Messages;
+﻿using OPCAIC.Messaging.Messages;
 using BotInfo = OPCAIC.GameModules.Interface.BotInfo;
 
 namespace OPCAIC.Worker.Services

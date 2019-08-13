@@ -9,7 +9,10 @@ namespace OPCAIC.ApiService.Middlewares
 	{
 		private readonly RequestDelegate next;
 
-		public DbTransactionMiddleware(RequestDelegate next) => this.next = next;
+		public DbTransactionMiddleware(RequestDelegate next)
+		{
+			this.next = next;
+		}
 
 		public async Task InvokeAsync(HttpContext context, DataContext dataContext)
 		{

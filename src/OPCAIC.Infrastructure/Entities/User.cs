@@ -17,7 +17,7 @@ namespace OPCAIC.Infrastructure.Entities
 		public string Email { get; set; }
 
 		/// <summary>
-		///		Nickname chosen by user.
+		///     Nickname chosen by user.
 		/// </summary>
 		public string Username { get; set; }
 
@@ -41,7 +41,7 @@ namespace OPCAIC.Infrastructure.Entities
 		public string PasswordHash { get; set; }
 
 		/// <summary>
-		///		Key used to reset user's password.
+		///     Key used to reset user's password.
 		/// </summary>
 		public string PasswordKey { get; set; }
 

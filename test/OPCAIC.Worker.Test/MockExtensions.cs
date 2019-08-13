@@ -31,7 +31,9 @@ namespace OPCAIC.Worker.Test
 		public static ISetupSequentialResult<Task<T>> Returns<T>(
 			this ISetupSequentialResult<Task<T>> setup, GameModuleEntryPointResult result)
 			where T : GameModuleResult, new()
-			=> setup.ReturnsAsync(new T {EntryPointResult = result});
+		{
+			return setup.ReturnsAsync(new T {EntryPointResult = result});
+		}
 
 		public static ISetupSequentialResult<Task<CompilerResult>> SetupCompiler(
 			this Mock<IGameModule> mock)
@@ -66,10 +68,12 @@ namespace OPCAIC.Worker.Test
 		public static ISetupSequentialResult<Task<ExecutorResult>> SetupExecutor(
 			this Mock<IGameModule> mock, GameModuleEntryPointResult result,
 			MatchResult matchResult = null)
-			=> mock.SetupExecutor()
+		{
+			return mock.SetupExecutor()
 				.ReturnsAsync(new ExecutorResult
 				{
 					EntryPointResult = result, MatchResult = matchResult
 				});
+		}
 	}
 }

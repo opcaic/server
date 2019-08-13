@@ -1,6 +1,4 @@
-﻿using OPCAIC.Services;
-
-namespace OPCAIC.Services
+﻿namespace OPCAIC.Services
 {
 	/// <summary>
 	///     Configuration of the file storage.

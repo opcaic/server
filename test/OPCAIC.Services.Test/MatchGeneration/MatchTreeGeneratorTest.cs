@@ -38,7 +38,7 @@ namespace OPCAIC.Services.Test.MatchGeneration
 
 			// N-1 matches for winners bracket, N-2 matches for losers bracket + additional one for
 			// winners of both brackets (optional rematch is not included in the tree)
-			var expectedCount = (participants - 1) + (participants - 2) + 1;
+			var expectedCount = participants - 1 + (participants - 2) + 1;
 
 			Assert.Equal(expectedCount, tree.MatchNodesById.Count);
 		}

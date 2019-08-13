@@ -6,6 +6,14 @@ namespace OPCAIC.Utils.Test
 	public class EnumerableExtensionTest
 	{
 		[Fact]
+		public void ArgExtremeOrDefault()
+		{
+			Exception[] values = { };
+			Assert.Null(values.ArgMinOrDefault(e => e.Message));
+			Assert.Null(values.ArgMaxOrDefault(e => e.Message));
+		}
+
+		[Fact]
 		public void ArgMax()
 		{
 			int[] values = {1, 3, 5, -7};
@@ -17,14 +25,6 @@ namespace OPCAIC.Utils.Test
 		{
 			int[] values = {1, 3, 5, -7};
 			Assert.Equal(1, values.ArgMin(v => v * v));
-		}
-
-		[Fact]
-		public void ArgExtremeOrDefault()
-		{
-			Exception[] values = {};
-			Assert.Null(values.ArgMinOrDefault(e => e.Message));
-			Assert.Null(values.ArgMaxOrDefault(e => e.Message));
 		}
 
 		[Fact]

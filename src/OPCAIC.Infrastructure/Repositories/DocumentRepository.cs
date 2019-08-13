@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -20,13 +19,14 @@ namespace OPCAIC.Infrastructure.Repositories
 		}
 
 		/// <inheritdoc />
-		public async Task<long> CreateAsync(NewDocumentDto document, CancellationToken cancellationToken)
+		public async Task<long> CreateAsync(NewDocumentDto document,
+			CancellationToken cancellationToken)
 		{
-			var entity = new Document()
+			var entity = new Document
 			{
-                Name = document.Name,
-                Content = document.Content,
-                TournamentId = document.TournamentId
+				Name = document.Name,
+				Content = document.Content,
+				TournamentId = document.TournamentId
 			};
 
 			DbSet.Add(entity);
@@ -54,7 +54,8 @@ namespace OPCAIC.Infrastructure.Repositories
 		}
 
 		/// <inheritdoc />
-		public async Task<DocumentDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken)
+		public async Task<DocumentDetailDto> FindByIdAsync(long id,
+			CancellationToken cancellationToken)
 		{
 			return await DbSet
 				.Where(row => row.Id == id)
@@ -64,11 +65,13 @@ namespace OPCAIC.Infrastructure.Repositories
 
 		/// <inheritdoc />
 		public async Task<bool> UpdateAsync(long id, UpdateDocumentDto document,
-			CancellationToken cancellationToken) 
+			CancellationToken cancellationToken)
 		{
 			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
 			if (entity == null)
+			{
 				return false;
+			}
 
 			entity.Name = document.Name;
 			entity.Content = document.Content;

@@ -3,11 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 using OPCAIC.Worker.Config;
 
@@ -31,10 +29,14 @@ namespace OPCAIC.Worker.Services
 			webClient.BaseAddress = config.Value.ServerAddress;
 		}
 
-		public void Dispose() => webClient?.Dispose();
+		public void Dispose()
+		{
+			webClient?.Dispose();
+		}
 
 		/// <inheritdoc />
-		public async Task DownloadSubmission(long submissionId, string path, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task DownloadSubmission(long submissionId, string path,
+			CancellationToken cancellationToken = default)
 		{
 			Debug.Assert(submissionId > 0);
 			Require.ArgNotNull(path, nameof(path));
@@ -49,7 +51,7 @@ namespace OPCAIC.Worker.Services
 
 		/// <inheritdoc />
 		public Task UploadValidationResults(long validationId, string path,
-			CancellationToken cancellationToken = default(CancellationToken)) 
+			CancellationToken cancellationToken = default)
 		{
 			Require.ArgNotNull(path, nameof(path));
 			var outputDirectory = new DirectoryInfo(path);
@@ -71,7 +73,7 @@ namespace OPCAIC.Worker.Services
 
 		/// <inheritdoc />
 		public Task UploadMatchResults(long executionId, string path,
-			CancellationToken cancellationToken = default(CancellationToken))
+			CancellationToken cancellationToken = default)
 		{
 			throw new NotImplementedException();
 		}

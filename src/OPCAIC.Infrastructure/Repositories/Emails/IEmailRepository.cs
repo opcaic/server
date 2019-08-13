@@ -1,6 +1,6 @@
-﻿using OPCAIC.Infrastructure.Dtos.Emails;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Infrastructure.Dtos.Emails;
 
 namespace OPCAIC.Infrastructure.Repositories.Emails
 {

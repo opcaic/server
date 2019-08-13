@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OPCAIC.Infrastructure.Dtos.EmailTemplates
+﻿namespace OPCAIC.Infrastructure.Dtos.EmailTemplates
 {
 	public class UserVerificationEmailDto : EmailDtoBase
 	{

@@ -54,7 +54,7 @@ namespace OPCAIC.TestUtils
 			if (ex != null)
 			{
 				// rethrow any exception with original stack trace
-				ExceptionDispatchInfo.Throw(ex); 
+				ExceptionDispatchInfo.Throw(ex);
 			}
 
 			ex = null;

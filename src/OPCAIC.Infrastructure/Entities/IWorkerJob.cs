@@ -14,7 +14,7 @@ namespace OPCAIC.Infrastructure.Entities
 		Guid JobId { get; set; }
 
 		/// <summary>
-		///     The state this job is in. 
+		///     The state this job is in.
 		/// </summary>
 		WorkerJobState State { get; set; }
 
