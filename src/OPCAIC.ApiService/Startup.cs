@@ -17,6 +17,7 @@ using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Services;
 
+[assembly: ApiController]
 namespace OPCAIC.ApiService
 {
 	public class Startup
@@ -36,6 +37,7 @@ namespace OPCAIC.ApiService
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
 				.ConfigureApiBehaviorOptions(options =>
 				{
+					options.SuppressInferBindingSourcesForParameters = true;
 					options.InvalidModelStateResponseFactory = context =>
 					{
 						var apiErrorService = context.HttpContext.RequestServices
