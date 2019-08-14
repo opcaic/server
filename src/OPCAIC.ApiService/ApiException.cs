@@ -6,7 +6,9 @@ namespace OPCAIC.ApiService
 	{
 		public ApiException(int statusCode, string message)
 			: base(message)
-			=> StatusCode = statusCode;
+		{
+			StatusCode = statusCode;
+		}
 
 		public int StatusCode { get; }
 	}

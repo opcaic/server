@@ -8,9 +8,12 @@ namespace OPCAIC.ApiService.Validation
 	{
 		private readonly double fMinValue;
 
-		public bool IsStrict { get; set; } = false;
+		public MinValueAttribute(double minValue)
+		{
+			fMinValue = minValue;
+		}
 
-		public MinValueAttribute(double minValue) => fMinValue = minValue;
+		public bool IsStrict { get; set; } = false;
 
 		public override bool IsValid(object value)
 		{
@@ -36,6 +39,8 @@ namespace OPCAIC.ApiService.Validation
 		}
 
 		public override string FormatErrorMessage(string name)
-			=> $"The value of {name} is lower than {fMinValue}.";
+		{
+			return $"The value of {name} is lower than {fMinValue}.";
+		}
 	}
 }

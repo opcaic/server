@@ -1,5 +1,4 @@
 ﻿using OPCAIC.Messaging.Config;
-using OPCAIC.Worker;
 
 namespace OPCAIC.Broker.Runner
 {

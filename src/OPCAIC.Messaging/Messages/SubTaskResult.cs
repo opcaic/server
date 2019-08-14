@@ -35,6 +35,6 @@
 		/// <summary>
 		///     Execution of the sub-task failed  due to error in the platform.
 		/// </summary>
-		PlatformError,
+		PlatformError
 	}
 }

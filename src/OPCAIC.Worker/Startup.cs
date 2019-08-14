@@ -34,7 +34,8 @@ namespace OPCAIC.Worker
 				logging.AddGelf(options =>
 				{
 					// Optional customization applied on top of settings in Logging:GELF configuration section.
-					options.LogSource = options.LogSource ?? host.HostingEnvironment.ApplicationName ?? "OPCAIC.Worker";
+					options.LogSource = options.LogSource ??
+						host.HostingEnvironment.ApplicationName ?? "OPCAIC.Worker";
 					options.AdditionalFields[LoggingTags.MachineName] = Environment.MachineName;
 					options.AdditionalFields[LoggingTags.AppVersion] = Assembly
 						.GetEntryAssembly()

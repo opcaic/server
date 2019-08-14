@@ -22,7 +22,8 @@ namespace OPCAIC.GameModules.Interface
 		/// <param name="bot">Submission to check.</param>
 		/// <param name="outputDir">Path to the directory with result files.</param>
 		/// <param name="cancellationToken">Cancellation token used to cancel the request prematurely.</param>
-		Task<CheckerResult> Check(EntryPointConfiguration config, BotInfo bot, DirectoryInfo outputDir,
+		Task<CheckerResult> Check(EntryPointConfiguration config, BotInfo bot,
+			DirectoryInfo outputDir,
 			CancellationToken cancellationToken);
 
 		/// <summary>
@@ -32,7 +33,8 @@ namespace OPCAIC.GameModules.Interface
 		/// <param name="bot">Submission to compile.</param>
 		/// <param name="outputDir"> Path to the directory with result files.</param>
 		/// <param name="cancellationToken">Cancellation token used to cancel the request prematurely.</param>
-		Task<CompilerResult> Compile(EntryPointConfiguration config, BotInfo bot, DirectoryInfo outputDir,
+		Task<CompilerResult> Compile(EntryPointConfiguration config, BotInfo bot,
+			DirectoryInfo outputDir,
 			CancellationToken cancellationToken);
 
 		/// <summary>

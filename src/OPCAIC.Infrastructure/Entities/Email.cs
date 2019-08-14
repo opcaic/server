@@ -2,7 +2,7 @@
 
 namespace OPCAIC.Infrastructure.Entities
 {
-	public class Email: Entity
+	public class Email : Entity
 	{
 		public string RecipientEmail { get; set; }
 

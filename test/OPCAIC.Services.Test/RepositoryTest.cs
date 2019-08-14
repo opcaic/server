@@ -13,6 +13,24 @@ namespace OPCAIC.Services.Test
 {
 	public class RepositoryTest : ServiceTestBase
 	{
+		/// <inheritdoc />
+		public RepositoryTest(ITestOutputHelper output) : base(output)
+		{
+			var factory = new LoggerFactory();
+			factory.AddProvider(new XUnitLoggerProvider(output));
+
+			// random new name so tests can run in parallel
+			var dbName = Guid.NewGuid().ToString();
+
+			Services.AddDbContext<DataContext>(options =>
+			{
+				options.UseInMemoryDatabase(dbName);
+				options.EnableSensitiveDataLogging();
+				options.EnableDetailedErrors();
+				options.UseLoggerFactory(factory);
+			});
+		}
+
 		[Fact]
 		public void SoftDelete()
 		{
@@ -23,10 +41,7 @@ namespace OPCAIC.Services.Test
 			{
 				var tournament = new Tournament();
 				ctx.Tournaments.Add(tournament);
-				ctx.Matches.Add(new Match()
-				{
-					Tournament = tournament
-				});
+				ctx.Matches.Add(new Match {Tournament = tournament});
 				ctx.SaveChanges();
 			});
 
@@ -50,24 +65,6 @@ namespace OPCAIC.Services.Test
 				Assert.Equal(matchId, match.Id);
 				Assert.Equal(tournamentId, match.TournamentId);
 				Assert.True(match.IsDeleted);
-			});
-		}
-
-		/// <inheritdoc />
-		public RepositoryTest(ITestOutputHelper output) : base(output)
-		{
-			LoggerFactory factory = new LoggerFactory();
-			factory.AddProvider(new XUnitLoggerProvider(output));
-
-			// random new name so tests can run in parallel
-			string dbName = Guid.NewGuid().ToString();
-
-			Services.AddDbContext<DataContext>(options =>
-			{
-				options.UseInMemoryDatabase(dbName);
-				options.EnableSensitiveDataLogging();
-				options.EnableDetailedErrors();
-				options.UseLoggerFactory(factory);
 			});
 		}
 	}

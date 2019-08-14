@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
-using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 
@@ -18,7 +17,9 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly IDocumentService documentService;
 
 		public DocumentController(IDocumentService documentService)
-			=> this.documentService = documentService;
+		{
+			this.documentService = documentService;
+		}
 
 		/// <summary>
 		///     Get filtered list of documents.
@@ -34,7 +35,9 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public Task<ListModel<DocumentDetailModel>> GetDocumentsAsync(
 			[FromQuery] DocumentFilterModel filter, CancellationToken cancellationToken)
-			=> documentService.GetByFilterAsync(filter, cancellationToken);
+		{
+			return documentService.GetByFilterAsync(filter, cancellationToken);
+		}
 
 		/// <summary>
 		///     Creates new document and returns its id
@@ -78,7 +81,9 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public Task<DocumentDetailModel> GetTournamentByIdAsync(long id,
 			CancellationToken cancellationToken)
-			=> documentService.GetByIdAsync(id, cancellationToken);
+		{
+			return documentService.GetByIdAsync(id, cancellationToken);
+		}
 
 		/// <summary>
 		///     Updates document data by id.
@@ -99,6 +104,8 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public Task UpdateAsync(long id, [FromBody] UpdateDocumentModel model,
 			CancellationToken cancellationToken)
-			=> documentService.UpdateAsync(id, model, cancellationToken);
+		{
+			return documentService.UpdateAsync(id, model, cancellationToken);
+		}
 	}
 }

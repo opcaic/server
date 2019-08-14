@@ -146,37 +146,39 @@ namespace OPCAIC.ApiService.Utils
 
 		private static void AddEmailTemplates(DataContext context)
 		{
-			context.EmailTemplates.AddRange(new[]
-			{
+			context.EmailTemplates.AddRange(
 				new EmailTemplate
 				{
 					LanguageCode = "cs",
 					Name = "userVerificationEmail",
 					SubjectTemplate = "Ověření emailu",
-					BodyTemplate = "<html><body>Ověřte svůj email na této adrese: {{VerificationUrl}}.</body></html>"
+					BodyTemplate =
+						"<html><body>Ověřte svůj email na této adrese: {{VerificationUrl}}.</body></html>"
 				},
 				new EmailTemplate
 				{
 					LanguageCode = "en",
 					Name = "userVerificationEmail",
 					SubjectTemplate = "Email verification",
-					BodyTemplate = "<html><body>Verify your email by clicking on address: {{VerificationUrl}}.</body></html>"
+					BodyTemplate =
+						"<html><body>Verify your email by clicking on address: {{VerificationUrl}}.</body></html>"
 				},
 				new EmailTemplate
 				{
 					LanguageCode = "cs",
 					Name = "passwordResetEmail",
 					SubjectTemplate = "Zapomenuté heslo",
-					BodyTemplate = "<html><body>Přesuňte se na stránku změny hesla kliknutím na odkaz: {{ResetUrl}}.</body></html>"
+					BodyTemplate =
+						"<html><body>Přesuňte se na stránku změny hesla kliknutím na odkaz: {{ResetUrl}}.</body></html>"
 				},
 				new EmailTemplate
 				{
 					LanguageCode = "en",
 					Name = "passwordResetEmail",
 					SubjectTemplate = "Password reset",
-					BodyTemplate = "<html><body>Move to page, where you can change your password by clicking on: {{ResetUrl}}.</body></html>"
-				}
-			});
+					BodyTemplate =
+						"<html><body>Move to page, where you can change your password by clicking on: {{ResetUrl}}.</body></html>"
+				});
 		}
 	}
 }

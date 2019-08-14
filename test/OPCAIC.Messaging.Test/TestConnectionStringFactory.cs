@@ -9,11 +9,12 @@ namespace OPCAIC.Messaging.Test
 	{
 		// no seed! we want multiple processes to get different ports
 		private static int NextPort = new Random().Next(5000, 8000);
+
 		public static string GetConnectionString()
 		{
 			while (true)
 			{
-				int port = Interlocked.Increment(ref NextPort);
+				var port = Interlocked.Increment(ref NextPort);
 				try
 				{
 					var listener = new TcpListener(IPAddress.Loopback, port);
@@ -21,7 +22,7 @@ namespace OPCAIC.Messaging.Test
 					listener.Stop();
 					return $"tcp://localhost:{port}"; // this port is free
 				}
-				catch 
+				catch
 				{
 					// try again
 				}

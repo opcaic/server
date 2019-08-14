@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
 using Microsoft.Extensions.Options;
 using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Utils;
 
 namespace OPCAIC.Services
 {
 	public class StorageService : IStorageService
 	{
-		private DirectoryInfo directory;
-
 		private const string SubmissionsDir = "Submissions";
 		private const string ResultsDir = "Results";
+		private readonly DirectoryInfo directory;
 
 		public StorageService(IOptions<StorageConfiguration> config)
 		{
@@ -23,12 +19,6 @@ namespace OPCAIC.Services
 			directory.CreateSubdirectory(SubmissionsDir);
 			directory.CreateSubdirectory(ResultsDir);
 		}
-
-		// TODO: choose better folder hierarchy once we have complete domain model
-		private string SubmissionPath(SubmissionStorageDto sub)
-			=> Path.Combine(directory.FullName, SubmissionsDir, $"{sub.Id}.zip");
-		private string MatchResultPath(MatchExecutionStorageDto m)
-			=> Path.Combine(directory.FullName, ResultsDir, $"{m.Id}.zip");
 
 		/// <inheritdoc />
 		public Stream ReadSubmissionArchive(SubmissionStorageDto submission)
@@ -54,6 +44,17 @@ namespace OPCAIC.Services
 			return WriteFile(MatchResultPath(matchExecution));
 		}
 
+		// TODO: choose better folder hierarchy once we have complete domain model
+		private string SubmissionPath(SubmissionStorageDto sub)
+		{
+			return Path.Combine(directory.FullName, SubmissionsDir, $"{sub.Id}.zip");
+		}
+
+		private string MatchResultPath(MatchExecutionStorageDto m)
+		{
+			return Path.Combine(directory.FullName, ResultsDir, $"{m.Id}.zip");
+		}
+
 		private Stream ReadFile(string path)
 		{
 			Require.ArgNotNull(path, nameof(path));
@@ -67,7 +68,8 @@ namespace OPCAIC.Services
 		private Stream WriteFile(string path)
 		{
 			Require.ArgNotNull(path, nameof(path));
-			Require.That<InvalidOperationException>(!File.Exists(path), $"File {path} already exists");
+			Require.That<InvalidOperationException>(!File.Exists(path),
+				$"File {path} already exists");
 			Debug.Assert(Path.IsPathFullyQualified(path));
 
 			return File.Open(path, FileMode.CreateNew, FileAccess.Write);

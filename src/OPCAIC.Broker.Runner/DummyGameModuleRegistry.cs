@@ -11,7 +11,10 @@ namespace OPCAIC.Broker.Runner
 	{
 		private readonly Dictionary<string, IGameModule> modules;
 
-		public DummyGameModuleRegistry() => modules = new Dictionary<string, IGameModule>();
+		public DummyGameModuleRegistry()
+		{
+			modules = new Dictionary<string, IGameModule>();
+		}
 
 		/// <inheritdoc />
 		public IGameModule FindGameModule(string game)
@@ -21,15 +24,24 @@ namespace OPCAIC.Broker.Runner
 		}
 
 		/// <inheritdoc />
-		public IGameModule TryFindGameModule(string game) => modules[game];
+		public IGameModule TryFindGameModule(string game)
+		{
+			return modules[game];
+		}
 
 		/// <inheritdoc />
-		public IEnumerable<IGameModule> GetAllModules() => modules.Values;
+		public IEnumerable<IGameModule> GetAllModules()
+		{
+			return modules.Values;
+		}
 
 		/// <summary>
 		///     Adds a module to the list of existing game modules.
 		/// </summary>
 		/// <param name="module"></param>
-		public void AddModule(IGameModule module) => modules.Add(module.GameName, module);
+		public void AddModule(IGameModule module)
+		{
+			modules.Add(module.GameName, module);
+		}
 	}
 }

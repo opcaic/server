@@ -76,7 +76,7 @@ namespace OPCAIC.Infrastructure.Entities
 		///     When the tournament's evaluation started (or will start in case of deadline tournaments).
 		/// </summary>
 		public DateTime EvaluationStarted { get; set; }
-		
+
 		/// <summary>
 		///     When the evaluation finished.
 		/// </summary>

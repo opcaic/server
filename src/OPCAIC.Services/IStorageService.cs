@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Services
 {
@@ -26,7 +25,8 @@ namespace OPCAIC.Services
 		Stream WriteSubmissionArchive(SubmissionStorageDto submission);
 
 		/// <summary>
-		///     Opens stream for archive containing result files from given match execution. Returns null when no such archive exists.
+		///     Opens stream for archive containing result files from given match execution. Returns null when no such archive
+		///     exists.
 		/// </summary>
 		/// <param name="matchExecution"></param>
 		/// <returns></returns>

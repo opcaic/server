@@ -1,7 +1,7 @@
 ﻿namespace OPCAIC.Messaging
 {
 	/// <summary>
-	///   Wrapper around the sender identity and received message for the broker connector.
+	///     Wrapper around the sender identity and received message for the broker connector.
 	/// </summary>
 	public class ReceivedMessage
 	{
@@ -12,12 +12,12 @@
 		}
 
 		/// <summary>
-		///   Sender identity.
+		///     Sender identity.
 		/// </summary>
 		public string Sender { get; }
 
 		/// <summary>
-		///   Message payload.
+		///     Message payload.
 		/// </summary>
 		public object Payload { get; }
 	}

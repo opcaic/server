@@ -1,5 +1,4 @@
 using System.Threading;
-using OPCAIC.Messaging.Config;
 using OPCAIC.Messaging.Test.Messages;
 using OPCAIC.TestUtils;
 using Xunit;
@@ -9,7 +8,10 @@ namespace OPCAIC.Messaging.Test
 {
 	public class SimpleConnectorTest : BrokerWorkerConnectorTestBase
 	{
-		public SimpleConnectorTest(ITestOutputHelper output) : base(output) => CreateConnectors();
+		public SimpleConnectorTest(ITestOutputHelper output) : base(output)
+		{
+			CreateConnectors();
+		}
 
 		[Fact]
 		public void BrokerConnects()
@@ -43,10 +45,7 @@ namespace OPCAIC.Messaging.Test
 			});
 
 			StartAll();
-			Broker.SendMessage(Worker.Identity, new HelloMessage
-			{
-				Message = "message"
-			});
+			Broker.SendMessage(Worker.Identity, new HelloMessage {Message = "message"});
 
 			// TODO: if not signaled, then some thread may have crashed due to assert
 			AssertEx.WaitForEvent(workerReceive, Timeout);

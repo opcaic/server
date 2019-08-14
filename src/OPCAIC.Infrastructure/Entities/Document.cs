@@ -31,6 +31,8 @@ namespace OPCAIC.Infrastructure.Entities
 		public virtual Tournament Tournament { get; set; }
 
 		internal static void OnModelCreating(EntityTypeBuilder<Document> builder)
-			=> builder.HasIndex(d => d.Name).IsUnique();
+		{
+			builder.HasIndex(d => d.Name).IsUnique();
+		}
 	}
 }

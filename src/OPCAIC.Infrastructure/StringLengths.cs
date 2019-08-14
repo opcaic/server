@@ -1,6 +1,4 @@
-﻿using System.Data;
-
-namespace OPCAIC.Infrastructure
+﻿namespace OPCAIC.Infrastructure
 {
 	public static class StringLengths
 	{

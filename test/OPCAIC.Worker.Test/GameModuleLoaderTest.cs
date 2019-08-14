@@ -28,8 +28,10 @@ namespace OPCAIC.Worker.Test
 		private static readonly string moduleName = "GameModule";
 
 		private void SetupConfig(string json)
-			=> File.WriteAllText(Path.Combine(moduleDir.FullName, Constants.FileNames.ModuleConfig),
+		{
+			File.WriteAllText(Path.Combine(moduleDir.FullName, Constants.FileNames.ModuleConfig),
 				json);
+		}
 
 		[Theory]
 		[InlineData(Configs.MissingEntryPoint)]

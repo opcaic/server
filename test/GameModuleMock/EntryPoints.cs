@@ -15,6 +15,7 @@ It is multiline on purpose.";
 		public const string TestStdErrLog = @"This is a test stderr
 log, which is a bit shorter 
 than the stdout one.";
+
 		public static int WaitIndefinitely()
 		{
 			Console.WriteLine("Entering eternal loop.");
@@ -63,14 +64,17 @@ than the stdout one.";
 			return 0;
 		}
 
-		public static int SingleplayerExecute(int resultCount, string inDir, string binDir, string outDir)
+		public static int SingleplayerExecute(int resultCount, string inDir, string binDir,
+			string outDir)
 		{
 			Console.WriteLine($"Executing in single-player with {resultCount} players");
 			var contents = @"{ 
-	""results"": [" + string.Join(',',Enumerable.Repeat(@"
+	""results"": [" +
+				string.Join(',', Enumerable.Repeat(@"
 		{
 			""Score"" : 1
-		}", resultCount)) + @"
+		}", resultCount)) +
+				@"
 	]
 }";
 			Console.WriteLine(contents);

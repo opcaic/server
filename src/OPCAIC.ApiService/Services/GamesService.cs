@@ -13,8 +13,8 @@ namespace OPCAIC.ApiService.Services
 {
 	public class GamesService : IGamesService
 	{
-		private readonly IMapper mapper;
 		private readonly IGameRepository gameRepository;
+		private readonly IMapper mapper;
 
 		public GamesService(IGameRepository gameRepository, IMapper mapper)
 		{

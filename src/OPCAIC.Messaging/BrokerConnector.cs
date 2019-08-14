@@ -26,7 +26,9 @@ namespace OPCAIC.Messaging
 				new HandlerSet<ReceivedMessage>(msg => msg.Payload),
 				config.Value.HeartbeatConfig,
 				logger)
-			=> workers = new Dictionary<string, WorkerConnection>();
+		{
+			workers = new Dictionary<string, WorkerConnection>();
+		}
 
 		/// <inheritdoc cref="IBrokerConnector" />
 		public event EventHandler<WorkerConnectionEventArgs> WorkerDisconnected;
@@ -36,15 +38,20 @@ namespace OPCAIC.Messaging
 
 		/// <inheritdoc cref="IBrokerConnector" />
 		public void RegisterAsyncHandler<T>(Action<string, T> handler)
-			=> RegisterAsyncHandler(WrapAction(handler));
+		{
+			RegisterAsyncHandler(WrapAction(handler));
+		}
 
 		/// <inheritdoc cref="IBrokerConnector" />
 		public void RegisterHandler<T>(Action<string, T> handler)
-			=> RegisterHandler(WrapAction(handler));
+		{
+			RegisterHandler(WrapAction(handler));
+		}
 
 		/// <inheritdoc cref="IBrokerConnector" />
 		public void SendMessage(string recipient, object payload)
-			=> EnqueueSocketTask(() =>
+		{
+			EnqueueSocketTask(() =>
 			{
 				// treat each message as a heartbeat
 				if (workers.TryGetValue(Identity, out var entry))
@@ -55,14 +62,27 @@ namespace OPCAIC.Messaging
 
 				DirectSend(CreateMessage(recipient, payload));
 			});
+		}
 
 		/// <inheritdoc cref="IBrokerConnector" />
-		public void EnqueueTask(Task task) => EnqueueConsumerTask(task);
+		public void EnqueueTask(Task task)
+		{
+			EnqueueConsumerTask(task);
+		}
 
 		/// <inheritdoc cref="IBrokerConnector" />
 		public void RegisterAsyncHandler<T>(Func<string, T, Task> handler)
-			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
+		{
+			AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
 				msg => handler(msg.Sender, (T)msg.Payload), false));
+		}
+
+		/// <inheritdoc cref="IBrokerConnector" />
+		public void RegisterHandler<T>(Func<string, T, Task> handler)
+		{
+			AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
+				msg => handler(msg.Sender, (T)msg.Payload), true));
+		}
 
 		/// <summary>
 		///     Wraps the given action into a simple async action.
@@ -71,16 +91,13 @@ namespace OPCAIC.Messaging
 		/// <param name="handler"></param>
 		/// <returns></returns>
 		private static Func<string, T, Task> WrapAction<T>(Action<string, T> handler)
-			=> (i, p) =>
+		{
+			return (i, p) =>
 			{
 				handler(i, p);
 				return Task.CompletedTask;
 			};
-
-		/// <inheritdoc cref="IBrokerConnector" />
-		public void RegisterHandler<T>(Func<string, T, Task> handler)
-			=> AddHandler(new HandlerInfo<ReceivedMessage>(typeof(T),
-				msg => handler(msg.Sender, (T)msg.Payload), true));
+		}
 
 		/// <inheritdoc />
 		protected override void OnHeartbeatConfigChanged(HeartbeatConfig config)
@@ -169,7 +186,9 @@ namespace OPCAIC.Messaging
 		}
 
 		private void SendHeartbeat(WorkerConnection worker)
-			=> DirectSend(CreateMessage(worker.Identity, null));
+		{
+			DirectSend(CreateMessage(worker.Identity, null));
+		}
 
 		private void RemoveWorker(WorkerConnection worker)
 		{

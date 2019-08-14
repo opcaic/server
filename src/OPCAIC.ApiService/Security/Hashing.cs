@@ -8,12 +8,16 @@ namespace OPCAIC.ApiService.Security
 {
 	public static class Hashing
 	{
+		private const string AlphanumericChars =
+			"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+
 		private static readonly byte[] salt = new byte[128 / 8];
 		private static readonly Random rnd = new Random(4242);
 
-		private const string AlphanumericChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-
-		static Hashing() => rnd.NextBytes(salt);
+		static Hashing()
+		{
+			rnd.NextBytes(salt);
+		}
 
 		public static string HashPassword(string password)
 		{
@@ -34,7 +38,9 @@ namespace OPCAIC.ApiService.Security
 			{
 				rng.GetBytes(bytes);
 			}
-			var chars = bytes.Select(b => AlphanumericChars[b % AlphanumericChars.Length]).ToArray();
+
+			var chars = bytes.Select(b => AlphanumericChars[b % AlphanumericChars.Length])
+				.ToArray();
 			return new string(chars);
 		}
 	}

@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OPCAIC.Messaging;
@@ -9,13 +8,15 @@ namespace OPCAIC.Broker
 {
 	public static class ServiceCollectionExtensions
 	{
-		public static IServiceCollection AddBroker(this IServiceCollection services, Action<BrokerConnectorConfig> configuration)
+		public static IServiceCollection AddBroker(this IServiceCollection services,
+			Action<BrokerConnectorConfig> configuration)
 		{
 			return services
 				.AddSingleton<IBrokerConnector, BrokerConnector>()
 				.AddSingleton<IBroker, Broker>()
 				// initialize the broker as part of the hosted service infrastructure
-				.AddSingleton<IHostedService, Broker>(sp => (Broker) sp.GetRequiredService<IBroker>())
+				.AddSingleton<IHostedService, Broker>(
+					sp => (Broker)sp.GetRequiredService<IBroker>())
 				.Configure(configuration);
 		}
 	}

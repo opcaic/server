@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace OPCAIC.Messaging.Messages
 {
 	/// <summary>
-	///   Message with result of a match execution
+	///     Message with result of a match execution
 	/// </summary>
 	[Serializable]
 	public class MatchExecutionResult : ReplyMessageBase
@@ -13,7 +13,8 @@ namespace OPCAIC.Messaging.Messages
 
 		public SubTaskResult ExecutionResult { get; set; }
 
-		public Dictionary<string, object> AdditionalData { get; set; } = new Dictionary<string, object>();
+		public Dictionary<string, object> AdditionalData { get; set; } =
+			new Dictionary<string, object>();
 	}
 
 	public class BotResult
@@ -24,6 +25,7 @@ namespace OPCAIC.Messaging.Messages
 
 		public bool Crashed { get; set; }
 
-		public Dictionary<string, object> AdditionalData { get; set; } = new Dictionary<string, object>();
+		public Dictionary<string, object> AdditionalData { get; set; } =
+			new Dictionary<string, object>();
 	}
 }

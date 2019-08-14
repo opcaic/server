@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using OPCAIC.Worker.Services;
@@ -7,25 +6,17 @@ using OPCAIC.Worker.Services;
 namespace OPCAIC.Worker
 {
 	/// <summary>
-	///   Main class of the worker executable.
+	///     Main class of the worker executable.
 	/// </summary>
 	public class Application : IHostedService
 	{
-		private readonly Worker worker;
 		private readonly IDownloadService download;
+		private readonly Worker worker;
 
 		public Application(Worker worker, IDownloadService download)
 		{
 			this.worker = worker;
 			this.download = download;
-		}
-
-		/// <summary>
-		///   The application entry point.
-		/// </summary>
-		public void Run()
-		{
-			worker.Run();
 		}
 
 		/// <inheritdoc />
@@ -39,6 +30,14 @@ namespace OPCAIC.Worker
 		public async Task StopAsync(CancellationToken cancellationToken)
 		{
 			// do nothing
+		}
+
+		/// <summary>
+		///     The application entry point.
+		/// </summary>
+		public void Run()
+		{
+			worker.Run();
 		}
 	}
 }

@@ -3,7 +3,7 @@
 namespace OPCAIC.Services
 {
 	/// <summary>
-	///   Simple cached factory for match trees.
+	///     Simple cached factory for match trees.
 	/// </summary>
 	public class CachedMatchTreeFactory
 		: IMatchTreeFactory
@@ -11,16 +11,24 @@ namespace OPCAIC.Services
 		private readonly MemoryCache cache;
 
 		public CachedMatchTreeFactory(MemoryCache cache = null)
-			=> this.cache = cache ?? new MemoryCache(new MemoryCacheOptions());
+		{
+			this.cache = cache ?? new MemoryCache(new MemoryCacheOptions());
+		}
 
 		/// <inheritdoc />
-		public SingleEliminationTree GetSingleEliminationTree(int participants, bool singleThirdPlace)
-			=> cache.GetOrCreate((participants, singleThirdPlace),
-				entry => MatchTreeGenerator.GenerateSingleElimination(participants, singleThirdPlace));
+		public SingleEliminationTree GetSingleEliminationTree(int participants,
+			bool singleThirdPlace)
+		{
+			return cache.GetOrCreate((participants, singleThirdPlace),
+				entry => MatchTreeGenerator.GenerateSingleElimination(participants,
+					singleThirdPlace));
+		}
 
 		/// <inheritdoc />
 		public DoubleEliminationTree GetDoubleEliminationTree(int participants)
-			=> cache.GetOrCreate(participants,
+		{
+			return cache.GetOrCreate(participants,
 				entry => MatchTreeGenerator.GenerateDoubleElimination(participants));
+		}
 	}
 }

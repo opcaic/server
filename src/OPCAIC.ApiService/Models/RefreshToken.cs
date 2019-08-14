@@ -5,7 +5,7 @@ namespace OPCAIC.ApiService.Models
 	public class RefreshToken
 	{
 		/// <summary>
-		/// current refresh token of user
+		///     current refresh token of user
 		/// </summary>
 		[Required]
 		[MinLength(1)]

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using OPCAIC.GameModules.Interface;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker.GameModules;
 
@@ -14,7 +12,8 @@ namespace OPCAIC.Worker.Services
 	{
 		/// <inheritdoc />
 		public SubmissionValidator(ILogger<SubmissionValidator> logger, IExecutionServices services,
-			IDownloadService downloadService, IGameModuleRegistry registry) : base(logger, services, downloadService, registry)
+			IDownloadService downloadService, IGameModuleRegistry registry) : base(logger, services,
+			downloadService, registry)
 		{
 		}
 
@@ -42,11 +41,16 @@ namespace OPCAIC.Worker.Services
 
 		/// <inheritdoc />
 		protected override IDisposable CreateLoggingScope(SubmissionValidationRequest request)
-			=> Logger.SubmissionValidationScope(request);
+		{
+			return Logger.SubmissionValidationScope(request);
+		}
 
 		/// <inheritdoc />
-		protected override async Task DoUploadResults() 
-			=> await DownloadService.UploadValidationResults(Request.ValidationId, OutputDirectory.FullName, CancellationToken);
+		protected override async Task DoUploadResults()
+		{
+			await DownloadService.UploadValidationResults(Request.ValidationId,
+				OutputDirectory.FullName, CancellationToken);
+		}
 
 		/// <inheritdoc />
 		protected override async Task InternalExecute()
