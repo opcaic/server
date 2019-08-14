@@ -12,11 +12,11 @@ namespace OPCAIC.Worker.Test
 		private readonly Dictionary<Type, Action<object>> asyncHandlers =
 			new Dictionary<Type, Action<object>>();
 
-		private Action consumerActions;
-		private Action socketActions;
-
 		private readonly Dictionary<Type, Action<object>> syncHandlers =
 			new Dictionary<Type, Action<object>>();
+
+		private Action consumerActions;
+		private Action socketActions;
 
 		public WorkerConnectorHelper(Mock<IWorkerConnector> mock)
 		{

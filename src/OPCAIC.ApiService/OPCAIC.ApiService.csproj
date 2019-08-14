@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="ModelValidationHandling\ApiErrorService.cs~RF1f57a0d.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

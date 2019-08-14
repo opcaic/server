@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OPCAIC.ApiService
+namespace OPCAIC.ApiService.Exceptions
 {
 	public class ApiException : Exception
 	{

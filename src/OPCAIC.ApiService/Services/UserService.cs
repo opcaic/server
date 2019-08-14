@@ -9,6 +9,7 @@ using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
+using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
@@ -38,12 +39,14 @@ namespace OPCAIC.ApiService.Services
 		{
 			if (await userRepository.ExistsByEmailAsync(user.Email, cancellationToken))
 			{
-				throw new ConflictException("user-email-conflict");
+				throw new ConflictException(ValidationErrorCodes.UserEmailConflict, null,
+					nameof(user.Email));
 			}
 
 			if (await userRepository.ExistsByUsernameAsync(user.Username, cancellationToken))
 			{
-				throw new ConflictException("user-username-conflict");
+				throw new ConflictException(ValidationErrorCodes.UserUsernameConflict, null,
+					nameof(user.Username));
 			}
 
 			var dto = mapper.Map<NewUserDto>(user);
@@ -125,7 +128,7 @@ namespace OPCAIC.ApiService.Services
 
 			if (tokenService.ValidateToken(conf.Key, oldToken) == null)
 			{
-				throw new UnauthorizedExcepion("invalid-token");
+				throw new UnauthorizedException("invalid-token");
 			}
 
 			var identity = await userRepository.FindIdentityAsync(userId, cancellationToken);
@@ -148,7 +151,8 @@ namespace OPCAIC.ApiService.Services
 
 			if (!await userRepository.UpdatePasswordKeyAsync(email, key, cancellationToken))
 			{
-				throw new BadRequestException($"User with email {email} was not found.");
+				throw new BadRequestException(ValidationErrorCodes.UserWithEmailNotFound,
+					"User with given email was not found.", null);
 			}
 
 			var appBaseUrl = configuration.GetAppBaseUrl();
@@ -162,21 +166,24 @@ namespace OPCAIC.ApiService.Services
 			var passwordData = await userRepository.FindPasswordDataAsync(email, cancellationToken);
 			if (passwordData == null)
 			{
-				throw new BadRequestException($"User with email {email} was not found.");
+				throw new BadRequestException(ValidationErrorCodes.UserWithEmailNotFound,
+					"User with given email was not found.", null);
 			}
 
 			if (model.OldPassword != null)
 			{
 				if (Hashing.HashPassword(model.OldPassword) != passwordData.PasswordHash)
 				{
-					throw new ConflictException("old-password-conflict");
+					throw new ConflictException(ValidationErrorCodes.OldPasswordConflict, null,
+						nameof(model.OldPassword));
 				}
 			}
 			else
 			{
 				if (model.PasswordKey != passwordData.PasswordKey)
 				{
-					throw new ConflictException("password-key-conflict");
+					throw new ConflictException(ValidationErrorCodes.PasswordKeyConflict, null,
+						nameof(model.PasswordKey));
 				}
 			}
 
@@ -196,12 +203,14 @@ namespace OPCAIC.ApiService.Services
 			if (claims == null ||
 				!claims.Any(claim => claim.Type == "email" && claim.Value == email))
 			{
-				throw new BadRequestException("Invalid verification token.");
+				throw new BadRequestException(ValidationErrorCodes.InvalidEmailVerificationToken,
+					"Invalid verification token.", null);
 			}
 
 			if (!await userRepository.UpdateEmailVerifiedAsync(email, true, cancellationToken))
 			{
-				throw new ConflictException("User with given email was not found.");
+				throw new BadRequestException(ValidationErrorCodes.UserWithEmailNotFound,
+					"User with given email was not found.", null);
 			}
 		}
 	}

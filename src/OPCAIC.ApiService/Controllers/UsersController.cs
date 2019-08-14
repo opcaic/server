@@ -68,7 +68,7 @@ namespace OPCAIC.ApiService.Controllers
 				Hashing.HashPassword(credentials.Password), cancellationToken);
 			if (user == null)
 			{
-				throw new UnauthorizedExcepion("Invalid username or password.");
+				throw new UnauthorizedException("Invalid username or password.");
 			}
 
 			return user;

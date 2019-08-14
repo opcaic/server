@@ -54,9 +54,6 @@ namespace OPCAIC.Broker.Runner
 		private readonly IBroker broker;
 		private readonly AppConfig config;
 		private readonly ILogger logger;
-		private readonly IServiceProvider serviceProvider;
-		private readonly Thread thread;
-		private readonly List<Worker.Worker> workers;
 
 		private readonly ExternalGameModuleConfiguration moduleConfiguration =
 			new ExternalGameModuleConfiguration
@@ -73,6 +70,10 @@ namespace OPCAIC.Broker.Runner
 				Executor =
 					ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.ExitWithCode(0))
 			};
+
+		private readonly IServiceProvider serviceProvider;
+		private readonly Thread thread;
+		private readonly List<Worker.Worker> workers;
 
 		private bool stop;
 

@@ -1,27 +1,28 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 
 namespace OPCAIC.ApiService.Models.Users
 {
 	public class NewUserModel
 	{
-		[EmailAddress]
-		[Required]
-		[MinLength(1)]
+		[ApiEmailAddress]
+		[ApiRequired]
+		[ApiMinLength(1)]
 		public string Email { get; set; }
 
-		[Required]
-		[MinLength(1)]
+		[ApiRequired]
+		[ApiMinLength(1)]
 		public string Username { get; set; }
 
-		[MinLength(1)]
+		[ApiMinLength(1)]
 		public string Organization { get; set; }
 
-		[Required]
-		[StringLength(2, MinimumLength = 2)]
+		[ApiRequired]
+		[ApiMinLength(2)]
+		[ApiMaxLength(2)]
 		public string LocalizationLanguage { get; set; }
 
-		[Required]
-		[MinLength(6)]
+		[ApiRequired]
+		[ApiMinLength(6)]
 		public string Password { get; set; }
 	}
 }

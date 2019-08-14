@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
+using OPCAIC.ApiService.ModelValidationHandling;
 
 namespace OPCAIC.ApiService.Exceptions
 {
-	public class BadRequestException : ApiException
+	public class BadRequestException : ModelValidationException
 	{
-		public BadRequestException(string message)
-			: base(StatusCodes.Status400BadRequest, message)
+		public BadRequestException(string code, string message, string field)
+			: base(StatusCodes.Status409Conflict, new ValidationError(code, message, field))
 		{
 		}
 	}

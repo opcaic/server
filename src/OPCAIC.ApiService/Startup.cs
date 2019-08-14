@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Middlewares;
+using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
@@ -32,7 +33,17 @@ namespace OPCAIC.ApiService
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+				.ConfigureApiBehaviorOptions(options =>
+				{
+					options.InvalidModelStateResponseFactory = context =>
+					{
+						var apiErrorService = context.HttpContext.RequestServices
+							.GetRequiredService<IModelValidationService>();
+						var problems = new CustomBadRequest(context, apiErrorService);
+						return new BadRequestObjectResult(problems);
+					};
+				});
 
 			// Frontend app sources
 			services.AddSpaStaticFiles(config =>
@@ -63,6 +74,7 @@ namespace OPCAIC.ApiService
 				});
 
 			services.AddAuthorization(AuthorizationConfiguration.Setup);
+
 
 			services.AddCors(options =>
 			{

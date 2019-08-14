@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Services;
@@ -16,7 +17,8 @@ namespace OPCAIC.ApiService.IoC
 				.AddTransient<ITokenService, TokenService>()
 				.AddTransient<IGamesService, GamesService>()
 				.AddTransient<ITournamentsService, TournamentsService>()
-				.AddTransient<IDocumentService, DocumentService>();
+				.AddTransient<IDocumentService, DocumentService>()
+				.AddScoped<IModelValidationService, ModelValidationService>();
 		}
 	}
 }

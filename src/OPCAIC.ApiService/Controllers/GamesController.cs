@@ -12,6 +12,7 @@ using OPCAIC.ApiService.Services;
 namespace OPCAIC.ApiService.Controllers
 {
 	[Route("api/games")]
+	[ApiController]
 	public class GamesController : ControllerBase
 	{
 		private readonly IGamesService gamesService;
@@ -31,7 +32,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
-		public Task<ListModel<GamePreviewModel>> GetGamesAsync(GameFilterModel filter,
+		public Task<ListModel<GamePreviewModel>> GetGamesAsync([FromQuery] GameFilterModel filter,
 			CancellationToken cancellationToken)
 		{
 			return gamesService.GetByFilterAsync(filter, cancellationToken);
