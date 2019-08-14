@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
@@ -19,17 +20,19 @@ namespace OPCAIC.ApiService.Services
 {
 	public class UserService : IUserService
 	{
-		private readonly IConfiguration configuration;
+		private readonly SecurityConfiguration securityConfiguration;
+		private readonly AppConfiguration appConfiguration;
 		private readonly IMapper mapper;
 		private readonly ITokenService tokenService;
 		private readonly IUserRepository userRepository;
 		private readonly IUserTournamentRepository userTournamentRepository;
 
-		public UserService(IConfiguration configuration, IMapper mapper, ITokenService tokenService,
-			IUserRepository userRepository, IUserTournamentRepository userTournamentRepository)
+		public UserService(IMapper mapper, IOptions<SecurityConfiguration> securityOptions, IOptions<AppConfiguration> appOptions,
+			ITokenService tokenService, IUserRepository userRepository, IUserTournamentRepository userTournamentRepository)
 		{
-			this.configuration = configuration;
 			this.mapper = mapper;
+			this.appConfiguration = appOptions.Value;
+			this.securityConfiguration = securityOptions.Value;
 			this.tokenService = tokenService;
 			this.userRepository = userRepository;
 			this.userTournamentRepository = userTournamentRepository;
@@ -101,15 +104,11 @@ namespace OPCAIC.ApiService.Services
 				return null;
 			}
 
-			var conf = configuration.GetSecurityConfiguration();
-
 			var claim = new Claim(RolePolicy.PolicyName, ((UserRole)user.RoleId).ToString());
-			var accessToken = tokenService.CreateToken(conf.Key,
-				TimeSpan.FromMinutes(conf.AccessTokenExpirationMinutes), claim);
+			var accessToken = tokenService.CreateToken(securityConfiguration.Key, TimeSpan.FromMinutes(securityConfiguration.AccessTokenExpirationMinutes), claim);
 
 			var refreshTokenClaim = new Claim("user", user.Id.ToString());
-			var refreshToken = tokenService.CreateToken(conf.Key,
-				TimeSpan.FromDays(conf.RefreshTokenExpirationDays), refreshTokenClaim);
+			var refreshToken = tokenService.CreateToken(securityConfiguration.Key, TimeSpan.FromDays(securityConfiguration.RefreshTokenExpirationDays), refreshTokenClaim);
 
 			return new UserIdentityModel
 			{
@@ -124,22 +123,16 @@ namespace OPCAIC.ApiService.Services
 		public async Task<UserTokens> RefreshTokens(long userId, string oldToken,
 			CancellationToken cancellationToken)
 		{
-			var conf = configuration.GetSecurityConfiguration();
-
-			if (tokenService.ValidateToken(conf.Key, oldToken) == null)
-			{
+			if (tokenService.ValidateToken(securityConfiguration.Key, oldToken) == null)
 				throw new UnauthorizedException("invalid-token");
-			}
 
 			var identity = await userRepository.FindIdentityAsync(userId, cancellationToken);
 
 			var refreshTokenClaim = new Claim("user", userId.ToString());
-			var newToken = tokenService.CreateToken(conf.Key,
-				TimeSpan.FromDays(conf.RefreshTokenExpirationDays), refreshTokenClaim);
+			var newToken = tokenService.CreateToken(securityConfiguration.Key, TimeSpan.FromDays(securityConfiguration.RefreshTokenExpirationDays), refreshTokenClaim);
 
 			var claim = new Claim(RolePolicy.PolicyName, ((UserRole)identity.RoleId).ToString());
-			var accessToken = tokenService.CreateToken(conf.Key,
-				TimeSpan.FromSeconds(conf.AccessTokenExpirationMinutes), claim);
+			var accessToken = tokenService.CreateToken(securityConfiguration.Key, TimeSpan.FromSeconds(securityConfiguration.AccessTokenExpirationMinutes), claim);
 
 			return new UserTokens {RefreshToken = newToken, AccessToken = accessToken};
 		}
@@ -155,7 +148,7 @@ namespace OPCAIC.ApiService.Services
 					"User with given email was not found.", null);
 			}
 
-			var appBaseUrl = configuration.GetAppBaseUrl();
+			string appBaseUrl = appConfiguration.BaseUrl;
 
 			return $"{appBaseUrl}/passwordReset?email={email}&key={key}";
 		}
@@ -194,18 +187,11 @@ namespace OPCAIC.ApiService.Services
 				}, cancellationToken);
 		}
 
-		public async Task TryVerifyEmailAsync(string email, string token,
-			CancellationToken cancellationToken)
-		{
-			var conf = configuration.GetSecurityConfiguration();
-
-			var claims = tokenService.ValidateToken(conf.Key, token);
-			if (claims == null ||
-				!claims.Any(claim => claim.Type == "email" && claim.Value == email))
-			{
-				throw new BadRequestException(ValidationErrorCodes.InvalidEmailVerificationToken,
-					"Invalid verification token.", null);
-			}
+		public async Task TryVerifyEmailAsync(string email, string token, CancellationToken cancellationToken)
+		{ 
+			var claims = tokenService.ValidateToken(securityConfiguration.Key, token);
+			if (claims == null || !claims.Any(claim => claim.Type == "email" && claim.Value == email))
+				throw new BadRequestException(ValidationErrorCodes.InvalidEmailVerificationToken, null, nameof(token));
 
 			if (!await userRepository.UpdateEmailVerifiedAsync(email, true, cancellationToken))
 			{

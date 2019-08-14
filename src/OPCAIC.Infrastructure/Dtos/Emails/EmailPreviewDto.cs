@@ -4,6 +4,8 @@ namespace OPCAIC.Infrastructure.Dtos.Emails
 {
 	public class EmailPreviewDto
 	{
+		public long Id { get; set; }
+
 		public string RecipientEmail { get; set; }
 
 		public string TemplateName { get; set; }

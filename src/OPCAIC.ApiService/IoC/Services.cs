@@ -17,6 +17,8 @@ namespace OPCAIC.ApiService.IoC
 				.AddTransient<ITokenService, TokenService>()
 				.AddTransient<IGamesService, GamesService>()
 				.AddTransient<ITournamentsService, TournamentsService>()
+				.AddTransient<EmailSender>()
+				.AddHostedService<EmailCronService>()
 				.AddTransient<IDocumentService, DocumentService>()
 				.AddScoped<IModelValidationService, ModelValidationService>();
 		}

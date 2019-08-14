@@ -49,11 +49,19 @@ namespace OPCAIC.Infrastructure.Repositories.Emails
 		{
 			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
 
-			entity.LastException = dto.LastException.Message;
 			entity.SentAt = dto.SentAt;
 			entity.RemainingAttempts = dto.RemainingAttempts;
 
 			await Context.SaveChangesAsync(cancellationToken);
+		}
+
+		public Task<EmailPreviewDto[]> GetEmailsToSendAsync(CancellationToken cancellationToken)
+		{
+			return DbSet
+				.Where(row => row.RemainingAttempts > 0)
+				.OrderBy(row => row.Created)
+				.ProjectTo<EmailPreviewDto>(Mapper.ConfigurationProvider)
+				.ToArrayAsync(cancellationToken);
 		}
 	}
 }

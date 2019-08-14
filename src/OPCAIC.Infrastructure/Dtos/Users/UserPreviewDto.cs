@@ -1,4 +1,6 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.Users
+﻿using System;
+
+namespace OPCAIC.Infrastructure.Dtos.Users
 {
 	public class UserPreviewDto
 	{
@@ -11,5 +13,7 @@
 		public bool EmailVerified { get; set; }
 
 		public long UserRole { get; set; }
+
+		public DateTime Created { get; set; }
 	}
 }
