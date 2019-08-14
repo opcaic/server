@@ -17,7 +17,8 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Attributes
 		}
 
 		/// <inheritdoc />
-		public ApiRangeAttribute(Type type, string minimum, string maximum) : base(type, minimum, maximum)
+		public ApiRangeAttribute(Type type, string minimum, string maximum) : base(type, minimum,
+			maximum)
 		{
 		}
 
@@ -34,22 +35,24 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Attributes
 			var errorHandlingService = validationContext.GetService<IModelValidationService>();
 			var error = new ValidationError(originalValidationResult, Maximum, Minimum);
 
-			var validationResult = errorHandlingService.ProcessValidationError(originalValidationResult, error);
+			var validationResult =
+				errorHandlingService.ProcessValidationError(originalValidationResult, error);
 
 			return validationResult;
 		}
 
 		private class ValidationError : ValidationErrorBase
 		{
-			public object Minimum { get; }
-
-			public object Maximum { get; }
-
-			public ValidationError(ValidationResult originalValidationResult, object minimum, object maximum) : base(ValidationErrorCodes.RangeError, originalValidationResult)
+			public ValidationError(ValidationResult originalValidationResult, object minimum,
+				object maximum) : base(ValidationErrorCodes.RangeError, originalValidationResult)
 			{
 				Minimum = minimum;
 				Maximum = maximum;
 			}
+
+			public object Minimum { get; }
+
+			public object Maximum { get; }
 		}
 	}
 }

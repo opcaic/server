@@ -9,7 +9,8 @@ namespace OPCAIC.Infrastructure.Repositories
 	{
 		Task<long> CreateAsync(NewGameDto game, CancellationToken cancellationToken);
 
-		Task<ListDto<GamePreviewDto>> GetByFilterAsync(GameFilterDto filter, CancellationToken cancellationToken);
+		Task<ListDto<GamePreviewDto>> GetByFilterAsync(GameFilterDto filter,
+			CancellationToken cancellationToken);
 
 		Task<GameDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken);
 

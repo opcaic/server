@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +23,10 @@ namespace OPCAIC.ApiService
 	{
 		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-		public Startup(IConfiguration configuration) => Configuration = configuration;
+		public Startup(IConfiguration configuration)
+		{
+			Configuration = configuration;
+		}
 
 		public IConfiguration Configuration { get; }
 
@@ -73,7 +75,6 @@ namespace OPCAIC.ApiService
 
 			services.AddAuthorization(AuthorizationConfiguration.Setup);
 
-			
 
 			services.AddCors(options =>
 			{

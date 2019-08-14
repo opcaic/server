@@ -18,14 +18,16 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Attributes
 			var errorHandlingService = validationContext.GetService<IModelValidationService>();
 			var error = new ValidationError(originalValidationResult);
 
-			var validationResult = errorHandlingService.ProcessValidationError(originalValidationResult, error);
+			var validationResult =
+				errorHandlingService.ProcessValidationError(originalValidationResult, error);
 
 			return validationResult;
 		}
 
 		private class ValidationError : ValidationErrorBase
 		{
-			public ValidationError(ValidationResult originalValidationResult) : base(ValidationErrorCodes.RequiredError, originalValidationResult)
+			public ValidationError(ValidationResult originalValidationResult) : base(
+				ValidationErrorCodes.RequiredError, originalValidationResult)
 			{
 			}
 		}

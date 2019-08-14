@@ -9,9 +9,12 @@ namespace OPCAIC.Infrastructure.Repositories
 	public interface IMatchRepository : IRepository<Match>
 	{
 		IEnumerable<Match> AllMatchesFromTournament(long tournamentId);
-		Task<IEnumerable<Match>> AllMatchesFromTournamentAsync(long tournamentId, CancellationToken cancellationToken = default);
+
+		Task<IEnumerable<Match>> AllMatchesFromTournamentAsync(long tournamentId,
+			CancellationToken cancellationToken = default);
 
 		// TODO: standalone repository for match executions?
-		Task<MatchExecutionStorageDto> FindExecutionForStorageAsync(long id, CancellationToken cancellationToken = default);
+		Task<MatchExecutionStorageDto> FindExecutionForStorageAsync(long id,
+			CancellationToken cancellationToken = default);
 	}
 }

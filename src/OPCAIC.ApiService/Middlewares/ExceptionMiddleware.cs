@@ -12,7 +12,10 @@ namespace OPCAIC.ApiService.Middlewares
 	{
 		private readonly RequestDelegate next;
 
-		public ExceptionMiddleware(RequestDelegate next) => this.next = next;
+		public ExceptionMiddleware(RequestDelegate next)
+		{
+			this.next = next;
+		}
 
 		public async Task InvokeAsync(HttpContext context)
 		{
@@ -54,18 +57,16 @@ namespace OPCAIC.ApiService.Middlewares
 			}
 		}
 
-		private static async Task WriteResponseAsync(HttpContext context, ModelValidationException modelValidationException)
+		private static async Task WriteResponseAsync(HttpContext context,
+			ModelValidationException modelValidationException)
 		{
 			context.Response.StatusCode = modelValidationException.StatusCode;
 
 			var model = new
 			{
-                Errors = new List<ValidationErrorBase>()
-                {
-                    modelValidationException.ValidationError
-                },
-                Title = "Invalid arguments to the API", // TODO: do not duplicate code
-                Detail = "The inputs supplied to the API are invalid", // TODO: do not duplicate code
+				Errors = new List<ValidationErrorBase> {modelValidationException.ValidationError},
+				Title = "Invalid arguments to the API", // TODO: do not duplicate code
+				Detail = "The inputs supplied to the API are invalid" // TODO: do not duplicate code
 			};
 
 			var json = JsonConvert.SerializeObject(model);

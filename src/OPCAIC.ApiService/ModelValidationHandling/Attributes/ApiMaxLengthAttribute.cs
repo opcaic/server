@@ -22,19 +22,21 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Attributes
 			var errorHandlingService = validationContext.GetService<IModelValidationService>();
 			var error = new ValidationError(originalValidationResult, Length);
 
-			var validationResult = errorHandlingService.ProcessValidationError(originalValidationResult, error);
+			var validationResult =
+				errorHandlingService.ProcessValidationError(originalValidationResult, error);
 
 			return validationResult;
 		}
 
 		private class ValidationError : ValidationErrorBase
 		{
-			public int Length { get; }
-
-			public ValidationError(ValidationResult originalValidationResult, int length) : base(ValidationErrorCodes.MaxLengthError, originalValidationResult)
+			public ValidationError(ValidationResult originalValidationResult, int length) : base(
+				ValidationErrorCodes.MaxLengthError, originalValidationResult)
 			{
 				Length = length;
 			}
+
+			public int Length { get; }
 		}
 	}
 }

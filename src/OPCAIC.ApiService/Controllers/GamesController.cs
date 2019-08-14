@@ -17,10 +17,13 @@ namespace OPCAIC.ApiService.Controllers
 	{
 		private readonly IGamesService gamesService;
 
-		public GamesController(IGamesService gamesService) => this.gamesService = gamesService;
+		public GamesController(IGamesService gamesService)
+		{
+			this.gamesService = gamesService;
+		}
 
 		/// <summary>
-		///   Returns lists of games
+		///     Returns lists of games
 		/// </summary>
 		/// <returns>array of all games</returns>
 		[Authorize(RolePolicy.Organizer)]
@@ -31,10 +34,12 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public Task<ListModel<GamePreviewModel>> GetGamesAsync([FromQuery] GameFilterModel filter,
 			CancellationToken cancellationToken)
-			=> gamesService.GetByFilterAsync(filter, cancellationToken);
+		{
+			return gamesService.GetByFilterAsync(filter, cancellationToken);
+		}
 
 		/// <summary>
-		///  Creates new game and returns its id
+		///     Creates new game and returns its id
 		/// </summary>
 		/// <param name="model"></param>
 		/// <param name="cancellationToken"></param>
@@ -55,7 +60,7 @@ namespace OPCAIC.ApiService.Controllers
 		}
 
 		/// <summary>
-		///		Gets game by id.
+		///     Gets game by id.
 		/// </summary>
 		/// <param name="id"></param>
 		/// <param name="cancellationToken"></param>
@@ -71,10 +76,12 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public Task<GameDetailModel> GetGameByIdAsync(long id, CancellationToken cancellationToken)
-			=> gamesService.GetByIdAsync(id, cancellationToken);
+		{
+			return gamesService.GetByIdAsync(id, cancellationToken);
+		}
 
 		/// <summary>
-		///		Updates game data by id.
+		///     Updates game data by id.
 		/// </summary>
 		/// <param name="id"></param>
 		/// <param name="model"></param>
@@ -92,6 +99,8 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public Task UpdateAsync(long id, [FromBody] UpdateGameModel model,
 			CancellationToken cancellationToken)
-			=> gamesService.UpdateAsync(id, model, cancellationToken);
+		{
+			return gamesService.UpdateAsync(id, model, cancellationToken);
+		}
 	}
 }

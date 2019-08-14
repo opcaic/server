@@ -1,27 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Net;
+﻿using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using OPCAIC.ApiService.Security;
+using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
+using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 
 namespace OPCAIC.ApiService.Controllers
 {
 	[Route("api/tournaments")]
-	[ApiController]
 	public class TournamentsController : ControllerBase
 	{
 		private readonly ITournamentsService tournamentsService;
 
 		public TournamentsController(ITournamentsService tournamentsService)
-			=> this.tournamentsService = tournamentsService;
+		{
+			this.tournamentsService = tournamentsService;
+		}
 
 		/// <summary>
-		///   Returns lists of tournaments
+		///     Returns lists of tournaments
 		/// </summary>
 		/// <returns>array of all tournaments</returns>
 		[Authorize(RolePolicy.Organizer)]
@@ -31,11 +32,13 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public Task<ListModel<TournamentPreviewModel>> GetTournamentsAsync(
-			[FromQuery] TournamentFilterModel filter, CancellationToken cancellationToken)
-			=> tournamentsService.GetByFilterAsync(filter, cancellationToken);
+			TournamentFilterModel filter, CancellationToken cancellationToken)
+		{
+			return tournamentsService.GetByFilterAsync(filter, cancellationToken);
+		}
 
 		/// <summary>
-		///  Creates new tournament and returns its id
+		///     Creates new tournament and returns its id
 		/// </summary>
 		/// <param name="model"></param>
 		/// <param name="cancellationToken"></param>
@@ -56,7 +59,7 @@ namespace OPCAIC.ApiService.Controllers
 		}
 
 		/// <summary>
-		///		Gets tournament by id.
+		///     Gets tournament by id.
 		/// </summary>
 		/// <param name="id"></param>
 		/// <param name="cancellationToken"></param>
@@ -73,10 +76,12 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public Task<TournamentDetailModel> GetTournamentByIdAsync(long id,
 			CancellationToken cancellationToken)
-			=> tournamentsService.GetByIdAsync(id, cancellationToken);
+		{
+			return tournamentsService.GetByIdAsync(id, cancellationToken);
+		}
 
 		/// <summary>
-		///		Updates tournament data by id.
+		///     Updates tournament data by id.
 		/// </summary>
 		/// <param name="id"></param>
 		/// <param name="model"></param>
@@ -94,6 +99,8 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public Task UpdateAsync(long id, [FromBody] UpdateTournamentModel model,
 			CancellationToken cancellationToken)
-			=> tournamentsService.UpdateAsync(id, model, cancellationToken);
+		{
+			return tournamentsService.UpdateAsync(id, model, cancellationToken);
+		}
 	}
 }

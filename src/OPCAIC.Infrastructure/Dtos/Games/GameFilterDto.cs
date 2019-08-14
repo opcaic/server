@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace OPCAIC.Infrastructure.Dtos.Games
+﻿namespace OPCAIC.Infrastructure.Dtos.Games
 {
 	public class GameFilterDto : FilterDtoBase
 	{

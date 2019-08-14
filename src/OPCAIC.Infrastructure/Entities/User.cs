@@ -17,7 +17,7 @@ namespace OPCAIC.Infrastructure.Entities
 		public string Email { get; set; }
 
 		/// <summary>
-		///		Nickname chosen by user.
+		///     Nickname chosen by user.
 		/// </summary>
 		public string Username { get; set; }
 
@@ -39,6 +39,11 @@ namespace OPCAIC.Infrastructure.Entities
 		[Required]
 		[MaxLength(StringLengths.PasswordHash)]
 		public string PasswordHash { get; set; }
+
+		/// <summary>
+		///     Key used to reset user's password.
+		/// </summary>
+		public string PasswordKey { get; set; }
 
 		/// <summary>
 		///     Flag whether the <see cref="Email" /> has been verified.

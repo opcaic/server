@@ -30,7 +30,8 @@ namespace OPCAIC.Broker.Runner
 				logging.AddGelf(options =>
 				{
 					// Optional customization applied on top of settings in Logging:GELF configuration section.
-					options.LogSource = options.LogSource ?? host.HostingEnvironment.ApplicationName ?? "OPCAIC.Broker.Runner";
+					options.LogSource = options.LogSource ??
+						host.HostingEnvironment.ApplicationName ?? "OPCAIC.Broker.Runner";
 					options.AdditionalFields[LoggingTags.MachineName] = Environment.MachineName;
 					options.AdditionalFields[LoggingTags.AppVersion] = Assembly
 						.GetEntryAssembly()
@@ -38,6 +39,7 @@ namespace OPCAIC.Broker.Runner
 						.InformationalVersion;
 				});
 			}
+
 			// The ILoggingBuilder minimum level determines the the lowest possible level for
 			// logging. The log4net level then sets the level that we actually log at.
 			logging.SetMinimumLevel(LogLevel.Debug);

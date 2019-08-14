@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using OPCAIC.ApiService.ModelValidationHandling.Attributes;
+﻿using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 
 namespace OPCAIC.ApiService.Models.Games
 {

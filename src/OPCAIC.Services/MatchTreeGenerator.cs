@@ -20,7 +20,9 @@ namespace OPCAIC.Services
 			var matchId = 0;
 
 			MatchTreeNode NewNode(MatchTreeLink link0, MatchTreeLink link1)
-				=> new MatchTreeNode(link0, link1, matchId++);
+			{
+				return new MatchTreeNode(link0, link1, matchId++);
+			}
 
 			var nextWinnerLinks = new List<MatchTreeLink>(winnerLinks.Count / 2);
 			var matches = new List<MatchTreeNode>(winnerLinks.Count / 2);
@@ -99,7 +101,8 @@ namespace OPCAIC.Services
 
 					// Get seed such that two players that did meet in winners bracket do not immediately meet
 					// in losers bracket
-					var looserLink = looserLinks[GetLooserBracketSeed(levels.Count, looserLinks.Count, i)];
+					var looserLink =
+						looserLinks[GetLooserBracketSeed(levels.Count, looserLinks.Count, i)];
 					if (looserLink != null)
 					{
 						var match = NewNode(
@@ -140,7 +143,8 @@ namespace OPCAIC.Services
 			MatchTreeNode winnersFinal = null;
 			MatchTreeNode losersFinal = null;
 
-			if (winnerLinks.Count > 0) // avoid pathological case when there are too few participants
+			if (winnerLinks.Count > 0
+			) // avoid pathological case when there are too few participants
 			{
 				// winner of the loser brackets vs winner of the winner bracket
 				finale = NewNode(winnerLinks[0], looserLinks[0]);
@@ -189,7 +193,9 @@ namespace OPCAIC.Services
 			var matchId = 0;
 
 			MatchTreeNode NewNode(MatchTreeLink link0, MatchTreeLink link1)
-				=> new MatchTreeNode(link0, link1, matchId++);
+			{
+				return new MatchTreeNode(link0, link1, matchId++);
+			}
 
 			// generate levels of tournament tree
 			while (winnerLinks.Count > 1)
@@ -247,9 +253,9 @@ namespace OPCAIC.Services
 		}
 
 		/// <summary>
-		///   Generates seeds so that if the competitor with lower seeds always wins, then in all stages
-		///   the competitor with lowest sourceSeed competes against the competitor with highest sourceSeed. The
-		///   second lowest against second highest etc.
+		///     Generates seeds so that if the competitor with lower seeds always wins, then in all stages
+		///     the competitor with lowest sourceSeed competes against the competitor with highest sourceSeed. The
+		///     second lowest against second highest etc.
 		/// </summary>
 		/// <param name="logCount"></param>
 		/// <returns></returns>

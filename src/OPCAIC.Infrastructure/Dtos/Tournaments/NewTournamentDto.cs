@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using OPCAIC.Infrastructure.Enums;
+﻿using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Dtos.Tournaments
 {

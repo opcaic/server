@@ -14,8 +14,8 @@ namespace OPCAIC.ApiService.Services
 {
 	public class GamesService : IGamesService
 	{
-		private readonly IMapper mapper;
 		private readonly IGameRepository gameRepository;
+		private readonly IMapper mapper;
 
 		public GamesService(IGameRepository gameRepository, IMapper mapper)
 		{
@@ -28,7 +28,9 @@ namespace OPCAIC.ApiService.Services
 		{
 			if (await gameRepository.ExistsByName(game.Name, cancellationToken))
 			{
-				throw new ConflictException(new ValidationError(ValidationErrorCodes.GameNameConflict, null, nameof(game.Name)));
+				throw new ConflictException(
+					new ValidationError(ValidationErrorCodes.GameNameConflict, null,
+						nameof(game.Name)));
 			}
 
 			var dto = mapper.Map<NewGameDto>(game);
@@ -71,7 +73,9 @@ namespace OPCAIC.ApiService.Services
 		{
 			if (await gameRepository.ExistsByName(model.Name, cancellationToken))
 			{
-				throw new ConflictException(new ValidationError(ValidationErrorCodes.GameNameConflict, null, nameof(model.Name)));
+				throw new ConflictException(
+					new ValidationError(ValidationErrorCodes.GameNameConflict, null,
+						nameof(model.Name)));
 			}
 
 			var dto = mapper.Map<UpdateGameDto>(model);

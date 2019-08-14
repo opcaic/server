@@ -21,10 +21,7 @@ namespace OPCAIC.Infrastructure.Repositories
 		/// <inheritdoc />
 		public async Task<long> CreateAsync(NewGameDto game, CancellationToken cancellationToken)
 		{
-			var entity = new Game()
-			{
-				Name = game.Name,
-			};
+			var entity = new Game {Name = game.Name};
 
 			DbSet.Add(entity);
 
@@ -65,7 +62,9 @@ namespace OPCAIC.Infrastructure.Repositories
 		{
 			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
 			if (entity == null)
+			{
 				return false;
+			}
 
 			entity.Name = dto.Name;
 

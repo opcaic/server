@@ -17,13 +17,18 @@ namespace OPCAIC.TestUtils
 		public override Encoding Encoding { get; }
 
 		/// <inheritdoc />
-		public override void WriteLine() => output.WriteLine("");
+		public override void WriteLine()
+		{
+			output.WriteLine("");
+		}
 
 		/// <inheritdoc />
 		public override void WriteLine(string s)
 		{
 			if (s != null)
+			{
 				output.WriteLine(s);
+			}
 		}
 	}
 }

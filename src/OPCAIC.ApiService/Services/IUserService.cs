@@ -21,5 +21,12 @@ namespace OPCAIC.ApiService.Services
 
 		Task<UserTokens> RefreshTokens(long userId, string oldToken,
 			CancellationToken cancellationToken);
+
+		Task<string> CreateResetUrlAsync(string email, CancellationToken cancellationToken);
+
+		Task UpdatePasswordAsync(string email, NewPasswordModel model,
+			CancellationToken cancellationToken);
+
+		Task TryVerifyEmailAsync(string email, string token, CancellationToken cancellationToken);
 	}
 }

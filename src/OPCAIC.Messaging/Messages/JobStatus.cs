@@ -28,6 +28,6 @@
 		/// <summary>
 		///     Job completed with errors.
 		/// </summary>
-		Error,
+		Error
 	}
 }

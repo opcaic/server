@@ -8,7 +8,10 @@ namespace OPCAIC.Worker.GameModules
 	public class MalformedMatchResultException : GameModuleException
 	{
 		public MalformedMatchResultException(string message) : base(message) { }
-		public MalformedMatchResultException(string message, Exception inner) : base(message, inner) { }
+
+		public MalformedMatchResultException(string message, Exception inner) : base(message, inner)
+		{
+		}
 
 		protected MalformedMatchResultException(
 			SerializationInfo info,

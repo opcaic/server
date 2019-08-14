@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Enums;
 using Xunit;
 
 namespace OPCAIC.Services.Test.MatchGeneration
@@ -21,7 +20,9 @@ namespace OPCAIC.Services.Test.MatchGeneration
 			foreach (var match in matches)
 			{
 				Assert.Equal(2, match.Participations.Count);
-				Assert.Contains(string.Join("+", match.Participations.Select(p => p.Submission.Author.FirstName)),
+				Assert.Contains(
+					string.Join("+",
+						match.Participations.Select(p => p.Submission.Author.FirstName)),
 					new[] {"0+1", "0+2", "1+2"});
 			}
 		}

@@ -16,6 +16,9 @@ namespace OPCAIC.ApiService.Models.Users
 		[ApiMinLength(1)]
 		public string Organization { get; set; }
 
+		[ApiRequired]
+		[ApiMinLength(2)]
+		[ApiMaxLength(2)]
 		public string LocalizationLanguage { get; set; }
 
 		[ApiRequired]

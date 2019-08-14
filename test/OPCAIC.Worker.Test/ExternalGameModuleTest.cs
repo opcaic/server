@@ -6,7 +6,6 @@ using GameModuleMock;
 using OPCAIC.GameModules.Interface;
 using OPCAIC.TestUtils;
 using OPCAIC.Worker.GameModules;
-using OPCAIC.Worker.Services;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,6 +13,8 @@ namespace OPCAIC.Worker.Test
 {
 	public class ExternalGameModuleTest : ServiceTestBase
 	{
+		protected EntryPointConfiguration config;
+
 		/// <inheritdoc />
 		protected ExternalGameModuleTest(ITestOutputHelper output) : base(output)
 		{
@@ -22,16 +23,10 @@ namespace OPCAIC.Worker.Test
 			ExternalGameModule = new ExternalGameModule(logger, GameModuleConfiguration,
 				"GameModuleMock",
 				Directory.GetCurrentDirectory());
-			Bot = new BotInfo
-			{
-				SourceDirectory = NewDirectory(),
-				BinaryDirectory = NewDirectory()
-			};
+			Bot = new BotInfo {SourceDirectory = NewDirectory(), BinaryDirectory = NewDirectory()};
 			OutputDir = NewDirectory();
-			config = new EntryPointConfiguration { AdditionalFiles = NewDirectory() };
+			config = new EntryPointConfiguration {AdditionalFiles = NewDirectory()};
 		}
-
-		protected EntryPointConfiguration config;
 
 		protected ExternalGameModuleConfiguration GameModuleConfiguration { get; }
 
@@ -63,7 +58,8 @@ namespace OPCAIC.Worker.Test
 			[InlineData(255, GameModuleEntryPointResult.ModuleError)]
 			public async Task InvokeProcessSimple(int exitCode, GameModuleEntryPointResult expected)
 			{
-				var actual = await ExternalGameModule.RunProcessAsync(ExternalGameModuleHelper.CreateArgs(() => EntryPoints.ExitWithCode(exitCode)));
+				var actual = await ExternalGameModule.RunProcessAsync(
+					ExternalGameModuleHelper.CreateArgs(() => EntryPoints.ExitWithCode(exitCode)));
 
 				Assert.Equal(expected, actual);
 			}
@@ -72,7 +68,9 @@ namespace OPCAIC.Worker.Test
 			[Fact]
 			public async Task SimpleEntryPoint()
 			{
-				GameModuleConfiguration.Compiler = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.EchoArgs(null, null, null));
+				GameModuleConfiguration.Compiler =
+					ExternalGameModuleHelper.CreateEntryPoint(()
+						=> EntryPoints.EchoArgs(null, null, null));
 
 				var result = await ExternalGameModule.Compile(config, Bot, OutputDir,
 					CancellationToken.None);
@@ -93,7 +91,8 @@ namespace OPCAIC.Worker.Test
 			{
 				var cts = new CancellationTokenSource();
 				var task = Assert.ThrowsAsync<TaskCanceledException>(()
-					=> ExternalGameModule.RunProcessAsync(ExternalGameModuleHelper.CreateArgs(() => EntryPoints.WaitIndefinitely()),
+					=> ExternalGameModule.RunProcessAsync(
+						ExternalGameModuleHelper.CreateArgs(() => EntryPoints.WaitIndefinitely()),
 						cts.Token));
 
 				cts.Cancel();
@@ -114,7 +113,7 @@ namespace OPCAIC.Worker.Test
 			public async Task MismatchedPlayerCount(int actualCount)
 			{
 				GameModuleConfiguration.Executor = ExternalGameModuleHelper.CreateEntryPoint(()
-						=> EntryPoints.SingleplayerExecute(actualCount, null, null, null));
+					=> EntryPoints.SingleplayerExecute(actualCount, null, null, null));
 
 				await Assert.ThrowsAsync<MalformedMatchResultException>(()
 					=> ExternalGameModule.Execute(config, Enumerable.Repeat(Bot, 1),
@@ -126,7 +125,9 @@ namespace OPCAIC.Worker.Test
 			[Fact]
 			public async Task MissingResult()
 			{
-				GameModuleConfiguration.Executor = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.EchoArgs(null, null, null));
+				GameModuleConfiguration.Executor =
+					ExternalGameModuleHelper.CreateEntryPoint(()
+						=> EntryPoints.EchoArgs(null, null, null));
 
 				await Assert.ThrowsAsync<GameModuleException>(()
 					=> ExternalGameModule.Execute(config, Enumerable.Repeat(Bot, 1),
@@ -138,7 +139,8 @@ namespace OPCAIC.Worker.Test
 			[Fact]
 			public async Task SimpleExec()
 			{
-				GameModuleConfiguration.Executor = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.SingleplayerExecute(1, null, null, null));
+				GameModuleConfiguration.Executor = ExternalGameModuleHelper.CreateEntryPoint(()
+					=> EntryPoints.SingleplayerExecute(1, null, null, null));
 
 				await ExternalGameModule.Execute(config, Enumerable.Repeat(Bot, 1),
 					OutputDir, CancellationToken.None);

@@ -9,7 +9,8 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Attributes
 			ValidationContext validationContext)
 		{
 			var emailAddressAttribute = new EmailAddressAttribute();
-			var originalValidationResult = emailAddressAttribute.GetValidationResult(value, validationContext);
+			var originalValidationResult =
+				emailAddressAttribute.GetValidationResult(value, validationContext);
 
 			if (originalValidationResult == ValidationResult.Success)
 			{

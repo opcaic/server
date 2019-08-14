@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace OPCAIC.Messaging.Commands
 {
 	/// <summary>
-	///   Concrete generic implementation of handler set.
+	///     Concrete generic implementation of handler set.
 	/// </summary>
 	/// <typeparam name="TItem"></typeparam>
 	public class HandlerSet<TItem> : IHandlerSet<TItem>
@@ -26,6 +26,9 @@ namespace OPCAIC.Messaging.Commands
 		}
 
 		/// <inheritdoc />
-		public void AddHandler(HandlerInfo<TItem> info) => handlers.Add(info.Discriminator, info);
+		public void AddHandler(HandlerInfo<TItem> info)
+		{
+			handlers.Add(info.Discriminator, info);
+		}
 	}
 }

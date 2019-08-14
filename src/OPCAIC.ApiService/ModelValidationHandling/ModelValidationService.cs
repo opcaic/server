@@ -6,7 +6,8 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 {
 	public class ModelValidationService : IModelValidationService
 	{
-		private readonly Dictionary<Guid, ValidationErrorBase> errors = new Dictionary<Guid, ValidationErrorBase>();
+		private readonly Dictionary<Guid, ValidationErrorBase> errors =
+			new Dictionary<Guid, ValidationErrorBase>();
 
 		/// <inheritdoc />
 		public ValidationErrorBase GetValidationError(string id)
@@ -25,7 +26,8 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 		}
 
 		/// <inheritdoc />
-		public ValidationResult ProcessValidationError(ValidationResult originalValidationResult, ValidationErrorBase error)
+		public ValidationResult ProcessValidationError(ValidationResult originalValidationResult,
+			ValidationErrorBase error)
 		{
 			var guid = Guid.NewGuid();
 

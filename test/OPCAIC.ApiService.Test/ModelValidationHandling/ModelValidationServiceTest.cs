@@ -6,6 +6,14 @@ namespace OPCAIC.ApiService.Test.ModelValidationHandling
 {
 	public class ModelValidationServiceTest
 	{
+		private class TestValidationError : ValidationErrorBase
+		{
+			/// <inheritdoc />
+			public TestValidationError(string code, string message) : base(code, message)
+			{
+			}
+		}
+
 		[Fact]
 		public void ErrorsCanBeRetrieved()
 		{
@@ -30,14 +38,6 @@ namespace OPCAIC.ApiService.Test.ModelValidationHandling
 			Assert.NotNull(returnedError);
 			Assert.Equal(errorCode, returnedError.Code);
 			Assert.Equal(errorMessage, returnedError.Message);
-		}
-
-		private class TestValidationError : ValidationErrorBase
-		{
-			/// <inheritdoc />
-			public TestValidationError(string code, string message) : base(code, message)
-			{
-			}
 		}
 	}
 }

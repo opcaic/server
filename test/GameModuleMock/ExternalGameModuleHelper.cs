@@ -10,20 +10,25 @@ namespace GameModuleMock
 {
 	public static class ExternalGameModuleHelper
 	{
-		public static ExternalEntryPointConfiguration CreateEntryPoint(Expression<Func<int>> invocation)
-			=> new ExternalEntryPointConfiguration
+		public static ExternalEntryPointConfiguration CreateEntryPoint(
+			Expression<Func<int>> invocation)
+		{
+			return new ExternalEntryPointConfiguration
 			{ // this should be platform independent :)
 				Executable = "dotnet",
 				Arguments = new[] {$"{nameof(GameModuleMock)}.dll"}
 					.Concat(GetCmdLineArguments(invocation)).ToArray()
 			};
+		}
 
 		public static GameModuleProcessArgs CreateArgs(Expression<Func<int>> invocation)
-			=> new GameModuleProcessArgs
+		{
+			return new GameModuleProcessArgs
 			{
 				WorkingDirectory = Directory.GetCurrentDirectory(),
 				EntryPoint = CreateEntryPoint(invocation)
 			};
+		}
 
 		private static List<string> GetCmdLineArguments(Expression<Func<int>> invocation)
 		{
@@ -51,7 +56,12 @@ namespace GameModuleMock
 					// allow nulls as placeholders for real entry point arguments
 					if (value != null)
 					{
-						if (wasNull) throw new InvalidOperationException("Nulls (placeholders) cannot be followed by a non-null value.");
+						if (wasNull)
+						{
+							throw new InvalidOperationException(
+								"Nulls (placeholders) cannot be followed by a non-null value.");
+						}
+
 						arguments.Add(value.ToString());
 					}
 					else

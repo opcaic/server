@@ -1,7 +1,7 @@
 ﻿namespace OPCAIC.ApiService.ModelValidationHandling
 {
 	/// <summary>
-	/// Basic validation error that uses only the minimum required information.
+	///     Basic validation error that uses only the minimum required information.
 	/// </summary>
 	public class ValidationError : ValidationErrorBase
 	{

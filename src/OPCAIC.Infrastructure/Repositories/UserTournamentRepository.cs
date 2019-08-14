@@ -2,18 +2,21 @@
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
-	public class UserTournamentRepository: Repository<UserTournament>, IUserTournamentRepository
+	public class UserTournamentRepository : Repository<UserTournament>, IUserTournamentRepository
 	{
-		public UserTournamentRepository(DataContext context, IMapper mapper) 
-			: base(context, mapper) { }
+		public UserTournamentRepository(DataContext context, IMapper mapper)
+			: base(context, mapper)
+		{
+		}
 
-		public Task<long[]> FindTournamentsByUserAsync(long userId, CancellationToken cancellationToken)
+		public Task<long[]> FindTournamentsByUserAsync(long userId,
+			CancellationToken cancellationToken)
 		{
 			return DbSet
 				.Where(row => row.UserId == userId)
@@ -23,11 +26,7 @@ namespace OPCAIC.Infrastructure.Repositories
 
 		public Task CreateAsync(long userId, long tournamentId, CancellationToken cancellationToken)
 		{
-			var entity = new UserTournament
-			{
-				UserId = userId,
-				TournamentId = tournamentId
-			};
+			var entity = new UserTournament {UserId = userId, TournamentId = tournamentId};
 
 			DbSet.Add(entity);
 			return Context.SaveChangesAsync(cancellationToken);

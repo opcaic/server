@@ -2,6 +2,12 @@
 {
 	public static class ValidationErrorCodes
 	{
+		#region Emails
+
+		public static string InvalidEmailVerificationToken => "invalid-email-verification-token";
+
+		#endregion
+
 		#region General errors
 
 		public static string GenericError => "generic-error";
@@ -27,6 +33,12 @@
 		public static string UserEmailConflict => "user-email-conflict";
 
 		public static string UserUsernameConflict => "user-username-conflict";
+
+		public static string OldPasswordConflict => "old-password-conflict";
+
+		public static string PasswordKeyConflict => "password-key-conflict";
+
+		public static string UserWithEmailNotFound => "user-with-email-not-found";
 
 		#endregion
 	}

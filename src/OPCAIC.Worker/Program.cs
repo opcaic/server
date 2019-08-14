@@ -1,17 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using OPCAIC.Worker.GameModules;
-using System;
-using System.IO;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using OPCAIC.Utils;
-using OPCAIC.Worker.Config;
-using OPCAIC.Worker.Services;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("OPCAIC.Worker.Test")]
+[assembly: InternalsVisibleTo("OPCAIC.Worker.Test")]
 
 namespace OPCAIC.Worker
 {
@@ -23,18 +14,21 @@ namespace OPCAIC.Worker
 			host.Run();
 		}
 
-		public static IHostBuilder CreateHostBuilder(string[] args) => new HostBuilder().ConfigureAppConfiguration((host, config) =>
-			{
-				var env = host.HostingEnvironment;
+		public static IHostBuilder CreateHostBuilder(string[] args)
+		{
+			return new HostBuilder().ConfigureAppConfiguration((host, config) =>
+				{
+					var env = host.HostingEnvironment;
 
-				config
-					.AddJsonFile("appsettings.json", true, true)
-					.AddJsonFile($"appsettings.{env}.json", true, true)
-					.AddEnvironmentVariables()
-					.AddCommandLine(args);
-			})
-			.ConfigureLogging(Startup.ConfigureLogging)
-			.ConfigureServices(Startup.ConfigureServices)
-			.UseConsoleLifetime();
+					config
+						.AddJsonFile("appsettings.json", true, true)
+						.AddJsonFile($"appsettings.{env}.json", true, true)
+						.AddEnvironmentVariables()
+						.AddCommandLine(args);
+				})
+				.ConfigureLogging(Startup.ConfigureLogging)
+				.ConfigureServices(Startup.ConfigureServices)
+				.UseConsoleLifetime();
+		}
 	}
 }

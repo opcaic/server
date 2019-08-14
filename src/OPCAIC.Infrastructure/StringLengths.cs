@@ -4,6 +4,7 @@
 	{
 		public const int GameName = 30;
 		public const int TournamentName = 30;
+		public const int DocumentName = 30;
 		public const int UserEmail = 50;
 		public const int UserFirstName = 50;
 		public const int UserLastName = 50;

@@ -96,7 +96,10 @@ namespace OPCAIC.TestUtils
 		///     Creates a new directory, which will be automatically deleted on test teardown.
 		/// </summary>
 		/// <returns></returns>
-		protected DirectoryInfo NewDirectory() => directoryManager.GetNewDirectory();
+		protected DirectoryInfo NewDirectory()
+		{
+			return directoryManager.GetNewDirectory();
+		}
 
 		protected virtual void Dispose(bool disposing)
 		{

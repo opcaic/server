@@ -14,9 +14,9 @@ namespace OPCAIC.Worker.Test
 {
 	public abstract class JobExecutorTest : ServiceTestBase
 	{
-		protected readonly Mock<IGameModule> GameModuleMock;
 		protected readonly Mock<IDownloadService> DownloadServiceMock;
 		protected readonly Mock<IExecutionServices> ExecutionServicesMock;
+		protected readonly Mock<IGameModule> GameModuleMock;
 
 		/// <inheritdoc />
 		protected JobExecutorTest(ITestOutputHelper output) : base(output)
@@ -44,7 +44,8 @@ namespace OPCAIC.Worker.Test
 
 			DownloadServiceMock = Services.Mock<IDownloadService>();
 			DownloadServiceMock
-				.Setup(s => s.DownloadSubmission(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+				.Setup(s => s.DownloadSubmission(It.IsAny<long>(), It.IsAny<string>(),
+					It.IsAny<CancellationToken>()))
 				.Callback(MockExtensions.WriteRandomContentToTargetFolder);
 		}
 

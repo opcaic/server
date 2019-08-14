@@ -8,13 +8,8 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 	{
 		private readonly IModelValidationService modelValidationService;
 
-		public List<ValidationErrorBase> Errors { get; set; } = new List<ValidationErrorBase>();
-
-		public string Title { get; }
-
-		public string Detail { get; }
-
-		public CustomBadRequest(ActionContext context, IModelValidationService modelValidationService)
+		public CustomBadRequest(ActionContext context,
+			IModelValidationService modelValidationService)
 		{
 			this.modelValidationService = modelValidationService;
 			Title = "Invalid arguments to the API";
@@ -22,11 +17,19 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 			ConstructErrorMessages(context);
 		}
 
+		public List<ValidationErrorBase> Errors { get; set; } = new List<ValidationErrorBase>();
+
+		public string Title { get; }
+
+		public string Detail { get; }
+
 		private void ConstructErrorMessages(ActionContext context)
 		{
 			foreach (var (key, value) in context.ModelState)
 			{
-				var field = key.IsNullOrEmpty() ? key : char.ToLowerInvariant(key[0]) + key.Substring(1);
+				var field = key.IsNullOrEmpty()
+					? key
+					: char.ToLowerInvariant(key[0]) + key.Substring(1);
 				var errors = value.Errors;
 
 				if (errors != null && errors.Count > 0)
@@ -43,7 +46,8 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 						}
 						else
 						{
-							Errors.Add(new ValidationError(ValidationErrorCodes.GenericError, message, field));
+							Errors.Add(new ValidationError(ValidationErrorCodes.GenericError,
+								message, field));
 						}
 					}
 				}

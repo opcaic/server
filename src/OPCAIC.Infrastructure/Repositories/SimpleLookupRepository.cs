@@ -10,16 +10,22 @@ namespace OPCAIC.Infrastructure.Repositories
 		: Repository<TEntity>, ISimpleLookupRepository<TEntity> where TEntity : Entity
 	{
 		/// <inheritdoc />
-		protected SimpleLookupRepository(DataContext context, IMapper mapper) 
-      : base(context, mapper)
+		protected SimpleLookupRepository(DataContext context, IMapper mapper)
+			: base(context, mapper)
 		{
 		}
 
 		/// <inheritdoc />
-		public TEntity Find(long id) => DbSet.Find(id);
+		public TEntity Find(long id)
+		{
+			return DbSet.Find(id);
+		}
 
 		/// <inheritdoc />
-		public Task<TEntity> FindAsync(long id, CancellationToken cancellationToken) => DbSet.FindAsync(id);
+		public Task<TEntity> FindAsync(long id, CancellationToken cancellationToken)
+		{
+			return DbSet.FindAsync(id);
+		}
 
 		/// <inheritdoc />
 		public void Delete(long id)

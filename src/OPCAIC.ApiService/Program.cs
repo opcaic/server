@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using Gelf.Extensions.Logging;
 using Microsoft.AspNetCore;
@@ -33,7 +32,8 @@ namespace OPCAIC.ApiService
 		}
 
 		public static IWebHostBuilder CreateWebHostBuilder(string[] args)
-			=> WebHost.CreateDefaultBuilder(args)
+		{
+			return WebHost.CreateDefaultBuilder(args)
 				.UseStartup<Startup>()
 				.ConfigureLogging((context, builder) =>
 				{
@@ -58,5 +58,6 @@ namespace OPCAIC.ApiService
 						});
 					}
 				});
+		}
 	}
 }

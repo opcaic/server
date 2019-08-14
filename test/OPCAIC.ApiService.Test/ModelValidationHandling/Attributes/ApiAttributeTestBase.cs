@@ -14,7 +14,9 @@ namespace OPCAIC.ApiService.Test.ModelValidationHandling.Attributes
 
 		/// <inheritdoc />
 		public ApiAttributeTestBase(ITestOutputHelper output) : base(output)
-			=> modelValidationService = Services.Mock<IModelValidationService>();
+		{
+			modelValidationService = Services.Mock<IModelValidationService>();
+		}
 
 		protected void AssertSameResult<TValue>(TValue value, ValidationAttribute apiAttribute,
 			ValidationAttribute originalAttribute)
