@@ -8,8 +8,6 @@ namespace OPCAIC.Infrastructure.Entities
 
 		public string TemplateName { get; set; }
 
-		public string LastException { get; set; }
-
 		public int RemainingAttempts { get; set; }
 
 		public DateTime? SentAt { get; set; }

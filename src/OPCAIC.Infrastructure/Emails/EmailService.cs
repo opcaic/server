@@ -31,8 +31,7 @@ namespace OPCAIC.Infrastructure.Emails
 
 			var emailDto = new UserVerificationEmailDto {VerificationUrl = verificationUrl};
 
-			await EnqueueEmailAsync(emailDto, user.Email, user.LocalizationLanguage,
-				cancellationToken);
+			await EnqueueEmailAsync(emailDto, user.Email, user.LocalizationLanguage, cancellationToken);		  
 		}
 
 		public async Task SendPasswordResetEmailAsync(string recipientEmail, string resetUrl,

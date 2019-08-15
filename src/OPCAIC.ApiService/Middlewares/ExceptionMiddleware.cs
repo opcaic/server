@@ -12,16 +12,17 @@ namespace OPCAIC.ApiService.Middlewares
 {
 	public sealed class ExceptionMiddleware
 	{
-		private readonly RequestDelegate next;
-
-		private static readonly JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
-		{
-			ContractResolver = new DefaultContractResolver
+		private static readonly JsonSerializerSettings jsonSerializerSettings =
+			new JsonSerializerSettings
 			{
-				NamingStrategy = new CamelCaseNamingStrategy()
-			},
-			Formatting = Formatting.Indented
-		};
+				ContractResolver = new DefaultContractResolver
+				{
+					NamingStrategy = new CamelCaseNamingStrategy()
+				},
+				Formatting = Formatting.Indented
+			};
+
+		private readonly RequestDelegate next;
 
 		public ExceptionMiddleware(RequestDelegate next)
 		{

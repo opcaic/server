@@ -15,9 +15,11 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Services;
 
 [assembly: ApiController]
+
 namespace OPCAIC.ApiService
 {
 	public class Startup
@@ -99,6 +101,10 @@ namespace OPCAIC.ApiService
 			services.AddRepositories();
 			services.AddMapper();
 			services.AddSwaggerGen(SwaggerConfig.SetupSwaggerGen);
+
+			services.AddOptions<EmailsConfiguration>().Bind(Configuration.GetSection("emails"));
+			services.AddOptions<SecurityConfiguration>().Bind(Configuration.GetSection("security"));
+			services.AddOptions<AppConfiguration>().Bind(Configuration.GetSection("app"));
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
