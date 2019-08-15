@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
+using OPCAIC.ApiService.Utils;
 
 namespace OPCAIC.ApiService.ModelValidationHandling
 {
@@ -27,9 +27,7 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 		{
 			foreach (var (key, value) in context.ModelState)
 			{
-				var field = key.IsNullOrEmpty()
-					? key
-					: char.ToLowerInvariant(key[0]) + key.Substring(1);
+				var field = key.FirstLetterToLower();
 				var errors = value.Errors;
 
 				if (errors != null && errors.Count > 0)
