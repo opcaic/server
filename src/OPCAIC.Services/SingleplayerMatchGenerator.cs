@@ -27,7 +27,7 @@ namespace OPCAIC.Services
 				},
 				Participators = new[]
 				{
-					s.Author
+					new UserParticipation{User = s.Author, UserId = s.AuthorId}
 				}
 			}).ToList();
 

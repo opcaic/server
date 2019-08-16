@@ -103,8 +103,14 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<MatchDetailDto, MatchDetailModel>();
 			exp.CreateMap<MatchFilterModel, MatchFilterDto>();
 
+			exp.CreateMap<UserParticipation, UserParticipationDto>();
+			exp.CreateMap<UserParticipationDto, UserParticipationModel>();
+
 			exp.CreateMap<User, UserReferenceDto>();
 			exp.CreateMap<UserReferenceDto, UserReferenceModel>();
+
+			exp.CreateMap<Match, MatchReferenceDto>();
+			exp.CreateMap<MatchReferenceDto, MatchReferenceModel>();
 
 			exp.CreateMap<SubmissionMatchResult, SubmissionMatchResultReferenceDto>();
 			exp.CreateMap<SubmissionMatchResultReferenceDto, SubmissionMatchResultReferenceModel>();

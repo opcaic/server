@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 
 namespace OPCAIC.ApiService.Models.Matches
 {
-	public class UserReferenceModel
+	public class MatchReferenceModel
 	{
-		public string Username { get; set; }
 		public long Id { get; set; }
 	}
 }

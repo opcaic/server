@@ -8,7 +8,7 @@ namespace OPCAIC.ApiService.Models.Matches
 		public long Id { get; set; }
 		public long Index { get; set; }
 		public TournamentReferenceModel Tournament { get; set; }
-		public IList<UserReferenceModel> Participators { get; set; }
+		public IList<UserParticipationModel> Participators { get; set; }
 		public IList<SubmissionMatchResultReferenceModel> Results { get; set; }
 	}
 }

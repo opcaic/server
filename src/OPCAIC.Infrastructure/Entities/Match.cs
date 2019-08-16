@@ -40,7 +40,7 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Authors of the participating submissions.
 		/// </summary>
-		public virtual IList<User> Participators { get; set; }
+        public virtual IList<UserParticipation> Participators { get; set; }
 
 		/// <summary>
 		///     List of execution attempts for this match.
@@ -55,10 +55,8 @@ namespace OPCAIC.Infrastructure.Entities
 			=> Executions?.AsQueryable().OrderBy(e => e.Created).FirstOrDefault();
 
 		/// <summary>
-		///     Results of this match.
+		///     Results of this match. Should be set externally with a successful execution.
 		/// </summary>
-		[NotMapped]
-		public IList<SubmissionMatchResult> Results
-			=> LastExecution?.BotResults;
+		public virtual IList<SubmissionMatchResult> Results { get; set; }
 	}
 }

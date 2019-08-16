@@ -4,10 +4,8 @@ using System.Text;
 
 namespace OPCAIC.Infrastructure.Dtos.Matches
 {
-	public class UserReferenceDto
+	public class MatchReferenceDto
 	{
-		public long Id { get; set; }
-
-		public string Username { get; set; }
+        public long Id { get; set; }
 	}
 }
