@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using OPCAIC.Infrastructure.Dtos;
 
 namespace OPCAIC.ApiService.Models.Matches
 {

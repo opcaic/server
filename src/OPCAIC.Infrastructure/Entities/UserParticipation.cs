@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace OPCAIC.Infrastructure.Entities
+﻿namespace OPCAIC.Infrastructure.Entities
 {
 	public class UserParticipation : EntityBase
 	{

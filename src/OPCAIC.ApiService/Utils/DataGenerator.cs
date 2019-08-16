@@ -152,18 +152,21 @@ namespace OPCAIC.ApiService.Utils
 							.Single(x => x.Name == "Chess ELO tournament"),
 						Index = 1,
 						Participators = new List<UserParticipation>
-						{ 
-							
-								new UserParticipation
-								{
-									User = context.Set<User>().Single(x => x.Username == "admin"),
-									UserId = context.Set<User>().Single(x => x.Username == "admin").Id
-								},
-								new UserParticipation
-								{
-									User = context.Set<User>().Single(x => x.Username == "organizer"),
-									UserId = context.Set<User>().Single(x => x.Username == "organizer").Id
-								}
+						{
+							new UserParticipation
+							{
+								User = context.Set<User>()
+									.Single(x => x.Username == "admin"),
+								UserId = context.Set<User>()
+									.Single(x => x.Username == "admin").Id
+							},
+							new UserParticipation
+							{
+								User = context.Set<User>()
+									.Single(x => x.Username == "organizer"),
+								UserId = context.Set<User>()
+									.Single(x => x.Username == "organizer").Id
+							}
 						},
 						Results = new List<SubmissionMatchResult>
 						{
@@ -186,13 +189,17 @@ namespace OPCAIC.ApiService.Utils
 						{
 							new UserParticipation
 							{
-								User = context.Set<User>().Single(x => x.Username == "admin"),
-								UserId = context.Set<User>().Single(x => x.Username == "admin").Id
+								User = context.Set<User>()
+									.Single(x => x.Username == "admin"),
+								UserId = context.Set<User>()
+									.Single(x => x.Username == "admin").Id
 							},
 							new UserParticipation
 							{
-								User = context.Set<User>().Single(x => x.Username == "organizer"),
-								UserId = context.Set<User>().Single(x => x.Username == "organizer").Id
+								User = context.Set<User>()
+									.Single(x => x.Username == "organizer"),
+								UserId = context.Set<User>()
+									.Single(x => x.Username == "organizer").Id
 							}
 						},
 						Results = new List<SubmissionMatchResult>

@@ -40,7 +40,7 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Authors of the participating submissions.
 		/// </summary>
-        public virtual IList<UserParticipation> Participators { get; set; }
+		public virtual IList<UserParticipation> Participators { get; set; }
 
 		/// <summary>
 		///     List of execution attempts for this match.
