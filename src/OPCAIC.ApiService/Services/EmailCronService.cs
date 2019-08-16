@@ -1,24 +1,23 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Infrastructure.Emails;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OPCAIC.ApiService.Services
 {
 	public class EmailCronService : IHostedService
 	{
-		private readonly CancellationTokenSource cancellationTokenSource;
-		private readonly IServiceProvider serviceProvider;
-		private readonly ILogger<EmailCronService> logger;
-
 		private const int tickMilliseconds = 5000;
+		private readonly CancellationTokenSource cancellationTokenSource;
+		private readonly ILogger<EmailCronService> logger;
+		private readonly IServiceProvider serviceProvider;
 
 		public EmailCronService(IServiceProvider serviceProvider)
 		{
-			this.cancellationTokenSource = new CancellationTokenSource();
+			cancellationTokenSource = new CancellationTokenSource();
 			this.serviceProvider = serviceProvider;
 			logger = serviceProvider.GetRequiredService<ILogger<EmailCronService>>();
 		}
@@ -52,9 +51,10 @@ namespace OPCAIC.ApiService.Services
 						await sender.TickAsync(cancellationToken);
 					}
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
-					logger.LogError(ex, $"An error has occured during execution of {nameof(EmailCronService)}.");
+					logger.LogError(ex,
+						$"An error has occured during execution of {nameof(EmailCronService)}.");
 				}
 			}
 		}

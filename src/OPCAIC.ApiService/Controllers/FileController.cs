@@ -11,7 +11,6 @@ namespace OPCAIC.ApiService.Controllers
 {
 	// TODO: Authorization for both users and workers
 	[Route("api/files")]
-	[ApiController]
 	public class FileController : ControllerBase
 	{
 		public const string gzipMimeType = "application/x-zip-compressed";

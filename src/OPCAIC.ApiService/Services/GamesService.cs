@@ -71,6 +71,7 @@ namespace OPCAIC.ApiService.Services
 		public async Task UpdateAsync(long id, UpdateGameModel model,
 			CancellationToken cancellationToken)
 		{
+			// TODO: this check must be improved because it fails when the name is not changed and there is therefore this entity with the same name in DB
 			if (await gameRepository.ExistsByName(model.Name, cancellationToken))
 			{
 				throw new ConflictException(

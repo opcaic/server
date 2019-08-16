@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Reflection;
 using System.Text;
-using Gelf.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,8 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.IoC;
@@ -21,7 +17,8 @@ using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Services;
-using OPCAIC.Utils;
+
+[assembly: ApiController]
 
 namespace OPCAIC.ApiService
 {
@@ -42,6 +39,7 @@ namespace OPCAIC.ApiService
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
 				.ConfigureApiBehaviorOptions(options =>
 				{
+					options.SuppressInferBindingSourcesForParameters = true;
 					options.InvalidModelStateResponseFactory = context =>
 					{
 						var apiErrorService = context.HttpContext.RequestServices
@@ -109,7 +107,7 @@ namespace OPCAIC.ApiService
 			services.AddOptions<AppConfiguration>().Bind(Configuration.GetSection("app"));
 		}
 
-		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 		{
 			if (env.IsDevelopment())
 			{

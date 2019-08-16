@@ -20,7 +20,7 @@
 
 		public static string RequiredError => "field-required";
 
-		public static string InvalidEmailError => "invalid-email";
+		public static string InvalidEmailError => "field-invalid-email";
 
 		public static string RangeError => "field-range-error";
 

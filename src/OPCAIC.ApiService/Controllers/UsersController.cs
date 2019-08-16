@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
@@ -22,12 +21,13 @@ namespace OPCAIC.ApiService.Controllers
 	public class UsersController : ControllerBase
 	{
 		private readonly IEmailService emailService;
+		private readonly SecurityConfiguration securityConfiguration;
 		private readonly ITokenService tokenService;
 		private readonly IUserService userService;
-		private readonly SecurityConfiguration securityConfiguration;
 
-		public UsersController(IEmailService emailService, IOptions<SecurityConfiguration> securityOptions, 
-      ITokenService tokenService, IUserService userService)
+		public UsersController(IEmailService emailService,
+			IOptions<SecurityConfiguration> securityOptions,
+			ITokenService tokenService, IUserService userService)
 		{
 			this.emailService = emailService;
 			this.tokenService = tokenService;
@@ -109,9 +109,11 @@ namespace OPCAIC.ApiService.Controllers
 		{
 			var id = await userService.CreateAsync(model, cancellationToken);
 
-			string token = tokenService.CreateToken(securityConfiguration.Key, null, new Claim("email", model.Email));
+			var token = tokenService.CreateToken(securityConfiguration.Key, null,
+				new Claim("email", model.Email));
 
-			string verificationUrl = $"{Request.Scheme}://{Request.Host}/api/users/emailVerification?email={model.Email}&token={token}";
+			var verificationUrl =
+				$"{Request.Scheme}://{Request.Host}/api/users/emailVerification?email={model.Email}&token={token}";
 
 			await emailService.SendEmailVerificationEmailAsync(id, verificationUrl,
 				cancellationToken);
