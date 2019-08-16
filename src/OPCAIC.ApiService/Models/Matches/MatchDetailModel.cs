@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using OPCAIC.ApiService.Models.Documents;
 
 namespace OPCAIC.ApiService.Models.Matches
 {

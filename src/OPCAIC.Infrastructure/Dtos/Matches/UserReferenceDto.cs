@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OPCAIC.Infrastructure.Dtos.Matches
+﻿namespace OPCAIC.Infrastructure.Dtos.Matches
 {
 	public class UserReferenceDto
 	{

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using OPCAIC.Infrastructure.Dtos.Documents;
 
 namespace OPCAIC.Infrastructure.Dtos.Matches
 {
