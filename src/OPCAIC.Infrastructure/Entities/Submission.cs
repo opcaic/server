@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OPCAIC.Infrastructure.Enums;
-using OPCAIC.Utils;
 
 namespace OPCAIC.Infrastructure.Entities
 {
@@ -57,13 +55,14 @@ namespace OPCAIC.Infrastructure.Entities
 		///     Last validation, result of which determines whether the submission is valid or not.
 		/// </summary>
 		[NotMapped]
-		public SubmissionValidation LastValidation 
+		public SubmissionValidation LastValidation
 			=> Validations?.AsQueryable().OrderByDescending(v => v.Created).FirstOrDefault();
 
 		/// <summary>
 		///     Flag whether the submission has been successfully validated.
 		/// </summary>
 		[NotMapped]
-		public bool IsValid => LastValidation?.ValidatorResult == GameModuleEntryPointResult.Success;
+		public bool IsValid
+			=> LastValidation?.ValidatorResult == GameModuleEntryPointResult.Success;
 	}
 }

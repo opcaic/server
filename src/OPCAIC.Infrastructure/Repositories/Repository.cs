@@ -10,7 +10,7 @@ using OPCAIC.Infrastructure.Entities;
 namespace OPCAIC.Infrastructure.Repositories
 {
 	public abstract class Repository<TEntity> : IDisposable, IRepository<TEntity>
-		where TEntity : Entity
+		where TEntity : EntityBase
 	{
 		protected Repository(DataContext context, IMapper mapper)
 		{
@@ -19,38 +19,57 @@ namespace OPCAIC.Infrastructure.Repositories
 		}
 
 		/// <summary>
-		///   Underlying EF database context.
+		///     Underlying EF database context.
 		/// </summary>
 		protected DataContext Context { get; }
 
 		/// <summary>
-		///   Database set containing the entities.
+		///     Database set containing the entities.
 		/// </summary>
 		protected DbSet<TEntity> DbSet => Context.Set<TEntity>();
 
 		protected IMapper Mapper { get; }
 
 		/// <inheritdoc />
-		public void Dispose() => Context?.Dispose();
+		public void Dispose()
+		{
+			Context?.Dispose();
+		}
 
 		/// <inheritdoc />
 		public Task<bool> ExistsAsync(long id, CancellationToken cancellationToken = default)
-			=> DbSet.AnyAsync(e => e.Id == id, cancellationToken);
+		{
+			return DbSet.AnyAsync(e => e.Id == id, cancellationToken);
+		}
 
 		/// <inheritdoc />
-		public bool Exists(long id) 
-			=> DbSet.Any(e => e.Id == id);
+		public bool Exists(long id)
+		{
+			return DbSet.Any(e => e.Id == id);
+		}
 
 		/// <inheritdoc />
-		public void Delete(TEntity entity) => DbSet.Remove(entity);
+		public void Delete(TEntity entity)
+		{
+			DbSet.Remove(entity);
+		}
 
 		/// <inheritdoc />
-		public void Add(TEntity entity) => DbSet.Add(entity);
+		public void Add(TEntity entity)
+		{
+			DbSet.Add(entity);
+		}
 
 		/// <inheritdoc />
-		public void SaveChanges() => Context.SaveChanges();
+		public void SaveChanges()
+		{
+			Context.SaveChanges();
+		}
 
 		/// <inheritdoc />
-		public Task SaveChangesAsync() => Context.SaveChangesAsync();
+		public Task SaveChangesAsync()
+		{
+			return Context.SaveChangesAsync();
+		}
 	}
 }

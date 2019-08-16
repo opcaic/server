@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OPCAIC.GameModules.Interface;
@@ -15,13 +14,14 @@ namespace OPCAIC.Worker.Services
 {
 	internal class ExecutionServices : IExecutionServices
 	{
-		private readonly ILogger<ExecutionServices> logger;
 		private readonly ExecutionConfig config;
 		private readonly IDownloadService downloadService;
 		private readonly IGameModuleRegistry gameModuleRegistry;
+		private readonly ILogger<ExecutionServices> logger;
 
 		public ExecutionServices(ILogger<ExecutionServices> logger,
-			IOptions<ExecutionConfig> config, IGameModuleRegistry gameModuleRegistry, IDownloadService downloadService)
+			IOptions<ExecutionConfig> config, IGameModuleRegistry gameModuleRegistry,
+			IDownloadService downloadService)
 		{
 			this.logger = logger;
 			this.gameModuleRegistry = gameModuleRegistry;
@@ -31,12 +31,10 @@ namespace OPCAIC.Worker.Services
 
 		/// <inheritdoc />
 		public DirectoryInfo GetWorkingDirectory(WorkMessageBase request)
-			=> Directory.CreateDirectory(Path.Combine(config.WorkingDirectoryRoot,
+		{
+			return Directory.CreateDirectory(Path.Combine(config.WorkingDirectoryRoot,
 				request.Id.ToString()));
-
-		/// <inheritdoc />
-		public IGameModule GetGameModule(string game)
-			=> gameModuleRegistry.FindGameModule(game) ?? throw new GameModuleNotFoundException(game);
+		}
 
 		/// <inheritdoc />
 		public void ArchiveDirectory(DirectoryInfo taskDirectory)
@@ -48,7 +46,15 @@ namespace OPCAIC.Worker.Services
 			// make sure archive exists
 			Directory.CreateDirectory(config.ArchiveDirectoryRoot);
 
-			ZipFile.CreateFromDirectory(taskDirectory.FullName, Path.Combine(config.ArchiveDirectoryRoot, taskDirectory.Name) + ".zip");
+			ZipFile.CreateFromDirectory(taskDirectory.FullName,
+				Path.Combine(config.ArchiveDirectoryRoot, taskDirectory.Name) + ".zip");
+		}
+
+		/// <inheritdoc />
+		public IGameModule GetGameModule(string game)
+		{
+			return gameModuleRegistry.FindGameModule(game) ??
+				throw new GameModuleNotFoundException(game);
 		}
 	}
 }

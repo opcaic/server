@@ -1,38 +1,38 @@
 ﻿namespace OPCAIC.Infrastructure.Enums
 {
 	/// <summary>
-	///   Defines the format of the tournament (how matches are organized).
+	///     Defines the format of the tournament (how matches are organized).
 	/// </summary>
 	public enum TournamentFormat
 	{
 		/// <summary>
-		///   Unknown, should never occur.
+		///     Unknown, should never occur.
 		/// </summary>
 		Unknown,
 
 		/// <summary>
-		///   Single-player tournament format.
+		///     Single-player tournament format.
 		/// </summary>
 		SinglePlayer,
 
 		/// <summary>
-		///   Single elimination brackets format.
-		///   TODO: Single third place only?
+		///     Single elimination brackets format.
+		///     TODO: Single third place only?
 		/// </summary>
 		SingleElimination,
 
 		/// <summary>
-		///   Double elimination brackets format.
+		///     Double elimination brackets format.
 		/// </summary>
 		DoubleElimination,
 
 		/// <summary>
-		///   Table format, each pair of competitors compete.
+		///     Table format, each pair of competitors compete.
 		/// </summary>
 		Table,
 
 		/// <summary>
-		///   ELO tournament format. Competitors are matched by their ELO ratings.
+		///     ELO tournament format. Competitors are matched by their ELO ratings.
 		/// </summary>
 		Elo
 	}

@@ -8,6 +8,7 @@ namespace OPCAIC.Worker.GameModules
 	internal class GameModuleProcessStartException : GameModuleException
 	{
 		public GameModuleProcessStartException(string message) : base(message) { }
+
 		protected GameModuleProcessStartException(
 			SerializationInfo info,
 			StreamingContext context) : base(info, context)

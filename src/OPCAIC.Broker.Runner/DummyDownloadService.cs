@@ -16,11 +16,11 @@ namespace OPCAIC.Broker.Runner
 	/// </summary>
 	public class DummyDownloadService : IDownloadService
 	{
-		private readonly ILogger<DummyDownloadService> logger;
-		private readonly DirectoryInfo validationsDir;
 		private readonly DirectoryInfo executionsDir;
+		private readonly ILogger<DummyDownloadService> logger;
 		private readonly DirectoryInfo storageDir;
 		private readonly DirectoryInfo submissionsDir;
+		private readonly DirectoryInfo validationsDir;
 
 		public DummyDownloadService(ILogger<DummyDownloadService> logger,
 			IOptions<FileServerConfig> config)
@@ -35,7 +35,7 @@ namespace OPCAIC.Broker.Runner
 
 		/// <inheritdoc />
 		public Task DownloadSubmission(long submissionId, string path,
-			CancellationToken cancellationToken = default(CancellationToken))
+			CancellationToken cancellationToken = default)
 		{
 			logger.LogInformation($"Downloading submission {submissionId} to {path}");
 			var submissionDir = submissionsDir.GetDirectories(submissionId.ToString())
@@ -52,7 +52,7 @@ namespace OPCAIC.Broker.Runner
 
 		/// <inheritdoc />
 		public Task UploadValidationResults(long validationId, string path,
-			CancellationToken cancellationToken = default(CancellationToken))
+			CancellationToken cancellationToken = default)
 		{
 			logger.LogInformation($"Uploading validation results for {validationId} to {path}");
 
@@ -61,7 +61,7 @@ namespace OPCAIC.Broker.Runner
 
 		/// <inheritdoc />
 		public Task UploadMatchResults(long executionId, string path,
-			CancellationToken cancellationToken = default(CancellationToken))
+			CancellationToken cancellationToken = default)
 		{
 			logger.LogInformation($"Uploading match results for {executionId} to {path}");
 
@@ -74,7 +74,9 @@ namespace OPCAIC.Broker.Runner
 
 			// make sure the directory is empty
 			if (Directory.Exists(destinationPath))
+			{
 				Directory.Delete(destinationPath, true);
+			}
 
 			Directory.CreateDirectory(destinationPath);
 
@@ -85,7 +87,8 @@ namespace OPCAIC.Broker.Runner
 		private void CopyDirectory(string sourcePath, string destinationPath)
 		{
 			Debug.Assert(Directory.Exists(destinationPath));
-			Debug.Assert(!Directory.GetFiles(destinationPath).Any(), "destination path is not empty");
+			Debug.Assert(!Directory.GetFiles(destinationPath).Any(),
+				"destination path is not empty");
 
 			// Create all of the directories
 			foreach (var dirPath in Directory.GetDirectories(sourcePath, "*",

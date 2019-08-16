@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -18,6 +17,8 @@ namespace OPCAIC.Infrastructure.DbContexts
 		{
 		}
 
+		public DbSet<Email> Emails { get; set; }
+		public DbSet<EmailTemplate> EmailTemplates { get; set; }
 		public DbSet<Game> Games { get; set; }
 		public DbSet<Tournament> Tournaments { get; set; }
 		public DbSet<Match> Matches { get; set; }
@@ -33,7 +34,9 @@ namespace OPCAIC.Infrastructure.DbContexts
 
 		/// <inheritdoc />
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-			=> optionsBuilder.UseLazyLoadingProxies();
+		{
+			optionsBuilder.UseLazyLoadingProxies();
+		}
 
 		/// <inheritdoc />
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -72,7 +75,7 @@ namespace OPCAIC.Infrastructure.DbContexts
 				// actual method call
 				method.MakeGenericMethod(clrType).Invoke(
 					modelBuilder,
-					new object[] { configureMethod.CreateDelegate(delegateType) });
+					new object[] {configureMethod.CreateDelegate(delegateType)});
 			}
 		}
 

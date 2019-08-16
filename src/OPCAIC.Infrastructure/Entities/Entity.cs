@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using Remotion.Linq.Parsing.Structure.IntermediateModel;
 
 namespace OPCAIC.Infrastructure.Entities
 {

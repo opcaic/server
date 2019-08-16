@@ -2,9 +2,9 @@
 
 namespace OPCAIC.ApiService.Exceptions
 {
-	public class UnauthorizedExcepion : ApiException
+	public class UnauthorizedException : ApiException
 	{
-		public UnauthorizedExcepion(string message)
+		public UnauthorizedException(string message)
 			: base(StatusCodes.Status401Unauthorized, message)
 		{
 		}

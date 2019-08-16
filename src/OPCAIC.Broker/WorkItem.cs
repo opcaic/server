@@ -4,17 +4,17 @@ using OPCAIC.Messaging.Messages;
 namespace OPCAIC.Broker
 {
 	/// <summary>
-	///   Item in a work queue to be scheduled on a worker
+	///     Item in a work queue to be scheduled on a worker
 	/// </summary>
 	internal class WorkItem : IComparable<WorkItem>
 	{
 		/// <summary>
-		///   Timestamp when the workload was enqueued.
+		///     Timestamp when the workload was enqueued.
 		/// </summary>
 		public DateTime QueuedTime { get; set; }
 
 		/// <summary>
-		///   Workload message to be sent to the worker.
+		///     Workload message to be sent to the worker.
 		/// </summary>
 		public WorkMessageBase Payload { get; set; }
 

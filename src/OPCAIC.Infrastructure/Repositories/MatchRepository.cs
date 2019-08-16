@@ -21,12 +21,16 @@ namespace OPCAIC.Infrastructure.Repositories
 
 		/// <inheritdoc />
 		public IEnumerable<Match> AllMatchesFromTournament(long tournamentId)
-			=> DbSet.Where(m => m.TournamentId == tournamentId).ToList();
+		{
+			return DbSet.Where(m => m.TournamentId == tournamentId).ToList();
+		}
 
 		/// <inheritdoc />
 		public async Task<IEnumerable<Match>> AllMatchesFromTournamentAsync(long tournamentId,
 			CancellationToken cancellationToken = default)
-			=> await DbSet.Where(m => m.TournamentId == tournamentId).ToListAsync();
+		{
+			return await DbSet.Where(m => m.TournamentId == tournamentId).ToListAsync();
+		}
 
 		/// <inheritdoc />
 		public Task<MatchDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken)
@@ -57,8 +61,22 @@ namespace OPCAIC.Infrastructure.Repositories
 		/// <inheritdoc />
 		public Task<MatchExecutionStorageDto> FindExecutionForStorageAsync(long id,
 			CancellationToken cancellationToken = default)
-			=> Context.Set<MatchExecution>().Where(e => e.Id == id)
+		{
+			return Context.Set<MatchExecution>().Where(e => e.Id == id)
 				.ProjectTo<MatchExecutionStorageDto>(Mapper.ConfigurationProvider)
 				.SingleOrDefaultAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Match Find(long matchId, long tournamentId)
+		{
+			return DbSet.Find(new {Id = matchId, TournamentId = tournamentId});
+		}
+
+		/// <inheritdoc />
+		public Task<Match> FindAsync(long matchId, long tournamentId)
+		{
+			return DbSet.FindAsync(new {Id = matchId, TournamentId = tournamentId});
+		}
 	}
 }

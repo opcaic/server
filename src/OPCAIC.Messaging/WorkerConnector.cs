@@ -12,7 +12,7 @@ using OPCAIC.Messaging.Utils;
 namespace OPCAIC.Messaging
 {
 	/// <summary>
-	///   NetMQ connector for the worker node.
+	///     NetMQ connector for the worker node.
 	/// </summary>
 	public class WorkerConnector : ConnectorBase<DealerSocket, object>, IWorkerConnector
 	{
@@ -23,7 +23,8 @@ namespace OPCAIC.Messaging
 		private int liveness;
 		private int sleepInterval;
 
-		public WorkerConnector(IOptions<WorkerConnectorConfig> config, ILogger<WorkerConnector> logger)
+		public WorkerConnector(IOptions<WorkerConnectorConfig> config,
+			ILogger<WorkerConnector> logger)
 			: base(
 				config.Value.Identity,
 				new DealerSocketFactory(config.Value.Identity, config.Value.BrokerAddress),
@@ -44,47 +45,60 @@ namespace OPCAIC.Messaging
 			sleepInterval = HeartbeatConfig.ReconnectIntervalInit;
 		}
 
-		/// <inheritdoc cref="IWorkerConnector"/>
+		/// <inheritdoc cref="IWorkerConnector" />
 		public event EventHandler Connected;
 
-		/// <inheritdoc cref="IWorkerConnector"/>
+		/// <inheritdoc cref="IWorkerConnector" />
 		public event EventHandler Disconnected;
 
-		/// <inheritdoc cref="IWorkerConnector"/>
+		/// <inheritdoc cref="IWorkerConnector" />
 		public void RegisterAsyncHandler<T>(Func<T, Task> handler)
-			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), false));
-
-		/// <summary>
-		///   Wraps the given action into a simple async action.
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="handler"></param>
-		/// <returns></returns>
-		private static Func<T, Task> WrapAction<T>(Action<T> handler) => p =>
 		{
-			handler(p);
-			return Task.CompletedTask;
-		};
+			AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T)obj), false));
+		}
 
 		public void RegisterAsyncHandler<T>(Action<T> handler)
-			=> RegisterAsyncHandler(WrapAction(handler));
+		{
+			RegisterAsyncHandler(WrapAction(handler));
+		}
 
-		/// <inheritdoc cref="IWorkerConnector"/>
+		/// <inheritdoc cref="IWorkerConnector" />
 		public void RegisterHandler<T>(Func<T, Task> handler)
-			=> AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T) obj), true));
+		{
+			AddHandler(new HandlerInfo<object>(typeof(T), obj => handler((T)obj), true));
+		}
 
-		/// <inheritdoc cref="IWorkerConnector"/>
+		/// <inheritdoc cref="IWorkerConnector" />
 		public void RegisterHandler<T>(Action<T> handler)
-			=> RegisterHandler(WrapAction(handler));
+		{
+			RegisterHandler(WrapAction(handler));
+		}
 
-		/// <inheritdoc cref="IWorkerConnector"/>
+		/// <inheritdoc cref="IWorkerConnector" />
 		public void SendMessage(object payload)
-			=> EnqueueSocketTask(() =>
+		{
+			EnqueueSocketTask(() =>
 			{
 				var msg = CreateMessage(payload);
 				outgoingHeartbeatTimer.EnableAndReset();
 				DirectSend(msg);
 			});
+		}
+
+		/// <summary>
+		///     Wraps the given action into a simple async action.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="handler"></param>
+		/// <returns></returns>
+		private static Func<T, Task> WrapAction<T>(Action<T> handler)
+		{
+			return p =>
+			{
+				handler(p);
+				return Task.CompletedTask;
+			};
+		}
 
 		/// <inheritdoc />
 		protected override void OnHeartbeatConfigChanged(HeartbeatConfig config)
@@ -117,7 +131,10 @@ namespace OPCAIC.Messaging
 			return MessageHelpers.DeserializeMessage(msg);
 		}
 
-		private void SendHeartbeat() => DirectSend(CreateMessage(null));
+		private void SendHeartbeat()
+		{
+			DirectSend(CreateMessage(null));
+		}
 
 		private void OnHeartBeatTimeOut()
 		{
@@ -128,7 +145,8 @@ namespace OPCAIC.Messaging
 
 				if (sleepInterval <= HeartbeatConfig.ReconnectIntervalMax)
 				{
-					Logger.LogError($"[{Identity}] - Broker unreachable, retrying in {sleepInterval} ms");
+					Logger.LogError(
+						$"[{Identity}] - Broker unreachable, retrying in {sleepInterval} ms");
 					Thread.Sleep(sleepInterval);
 					sleepInterval *= 2; // exponential back off
 				}

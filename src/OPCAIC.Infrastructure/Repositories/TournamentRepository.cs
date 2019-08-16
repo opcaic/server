@@ -19,16 +19,17 @@ namespace OPCAIC.Infrastructure.Repositories
 		}
 
 		/// <inheritdoc />
-		public async Task<long> CreateAsync(NewTournamentDto tournament, CancellationToken cancellationToken)
+		public async Task<long> CreateAsync(NewTournamentDto tournament,
+			CancellationToken cancellationToken)
 		{
-			var entity = new Tournament()
+			var entity = new Tournament
 			{
 				Name = tournament.Name,
-                Description = tournament.Description,
-                Format = tournament.Format,
-                Scope = tournament.Scope,
-                RankingStrategy = tournament.RankingStrategy,
-                GameId = tournament.GameId,
+				Description = tournament.Description,
+				Format = tournament.Format,
+				Scope = tournament.Scope,
+				RankingStrategy = tournament.RankingStrategy,
+				GameId = tournament.GameId
 			};
 
 			DbSet.Add(entity);
@@ -39,7 +40,8 @@ namespace OPCAIC.Infrastructure.Repositories
 		}
 
 		/// <inheritdoc />
-		public async Task<ListDto<TournamentPreviewDto>> GetByFilterAsync(TournamentFilterDto filter,
+		public async Task<ListDto<TournamentPreviewDto>> GetByFilterAsync(
+			TournamentFilterDto filter,
 			CancellationToken cancellationToken)
 		{
 			var query = DbSet.Filter(filter);
@@ -70,7 +72,9 @@ namespace OPCAIC.Infrastructure.Repositories
 		{
 			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
 			if (entity == null)
+			{
 				return false;
+			}
 
 			entity.Name = dto.Name;
 			entity.Description = dto.Description;

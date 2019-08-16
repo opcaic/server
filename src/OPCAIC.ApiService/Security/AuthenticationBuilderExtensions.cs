@@ -16,7 +16,10 @@ namespace OPCAIC.ApiService.Security
 		}
 
 		private static void AddPolicy(AuthorizationOptions options, string policyName,
-			params string[] requiredValues) => options.AddPolicy(policyName,
-			policy => policy.RequireClaim(RolePolicy.PolicyName, requiredValues));
+			params string[] requiredValues)
+		{
+			options.AddPolicy(policyName,
+				policy => policy.RequireClaim(RolePolicy.PolicyName, requiredValues));
+		}
 	}
 }

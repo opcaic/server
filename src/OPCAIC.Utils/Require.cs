@@ -7,17 +7,21 @@ using System.Runtime.CompilerServices;
 namespace OPCAIC.Utils
 {
 	/// <summary>
-	///   Class serving for compact assertions/exception throwing useful for checking method arguments
+	///     Class serving for compact assertions/exception throwing useful for checking method arguments
 	/// </summary>
 	public static class Require
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgNotNull(object arg, string name)
-			=> That<ArgumentNullException>(arg != null, name);
+		{
+			That<ArgumentNullException>(arg != null, name);
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void NotEmpty<T>(IEnumerable collection, string name) where T : Exception
-			=> That<T>(collection.GetEnumerator().MoveNext(), name);
+		{
+			That<T>(collection.GetEnumerator().MoveNext(), name);
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgInRange(int i, int itemCount, string name)
@@ -28,7 +32,9 @@ namespace OPCAIC.Utils
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void FileExists(string filename)
-			=> FileExists(filename, $"File {filename} does not exist.");
+		{
+			FileExists(filename, $"File {filename} does not exist.");
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void FileExists(string filename, string message)
@@ -39,15 +45,21 @@ namespace OPCAIC.Utils
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void Nonnegative(int value, string name)
-			=> That<ArgumentOutOfRangeException>(value >= 0, name);
+		{
+			That<ArgumentOutOfRangeException>(value >= 0, name);
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void That<T>(bool condition, string message) where T : Exception 
-			=> That<T>(condition, (object) message);
+		public static void That<T>(bool condition, string message) where T : Exception
+		{
+			That<T>(condition, (object)message);
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void That<T>(bool condition, FormattableString message) where T : Exception
-			=> That<T>(condition, message.ToString());
+		{
+			That<T>(condition, message.ToString());
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void That<T>(bool condition, params object[] ctorArgs) where T : Exception
@@ -61,6 +73,8 @@ namespace OPCAIC.Utils
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static void ThrowHelper<T>(object[] ctorArgs) where T : Exception
-			=> throw ((T) Activator.CreateInstance(typeof(T), ctorArgs));
+		{
+			throw (T)Activator.CreateInstance(typeof(T), ctorArgs);
+		}
 	}
 }

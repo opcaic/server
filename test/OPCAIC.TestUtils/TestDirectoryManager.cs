@@ -12,12 +12,9 @@ namespace OPCAIC.TestUtils
 
 		public TestDirectoryManager()
 		{
-			RootDirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
-		}
-
-		public DirectoryInfo GetNewDirectory()
-		{
-			return RootDirectory.CreateSubdirectory(Guid.NewGuid().ToString());
+			RootDirectory =
+				Directory.CreateDirectory(Path.Combine(Path.GetTempPath(),
+					Guid.NewGuid().ToString()));
 		}
 
 		/// <inheritdoc />
@@ -25,6 +22,11 @@ namespace OPCAIC.TestUtils
 		{
 			// mass cleanup
 			RootDirectory.Delete(true);
+		}
+
+		public DirectoryInfo GetNewDirectory()
+		{
+			return RootDirectory.CreateSubdirectory(Guid.NewGuid().ToString());
 		}
 	}
 }

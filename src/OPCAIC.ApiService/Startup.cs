@@ -11,10 +11,14 @@ using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Middlewares;
+using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Services;
+
+[assembly: ApiController]
 
 namespace OPCAIC.ApiService
 {
@@ -22,14 +26,28 @@ namespace OPCAIC.ApiService
 	{
 		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-		public Startup(IConfiguration configuration) => Configuration = configuration;
+		public Startup(IConfiguration configuration)
+		{
+			Configuration = configuration;
+		}
 
 		public IConfiguration Configuration { get; }
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+				.ConfigureApiBehaviorOptions(options =>
+				{
+					options.SuppressInferBindingSourcesForParameters = true;
+					options.InvalidModelStateResponseFactory = context =>
+					{
+						var apiErrorService = context.HttpContext.RequestServices
+							.GetRequiredService<IModelValidationService>();
+						var problems = new CustomBadRequest(context, apiErrorService);
+						return new BadRequestObjectResult(problems);
+					};
+				});
 
 			// Frontend app sources
 			services.AddSpaStaticFiles(config =>
@@ -61,6 +79,7 @@ namespace OPCAIC.ApiService
 
 			services.AddAuthorization(AuthorizationConfiguration.Setup);
 
+
 			services.AddCors(options =>
 			{
 				options.AddPolicy(myAllowSpecificOrigins,
@@ -82,6 +101,10 @@ namespace OPCAIC.ApiService
 			services.AddRepositories();
 			services.AddMapper();
 			services.AddSwaggerGen(SwaggerConfig.SetupSwaggerGen);
+
+			services.AddOptions<EmailsConfiguration>().Bind(Configuration.GetSection("emails"));
+			services.AddOptions<SecurityConfiguration>().Bind(Configuration.GetSection("security"));
+			services.AddOptions<AppConfiguration>().Bind(Configuration.GetSection("app"));
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)

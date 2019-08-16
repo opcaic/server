@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.TestUtils;
 using Xunit;
@@ -17,14 +16,18 @@ namespace OPCAIC.Services.Test.MatchGeneration
 	{
 		/// <inheritdoc />
 		public SingleEliminationGeneratorTest(ITestOutputHelper output) : base(output)
-			=> generator = GetService<SingleEliminationMatchGenerator>();
+		{
+			generator = GetService<SingleEliminationMatchGenerator>();
+		}
 	}
 
 	public class DoubleEliminationGeneratorTest : BracketGeneratorTest
 	{
 		/// <inheritdoc />
 		public DoubleEliminationGeneratorTest(ITestOutputHelper output) : base(output)
-			=> generator = GetService<DoubleEliminationMatchGenerator>();
+		{
+			generator = GetService<DoubleEliminationMatchGenerator>();
+		}
 
 		[Fact]
 		public void GeneratesAdditionalMatchOnTie()
@@ -123,7 +126,8 @@ namespace OPCAIC.Services.Test.MatchGeneration
 		}
 
 		private MatchExecution ExecuteMatch(Match match, int id, int result)
-			=> new MatchExecution
+		{
+			return new MatchExecution
 			{
 				Id = id,
 				MatchId = match.Id,
@@ -138,6 +142,7 @@ namespace OPCAIC.Services.Test.MatchGeneration
 						Score = result == i ? 1 : 0
 					}).ToList()
 			};
+		}
 
 		[Fact]
 		public void SimpleStart()

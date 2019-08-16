@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OPCAIC.Infrastructure.Entities
+﻿namespace OPCAIC.Infrastructure.Entities
 {
 	/// <summary>
 	///     Base class for entities identifiable by a single unique Id.

@@ -5,6 +5,7 @@ using AutoMapper;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Games;
+using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Infrastructure.Dtos.Games;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
@@ -13,8 +14,8 @@ namespace OPCAIC.ApiService.Services
 {
 	public class GamesService : IGamesService
 	{
-		private readonly IMapper mapper;
 		private readonly IGameRepository gameRepository;
+		private readonly IMapper mapper;
 
 		public GamesService(IGameRepository gameRepository, IMapper mapper)
 		{
@@ -27,7 +28,9 @@ namespace OPCAIC.ApiService.Services
 		{
 			if (await gameRepository.ExistsByName(game.Name, cancellationToken))
 			{
-				throw new ConflictException("game-name-conflict");
+				throw new ConflictException(
+					new ValidationError(ValidationErrorCodes.GameNameConflict, null,
+						nameof(game.Name)));
 			}
 
 			var dto = mapper.Map<NewGameDto>(game);
@@ -68,9 +71,12 @@ namespace OPCAIC.ApiService.Services
 		public async Task UpdateAsync(long id, UpdateGameModel model,
 			CancellationToken cancellationToken)
 		{
+			// TODO: this check must be improved because it fails when the name is not changed and there is therefore this entity with the same name in DB
 			if (await gameRepository.ExistsByName(model.Name, cancellationToken))
 			{
-				throw new ConflictException("game-name-conflict");
+				throw new ConflictException(
+					new ValidationError(ValidationErrorCodes.GameNameConflict, null,
+						nameof(model.Name)));
 			}
 
 			var dto = mapper.Map<UpdateGameDto>(model);

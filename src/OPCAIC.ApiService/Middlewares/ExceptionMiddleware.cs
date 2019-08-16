@@ -1,15 +1,33 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.ModelValidationHandling;
+using OPCAIC.ApiService.Utils;
 
 namespace OPCAIC.ApiService.Middlewares
 {
 	public sealed class ExceptionMiddleware
 	{
+		private static readonly JsonSerializerSettings jsonSerializerSettings =
+			new JsonSerializerSettings
+			{
+				ContractResolver = new DefaultContractResolver
+				{
+					NamingStrategy = new CamelCaseNamingStrategy()
+				},
+				Formatting = Formatting.Indented
+			};
+
 		private readonly RequestDelegate next;
 
-		public ExceptionMiddleware(RequestDelegate next) => this.next = next;
+		public ExceptionMiddleware(RequestDelegate next)
+		{
+			this.next = next;
+		}
 
 		public async Task InvokeAsync(HttpContext context)
 		{
@@ -21,6 +39,10 @@ namespace OPCAIC.ApiService.Middlewares
 			try
 			{
 				await next(context);
+			}
+			catch (ModelValidationException ex)
+			{
+				await WriteResponseAsync(context, ex);
 			}
 			catch (ApiException ex)
 			{
@@ -45,6 +67,26 @@ namespace OPCAIC.ApiService.Middlewares
 				context.Response.ContentType = "application/json";
 				await context.Response.WriteAsync(json, context.RequestAborted);
 			}
+		}
+
+		private static async Task WriteResponseAsync(HttpContext context,
+			ModelValidationException modelValidationException)
+		{
+			context.Response.StatusCode = modelValidationException.StatusCode;
+			modelValidationException.ValidationError.Field =
+				modelValidationException.ValidationError.Field.FirstLetterToLower();
+
+			var model = new
+			{
+				Errors = new List<ValidationErrorBase> {modelValidationException.ValidationError},
+				Title = "Invalid arguments to the API", // TODO: do not duplicate code
+				Detail = "The inputs supplied to the API are invalid" // TODO: do not duplicate code
+			};
+
+			var json = JsonConvert.SerializeObject(model, jsonSerializerSettings);
+
+			context.Response.ContentType = "application/json";
+			await context.Response.WriteAsync(json, context.RequestAborted);
 		}
 	}
 }

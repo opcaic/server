@@ -5,7 +5,8 @@ namespace OPCAIC.Infrastructure.Dtos.Tournaments
 {
 	public class UpdateTournamentDto
 	{
-		[Required, MinLength(1)]
+		[Required]
+		[MinLength(1)]
 		public string Name { get; set; }
 
 		public string Description { get; set; }

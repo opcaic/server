@@ -8,18 +8,18 @@ namespace OPCAIC.TestUtils.Test
 	public class AssertExTest
 	{
 		[Fact]
-		public void WaitsCorrectly()
+		public void ThrowsWhenTimeElapsed()
 		{
-			ManualResetEventSlim handle = new ManualResetEventSlim(false);
-			Task.Run(() => handle.Set());
-			AssertEx.WaitForEvent(handle, 10);
+			var handle = new ManualResetEventSlim(false);
+			Assert.Throws<XunitException>(() => AssertEx.WaitForEvent(handle, 10));
 		}
 
 		[Fact]
-		public void ThrowsWhenTimeElapsed()
+		public void WaitsCorrectly()
 		{
-			ManualResetEventSlim handle = new ManualResetEventSlim(false);
-			Assert.Throws<XunitException>(() => AssertEx.WaitForEvent(handle, 10));
+			var handle = new ManualResetEventSlim(false);
+			Task.Run(() => handle.Set());
+			AssertEx.WaitForEvent(handle, 10);
 		}
 	}
 }

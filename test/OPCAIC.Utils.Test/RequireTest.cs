@@ -21,27 +21,42 @@ namespace OPCAIC.Utils.Test
 		[Theory]
 		[InlineData(0, 1)]
 		[InlineData(1, 2)]
-		public void IndexInRangeDoesNotThrow(int i, int range) => Require.ArgInRange(i, range, argName);
+		public void IndexInRangeDoesNotThrow(int i, int range)
+		{
+			Require.ArgInRange(i, range, argName);
+		}
+
+		[Fact]
+		public void NonnegativeDoesNotThrow()
+		{
+			Require.Nonnegative(0, argName);
+		}
 
 		[Fact]
 		public void NonnegativeThrows()
-			=> Assert.Throws<ArgumentOutOfRangeException>(() => Require.Nonnegative(-1, argName));
-
-		[Fact]
-		public void NonnegativeDoesNotThrow() => Require.Nonnegative(0, argName);
+		{
+			Assert.Throws<ArgumentOutOfRangeException>(() => Require.Nonnegative(-1, argName));
+		}
 
 		[Fact]
 		public void NotEmptyDoesNotThrow()
-			=> Require.NotEmpty<InvalidOperationException>(new[] {1, 2, 3}, argName);
+		{
+			Require.NotEmpty<InvalidOperationException>(new[] {1, 2, 3}, argName);
+		}
 
 		[Fact]
 		public void NotEmptyThrows()
-			=> Assert.Throws<InvalidOperationException>(
+		{
+			Assert.Throws<InvalidOperationException>(
 				() => Require.NotEmpty<InvalidOperationException>(
 					Enumerable.Empty<int>(), argName));
+		}
 
 		[Fact]
-		public void NotNullDoesNotThrow() => Require.ArgNotNull(new object(), argName);
+		public void NotNullDoesNotThrow()
+		{
+			Require.ArgNotNull(new object(), argName);
+		}
 
 		[Fact]
 		public void NotNullThrows()
@@ -51,7 +66,10 @@ namespace OPCAIC.Utils.Test
 		}
 
 		[Fact]
-		public void ThatDoesNotThrow() => Require.That<Exception>(true, argName);
+		public void ThatDoesNotThrow()
+		{
+			Require.That<Exception>(true, argName);
+		}
 
 		[Fact]
 		public void ThatThrows()

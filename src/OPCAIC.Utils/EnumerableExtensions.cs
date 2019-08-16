@@ -43,7 +43,7 @@ namespace OPCAIC.Utils
 		}
 
 		/// <summary>
-		///   Returns the element having the lowest value of the selected property.
+		///     Returns the element having the lowest value of the selected property.
 		/// </summary>
 		/// <typeparam name="TSource">Type of the element.</typeparam>
 		/// <typeparam name="TValue">Type of the compared value.</typeparam>
@@ -52,26 +52,30 @@ namespace OPCAIC.Utils
 		/// <returns>The first element i having the lowest value of selector(i).</returns>
 		public static TSource ArgMin<TSource, TValue>(this IEnumerable<TSource> items,
 			Func<TSource, TValue> selector) where TValue : IComparable<TValue>
-			=> items.ArgExtreme(selector, 1, false);
+		{
+			return items.ArgExtreme(selector, 1, false);
+		}
 
 		/// <summary>
-		///   Returns the element having the lowest value of the selected property or default value if
-		///   the sequence is empty.
+		///     Returns the element having the lowest value of the selected property or default value if
+		///     the sequence is empty.
 		/// </summary>
 		/// <typeparam name="TSource">Type of the element.</typeparam>
 		/// <typeparam name="TValue">Type of the compared value.</typeparam>
 		/// <param name="items">The collection to be enumerated.</param>
 		/// <param name="selector">The value selector.</param>
 		/// <returns>
-		///   The first element i having the highest value of selector(i) or default(TSource) if
-		///   the sequence is empty.
+		///     The first element i having the highest value of selector(i) or default(TSource) if
+		///     the sequence is empty.
 		/// </returns>
 		public static TSource ArgMinOrDefault<TSource, TValue>(this IEnumerable<TSource> items,
 			Func<TSource, TValue> selector) where TValue : IComparable<TValue>
-			=> items.ArgExtreme(selector, 1, true);
+		{
+			return items.ArgExtreme(selector, 1, true);
+		}
 
 		/// <summary>
-		///   Returns the element having the highest value of the selected property.
+		///     Returns the element having the highest value of the selected property.
 		/// </summary>
 		/// <typeparam name="TSource">Type of the element.</typeparam>
 		/// <typeparam name="TValue">Type of the compared value.</typeparam>
@@ -80,22 +84,26 @@ namespace OPCAIC.Utils
 		/// <returns>The first element i having the highest value of selector(i).</returns>
 		public static TSource ArgMax<TSource, TValue>(this IEnumerable<TSource> items,
 			Func<TSource, TValue> selector) where TValue : IComparable<TValue>
-			=> items.ArgExtreme(selector, -1, false);
+		{
+			return items.ArgExtreme(selector, -1, false);
+		}
 
 		/// <summary>
-		///   Returns the element having the highest value of the selected property or default value if
-		///   the sequence is empty.
+		///     Returns the element having the highest value of the selected property or default value if
+		///     the sequence is empty.
 		/// </summary>
 		/// <typeparam name="TSource">Type of the element.</typeparam>
 		/// <typeparam name="TValue">Type of the compared value.</typeparam>
 		/// <param name="items">The collection to be enumerated.</param>
 		/// <param name="selector">The value selector.</param>
 		/// <returns>
-		///   The first element i having the highest value of selector(i) or default(TSource) if
-		///   the sequence is empty.
+		///     The first element i having the highest value of selector(i) or default(TSource) if
+		///     the sequence is empty.
 		/// </returns>
 		public static TSource ArgMaxOrDefault<TSource, TValue>(this IEnumerable<TSource> items,
 			Func<TSource, TValue> selector) where TValue : IComparable<TValue>
-			=> items.ArgExtreme(selector, -1, true);
+		{
+			return items.ArgExtreme(selector, -1, true);
+		}
 	}
 }

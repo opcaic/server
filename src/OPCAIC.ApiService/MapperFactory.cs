@@ -1,15 +1,14 @@
 ﻿using AutoMapper;
-using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Models.Games;
-using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Documents;
+using OPCAIC.Infrastructure.Dtos.Emails;
+using OPCAIC.Infrastructure.Dtos.EmailTemplates;
 using OPCAIC.Infrastructure.Dtos.Games;
-using OPCAIC.Infrastructure.Dtos.Matches;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
@@ -18,15 +17,20 @@ namespace OPCAIC.ApiService
 {
 	public static class MapperConfigurationFactory
 	{
-		public static MapperConfiguration Create() => new MapperConfiguration(exp =>
+		public static MapperConfiguration Create()
 		{
-			exp.AddUserMapping();
-			exp.AddTournamentMapping();
-			exp.AddSubmissionMapping();
-			exp.AddDocumentMapping();
-			exp.AddMatchMapping();
-			exp.AddGameMapping();
-		});
+			return new MapperConfiguration(exp =>
+			{
+				exp.AddUserMapping();
+				exp.AddTournamentMapping();
+				exp.AddSubmissionMapping();
+				exp.AddDocumentMapping();
+				exp.AddMatchMapping();
+				exp.AddEmailMapping();
+				exp.AddEmailTemplateMapping();
+				exp.AddGameMapping();
+			});
+		}
 
 		private static void AddDocumentMapping(this IMapperConfigurationExpression exp)
 		{
@@ -37,9 +41,6 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<UpdateDocumentModel, UpdateDocumentDto>();
 			exp.CreateMap<DocumentFilterModel, DocumentFilterDto>();
-
-			exp.CreateMap<Tournament, TournamentReferenceDto>();
-			exp.CreateMap<TournamentReferenceDto, TournamentReferenceModel>();
 		}
 
 		private static void AddUserMapping(this IMapperConfigurationExpression exp)
@@ -54,6 +55,8 @@ namespace OPCAIC.ApiService
 				opt => opt.MapFrom(usr => usr.RoleId));
 			exp.CreateMap<User, UserDetailDto>().ForMember(usr => usr.UserRole,
 				opt => opt.MapFrom(usr => usr.RoleId));
+			exp.CreateMap<User, EmailRecipientDto>();
+			exp.CreateMap<User, UserPasswordDto>();
 
 			exp.CreateMap<UserPreviewDto, UserPreviewModel>();
 			exp.CreateMap<UserDetailDto, UserDetailModel>();
@@ -82,6 +85,9 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<Tournament, TournamentPreviewDto>();
 			exp.CreateMap<Tournament, TournamentDetailDto>();
+			exp.CreateMap<Tournament, TournamentReferenceDto>();
+
+			exp.CreateMap<TournamentReferenceDto, TournamentReferenceModel>();
 
 			exp.CreateMap<TournamentPreviewDto, TournamentPreviewModel>();
 			exp.CreateMap<TournamentDetailDto, TournamentDetailModel>();
@@ -94,7 +100,9 @@ namespace OPCAIC.ApiService
 		}
 
 		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)
-			=> exp.CreateMap<Submission, SubmissionStorageDto>();
+		{
+			exp.CreateMap<Submission, SubmissionStorageDto>();
+		}
 
 		private static void AddMatchMapping(this IMapperConfigurationExpression exp)
 		{
@@ -116,6 +124,16 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<SubmissionMatchResultReferenceDto, SubmissionMatchResultReferenceModel>();
 
 			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
+		}
+
+		private static void AddEmailMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<Email, EmailPreviewDto>();
+		}
+
+		private static void AddEmailTemplateMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<EmailTemplate, EmailTemplateDto>();
 		}
 	}
 }

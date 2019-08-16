@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection.Metadata.Ecma335;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OPCAIC.GameModules.Interface;
@@ -17,7 +16,6 @@ namespace OPCAIC.Worker.Services
 	/// </summary>
 	public class GameModuleLoader : IGameModuleRegistry
 	{
-
 		private readonly ILogger<GameModuleLoader> logger;
 		private readonly ILoggerFactory loggerFactory;
 
@@ -36,7 +34,8 @@ namespace OPCAIC.Worker.Services
 		public IGameModule FindGameModule(string game)
 		{
 			modules.TryGetValue(game, out var module);
-			return module ?? throw new GameModuleNotFoundException($"Game module '{game}' was not found");
+			return module ??
+				throw new GameModuleNotFoundException($"Game module '{game}' was not found");
 		}
 
 		/// <inheritdoc />
@@ -47,7 +46,10 @@ namespace OPCAIC.Worker.Services
 		}
 
 		/// <inheritdoc />
-		public IEnumerable<IGameModule> GetAllModules() => modules.Values;
+		public IEnumerable<IGameModule> GetAllModules()
+		{
+			return modules.Values;
+		}
 
 		/// <summary>
 		///     Loads game modules from specified directory.
@@ -74,7 +76,8 @@ namespace OPCAIC.Worker.Services
 				}
 				catch (Exception e)
 				{
-					logger.LogError(LoggingEvents.Startup, e, $"Failed to load game module configuration '{configFile}'");
+					logger.LogError(LoggingEvents.Startup, e,
+						$"Failed to load game module configuration '{configFile}'");
 					continue;
 				}
 

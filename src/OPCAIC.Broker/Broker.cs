@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -22,10 +21,10 @@ namespace OPCAIC.Broker
 		private readonly ILogger logger;
 		private readonly SortedSet<WorkItem> taskQueue;
 		private readonly List<WorkerEntry> workers;
+		private Thread consumerThread;
 		private bool shuttingDown;
 
 		private Thread socketThread;
-		private Thread consumerThread;
 
 		public Broker(IBrokerConnector connector, ILogger<Broker> logger)
 		{
@@ -38,14 +37,11 @@ namespace OPCAIC.Broker
 			RegisterHandlers();
 		}
 
-		private void SetupThreads()
-		{
-			socketThread = new Thread(connector.EnterSocket) {Name = $"{connector.Identity} - Socket"};
-			consumerThread = new Thread(connector.EnterConsumer) {Name = $"{connector.Identity} - Consumer"};
-		}
-
 		/// <inheritdoc />
-		public void EnqueueWork(WorkMessageBase msg) => EnqueueWork(msg, DateTime.Now);
+		public void EnqueueWork(WorkMessageBase msg)
+		{
+			EnqueueWork(msg, DateTime.Now);
+		}
 
 		/// <inheritdoc />
 		public void EnqueueWork(WorkMessageBase msg, DateTime queueTime)
@@ -60,11 +56,7 @@ namespace OPCAIC.Broker
 					logger.LogError($"No worker can execute game {msg.Game}");
 				}
 
-				taskQueue.Add(new WorkItem
-				{
-					Payload = msg,
-					QueuedTime = queueTime
-				});
+				taskQueue.Add(new WorkItem {Payload = msg, QueuedTime = queueTime});
 
 				// enqueue to worker with shortest queue
 				var worker = capableWorkers.FirstOrDefault(w => w.CurrentWorkItem == null);
@@ -93,28 +85,27 @@ namespace OPCAIC.Broker
 		public void StartBrokering()
 		{
 			shuttingDown = false;
-			socketThread = new Thread(connector.EnterSocket) {Name = $"{connector.Identity} - Socket"};
-			consumerThread = new Thread(connector.EnterConsumer) {Name = $"{connector.Identity} - Consumer"};
+			socketThread =
+				new Thread(connector.EnterSocket) {Name = $"{connector.Identity} - Socket"};
+			consumerThread =
+				new Thread(connector.EnterConsumer) {Name = $"{connector.Identity} - Consumer"};
 			socketThread.Start();
 			consumerThread.Start();
 		}
 
 		/// <inheritdoc />
 		public void RegisterHandler<TMessage>(Action<TMessage> handler)
-			=> RegisterInternalHandler<TMessage>((_, msg) => handler(msg));
+		{
+			RegisterInternalHandler<TMessage>((_, msg) => handler(msg));
+		}
 
 		/// <inheritdoc />
 		public int GetUnfinishedTasksCount()
-			=> Schedule(() =>
+		{
+			return Schedule(() =>
 				workers.Count(w => w.CurrentWorkItem != null) +
 				taskQueue.Count);
-
-		/// <summary>
-		///   Returns true if some worker is executing anything.
-		/// </summary>
-		/// <returns></returns>
-		public bool IsExecutingAnything()
-			=> Schedule(() => { return workers.Any(w => w.CurrentWorkItem != null); });
+		}
 
 		/// <inheritdoc />
 		public void StopBrokering(CancellationToken cancellationToken)
@@ -130,7 +121,7 @@ namespace OPCAIC.Broker
 				}
 			});
 
-			bool force = false;
+			var force = false;
 			cancellationToken.Register(() => force = true);
 
 			// wait until all workers report stopped or grace period expires
@@ -154,10 +145,50 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public void ClearWorkQueue() => taskQueue.Clear();
+		public Task StartAsync(CancellationToken cancellationToken)
+		{
+			logger.LogInformation("Starting Broker");
+			StartBrokering();
+			logger.LogInformation("Broker started");
+
+			return Task.CompletedTask;
+		}
+
+		/// <inheritdoc />
+		public Task StopAsync(CancellationToken cancellationToken)
+		{
+			logger.LogInformation("Stopping Broker");
+			StopBrokering(cancellationToken);
+			logger.LogInformation("Broker stopped");
+
+			return Task.CompletedTask;
+		}
+
+		private void SetupThreads()
+		{
+			socketThread =
+				new Thread(connector.EnterSocket) {Name = $"{connector.Identity} - Socket"};
+			consumerThread =
+				new Thread(connector.EnterConsumer) {Name = $"{connector.Identity} - Consumer"};
+		}
 
 		/// <summary>
-		///   Schedules an action to be invoked in a brokers consumer thread and waits for the completion.
+		///     Returns true if some worker is executing anything.
+		/// </summary>
+		/// <returns></returns>
+		public bool IsExecutingAnything()
+		{
+			return Schedule(() => { return workers.Any(w => w.CurrentWorkItem != null); });
+		}
+
+		/// <inheritdoc />
+		public void ClearWorkQueue()
+		{
+			taskQueue.Clear();
+		}
+
+		/// <summary>
+		///     Schedules an action to be invoked in a brokers consumer thread and waits for the completion.
 		/// </summary>
 		/// <param name="a">The action to be invoked.</param>
 		private void Schedule(Action a)
@@ -175,7 +206,7 @@ namespace OPCAIC.Broker
 		}
 
 		/// <summary>
-		///   Schedules a function to be invoked in a brokers consumer thread and waits for the completion.
+		///     Schedules a function to be invoked in a brokers consumer thread and waits for the completion.
 		/// </summary>
 		/// <param name="a">The function to be invoked.</param>
 		/// <returns>The return value of of a()</returns>
@@ -195,12 +226,16 @@ namespace OPCAIC.Broker
 		}
 
 		private void Send(WorkerEntry worker, object msg)
-			=> connector.SendMessage(worker.Identity, msg);
+		{
+			connector.SendMessage(worker.Identity, msg);
+		}
 
 		private void DispatchWork(WorkerEntry worker)
 		{
 			if (shuttingDown)
+			{
 				return;
+			}
 
 			var work = taskQueue.FirstOrDefault(i => CanWorkerExecute(worker, i.Payload));
 			if (work == null)
@@ -250,7 +285,8 @@ namespace OPCAIC.Broker
 		}
 
 		private void RegisterInternalHandler<TMessage>(Action<WorkerEntry, TMessage> handler)
-			=> connector.RegisterAsyncHandler<TMessage>((identity, message) =>
+		{
+			connector.RegisterAsyncHandler<TMessage>((identity, message) =>
 			{
 				if (!identityToWorker.TryGetValue(identity, out var worker))
 				{
@@ -267,6 +303,7 @@ namespace OPCAIC.Broker
 						JsonConvert.SerializeObject(message));
 				}
 			});
+		}
 
 		private void OnWorkerConnected(WorkerEntry worker, WorkerConnectMessage msg)
 		{
@@ -294,14 +331,13 @@ namespace OPCAIC.Broker
 		{
 			logger.LogInformation($"Sending heartbeat config to {worker.Identity}");
 			CancelWork(worker);
-			Send(worker, new SetHeartbeatMessage
-			{
-				HeartbeatConfig = connector.HeartbeatConfig
-			});
+			Send(worker, new SetHeartbeatMessage {HeartbeatConfig = connector.HeartbeatConfig});
 		}
 
 		private static bool CanWorkerExecute(WorkerEntry worker, WorkMessageBase msg)
-			=> worker.Capabilities?.SupportedGames.Contains(msg.Game) == true;
+		{
+			return worker.Capabilities?.SupportedGames.Contains(msg.Game) == true;
+		}
 
 		private void OnWorkerDisconnected(string identity)
 		{
@@ -327,26 +363,6 @@ namespace OPCAIC.Broker
 			}
 
 			worker.CurrentWorkItem = null;
-		}
-
-		/// <inheritdoc />
-		public Task StartAsync(CancellationToken cancellationToken)
-		{
-			logger.LogInformation("Starting Broker");
-			StartBrokering();
-			logger.LogInformation("Broker started");
-
-			return Task.CompletedTask;
-		}
-
-		/// <inheritdoc />
-		public Task StopAsync(CancellationToken cancellationToken)
-		{
-			logger.LogInformation("Stopping Broker");
-			StopBrokering(cancellationToken);
-			logger.LogInformation("Broker stopped");
-
-			return Task.CompletedTask;
 		}
 	}
 }

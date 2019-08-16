@@ -16,12 +16,9 @@ namespace OPCAIC.Worker.Test
 {
 	public class IntegrationTest : ExternalGameModuleTest
 	{
-		private readonly Mock<IExecutionServices> executionServicesMock;
-		private readonly Mock<IDownloadService> downloadServiceMock;
 		private readonly WorkerConnectorHelper connectorHelper;
-
-		private DirectoryInfo ArchiveDirectory { get; }
-		private DirectoryInfo WorkingDirectory { get; }
+		private readonly Mock<IDownloadService> downloadServiceMock;
+		private readonly Mock<IExecutionServices> executionServicesMock;
 
 		/// <inheritdoc />
 		public IntegrationTest(ITestOutputHelper output) : base(output)
@@ -49,13 +46,17 @@ namespace OPCAIC.Worker.Test
 
 			downloadServiceMock = Services.Mock<IDownloadService>();
 			downloadServiceMock
-				.Setup(s => s.DownloadSubmission(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+				.Setup(s => s.DownloadSubmission(It.IsAny<long>(), It.IsAny<string>(),
+					It.IsAny<CancellationToken>()))
 				.Callback(MockExtensions.WriteRandomContentToTargetFolder);
 
 			var reg = Services.Mock<IGameModuleRegistry>();
 			reg.Setup(r => r.FindGameModule(It.IsAny<string>())).Returns(ExternalGameModule);
-			reg.Setup(r => r.GetAllModules()).Returns(new[] { ExternalGameModule });
+			reg.Setup(r => r.GetAllModules()).Returns(new[] {ExternalGameModule});
 		}
+
+		private DirectoryInfo ArchiveDirectory { get; }
+		private DirectoryInfo WorkingDirectory { get; }
 
 		[Theory]
 		[InlineData(0, 0, 0)]
@@ -71,11 +72,14 @@ namespace OPCAIC.Worker.Test
 			GameModuleConfiguration.Validator = ExternalGameModuleHelper.CreateEntryPoint(
 				() => EntryPoints.ExitWithCode(validate, null, null, null));
 
-			connectorHelper.SetupConsumerReceive(new SubmissionValidationRequest { Game = "", Id = Guid.NewGuid() });
+			connectorHelper.SetupConsumerReceive(
+				new SubmissionValidationRequest {Game = "", Id = Guid.NewGuid()});
 
 			GetService<Worker>().Run();
 
-			connectorHelper.Mock.Verify(c => c.SendMessage(It.Is<SubmissionValidationResult>(m => m.JobStatus == JobStatus.Ok)));
+			connectorHelper.Mock.Verify(c
+				=> c.SendMessage(
+					It.Is<SubmissionValidationResult>(m => m.JobStatus == JobStatus.Ok)));
 		}
 	}
 }

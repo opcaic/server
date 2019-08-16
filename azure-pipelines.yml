@@ -3,6 +3,9 @@
 # Add steps that run tests, create a NuGet package, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
+#name: $(Version.MajorMinor).$(Version.Revision)-$(Date:yyyyMMdd)-$[coalesce()]$(Build.SourceBranchName)
+name: $(Date:yyyyMMdd)$(Rev:.r)-$(Build.SourceBranchName)
+
 trigger:
 - master
 
@@ -11,6 +14,8 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  #Version.MajorMinor: 0.1
+  #Version.Revision: $[counter(variables['Version.MajorMinor'], 0)]
 
 steps:
 - task: DotNetCoreCLI@2
@@ -38,7 +43,8 @@ steps:
     summaryFileLocation: '$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml'
     reportDirectory: '$(Build.SourcesDirectory)/CodeCoverage'
 - task: DotNetCoreCLI@2
-  displayName: 'Publish web app'
+  displayName: 'Publish ApiService'
+  condition: and(succeeded(), not(eq(variables['Build.Reason'], 'PullRequest')))
   inputs:
     command: publish
     publishWebProjects: True
@@ -46,6 +52,7 @@ steps:
     zipAfterPublish: True
 - task: DotNetCoreCLI@2
   displayName: 'Publish worker'
+  condition: and(succeeded(), not(eq(variables['Build.Reason'], 'PullRequest')))
   inputs:
     command: publish
     publishWebProjects: False
@@ -54,3 +61,4 @@ steps:
     zipAfterPublish: True
 - task: PublishBuildArtifacts@1
   displayName: 'Publish build artifacts.'
+  condition: and(succeeded(), not(eq(variables['Build.Reason'], 'PullRequest')))

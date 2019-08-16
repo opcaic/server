@@ -2,6 +2,11 @@
 {
 	public static class LoggingTags
 	{
+		public const string UserName = "UserName";
+		public const string UserEmail = "Email";
+
+		public const string MailId = "MailId";
+
 		public const string MachineName = "machine_name";
 		public const string AppVersion = "app_version";
 

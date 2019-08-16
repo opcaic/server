@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
@@ -72,7 +71,8 @@ namespace OPCAIC.Worker.Test
 		[Fact]
 		public async Task SuccessfullyDownloadsSubmission()
 		{
-			CreateMockArchive(Path.Combine(fileServerMockDir.FullName, SubmissionDir, SubmissionId.ToString()));
+			CreateMockArchive(Path.Combine(fileServerMockDir.FullName, SubmissionDir,
+				SubmissionId.ToString()));
 
 			var targetDir = NewDirectory();
 			await downloadService.DownloadSubmission(SubmissionId, targetDir.FullName);

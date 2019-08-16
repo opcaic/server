@@ -20,24 +20,32 @@ namespace OPCAIC.Broker.Runner
 {
 	public static class ServiceReplacementHelpers
 	{
-		public static IServiceCollection ReplaceTransient<TService, TImpl>(this IServiceCollection services)
+		public static IServiceCollection ReplaceTransient<TService, TImpl>(
+			this IServiceCollection services)
 			where TService : class where TImpl : class, TService
-			=> services
+		{
+			return services
 				.RemoveAll<TService>()
 				.AddTransient<TService, TImpl>();
+		}
 
 		public static IServiceCollection ReplaceSingleton<TService>(
 			this IServiceCollection services, TService singleton)
-			where TService : class 
-			=> services
+			where TService : class
+		{
+			return services
 				.RemoveAll<TService>()
-				.AddSingleton<TService>(singleton);
+				.AddSingleton(singleton);
+		}
+
 		public static IServiceCollection ReplaceSingleton<TService, TImpl>(
 			this IServiceCollection services)
 			where TService : class where TImpl : class, TService
-			=> services
+		{
+			return services
 				.RemoveAll<TService>()
 				.AddSingleton<TService, TImpl>();
+		}
 	}
 
 	public class Application : IHostedService
@@ -46,18 +54,28 @@ namespace OPCAIC.Broker.Runner
 		private readonly IBroker broker;
 		private readonly AppConfig config;
 		private readonly ILogger logger;
+
+		private readonly ExternalGameModuleConfiguration moduleConfiguration =
+			new ExternalGameModuleConfiguration
+			{
+				Checker =
+					ExternalGameModuleHelper.CreateEntryPoint(()
+						=> EntryPoints.ExitWithCode(0)),
+				Validator =
+					ExternalGameModuleHelper.CreateEntryPoint(()
+						=> EntryPoints.ExitWithCode(0)),
+				Compiler =
+					ExternalGameModuleHelper.CreateEntryPoint(()
+						=> EntryPoints.ExitWithCode(0)),
+				Executor =
+					ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.ExitWithCode(0))
+			};
+
 		private readonly IServiceProvider serviceProvider;
 		private readonly Thread thread;
 		private readonly List<Worker.Worker> workers;
-		private bool stop;
 
-		private ExternalGameModuleConfiguration moduleConfiguration = new ExternalGameModuleConfiguration
-		{
-			Checker = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.ExitWithCode(0)),
-			Validator = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.ExitWithCode(0)),
-			Compiler = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.ExitWithCode(0)),
-			Executor = ExternalGameModuleHelper.CreateEntryPoint(() => EntryPoints.ExitWithCode(0))
-		};
+		private bool stop;
 
 		public Application(ILogger<Application> logger, IApplicationLifetime lifetime,
 			IBroker broker, IServiceProvider serviceProvider, IOptions<AppConfig> config)
@@ -128,7 +146,8 @@ namespace OPCAIC.Broker.Runner
 			var registry = new DummyGameModuleRegistry();
 			foreach (var game in worker.Supportedgames)
 			{
-				registry.AddModule(new ExternalGameModule(loggerFactory.CreateLogger(game), moduleConfiguration, game, "."));
+				registry.AddModule(new ExternalGameModule(loggerFactory.CreateLogger(game),
+					moduleConfiguration, game, "."));
 //				registry.AddModule(new DummyGameModule(game, loggerFactory.CreateLogger(game)));
 			}
 

@@ -18,7 +18,7 @@ using OPCAIC.Worker.Services;
 namespace OPCAIC.Worker
 {
 	/// <summary>
-	///   The main class of the opcaic worker process
+	///     The main class of the opcaic worker process
 	/// </summary>
 	public class Worker : IHostedService
 	{
@@ -26,13 +26,13 @@ namespace OPCAIC.Worker
 		private readonly ExecutionConfig executionConfig;
 		private readonly ILogger logger;
 
-		private Thread socketThread;
-		private Thread consumerThread;
-
 		private readonly Random rand = new Random();
 		private readonly IServiceProvider serviceProvider;
+		private Thread consumerThread;
 
 		private CancellationTokenSource currentTaskCts;
+
+		private Thread socketThread;
 
 		public Worker(IWorkerConnector connector, ILogger<Worker> logger,
 			IServiceProvider serviceProvider, IOptions<ExecutionConfig> executionConfig)
@@ -45,13 +45,35 @@ namespace OPCAIC.Worker
 			RegisterHandlers();
 		}
 
+		private string Identity => connector.Identity;
+
+		/// <inheritdoc />
+		public async Task StartAsync(CancellationToken cancellationToken)
+		{
+			logger.LogInformation(LoggingEvents.Startup, "Starting Worker");
+			SetupThreads();
+			socketThread.Start();
+			consumerThread.Start();
+			InitConnection();
+			logger.LogInformation(LoggingEvents.Startup, "Worker started");
+		}
+
+		/// <inheritdoc />
+		public async Task StopAsync(CancellationToken cancellationToken)
+		{
+			logger.LogInformation(LoggingEvents.Startup, "Stopping Worker");
+			connector.StopSocket();
+			connector.StopConsumer();
+			socketThread.Join();
+			consumerThread.Join();
+			logger.LogInformation(LoggingEvents.Startup, "Worker stopped");
+		}
+
 		private void SetupThreads()
 		{
 			socketThread = new Thread(connector.EnterSocket) {Name = $"{Identity} - Socket"};
 			consumerThread = new Thread(connector.EnterConsumer) {Name = $"{Identity} - Consumer"};
 		}
-
-		private string Identity => connector.Identity;
 
 		private void RegisterHandlers()
 		{
@@ -78,7 +100,6 @@ namespace OPCAIC.Worker
 				logger.LogInformation(LoggingEvents.JobAborted, "Aborting current task");
 				cts.Cancel();
 				cts.Dispose();
-
 			}
 		}
 
@@ -92,8 +113,8 @@ namespace OPCAIC.Worker
 		}
 
 		/// <summary>
-		///    Atomically releases current cancellation token source. Returns true if cancellation
-		///    was requested by the broker.
+		///     Atomically releases current cancellation token source. Returns true if cancellation
+		///     was requested by the broker.
 		/// </summary>
 		/// <returns></returns>
 		private bool FinalizeCancellation()
@@ -112,11 +133,7 @@ namespace OPCAIC.Worker
 				Debug.Assert(currentTaskCts == null);
 
 				// Make sure we always send non-null message
-				var response = new TResult
-				{
-					Id = request.Id,
-					JobStatus = JobStatus.Error
-				};
+				var response = new TResult {Id = request.Id, JobStatus = JobStatus.Error};
 
 				var token = SetupCancellation();
 
@@ -137,7 +154,7 @@ namespace OPCAIC.Worker
 				catch (Exception e)
 				{
 					logger.LogError(LoggingEvents.JobExecutionFailure, e,
-						$"Exception occured when processing message" +
+						"Exception occured when processing message" +
 						$"{{{LoggingTags.JobPayload}}}",
 						JsonConvert.SerializeObject(request));
 					response.JobStatus = JobStatus.Error;
@@ -165,38 +182,17 @@ namespace OPCAIC.Worker
 
 		private void InitConnection()
 		{
-			logger.LogInformation(LoggingEvents.WorkerConnection, $"Initiating connection");
+			logger.LogInformation(LoggingEvents.WorkerConnection, "Initiating connection");
 
 			connector.SendMessage(new WorkerConnectMessage
 			{
 				Capabilities = new WorkerCapabilities
 				{
-					SupportedGames = serviceProvider.GetService<IGameModuleRegistry>().GetAllModules()
+					SupportedGames = serviceProvider.GetService<IGameModuleRegistry>()
+						.GetAllModules()
 						.Select(m => m.GameName).ToList()
 				}
 			});
-		}
-
-		/// <inheritdoc />
-		public async Task StartAsync(CancellationToken cancellationToken)
-		{
-			logger.LogInformation(LoggingEvents.Startup, $"Starting Worker");
-			SetupThreads();
-			socketThread.Start();
-			consumerThread.Start();
-			InitConnection();
-			logger.LogInformation(LoggingEvents.Startup, $"Worker started");
-		}
-
-		/// <inheritdoc />
-		public async Task StopAsync(CancellationToken cancellationToken)
-		{
-			logger.LogInformation(LoggingEvents.Startup, "Stopping Worker");
-			connector.StopSocket();
-			connector.StopConsumer();
-			socketThread.Join();
-			consumerThread.Join();
-			logger.LogInformation(LoggingEvents.Startup, "Worker stopped");
 		}
 	}
 }

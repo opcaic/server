@@ -1,20 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
 namespace GameModuleMock
 {
-	class Program
+	internal class Program
 	{
 		private const int ERRNO = -10;
-		static int Main(string[] args)
+
+		private static int Main(string[] args)
 		{
 			if (args.Length > 0)
 			{
-				var method = typeof(EntryPoints).GetMethods(BindingFlags.Static | BindingFlags.Public)
-					.SingleOrDefault(m => m.Name == args[0] && m.GetParameters().Length == args.Length - 1);
+				var method = typeof(EntryPoints)
+					.GetMethods(BindingFlags.Static | BindingFlags.Public)
+					.SingleOrDefault(m
+						=> m.Name == args[0] && m.GetParameters().Length == args.Length - 1);
 
 				if (method == null)
 				{
@@ -30,9 +32,9 @@ namespace GameModuleMock
 					return ERRNO;
 				}
 
-				object[] actualPar = new object[parameters.Length];
+				var actualPar = new object[parameters.Length];
 
-				for (int i = 0; i < parameters.Length; i++)
+				for (var i = 0; i < parameters.Length; i++)
 				{
 					var converter = TypeDescriptor.GetConverter(parameters[i].ParameterType);
 					actualPar[i] = converter.ConvertFromString(args[i]);
@@ -44,7 +46,8 @@ namespace GameModuleMock
 				return exit;
 			}
 
-			foreach (var methodInfo in typeof(EntryPoints).GetMethods(BindingFlags.Static | BindingFlags.Public))
+			foreach (var methodInfo in typeof(EntryPoints).GetMethods(BindingFlags.Static |
+				BindingFlags.Public))
 			{
 				Console.WriteLine(methodInfo);
 			}

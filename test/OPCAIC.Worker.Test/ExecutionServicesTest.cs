@@ -1,9 +1,5 @@
 using System;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -21,17 +17,12 @@ namespace OPCAIC.Worker.Test
 {
 	public class ExecutionServicesTest : ServiceTestBase
 	{
-		private readonly Mock<IDownloadService> downloadService;
-		private readonly Mock<IGameModuleRegistry> gameModuleRegistry;
-		private readonly DirectoryInfo workdir;
-		private ExecutionServices ExecutionServices => GetService<ExecutionServices>();
-
 		/// <inheritdoc />
 		public ExecutionServicesTest(ITestOutputHelper output) : base(output)
 		{
 			workdir = NewDirectory();
 
-			Services.AddSingleton(Options.Create(new ExecutionConfig()
+			Services.AddSingleton(Options.Create(new ExecutionConfig
 			{
 				WorkingDirectoryRoot = workdir.FullName
 			}));
@@ -39,12 +30,17 @@ namespace OPCAIC.Worker.Test
 			gameModuleRegistry = Services.Mock<IGameModuleRegistry>();
 		}
 
+		private readonly Mock<IDownloadService> downloadService;
+		private readonly Mock<IGameModuleRegistry> gameModuleRegistry;
+		private readonly DirectoryInfo workdir;
+		private ExecutionServices ExecutionServices => GetService<ExecutionServices>();
+
 		[Fact]
 		public void CreatesWorkDirForJob()
 		{
 			var id = Guid.NewGuid();
 
-			var dir = ExecutionServices.GetWorkingDirectory(new MatchExecutionRequest() {Id = id});
+			var dir = ExecutionServices.GetWorkingDirectory(new MatchExecutionRequest {Id = id});
 
 			Assert.True(dir.Exists);
 			Assert.True(Directory.Exists(Path.Combine(workdir.FullName, id.ToString())));
@@ -53,9 +49,11 @@ namespace OPCAIC.Worker.Test
 		[Fact]
 		public void ThrowsWhenGameModuleDoesNotExist()
 		{
-			gameModuleRegistry.Setup(s => s.FindGameModule(It.IsAny<string>())).Returns((IGameModule)null);
+			gameModuleRegistry.Setup(s => s.FindGameModule(It.IsAny<string>()))
+				.Returns((IGameModule)null);
 
-			Assert.Throws<GameModuleNotFoundException>(() => ExecutionServices.GetGameModule("game"));
+			Assert.Throws<GameModuleNotFoundException>(
+				() => ExecutionServices.GetGameModule("game"));
 		}
 	}
 }

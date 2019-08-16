@@ -119,34 +119,52 @@ namespace OPCAIC.Messaging
 		/// <summary>
 		///     Entry point for the poller thread.
 		/// </summary>
-		public void EnterSocket() => SocketPoller.Run();
+		public void EnterSocket()
+		{
+			SocketPoller.Run();
+		}
 
 		/// <summary>
 		///     Creates a new thread for the socket poller.
 		/// </summary>
-		public void EnterSocketAsync() => SocketPoller.RunAsync();
+		public void EnterSocketAsync()
+		{
+			SocketPoller.RunAsync();
+		}
 
 		/// <summary>
 		///     Breaks the socket thread loop, causing the thread to return from the
 		///     <see cref="EnterSocket" /> method.
 		/// </summary>
-		public void StopSocket() => SocketPoller.StopAsync();
+		public void StopSocket()
+		{
+			SocketPoller.StopAsync();
+		}
 
 		/// <summary>
 		///     Entry point for the consumer thread.
 		/// </summary>
-		public void EnterConsumer() => ConsumerPoller.Run();
+		public void EnterConsumer()
+		{
+			ConsumerPoller.Run();
+		}
 
 		/// <summary>
 		///     Creates a new thread for the consumer poller.
 		/// </summary>
-		public void EnterConsumerAsync() => ConsumerPoller.RunAsync();
+		public void EnterConsumerAsync()
+		{
+			ConsumerPoller.RunAsync();
+		}
 
 		/// <summary>
 		///     Breaks the consumer thread loop, causing the thread to return from the
 		///     <see cref="EnterConsumer" /> method.
 		/// </summary>
-		public void StopConsumer() => ConsumerPoller.StopAsync();
+		public void StopConsumer()
+		{
+			ConsumerPoller.StopAsync();
+		}
 
 		/// <summary>
 		///     Performs the actual send of the given NetMQMessage.
@@ -175,39 +193,55 @@ namespace OPCAIC.Messaging
 		///     Adds a new message handler.
 		/// </summary>
 		/// <param name="handler">The handler.</param>
-		protected void AddHandler(HandlerInfo<TItem> handler) => handlerSet.AddHandler(handler);
+		protected void AddHandler(HandlerInfo<TItem> handler)
+		{
+			handlerSet.AddHandler(handler);
+		}
 
 		/// <summary>
 		///     Enqueues a new task to be done by the socket thread.
 		/// </summary>
 		/// <param name="task">The action to be performed in the task.</param>
 		/// <returns>Task which can be awaited for completion</returns>
-		protected void EnqueueSocketTask(Action task) => new Task(task).Start(SocketPoller);
+		protected void EnqueueSocketTask(Action task)
+		{
+			new Task(task).Start(SocketPoller);
+		}
 
 		/// <summary>
 		///     Enqueues a new task to be done by the consumer thread.
 		/// </summary>
 		/// <param name="task">The action to be performed in the task.</param>
 		/// <returns>Task which can be awaited for completion</returns>
-		protected void EnqueueConsumerTask(Action task) => new Task(task).Start(ConsumerPoller);
+		protected void EnqueueConsumerTask(Action task)
+		{
+			new Task(task).Start(ConsumerPoller);
+		}
 
 		/// <summary>
 		///     Enqueues a new task to be done by the consumer thread.
 		/// </summary>
 		/// <param name="task">The task.</param>
-		protected void EnqueueConsumerTask(Task task) => task.Start(ConsumerPoller);
+		protected void EnqueueConsumerTask(Task task)
+		{
+			task.Start(ConsumerPoller);
+		}
 
 		/// <summary>
 		///     Debug assert which checks if the caller is running in socket thread.
 		/// </summary>
 		protected void AssertSocketThread()
-			=> Debug.Assert(SocketPoller.CanExecuteTaskInline, "Not called from the socket thread");
+		{
+			Debug.Assert(SocketPoller.CanExecuteTaskInline, "Not called from the socket thread");
+		}
 
 		/// <summary>
 		///     Debug assert which checks if the caller is running in the consumer thread.
 		/// </summary>
 		protected void AssertConsumerThread()
-			=> Debug.Assert(ConsumerPoller.CanExecuteTaskInline, "Not called from the work thread");
+		{
+			Debug.Assert(ConsumerPoller.CanExecuteTaskInline, "Not called from the work thread");
+		}
 
 		private async Task OnSocketReceive(NetMQMessage msg)
 		{
