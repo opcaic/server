@@ -2,6 +2,7 @@
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Emails;
+using OPCAIC.Infrastructure.Identity;
 using OPCAIC.Services;
 
 namespace OPCAIC.ApiService.IoC
@@ -12,14 +13,14 @@ namespace OPCAIC.ApiService.IoC
 		{
 			services
 				.AddTransient<IEmailService, EmailService>()
-				.AddTransient<IUserService, UserService>()
+				.AddTransient<IUserManager, UserManager>()
 				.AddTransient<IStorageService, StorageService>()
-				.AddTransient<ITokenService, TokenService>()
 				.AddTransient<IGamesService, GamesService>()
 				.AddTransient<ITournamentsService, TournamentsService>()
 				.AddTransient<EmailSender>()
 				.AddHostedService<EmailCronService>()
 				.AddTransient<IDocumentService, DocumentService>()
+				.AddTransient<IFrontendUrlGenerator, FrontendUrlGenerator>()
 				.AddScoped<IModelValidationService, ModelValidationService>();
 		}
 	}

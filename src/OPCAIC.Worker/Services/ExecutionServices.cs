@@ -15,17 +15,14 @@ namespace OPCAIC.Worker.Services
 	internal class ExecutionServices : IExecutionServices
 	{
 		private readonly ExecutionConfig config;
-		private readonly IDownloadService downloadService;
 		private readonly IGameModuleRegistry gameModuleRegistry;
 		private readonly ILogger<ExecutionServices> logger;
 
 		public ExecutionServices(ILogger<ExecutionServices> logger,
-			IOptions<ExecutionConfig> config, IGameModuleRegistry gameModuleRegistry,
-			IDownloadService downloadService)
+			IOptions<ExecutionConfig> config, IGameModuleRegistry gameModuleRegistry)
 		{
 			this.logger = logger;
 			this.gameModuleRegistry = gameModuleRegistry;
-			this.downloadService = downloadService;
 			this.config = config.Value;
 		}
 

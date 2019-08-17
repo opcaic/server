@@ -1,16 +1,17 @@
-﻿using OPCAIC.ApiService.ModelValidationHandling;
+﻿using System.Collections.Generic;
+using OPCAIC.ApiService.ModelValidationHandling;
 
 namespace OPCAIC.ApiService.Exceptions
 {
 	public class ModelValidationException : ApiException
 	{
 		/// <inheritdoc />
-		public ModelValidationException(int statusCode, ValidationErrorBase validationError) : base(
-			statusCode, validationError.Message)
+		public ModelValidationException(int statusCode, IEnumerable<ValidationErrorBase> validationErrors) : base(
+			statusCode, "Invalid model.")
 		{
-			ValidationError = validationError;
+			ValidationErrors = validationErrors;
 		}
 
-		public ValidationErrorBase ValidationError { get; }
+		public IEnumerable<ValidationErrorBase> ValidationErrors { get; }
 	}
 }

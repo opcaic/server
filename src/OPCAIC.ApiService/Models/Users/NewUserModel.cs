@@ -11,7 +11,7 @@ namespace OPCAIC.ApiService.Models.Users
 
 		[ApiRequired]
 		[ApiMinLength(1)]
-		public string Username { get; set; }
+		public string UserName { get; set; }
 
 		[ApiMinLength(1)]
 		public string Organization { get; set; }

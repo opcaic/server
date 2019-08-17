@@ -3,7 +3,6 @@ using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
-using OPCAIC.ApiService.Security;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Documents;
 using OPCAIC.Infrastructure.Dtos.Emails;
@@ -45,21 +44,20 @@ namespace OPCAIC.ApiService
 
 		private static void AddUserMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<NewUserModel, NewUserDto>()
-				.ForMember(usr => usr.RoleId, opt => opt.Ignore())
-				.ForMember(usr => usr.PasswordHash,
-					opt => opt.MapFrom(usr => Hashing.HashPassword(usr.Password)));
+			exp.CreateMap<NewUserModel, User>();
 
 			exp.CreateMap<User, UserIdentityDto>();
-			exp.CreateMap<User, UserPreviewDto>().ForMember(usr => usr.UserRole,
-				opt => opt.MapFrom(usr => usr.RoleId));
-			exp.CreateMap<User, UserDetailDto>().ForMember(usr => usr.UserRole,
-				opt => opt.MapFrom(usr => usr.RoleId));
+			exp.CreateMap<User, UserPreviewDto>()
+				.ForMember(usr => usr.UserRole,
+					opt => opt.MapFrom(usr => usr.RoleId));
 			exp.CreateMap<User, EmailRecipientDto>();
-			exp.CreateMap<User, UserPasswordDto>();
+			exp.CreateMap<User, UserDetailModel>()
+				.ForMember(u => u.EmailVerified,
+					opt => opt.MapFrom(u => u.EmailConfirmed))
+				.ForMember(usr => usr.UserRole,
+					opt => opt.MapFrom(usr => usr.RoleId));
 
 			exp.CreateMap<UserPreviewDto, UserPreviewModel>();
-			exp.CreateMap<UserDetailDto, UserDetailModel>();
 
 			exp.CreateMap<UserProfileModel, UserProfileDto>();
 			exp.CreateMap<UserFilterModel, UserFilterDto>();

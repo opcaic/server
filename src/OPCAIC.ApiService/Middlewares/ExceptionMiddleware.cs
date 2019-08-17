@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -73,12 +74,15 @@ namespace OPCAIC.ApiService.Middlewares
 			ModelValidationException modelValidationException)
 		{
 			context.Response.StatusCode = modelValidationException.StatusCode;
-			modelValidationException.ValidationError.Field =
-				modelValidationException.ValidationError.Field.FirstLetterToLower();
+
+			foreach (var error in modelValidationException.ValidationErrors)
+			{
+				error.Field = error.Field.FirstLetterToLower();
+			}
 
 			var model = new
 			{
-				Errors = new List<ValidationErrorBase> {modelValidationException.ValidationError},
+				Errors = modelValidationException.ValidationErrors.ToList(),
 				Title = "Invalid arguments to the API", // TODO: do not duplicate code
 				Detail = "The inputs supplied to the API are invalid" // TODO: do not duplicate code
 			};

@@ -8,16 +8,14 @@ namespace OPCAIC.Broker
 {
 	public static class ServiceCollectionExtensions
 	{
-		public static IServiceCollection AddBroker(this IServiceCollection services,
-			Action<BrokerConnectorConfig> configuration)
+		public static IServiceCollection AddBroker(this IServiceCollection services)
 		{
 			return services
 				.AddSingleton<IBrokerConnector, BrokerConnector>()
 				.AddSingleton<IBroker, Broker>()
 				// initialize the broker as part of the hosted service infrastructure
 				.AddSingleton<IHostedService, Broker>(
-					sp => (Broker)sp.GetRequiredService<IBroker>())
-				.Configure(configuration);
+					sp => (Broker)sp.GetRequiredService<IBroker>());
 		}
 	}
 }

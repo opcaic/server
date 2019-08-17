@@ -3,7 +3,7 @@
 	/// <summary>
 	///     Base class for entities identifiable by a single unique Id.
 	/// </summary>
-	public abstract class EntityBase
+	public abstract class EntityBase : IEntity
 	{
 		/// <summary>
 		///     Primary key of this entity

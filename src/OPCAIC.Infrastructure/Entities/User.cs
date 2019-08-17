@@ -1,26 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace OPCAIC.Infrastructure.Entities
 {
 	/// <summary>
 	///     Represents a user in the platform.
 	/// </summary>
-	public class User : SoftDeletableEntity
+	public class User : IdentityUser<long>, IEntity, ISoftDeletable, IChangeTrackable
 	{
-		/// <summary>
-		///     Email of the user.
-		/// </summary>
-		[Required]
-		[MaxLength(StringLengths.UserEmail)]
-		public string Email { get; set; }
-
-		/// <summary>
-		///     Nickname chosen by user.
-		/// </summary>
-		public string Username { get; set; }
-
 		/// <summary>
 		///     First name of the user.
 		/// </summary>
@@ -34,40 +24,46 @@ namespace OPCAIC.Infrastructure.Entities
 		public string LastName { get; set; }
 
 		/// <summary>
-		///     Hash of the password.
-		/// </summary>
-		[Required]
-		[MaxLength(StringLengths.PasswordHash)]
-		public string PasswordHash { get; set; }
-
-		/// <summary>
-		///     Key used to reset user's password.
-		/// </summary>
-		public string PasswordKey { get; set; }
-
-		/// <summary>
-		///     Flag whether the <see cref="Email" /> has been verified.
-		/// </summary>
-		public bool EmailVerified { get; set; }
-
-		/// <summary>
 		///     Id of the role of this user.
 		/// </summary>
 		public long RoleId { get; set; }
 
-		public string LocalizationLanguage { get; set; }
-
-		public string Organization { get; set; }
-
 		/// <summary>
 		///     The role of this user.
 		/// </summary>
-		[ForeignKey(nameof(RoleId))]
-		public virtual UserRole Role { get; set; }
+		public virtual Role Role { get; set; }
+
+		/// <summary>
+		///     UI language to use for the user.
+		/// </summary>
+		public string LocalizationLanguage { get; set; }
+
+		/// <summary>
+		///     Organization this user belongs to
+		/// </summary>
+		public string Organization { get; set; }
 
 		/// <summary>
 		///     All submissions from this user.
 		/// </summary>
 		public virtual IList<Submission> Submissions { get; set; }
+
+		/// <inheritdoc />
+		public DateTime Created { get; set; }
+
+		/// <inheritdoc />
+		public DateTime Updated { get; set; }
+
+		/// <inheritdoc />
+		public bool IsDeleted { get; set; }
+
+		internal static void OnModelCreating(EntityTypeBuilder<User> builder)
+		{
+			// set lengths for base class properties
+			builder.Property(u => u.UserName).HasMaxLength(StringLengths.UserName).IsRequired();
+			builder.Property(u => u.Email).HasMaxLength(StringLengths.UserEmail).IsRequired();
+			builder.Property(u => u.PasswordHash).HasMaxLength(StringLengths.PasswordHash)
+				.IsRequired();
+		}
 	}
 }
