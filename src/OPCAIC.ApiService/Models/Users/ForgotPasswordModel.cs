@@ -6,7 +6,6 @@ namespace OPCAIC.ApiService.Models.Users
 	{
 		[ApiRequired]
 		[ApiEmailAddress]
-		[ApiMinLength(1)]
 		public string Email { get; set; }
 	}
 }
