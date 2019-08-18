@@ -80,6 +80,9 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<UpdateGameModel, UpdateGameDto>();
 			exp.CreateMap<GameFilterModel, GameFilterDto>();
+
+			exp.CreateMap<Game, GameReferenceDto>();
+			exp.CreateMap<GameReferenceDto, GameReferenceModel>();
 		}
 
 		private static void AddTournamentMapping(this IMapperConfigurationExpression exp)
@@ -98,8 +101,7 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<UpdateTournamentModel, UpdateTournamentDto>();
 			exp.CreateMap<TournamentFilterModel, TournamentFilterDto>();
 
-			exp.CreateMap<Game, GameReferenceDto>();
-			exp.CreateMap<GameReferenceDto, GameReferenceModel>();
+			exp.CreateMap<TournamentParticipantDto, TournamentParticipantPreview>();
 		}
 
 		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)

@@ -333,6 +333,22 @@ namespace OPCAIC.ApiService.Utils
 					SubjectTemplate = "Password reset",
 					BodyTemplate =
 						"<html><body>Move to page, where you can change your password by clicking on: {{ResetUrl}}.</body></html>"
+				},
+				new EmailTemplate
+				{
+					LanguageCode = "cs",
+					Name = "tournamentInvitationEmail",
+					SubjectTemplate = "Přídání do turnaje",
+					BodyTemplate =
+						"<html><body>Byli ste pozváni do následujícího turnaje: {{TournamentUrl}}.</body></html>"
+				},
+				new EmailTemplate
+				{
+					LanguageCode = "en",
+					Name = "tournamentInvitationEmail",
+					SubjectTemplate = "Tournament invitation",
+					BodyTemplate =
+						"<html><body>You were invited to following tournament: {{TournamentUrl}}.</body></html>"
 				});
 		}
 	}

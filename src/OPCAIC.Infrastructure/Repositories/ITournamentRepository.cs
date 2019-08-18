@@ -7,6 +7,8 @@ namespace OPCAIC.Infrastructure.Repositories
 {
 	public interface ITournamentRepository
 	{
+		Task<bool> ExistsByIdAsync(long id, CancellationToken cancellationToken);
+
 		Task<long> CreateAsync(NewTournamentDto tournament, CancellationToken cancellationToken);
 
 		Task<ListDto<TournamentPreviewDto>> GetByFilterAsync(TournamentFilterDto filter,

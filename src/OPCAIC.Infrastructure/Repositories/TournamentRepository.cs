@@ -18,6 +18,11 @@ namespace OPCAIC.Infrastructure.Repositories
 		{
 		}
 
+		public Task<bool> ExistsByIdAsync(long id, CancellationToken cancellationToken)
+		{
+			return DbSet.AnyAsync(row => row.Id == id, cancellationToken);
+		}
+
 		/// <inheritdoc />
 		public async Task<long> CreateAsync(NewTournamentDto tournament,
 			CancellationToken cancellationToken)
