@@ -38,11 +38,6 @@ namespace OPCAIC.Infrastructure.Entities
 		public IEnumerable<Submission> Submissions => Participations.Select(p => p.Submission);
 
 		/// <summary>
-		///     Authors of the participating submissions.
-		/// </summary>
-		public virtual IList<UserParticipation> Participators { get; set; }
-
-		/// <summary>
 		///     List of execution attempts for this match.
 		/// </summary>
 		public virtual IList<MatchExecution> Executions { get; set; }
@@ -53,10 +48,5 @@ namespace OPCAIC.Infrastructure.Entities
 		[NotMapped]
 		public MatchExecution LastExecution
 			=> Executions?.AsQueryable().OrderBy(e => e.Created).FirstOrDefault();
-
-		/// <summary>
-		///     Results of this match. Should be set externally with a successful execution.
-		/// </summary>
-		public virtual IList<SubmissionMatchResult> Results { get; set; }
 	}
 }

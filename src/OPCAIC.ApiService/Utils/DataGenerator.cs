@@ -123,9 +123,6 @@ namespace OPCAIC.ApiService.Utils
 						Tournament =
 							context.Set<Tournament>()
 								.Single(x => x.Name == "2048 single player"),
-						TournamentId =
-							context.Set<Tournament>()
-								.Single(x => x.Name == "2048 single player").Id,
 						Content =
 							"2048 is a really _easy_ and _fun_ game. The only rule is that you can merge **two blocks with same number** to create a block with **twice as big number**. The more blocks you merge the blocks, the better!"
 					},
@@ -135,9 +132,6 @@ namespace OPCAIC.ApiService.Utils
 						Tournament =
 							context.Set<Tournament>()
 								.Single(x => x.Name == "Chess ELO tournament"),
-						TournamentId =
-							context.Set<Tournament>()
-								.Single(x => x.Name == "Chess ELO tournament").Id,
 						Content =
 							"Elo is a statistical method of ranking players' abilities. In that system, every player is given a number of **Elo points** representing his skill, and after each match, points of _both_ participating players are updated according to the _expectability_ of the match outcome."
 					});
@@ -170,78 +164,132 @@ namespace OPCAIC.ApiService.Utils
 					});
 				context.SaveChanges();
 
-				var users = new List<User>
-				{
-					context.Set<User>().Single(x => x.Username == "admin"),
-					context.Set<User>().Single(x => x.Username == "organizer")
-				};
-				context.Set<Match>().AddRange(
-					new Match
+				context.Set<Submission>().AddRange(
+					new Submission
 					{
-						TournamentId = context.Set<Tournament>()
-							.Single(x => x.Name == "Chess ELO tournament").Id,
+						Author = context.Set<User>()
+							.Single(x => x.Username == "admin"),
+						Created = DateTime.Now,
+						Participations = new List<SubmissionParticipation>(),
 						Tournament = context.Set<Tournament>()
-							.Single(x => x.Name == "Chess ELO tournament"),
-						Index = 1,
-						Participators = new List<UserParticipation>
-						{
-							new UserParticipation
-							{
-								User = context.Set<User>()
-									.Single(x => x.Username == "admin"),
-								UserId = context.Set<User>()
-									.Single(x => x.Username == "admin").Id
-							},
-							new UserParticipation
-							{
-								User = context.Set<User>()
-									.Single(x => x.Username == "organizer"),
-								UserId = context.Set<User>()
-									.Single(x => x.Username == "organizer").Id
-							}
-						},
-						Results = new List<SubmissionMatchResult>
+							.Single(x => x.Name == "Chess ELO tournament")
+					},
+					new Submission
+					{
+						Author = context.Set<User>()
+							.Single(x => x.Username == "organizer"),
+						Created = DateTime.Now,
+						Participations = new List<SubmissionParticipation>(),
+						Tournament = context.Set<Tournament>()
+							.Single(x => x.Name == "Chess ELO tournament")
+					});
+				context.SaveChanges();
+
+				context.Set<MatchExecution>().AddRange(
+					new MatchExecution
+					{
+						BotResults = new List<SubmissionMatchResult>
 						{
 							new SubmissionMatchResult
 							{
+								Submission =
+									context.Set<Submission>().Single(s
+										=> s.Author.Username == "admin"),
+								Score = -1.0,
+								AdditionalDataJson =
+									"{message = \"Organizer won\"}"
+							},
+							new SubmissionMatchResult
+							{
+								Submission =
+									context.Set<Submission>().Single(s
+										=> s.Author.Username ==
+										"organizer"),
 								Score = 1.0,
+								AdditionalDataJson =
+									"{message = \"Organizer won\"}"
+							}
+						}
+					},
+					new MatchExecution
+					{
+						BotResults = new List<SubmissionMatchResult>
+						{
+							new SubmissionMatchResult
+							{
+								Submission =
+									context.Set<Submission>().Single(s
+										=> s.Author.Username == "admin"),
+								Score = 1.0,
+								AdditionalDataJson =
+									"{message = \"Admin won\"}"
+							},
+							new SubmissionMatchResult
+							{
+								Submission =
+									context.Set<Submission>().Single(s
+										=> s.Author.Username ==
+										"organizer"),
+								Score = -1.0,
 								AdditionalDataJson =
 									"{message = \"Admin won\"}"
 							}
 						}
+					});
+				context.SaveChanges();
+
+				context.Set<Match>().AddRange(
+					new Match
+					{
+						Tournament = context.Set<Tournament>()
+							.Single(x => x.Name == "Chess ELO tournament"),
+						Index = 1,
+						Participations =
+							new List<SubmissionParticipation>
+							{
+								new SubmissionParticipation
+								{
+									Submission = context.Set<Submission>()
+										.Single(s => s.Author.Username == "admin")
+								},
+								new SubmissionParticipation
+								{
+									Submission = context.Set<Submission>()
+										.Single(s => s.Author.Username == "organizer")
+								}
+							},
+						Executions = new List<MatchExecution>
+						{
+							context.Set<MatchExecution>().Single(me
+								=> me.BotResults.All(br
+									=> br.AdditionalDataJson == "{message = \"Admin won\"}"))
+						}
 					},
 					new Match
 					{
-						TournamentId = context.Set<Tournament>()
-							.Single(x => x.Name == "Chess ELO tournament").Id,
 						Tournament = context.Set<Tournament>()
 							.Single(x => x.Name == "Chess ELO tournament"),
 						Index = 2,
-						Participators = new List<UserParticipation>
-						{
-							new UserParticipation
+						Participations =
+							new List<SubmissionParticipation>
 							{
-								User = context.Set<User>()
-									.Single(x => x.Username == "admin"),
-								UserId = context.Set<User>()
-									.Single(x => x.Username == "admin").Id
+								new SubmissionParticipation
+								{
+									Submission = context.Set<Submission>()
+										.Single(s => s.Author.Username == "admin")
+								},
+								new SubmissionParticipation
+								{
+									Submission = context.Set<Submission>()
+										.Single(s => s.Author.Username == "organizer")
+								}
 							},
-							new UserParticipation
-							{
-								User = context.Set<User>()
-									.Single(x => x.Username == "organizer"),
-								UserId = context.Set<User>()
-									.Single(x => x.Username == "organizer").Id
-							}
-						},
-						Results = new List<SubmissionMatchResult>
+						Executions = new List<MatchExecution>
 						{
-							new SubmissionMatchResult
-							{
-								Score = -1.0,
-								AdditionalDataJson =
-									"{message = \"Organizer won\"}"
-							}
+							context.Set<MatchExecution>().Single(me
+								=> me.BotResults.All(br
+									=> br.AdditionalDataJson ==
+									"{message = \"Organizer won\"}"))
 						}
 					});
 				context.SaveChanges();

@@ -21,14 +21,7 @@ namespace OPCAIC.Services
 			{
 				Index = i++,
 				Tournament = tournament,
-				Participations = new[]
-				{
-					new SubmissionParticipation {Submission = s}
-				},
-				Participators = new[]
-				{
-					new UserParticipation{User = s.Author, UserId = s.AuthorId}
-				}
+				Participations = new[] {new SubmissionParticipation {Submission = s}}
 			}).ToList();
 
 			return (matches, true);

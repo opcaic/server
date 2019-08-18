@@ -192,13 +192,12 @@ namespace OPCAIC.Infrastructure.Repositories
 
 			if (filter.UserId != null)
 			{
-				query = query.Where(row
-					=> row.Participators.Any(p => p.UserId == filter.UserId));
+				query = query.Where(row => row.Participations.Any(p => p.Submission.AuthorId == filter.UserId));
 			}
 
 			if (filter.Executed != null)
 			{
-				query = query.Where(row => row.LastExecution != null);
+				query = query.Where(row => row.Executions.Any() == filter.Executed);
 			}
 
 			return query.SortBy(filter.SortBy, filter.Asc);

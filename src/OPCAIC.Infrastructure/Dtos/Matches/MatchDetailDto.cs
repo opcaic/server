@@ -8,7 +8,7 @@ namespace OPCAIC.Infrastructure.Dtos.Matches
 		public long Id { get; set; }
 		public long Index { get; set; }
 		public TournamentReferenceDto Tournament { get; set; }
-		public IList<UserParticipationDto> Participators { get; set; }
-		public IList<SubmissionMatchResultReferenceDto> Results { get; set; }
+		public IList<SubmissionParticipationDto> Participations { get; set; }
+		public IList<MatchExecutionDto> Executions { get; set; }
 	}
 }

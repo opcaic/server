@@ -1,6 +1,6 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.Matches
+﻿namespace OPCAIC.ApiService.Models.Matches
 {
-	public class SubmissionMatchResultReferenceDto
+	public class SubmissionMatchResultModel
 	{
 		public long SubmissionId { get; set; }
 		public double Score { get; set; }

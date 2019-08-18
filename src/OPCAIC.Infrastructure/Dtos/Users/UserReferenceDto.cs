@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.Matches
+﻿namespace OPCAIC.Infrastructure.Dtos.Users
 {
 	public class UserReferenceDto
 	{

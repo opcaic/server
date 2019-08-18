@@ -16,7 +16,10 @@ namespace OPCAIC.ApiService.Controllers
 	{
 		private readonly IMatchService matchService;
 
-		public MatchController(IMatchService matchService) => this.matchService = matchService;
+		public MatchController(IMatchService matchService)
+		{
+			this.matchService = matchService;
+		}
 
 		/// <summary>
 		///     Get filtered list of matches.
@@ -32,7 +35,9 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public Task<ListModel<MatchDetailModel>> GetMatchesAsync(MatchFilterModel filter,
 			CancellationToken cancellationToken)
-			=> matchService.GetByFilterAsync(filter, cancellationToken);
+		{
+			return matchService.GetByFilterAsync(filter, cancellationToken);
+		}
 
 		/// <summary>
 		///     Gets match by id.
@@ -47,6 +52,8 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public Task<MatchDetailModel> GetMatchById(long id, CancellationToken cancellationToken)
-			=> matchService.GetByIdAsync(id, cancellationToken);
+		{
+			return matchService.GetByIdAsync(id, cancellationToken);
+		}
 	}
 }

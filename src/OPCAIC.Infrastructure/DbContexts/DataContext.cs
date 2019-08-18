@@ -28,7 +28,6 @@ namespace OPCAIC.Infrastructure.DbContexts
 		public DbSet<SubmissionValidation> SubmissionValidations { get; set; }
 		public DbSet<SubmissionMatchResult> SubmissionsMatchResults { get; set; }
 		public DbSet<User> Users { get; set; }
-		public DbSet<UserParticipation> UserParticipations { get; set; }
 		public DbSet<UserTournament> UserTournaments { get; set; }
 		public DbSet<UserRole> UserRoles { get; set; }
 

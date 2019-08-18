@@ -32,11 +32,6 @@ namespace OPCAIC.Services
 					{
 						new SubmissionParticipation {Submission = submissions[i]},
 						new SubmissionParticipation {Submission = submissions[j]}
-					},
-					Participators = new[]
-					{
-						new UserParticipation{User = submissions[i].Author, UserId = submissions[i].AuthorId},
-						new UserParticipation{User = submissions[j].Author, UserId = submissions[j].AuthorId}
 					}
 				});
 			}

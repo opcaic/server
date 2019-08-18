@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.ApiService.Models.Documents
+﻿namespace OPCAIC.ApiService.Models.Tournaments
 {
 	public class TournamentReferenceModel
 	{

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using OPCAIC.ApiService.Models.Documents;
+using OPCAIC.ApiService.Models.Tournaments;
 
 namespace OPCAIC.ApiService.Models.Matches
 {
@@ -8,7 +8,7 @@ namespace OPCAIC.ApiService.Models.Matches
 		public long Id { get; set; }
 		public long Index { get; set; }
 		public TournamentReferenceModel Tournament { get; set; }
-		public IList<UserParticipationModel> Participators { get; set; }
-		public IList<SubmissionMatchResultReferenceModel> Results { get; set; }
+		public IList<SubmissionParticipationModel> Participations { get; set; }
+		public IList<MatchExecutionModel> Executions { get; set; }
 	}
 }

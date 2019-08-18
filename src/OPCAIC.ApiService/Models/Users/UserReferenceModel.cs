@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.ApiService.Models.Matches
+﻿namespace OPCAIC.ApiService.Models.Users
 {
 	public class UserReferenceModel
 	{

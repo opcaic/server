@@ -65,6 +65,9 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<UserProfileModel, UserProfileDto>();
 			exp.CreateMap<UserFilterModel, UserFilterDto>();
+
+			exp.CreateMap<User, UserReferenceDto>();
+			exp.CreateMap<UserReferenceDto, UserReferenceModel>();
 		}
 
 		private static void AddGameMapping(this IMapperConfigurationExpression exp)
@@ -123,17 +126,20 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<MatchDetailDto, MatchDetailModel>();
 			exp.CreateMap<MatchFilterModel, MatchFilterDto>();
 
-			exp.CreateMap<UserParticipation, UserParticipationDto>();
-			exp.CreateMap<UserParticipationDto, UserParticipationModel>();
-
-			exp.CreateMap<User, UserReferenceDto>();
-			exp.CreateMap<UserReferenceDto, UserReferenceModel>();
-
 			exp.CreateMap<Match, MatchReferenceDto>();
 			exp.CreateMap<MatchReferenceDto, MatchReferenceModel>();
 
-			exp.CreateMap<SubmissionMatchResult, SubmissionMatchResultReferenceDto>();
-			exp.CreateMap<SubmissionMatchResultReferenceDto, SubmissionMatchResultReferenceModel>();
+			exp.CreateMap<Submission, SubmissionReferenceDto>();
+			exp.CreateMap<SubmissionReferenceDto, SubmissionReferenceModel>();
+
+			exp.CreateMap<SubmissionParticipation, SubmissionParticipationDto>();
+			exp.CreateMap<SubmissionParticipationDto, SubmissionParticipationModel>();
+
+			exp.CreateMap<MatchExecution, MatchExecutionDto>();
+			exp.CreateMap<MatchExecutionDto, MatchExecutionModel>();
+
+			exp.CreateMap<SubmissionMatchResult, SubmissionMatchResultDto>();
+			exp.CreateMap<SubmissionMatchResultDto, SubmissionMatchResultModel>();
 
 			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
 		}

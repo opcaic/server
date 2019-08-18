@@ -95,14 +95,9 @@ namespace OPCAIC.Services
 							TournamentId = tournament.Id,
 							Participations = new[]
 							{
-								new SubmissionParticipation{Submission = firstPlayer},
-								new SubmissionParticipation{Submission = secondPlayer}
-							},
-							Participators = new[]
-							{
-								new UserParticipation{User = firstPlayer.Author, UserId = firstPlayer.AuthorId},
-								new UserParticipation{User = secondPlayer.Author, UserId = secondPlayer.AuthorId}
-							} 
+								new SubmissionParticipation {Submission = firstPlayer},
+								new SubmissionParticipation {Submission = secondPlayer}
+							}
 						});
 					}
 				}
