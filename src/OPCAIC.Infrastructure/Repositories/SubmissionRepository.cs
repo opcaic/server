@@ -10,7 +10,7 @@ using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
-	public class SubmissionRepository : SimpleLookupRepository<Submission>, ISubmissionRepository
+	public class SubmissionRepository : RepositoryBase<Submission>, ISubmissionRepository
 	{
 		/// <inheritdoc />
 		public SubmissionRepository(DataContext context, IMapper mapper) : base(context, mapper)

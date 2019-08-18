@@ -5,49 +5,24 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Infrastructure.DbContexts;
-using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
-	public class UserRepository : Repository<User>, IUserRepository
+	public class UserRepository
+		: LookupRepository<User, UserFilterDto, UserPreviewDto, UserDetailDto>, IUserRepository
 	{
-		public UserRepository(DataContext dataContext, IMapper mapper)
-			: base(dataContext, mapper)
+		/// <inheritdoc />
+		public UserRepository(DataContext context, IMapper mapper)
+			: base(context, mapper, QueryableExtensions.Filter)
 		{
 		}
 
-		public async Task<ListDto<UserPreviewDto>> GetByFilterAsync(UserFilterDto filter,
+		public Task<bool> UpdateAsync(long id, UserProfileDto dto,
 			CancellationToken cancellationToken)
 		{
-			var query = DbSet.Filter(filter);
-
-			return new ListDto<UserPreviewDto>
-			{
-				List = await query
-					.Skip(filter.Offset)
-					.Take(filter.Count)
-					.ProjectTo<UserPreviewDto>(Mapper.ConfigurationProvider)
-					.ToListAsync(cancellationToken),
-				Total = await query.CountAsync(cancellationToken)
-			};
-		}
-
-		public async Task<bool> UpdateAsync(long id, UserProfileDto dto,
-			CancellationToken cancellationToken)
-		{
-			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
-			if (entity == null)
-			{
-				return false;
-			}
-
-			entity.Organization = dto.Organization;
-			entity.LocalizationLanguage = dto.LocalizationLanguage;
-
-			await Context.SaveChangesAsync(cancellationToken);
-			return true;
+			return UpdateFromDtoAsync(id, dto, cancellationToken);
 		}
 
 		public Task<EmailRecipientDto> FindRecipientAsync(long id,

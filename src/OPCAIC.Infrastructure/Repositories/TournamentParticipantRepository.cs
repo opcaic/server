@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
-	public class TournamentParticipantRepository: Repository<TournamentParticipant>, ITournamentParticipantRepository
+	public class TournamentParticipantRepository: RepositoryBase<TournamentParticipant>, ITournamentParticipantRepository
 	{
 		public TournamentParticipantRepository(DataContext context, IMapper mapper)
 			:base(context, mapper) { }
@@ -43,7 +43,7 @@ namespace OPCAIC.Infrastructure.Repositories
 				tournament.Participants.Add(new TournamentParticipant { Email = email });
 			}						  
 
-			await Context.SaveChangesAsync(cancellationToken);
+			await SaveChangesAsync(cancellationToken);
 			return true;
 		}
 
@@ -54,7 +54,7 @@ namespace OPCAIC.Infrastructure.Repositories
 				return false;
 
 			DbSet.Remove(entity);
-			await Context.SaveChangesAsync(cancellationToken);
+			await SaveChangesAsync(cancellationToken);
 			return true;
 		}
 	}																						  
