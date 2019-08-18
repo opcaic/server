@@ -80,5 +80,24 @@ namespace OPCAIC.Infrastructure.Repositories
 			await Context.SaveChangesAsync(cancellationToken);
 			return true;
 		}
+
+		/// <inheritdoc />
+		public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
+		{
+			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
+			if (entity == null)
+			{
+				return false;
+			}
+
+			DbSet.Remove(entity);
+			await Context.SaveChangesAsync(cancellationToken);
+			return true;
+		}
+
+		public bool CheckTournamentExists(long id)
+		{
+			return Context.Set<Tournament>().Any(t => t.Id == id);
+		}
 	}
 }

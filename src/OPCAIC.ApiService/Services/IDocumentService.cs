@@ -15,5 +15,6 @@ namespace OPCAIC.ApiService.Services
 		Task<DocumentDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken);
 
 		Task UpdateAsync(long id, UpdateDocumentModel model, CancellationToken cancellationToken);
+		Task DeleteAsync(long id, CancellationToken cancellationToken);
 	}
 }

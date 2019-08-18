@@ -26,6 +26,11 @@ namespace OPCAIC.ApiService.Services
 		public async Task<long> CreateAsync(NewDocumentModel document,
 			CancellationToken cancellationToken)
 		{
+			if (!documentRepository.CheckTournamentExists(document.TournamentId))
+			{
+				throw new NotFoundException(nameof(Tournament), document.TournamentId);
+			}
+
 			var dto = mapper.Map<NewDocumentDto>(document);
 
 			return await documentRepository.CreateAsync(dto, cancellationToken);
@@ -68,6 +73,15 @@ namespace OPCAIC.ApiService.Services
 			var dto = mapper.Map<UpdateDocumentDto>(model);
 
 			if (!await documentRepository.UpdateAsync(id, dto, cancellationToken))
+			{
+				throw new NotFoundException(nameof(Tournament), id);
+			}
+		}
+
+		/// <inheritdoc />
+		public async Task DeleteAsync(long id, CancellationToken cancellationToken)
+		{
+			if (!await documentRepository.DeleteAsync(id, cancellationToken))
 			{
 				throw new NotFoundException(nameof(Tournament), id);
 			}
