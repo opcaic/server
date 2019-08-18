@@ -7,6 +7,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Dtos;
+using OPCAIC.Infrastructure.Dtos.Matches;
 using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.Repositories
@@ -29,6 +30,32 @@ namespace OPCAIC.Infrastructure.Repositories
 			CancellationToken cancellationToken = default)
 		{
 			return await DbSet.Where(m => m.TournamentId == tournamentId).ToListAsync();
+		}
+
+		/// <inheritdoc />
+		public Task<MatchDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken)
+		{
+			return DbSet
+				.Where(row => row.Id == id)
+				.ProjectTo<MatchDetailDto>(Mapper.ConfigurationProvider)
+				.SingleOrDefaultAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public async Task<ListDto<MatchDetailDto>> GetByFilterAsync(MatchFilterDto filter,
+			CancellationToken cancellationToken)
+		{
+			var query = DbSet.Filter(filter);
+
+			return new ListDto<MatchDetailDto>
+			{
+				List = await query
+					.Skip(filter.Offset)
+					.Take(filter.Count)
+					.ProjectTo<MatchDetailDto>(Mapper.ConfigurationProvider)
+					.ToListAsync(cancellationToken),
+				Total = await query.CountAsync(cancellationToken)
+			};
 		}
 
 		/// <inheritdoc />

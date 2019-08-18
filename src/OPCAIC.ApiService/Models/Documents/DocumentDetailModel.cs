@@ -1,4 +1,6 @@
-﻿namespace OPCAIC.ApiService.Models.Documents
+﻿using OPCAIC.ApiService.Models.Tournaments;
+
+namespace OPCAIC.ApiService.Models.Documents
 {
 	public class DocumentDetailModel
 	{

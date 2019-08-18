@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Models.Games;
+using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.Infrastructure.Dtos;
@@ -8,6 +9,7 @@ using OPCAIC.Infrastructure.Dtos.Documents;
 using OPCAIC.Infrastructure.Dtos.Emails;
 using OPCAIC.Infrastructure.Dtos.EmailTemplates;
 using OPCAIC.Infrastructure.Dtos.Games;
+using OPCAIC.Infrastructure.Dtos.Matches;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
@@ -61,6 +63,9 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<UserProfileModel, UserProfileDto>();
 			exp.CreateMap<UserFilterModel, UserFilterDto>();
+
+			exp.CreateMap<User, UserReferenceDto>();
+			exp.CreateMap<UserReferenceDto, UserReferenceModel>();
 		}
 
 		private static void AddGameMapping(this IMapperConfigurationExpression exp)
@@ -102,11 +107,6 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<Submission, SubmissionStorageDto>();
 		}
 
-		private static void AddMatchMapping(this IMapperConfigurationExpression exp)
-		{
-			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
-		}
-
 		private static void AddEmailMapping(this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap<Email, EmailPreviewDto>();
@@ -115,6 +115,31 @@ namespace OPCAIC.ApiService
 		private static void AddEmailTemplateMapping(this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap<EmailTemplate, EmailTemplateDto>();
+		}
+
+		private static void AddMatchMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<Match, MatchDetailDto>();
+
+			exp.CreateMap<MatchDetailDto, MatchDetailModel>();
+			exp.CreateMap<MatchFilterModel, MatchFilterDto>();
+
+			exp.CreateMap<Match, MatchReferenceDto>();
+			exp.CreateMap<MatchReferenceDto, MatchReferenceModel>();
+
+			exp.CreateMap<Submission, SubmissionReferenceDto>();
+			exp.CreateMap<SubmissionReferenceDto, SubmissionReferenceModel>();
+
+			exp.CreateMap<SubmissionParticipation, SubmissionParticipationDto>();
+			exp.CreateMap<SubmissionParticipationDto, SubmissionParticipationModel>();
+
+			exp.CreateMap<MatchExecution, MatchExecutionDto>();
+			exp.CreateMap<MatchExecutionDto, MatchExecutionModel>();
+
+			exp.CreateMap<SubmissionMatchResult, SubmissionMatchResultDto>();
+			exp.CreateMap<SubmissionMatchResultDto, SubmissionMatchResultModel>();
+
+			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
 		}
 	}
 }
