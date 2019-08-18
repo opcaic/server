@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using OPCAIC.ApiService.Exceptions;
-using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Utils;
 
 namespace OPCAIC.ApiService.Middlewares
@@ -23,11 +22,14 @@ namespace OPCAIC.ApiService.Middlewares
 				Formatting = Formatting.Indented
 			};
 
+		private readonly IHostingEnvironment env;
+
 		private readonly RequestDelegate next;
 
-		public ExceptionMiddleware(RequestDelegate next)
+		public ExceptionMiddleware(RequestDelegate next, IHostingEnvironment env)
 		{
 			this.next = next;
+			this.env = env;
 		}
 
 		public async Task InvokeAsync(HttpContext context)
@@ -51,30 +53,27 @@ namespace OPCAIC.ApiService.Middlewares
 			}
 			catch (Exception ex)
 			{
-				await WriteResponseAsync(context, new ApiException(500, ex.Message));
+				if (env.IsDevelopment())
+				{
+					await WriteResponseAsync(context, new ApiException(500, ex.Message, null));
+				}
+				else
+				{
+					await WriteResponseAsync(context,
+						new ApiException(500, "Internal server error", null));
+				}
 			}
 		}
 
 		private static async Task WriteResponseAsync(HttpContext context, ApiException apiException)
 		{
-			context.Response.StatusCode = apiException.StatusCode;
-
-			if (apiException.Message != null)
-			{
-				var model = new {apiException.Message};
-
-				var json = JsonConvert.SerializeObject(model);
-
-				context.Response.ContentType = "application/json";
-				await context.Response.WriteAsync(json, context.RequestAborted);
-			}
+			var model = new {apiException.Message, apiException.Code};
+			await WriteResponseAsync(context, apiException.StatusCode, model);
 		}
 
 		private static async Task WriteResponseAsync(HttpContext context,
 			ModelValidationException modelValidationException)
 		{
-			context.Response.StatusCode = modelValidationException.StatusCode;
-
 			foreach (var error in modelValidationException.ValidationErrors)
 			{
 				error.Field = error.Field.FirstLetterToLower();
@@ -87,10 +86,16 @@ namespace OPCAIC.ApiService.Middlewares
 				Detail = "The inputs supplied to the API are invalid" // TODO: do not duplicate code
 			};
 
+			await WriteResponseAsync(context, modelValidationException.StatusCode, model);
+		}
+
+		private static Task WriteResponseAsync(HttpContext context, int statusCode, object model)
+		{
+			context.Response.StatusCode = statusCode;
 			var json = JsonConvert.SerializeObject(model, jsonSerializerSettings);
 
 			context.Response.ContentType = "application/json";
-			await context.Response.WriteAsync(json, context.RequestAborted);
+			return context.Response.WriteAsync(json, context.RequestAborted);
 		}
 	}
 }

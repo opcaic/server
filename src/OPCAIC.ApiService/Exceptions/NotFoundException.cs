@@ -6,7 +6,7 @@ namespace OPCAIC.ApiService.Exceptions
 	{
 		public NotFoundException(string resourceName, long resourceId) :
 			base(StatusCodes.Status404NotFound,
-				$"Resource '{resourceName}' with id {resourceId} was not found.")
+				$"Resource '{resourceName}' with id {resourceId} was not found.", null)
 		{
 		}
 	}
