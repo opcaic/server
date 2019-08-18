@@ -177,7 +177,7 @@ namespace OPCAIC.ApiService.Utils
 					new Submission
 					{
 						Author = context.Set<User>()
-							.Single(x => x.Username == "admin"),
+							.Single(x => x.UserName == "admin"),
 						Created = DateTime.Now,
 						Participations = new List<SubmissionParticipation>(),
 						Tournament = context.Set<Tournament>()
@@ -186,7 +186,7 @@ namespace OPCAIC.ApiService.Utils
 					new Submission
 					{
 						Author = context.Set<User>()
-							.Single(x => x.Username == "organizer"),
+							.Single(x => x.UserName == "organizer"),
 						Created = DateTime.Now,
 						Participations = new List<SubmissionParticipation>(),
 						Tournament = context.Set<Tournament>()
@@ -203,7 +203,7 @@ namespace OPCAIC.ApiService.Utils
 							{
 								Submission =
 									context.Set<Submission>().Single(s
-										=> s.Author.Username == "admin"),
+										=> s.Author.UserName == "admin"),
 								Score = -1.0,
 								AdditionalDataJson =
 									"{message = \"Organizer won\"}"
@@ -212,7 +212,7 @@ namespace OPCAIC.ApiService.Utils
 							{
 								Submission =
 									context.Set<Submission>().Single(s
-										=> s.Author.Username ==
+										=> s.Author.UserName ==
 										"organizer"),
 								Score = 1.0,
 								AdditionalDataJson =
@@ -228,7 +228,7 @@ namespace OPCAIC.ApiService.Utils
 							{
 								Submission =
 									context.Set<Submission>().Single(s
-										=> s.Author.Username == "admin"),
+										=> s.Author.UserName == "admin"),
 								Score = 1.0,
 								AdditionalDataJson =
 									"{message = \"Admin won\"}"
@@ -237,7 +237,7 @@ namespace OPCAIC.ApiService.Utils
 							{
 								Submission =
 									context.Set<Submission>().Single(s
-										=> s.Author.Username ==
+										=> s.Author.UserName ==
 										"organizer"),
 								Score = -1.0,
 								AdditionalDataJson =
@@ -259,12 +259,12 @@ namespace OPCAIC.ApiService.Utils
 								new SubmissionParticipation
 								{
 									Submission = context.Set<Submission>()
-										.Single(s => s.Author.Username == "admin")
+										.Single(s => s.Author.UserName == "admin")
 								},
 								new SubmissionParticipation
 								{
 									Submission = context.Set<Submission>()
-										.Single(s => s.Author.Username == "organizer")
+										.Single(s => s.Author.UserName == "organizer")
 								}
 							},
 						Executions = new List<MatchExecution>
@@ -285,12 +285,12 @@ namespace OPCAIC.ApiService.Utils
 								new SubmissionParticipation
 								{
 									Submission = context.Set<Submission>()
-										.Single(s => s.Author.Username == "admin")
+										.Single(s => s.Author.UserName == "admin")
 								},
 								new SubmissionParticipation
 								{
 									Submission = context.Set<Submission>()
-										.Single(s => s.Author.Username == "organizer")
+										.Single(s => s.Author.UserName == "organizer")
 								}
 							},
 						Executions = new List<MatchExecution>

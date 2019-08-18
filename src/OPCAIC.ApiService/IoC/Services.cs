@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Infrastructure.Identity;
@@ -18,7 +19,7 @@ namespace OPCAIC.ApiService.IoC
 				.AddTransient<ITournamentsService, TournamentsService>()
 				.AddTransient<IDocumentService, DocumentService>()
 				.AddTransient<IFrontendUrlGenerator, FrontendUrlGenerator>()
-				.AddScoped<IModelValidationService, ModelValidationService>();
+				.AddScoped<IModelValidationService, ModelValidationService>()
 				.AddTransient<IMatchService, MatchService>();
 		}
 	}
