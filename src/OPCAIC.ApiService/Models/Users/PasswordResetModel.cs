@@ -2,15 +2,18 @@
 
 namespace OPCAIC.ApiService.Models.Users
 {
-	public class UserCredentialsModel
+	public class PasswordResetModel
 	{
-		[ApiRequired]
 		[ApiEmailAddress]
+		[ApiRequired]
+		[ApiMinLength(1)]
 		public string Email { get; set; }
 
 		[ApiRequired]
-		public string Password { get; set; }
+		[ApiMinLength(1)]
+		public string ResetToken { get; set; }
 
-		public bool RememberMe { get; set; }
+		[ApiRequired]
+		public string Password { get; set; }
 	}
 }

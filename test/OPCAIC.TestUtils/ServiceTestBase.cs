@@ -2,6 +2,7 @@
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace OPCAIC.TestUtils
@@ -13,10 +14,11 @@ namespace OPCAIC.TestUtils
 	{
 		private readonly TestDirectoryManager directoryManager;
 		protected readonly ITestOutputHelper Output;
+		protected readonly ILoggerFactory LoggerFactory;
 		private ServiceProvider provider;
 		private MockingServiceCollection services;
 
-		public ServiceTestBase(ITestOutputHelper output)
+		protected ServiceTestBase(ITestOutputHelper output)
 		{
 			Output = output;
 			directoryManager = new TestDirectoryManager();
@@ -24,6 +26,11 @@ namespace OPCAIC.TestUtils
 			services = new MockingServiceCollection(output);
 			services
 				.AddXUnitLogging(output);
+
+			// some services want custom logger factory
+			LoggerFactory = new LoggerFactory();
+			LoggerFactory.AddProvider(new XUnitLoggerProvider(output));
+			services.AddSingleton(LoggerFactory);
 		}
 
 		protected MockingServiceCollection Services

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Infrastructure.Identity;
 
 namespace OPCAIC.ApiService.Utils
 {
@@ -74,43 +75,51 @@ namespace OPCAIC.ApiService.Utils
 					}
 				);
 
-				context.Set<User>().AddRange(
+				var mgr = serviceProvider.GetRequiredService<UserManager>();
+				mgr.CreateAsync(
 					new User
 					{
 						FirstName = "Admin",
 						LastName = "Opcaic",
 						Created = DateTime.Now,
-						Username = "admin",
+						UserName = "admin",
 						RoleId = (long)UserRole.Admin,
-						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 						Email = "admin@opcaic.com",
-						EmailVerified = true,
+						EmailConfirmed = true,
 						LocalizationLanguage = "cs"
 					},
+					"Password"
+				);
+
+				mgr.CreateAsync(
 					new User
 					{
 						FirstName = "Organizer",
 						LastName = "Opcaic",
 						Created = DateTime.Now,
-						Username = "organizer",
+						UserName = "organizer",
 						RoleId = (long)UserRole.Organizer,
-						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 						Email = "organizer@opcaic.com",
-						EmailVerified = false,
+						EmailConfirmed = false,
 						LocalizationLanguage = "en"
 					},
+					"Password"
+				);
+
+				mgr.CreateAsync(
 					new User
 					{
 						FirstName = "User",
 						LastName = "Opcaic",
 						Created = DateTime.Now,
-						Username = "user",
+						UserName = "user",
 						RoleId = (long)UserRole.User,
-						PasswordHash = "3CFfbIw0//kGGeW5x26Bu/3FA6IqKAogIbf1fL/bLsg=",
 						Email = "user@opcaic.com",
-						EmailVerified = true,
+						EmailConfirmed = true,
 						LocalizationLanguage = "cs"
-					});
+					},
+					"Password"
+				);
 
 				AddEmailTemplates(context);
 

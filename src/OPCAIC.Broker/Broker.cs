@@ -85,10 +85,7 @@ namespace OPCAIC.Broker
 		public void StartBrokering()
 		{
 			shuttingDown = false;
-			socketThread =
-				new Thread(connector.EnterSocket) {Name = $"{connector.Identity} - Socket"};
-			consumerThread =
-				new Thread(connector.EnterConsumer) {Name = $"{connector.Identity} - Consumer"};
+			SetupThreads();
 			socketThread.Start();
 			consumerThread.Start();
 		}

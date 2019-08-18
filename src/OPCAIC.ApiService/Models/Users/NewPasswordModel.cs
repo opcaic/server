@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 
 namespace OPCAIC.ApiService.Models.Users
 {
@@ -7,14 +8,14 @@ namespace OPCAIC.ApiService.Models.Users
 	/// </summary>
 	public class NewPasswordModel
 	{
-		/// <summary>
-		///     Key, which was obtained
-		/// </summary>
-		public string PasswordKey { get; set; }
+		[ApiRequired]
+		[ApiEmailAddress]
+		public string Email { get; set; }
 
+		[ApiRequired]
 		public string OldPassword { get; set; }
 
-		[Required]
+		[ApiRequired]
 		public string NewPassword { get; set; }
 	}
 }

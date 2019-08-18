@@ -16,9 +16,6 @@ namespace OPCAIC.Services.Test
 		/// <inheritdoc />
 		public RepositoryTest(ITestOutputHelper output) : base(output)
 		{
-			var factory = new LoggerFactory();
-			factory.AddProvider(new XUnitLoggerProvider(output));
-
 			// random new name so tests can run in parallel
 			var dbName = Guid.NewGuid().ToString();
 
@@ -27,7 +24,6 @@ namespace OPCAIC.Services.Test
 				options.UseInMemoryDatabase(dbName);
 				options.EnableSensitiveDataLogging();
 				options.EnableDetailedErrors();
-				options.UseLoggerFactory(factory);
 			});
 		}
 

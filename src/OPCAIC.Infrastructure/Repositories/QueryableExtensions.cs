@@ -35,12 +35,12 @@ namespace OPCAIC.Infrastructure.Repositories
 			if (filter.Username != null)
 			{
 				query = query.Where(row
-					=> row.Username.ToUpper().StartsWith(filter.Username.ToUpper()));
+					=> row.UserName.ToUpper().StartsWith(filter.Username.ToUpper()));
 			}
 
 			if (filter.EmailVerified != null)
 			{
-				query = query.Where(row => row.EmailVerified == filter.EmailVerified.Value);
+				query = query.Where(row => row.EmailConfirmed == filter.EmailVerified.Value);
 			}
 
 			if (filter.UserRole != null)
@@ -60,7 +60,7 @@ namespace OPCAIC.Infrastructure.Repositories
 				case UserFilterDto.SortByEmail:
 					return query.Sort(row => row.Email, asc);
 				case UserFilterDto.SortByUsername:
-					return query.Sort(row => row.Username, asc);
+					return query.Sort(row => row.UserName, asc);
 				default:
 					return query.Sort(row => row.Id, asc);
 			}

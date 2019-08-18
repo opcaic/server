@@ -4,13 +4,14 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.DbContexts
 {
-	public class DataContext : DbContext
+	public class DataContext : IdentityDbContext<User, Role, long>
 	{
 		public DataContext(DbContextOptions<DataContext> options)
 			: base(options)
@@ -27,9 +28,7 @@ namespace OPCAIC.Infrastructure.DbContexts
 		public DbSet<Submission> Submissions { get; set; }
 		public DbSet<SubmissionValidation> SubmissionValidations { get; set; }
 		public DbSet<SubmissionMatchResult> SubmissionsMatchResults { get; set; }
-		public DbSet<User> Users { get; set; }
 		public DbSet<UserTournament> UserTournaments { get; set; }
-		public DbSet<UserRole> UserRoles { get; set; }
 
 		/// <inheritdoc />
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

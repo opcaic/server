@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Emails;
+using OPCAIC.Infrastructure.Identity;
 using OPCAIC.Services;
 
 namespace OPCAIC.ApiService.IoC
@@ -9,13 +10,17 @@ namespace OPCAIC.ApiService.IoC
 	{
 		public static void AddServices(this IServiceCollection services)
 		{
-			services.AddTransient<IUserService, UserService>()
+			services
+				.AddTransient<IEmailService, EmailService>()
+				.AddTransient<IUserManager, UserManager>()
 				.AddTransient<IStorageService, StorageService>()
 				.AddTransient<IGamesService, GamesService>()
-				.AddTransient<IEmailService, EmailService>()
-				.AddTransient<ITokenService, TokenService>()
 				.AddTransient<ITournamentsService, TournamentsService>()
+				.AddTransient<EmailSender>()
+				.AddHostedService<EmailCronService>()
 				.AddTransient<IDocumentService, DocumentService>()
+				.AddTransient<IFrontendUrlGenerator, FrontendUrlGenerator>()
+				.AddScoped<IModelValidationService, ModelValidationService>();
 				.AddTransient<IMatchService, MatchService>();
 		}
 	}

@@ -22,7 +22,27 @@
 
 		public static string InvalidEmailError => "field-invalid-email";
 
+		public static string InvalidUsernameError => "field-invalid-username";
+
 		public static string RangeError => "field-range-error";
+
+		#endregion
+
+		#region Password
+
+		public static string PasswordTooShort => "field-password-short";
+
+		public static string PasswordRequiresUnique => "field-password-unique-chars";
+
+		public static string PasswordRequiresNonAlphanumeric => "field-password-unique-chars";
+
+		public static string PasswordRequiresDigit => "field-password-digit";
+
+		public static string PasswordRequiresLower => "field-password-lower";
+
+		public static string PasswordRequiresUpper => "field-password-upper";
+
+		public static string PasswordMismatch => "field-password-mismatch";
 
 		#endregion
 
@@ -34,11 +54,17 @@
 
 		public static string UserUsernameConflict => "user-username-conflict";
 
-		public static string OldPasswordConflict => "old-password-conflict";
+		#endregion
 
-		public static string PasswordKeyConflict => "password-key-conflict";
+		#region Unauthorized user
 
-		public static string UserWithEmailNotFound => "user-with-email-not-found";
+		public static string LoginEmailNotConfirmed => "login-email-not-confirmed";
+
+		public static string LoginLockout => "login-lockout";
+
+		public static string LoginInvalid => "login-invalid";
+
+		public static string RefreshTokenInvalid => "invalid-token";
 
 		#endregion
 	}

@@ -80,7 +80,10 @@ namespace OPCAIC.Infrastructure.Emails
 			}
 			while (emails.Length > 0);
 
-			logger.LogInformation("{totalSent} emails was succesfully sent.", totalSent);
+			if (totalSent > 0)
+			{
+				logger.LogInformation("{totalSent} emails was succesfully sent.", totalSent);
+			}
 		}
 	}
 }

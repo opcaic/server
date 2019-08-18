@@ -2,7 +2,11 @@
 {
 	public static class LoggingTags
 	{
-		public const string UserName = "UserName";
+		public const string RefreshToken = "RefreshToken";
+
+		public const string IdentityResult = "IdentityResult";
+
+		public const string UserId = "UserId";
 		public const string UserEmail = "Email";
 
 		public const string MailId = "MailId";
