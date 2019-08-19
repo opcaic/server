@@ -35,7 +35,8 @@ namespace OPCAIC.ApiService
 			});
 		}
 
-		private static void CreateMap<TSource, TDto, TDestination>(this IMapperConfigurationExpression exp)
+		private static void CreateMap<TSource, TDto, TDestination>(
+			this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap<TSource, TDto>();
 			exp.CreateMap<TDto, TDestination>();
@@ -71,6 +72,7 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<UserProfileModel, UserProfileDto, User>();
 			exp.CreateMap<UserFilterModel, UserFilterDto>();
 
+			exp.CreateMap<User, UserReferenceDto>();
 			exp.CreateMap<UserReferenceDto, UserReferenceModel>();
 		}
 

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
@@ -14,10 +15,11 @@ namespace OPCAIC.ApiService.Services
 	public class DocumentService : IDocumentService
 	{
 		private readonly IDocumentRepository documentRepository;
-		private readonly ITournamentRepository tournamentRepository;
 		private readonly IMapper mapper;
+		private readonly ITournamentRepository tournamentRepository;
 
-		public DocumentService(IDocumentRepository documentRepository, ITournamentRepository tournamentRepository, IMapper mapper)
+		public DocumentService(IDocumentRepository documentRepository,
+			ITournamentRepository tournamentRepository, IMapper mapper)
 		{
 			this.documentRepository = documentRepository;
 			this.tournamentRepository = tournamentRepository;
@@ -28,7 +30,8 @@ namespace OPCAIC.ApiService.Services
 		public async Task<long> CreateAsync(NewDocumentModel document,
 			CancellationToken cancellationToken)
 		{
-			if (!await tournamentRepository.CheckTournamentExists(document.TournamentId))
+			if (!await tournamentRepository.ExistsByIdAsync(document.TournamentId,
+				cancellationToken))
 			{
 				throw new NotFoundException(nameof(Tournament), document.TournamentId);
 			}

@@ -15,19 +15,5 @@ namespace OPCAIC.Infrastructure.Repositories
 			: base(context, mapper, QueryableExtensions.Filter)
 		{
 		}
-
-		/// <inheritdoc />
-		public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
-		{
-			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
-			if (entity == null)
-			{
-				return false;
-			}
-
-			DbSet.Remove(entity);
-			await Context.SaveChangesAsync(cancellationToken);
-			return true;
-		}
 	}
 }
