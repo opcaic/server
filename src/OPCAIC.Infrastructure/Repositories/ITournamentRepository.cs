@@ -16,5 +16,7 @@ namespace OPCAIC.Infrastructure.Repositories
 
 		Task<bool> UpdateAsync(long id, UpdateTournamentDto dto,
 			CancellationToken cancellationToken);
+		
+		Task<bool> CheckTournamentExists(long id);
 	}
 }

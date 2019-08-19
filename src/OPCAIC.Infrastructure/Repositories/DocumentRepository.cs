@@ -94,10 +94,5 @@ namespace OPCAIC.Infrastructure.Repositories
 			await Context.SaveChangesAsync(cancellationToken);
 			return true;
 		}
-
-		public bool CheckTournamentExists(long id)
-		{
-			return Context.Set<Tournament>().Any(t => t.Id == id);
-		}
 	}
 }

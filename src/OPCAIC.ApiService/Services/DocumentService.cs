@@ -14,11 +14,13 @@ namespace OPCAIC.ApiService.Services
 	public class DocumentService : IDocumentService
 	{
 		private readonly IDocumentRepository documentRepository;
+		private readonly ITournamentRepository tournamentRepository;
 		private readonly IMapper mapper;
 
-		public DocumentService(IDocumentRepository documentRepository, IMapper mapper)
+		public DocumentService(IDocumentRepository documentRepository, ITournamentRepository tournamentRepository, IMapper mapper)
 		{
 			this.documentRepository = documentRepository;
+			this.tournamentRepository = tournamentRepository;
 			this.mapper = mapper;
 		}
 
@@ -26,7 +28,7 @@ namespace OPCAIC.ApiService.Services
 		public async Task<long> CreateAsync(NewDocumentModel document,
 			CancellationToken cancellationToken)
 		{
-			if (!documentRepository.CheckTournamentExists(document.TournamentId))
+			if (!await tournamentRepository.CheckTournamentExists(document.TournamentId))
 			{
 				throw new NotFoundException(nameof(Tournament), document.TournamentId);
 			}

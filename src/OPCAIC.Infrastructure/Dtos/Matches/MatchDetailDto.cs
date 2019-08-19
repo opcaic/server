@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using OPCAIC.Infrastructure.Dtos.Documents;
+using OPCAIC.Infrastructure.Dtos.Submissions;
 
 namespace OPCAIC.Infrastructure.Dtos.Matches
 {

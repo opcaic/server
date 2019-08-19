@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.Tournaments;
 
 namespace OPCAIC.ApiService.Models.Matches
