@@ -37,10 +37,10 @@ namespace OPCAIC.ApiService.Test.Controllers
 
 		private Mock<IFrontendUrlGenerator> FrontendUrlGeneratorMock { get; }
 
-		private async Task AssertUnauthorizedMessage(string errorCode, Func<Task> testCode)
+		private async Task AssertUnauthorizedCode(string errorCode, Func<Task> testCode)
 		{
 			var ex = await Assert.ThrowsAsync<UnauthorizedException>(testCode);
-			Assert.Equal(errorCode, ex.Message);
+			Assert.Equal(errorCode, ex.Code);
 		}
 
 		private async Task AssertInvalidModel(int statusCode, string errorCode, Func<Task> testCode)
@@ -178,7 +178,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			await DoCreateUser(userModel, true);
 
-			await AssertUnauthorizedMessage(ValidationErrorCodes.LoginInvalid,
+			await AssertUnauthorizedCode(ValidationErrorCodes.LoginInvalid,
 				() => DoLogin(userModel.Email, "wrong pass"));
 		}
 
@@ -187,7 +187,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			await DoCreateUser(userModel, true);
 
-			await AssertUnauthorizedMessage(ValidationErrorCodes.LoginInvalid,
+			await AssertUnauthorizedCode(ValidationErrorCodes.LoginInvalid,
 				() => DoLogin("aaaaaaa@a.com", "wrong pass"));
 		}
 
@@ -196,7 +196,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			await DoCreateUser(userModel);
 
-			await AssertUnauthorizedMessage(ValidationErrorCodes.LoginEmailNotConfirmed,
+			await AssertUnauthorizedCode(ValidationErrorCodes.LoginEmailNotConfirmed,
 				() => DoLogin(userModel.Email, userModel.Password));
 		}
 
@@ -321,7 +321,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			var identity = await Login_Success();
 
-			await AssertUnauthorizedMessage(ValidationErrorCodes.RefreshTokenInvalid,
+			await AssertUnauthorizedCode(ValidationErrorCodes.RefreshTokenInvalid,
 			() => Controller.RefreshAsync(identity.Id, new RefreshToken { Token = "eafef" }, CancellationToken));
 
 			await Assert.ThrowsAsync<NotFoundException>(() => Controller.RefreshAsync(

@@ -8,7 +8,7 @@ namespace OPCAIC.ApiService.Exceptions
 		/// <inheritdoc />
 		public ModelValidationException(int statusCode,
 			IEnumerable<ValidationErrorBase> validationErrors) : base(
-			statusCode, null, null)
+			statusCode, nameof(ModelValidationException), null)
 		{
 			ValidationErrors = validationErrors;
 		}
