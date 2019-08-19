@@ -34,12 +34,9 @@ namespace OPCAIC.ApiService
 		public Startup(IConfiguration configuration)
 		{
 			Configuration = configuration;
-			SpaRoot = Configuration["SPA_ROOT"];
 		}
 
 		public IConfiguration Configuration { get; }
-
-		public string SpaRoot { get; }
 
 		public void ConfigureSecurity(IServiceCollection services)
 		{
@@ -117,15 +114,6 @@ namespace OPCAIC.ApiService
 					};
 				});
 
-			// Frontend app sources
-			if (SpaRoot != null)
-			{
-				services.AddSpaStaticFiles(config =>
-				{
-					config.RootPath = SpaRoot;
-				});
-			}
-
 			ConfigureSecurity(services);
 
 			services.AddCors(options =>
@@ -180,15 +168,6 @@ namespace OPCAIC.ApiService
 
 			app.UseSwagger(SwaggerConfig.SetupSwagger);
 			app.UseSwaggerUI(SwaggerConfig.SetupSwaggerUi);
-
-			// Serve the frontend SPA
-			if (SpaRoot != null)
-			{
-				app.UseStaticFiles();
-				app.UseDefaultFiles();
-				app.UseSpaStaticFiles();
-				app.UseSpa(spa => { });
-			}
 
 			app.UseMvc();
 		}

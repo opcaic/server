@@ -17,5 +17,8 @@
 		/// <param name="token">Password reset token issued by the application.</param>
 		/// <returns></returns>
 		string EmailConfirmLink(long userId, string token);
+
+		/// <inheritdoc />
+		string TournamentInviteUrl(long tournamentId);
 	}
 }

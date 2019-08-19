@@ -8,7 +8,8 @@ using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
-	public class UserTournamentRepository : Repository<UserTournament>, IUserTournamentRepository
+	public class UserTournamentRepository
+		: RepositoryBase<UserTournament>, IUserTournamentRepository
 	{
 		public UserTournamentRepository(DataContext context, IMapper mapper)
 			: base(context, mapper)
@@ -29,7 +30,7 @@ namespace OPCAIC.Infrastructure.Repositories
 			var entity = new UserTournament {UserId = userId, TournamentId = tournamentId};
 
 			DbSet.Add(entity);
-			return Context.SaveChangesAsync(cancellationToken);
+			return SaveChangesAsync(cancellationToken);
 		}
 	}
 }

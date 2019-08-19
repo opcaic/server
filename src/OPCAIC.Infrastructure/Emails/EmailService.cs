@@ -29,9 +29,9 @@ namespace OPCAIC.Infrastructure.Emails
 		{
 			var user = await userRepository.FindRecipientAsync(recipientId, cancellationToken);
 
-			var emailDto = new UserVerificationEmailDto {VerificationUrl = verificationUrl};
+			var emailDto = new UserVerificationEmailDto { VerificationUrl = verificationUrl };
 
-			await EnqueueEmailAsync(emailDto, user.Email, user.LocalizationLanguage, cancellationToken);		  
+			await EnqueueEmailAsync(emailDto, user.Email, user.LocalizationLanguage, cancellationToken);
 		}
 
 		public async Task SendPasswordResetEmailAsync(string recipientEmail, string resetUrl,
@@ -39,7 +39,7 @@ namespace OPCAIC.Infrastructure.Emails
 		{
 			var user = await userRepository.FindRecipientAsync(recipientEmail, cancellationToken);
 
-			var emailDto = new PasswordResetEmailDto {ResetUrl = resetUrl};
+			var emailDto = new PasswordResetEmailDto { ResetUrl = resetUrl };
 
 			await EnqueueEmailAsync(emailDto, user.Email, user.LocalizationLanguage,
 				cancellationToken);
@@ -64,6 +64,19 @@ namespace OPCAIC.Infrastructure.Emails
 			};
 
 			await emailRepository.EnqueueEmailAsync(emaildto, cancellationToken);
+		}
+
+		public async Task SendTournamentInvitationEmailAsync(string recipientEmail, string tournamentUrl, CancellationToken cancellationToken)
+		{
+			var user = await userRepository.FindRecipientAsync(recipientEmail, cancellationToken);
+
+			var emailDto = new TournamentInvitationEmailDto { TournamentUrl = tournamentUrl };
+
+			if (user == null)
+#warning Default language code needs to be placed somewhere to configuration or to constant
+				await EnqueueEmailAsync(emailDto, recipientEmail, "en", cancellationToken);
+			else
+				await EnqueueEmailAsync(emailDto, user.Email, user.LocalizationLanguage, cancellationToken);
 		}
 	}
 }

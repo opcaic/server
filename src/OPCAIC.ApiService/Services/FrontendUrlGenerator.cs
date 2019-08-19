@@ -23,5 +23,11 @@ namespace OPCAIC.ApiService.Services
 		{
 			return $"{config.FrontendUrl}/confirmEmail?userId={userId}&token={token}";
 		}
+
+		/// <inheritdoc />
+		public string TournamentInviteUrl(long tournamentId)
+		{
+			return $"{config.FrontendUrl}/tournament/{tournamentId}";
+		}
 	}
 }

@@ -35,14 +35,19 @@ namespace OPCAIC.ApiService
 			});
 		}
 
+		private static void CreateMap<TSource, TDto, TDestination>(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<TSource, TDto>();
+			exp.CreateMap<TDto, TDestination>();
+		}
+
 		private static void AddDocumentMapping(this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap<NewDocumentModel, NewDocumentDto>();
 
-			exp.CreateMap<Document, DocumentDetailDto>();
-			exp.CreateMap<DocumentDetailDto, DocumentDetailModel>();
+			exp.CreateMap<Document, DocumentDetailDto, DocumentDetailModel>();
+			exp.CreateMap<UpdateDocumentModel, UpdateDocumentDto, Document>();
 
-			exp.CreateMap<UpdateDocumentModel, UpdateDocumentDto>();
 			exp.CreateMap<DocumentFilterModel, DocumentFilterDto>();
 		}
 
@@ -63,10 +68,9 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<UserPreviewDto, UserPreviewModel>();
 
-			exp.CreateMap<UserProfileModel, UserProfileDto>();
+			exp.CreateMap<UserProfileModel, UserProfileDto, User>();
 			exp.CreateMap<UserFilterModel, UserFilterDto>();
 
-			exp.CreateMap<User, UserReferenceDto>();
 			exp.CreateMap<UserReferenceDto, UserReferenceModel>();
 		}
 
@@ -74,13 +78,11 @@ namespace OPCAIC.ApiService
 		{
 			exp.CreateMap<NewGameModel, NewGameDto>();
 
-			exp.CreateMap<Game, GamePreviewDto>();
-			exp.CreateMap<Game, GameDetailDto>();
+			exp.CreateMap<Game, GameDetailDto, GameDetailModel>();
+			exp.CreateMap<Game, GamePreviewDto, GamePreviewModel>();
+			exp.CreateMap<Game, GameReferenceDto, GameReferenceModel>();
+			exp.CreateMap<UpdateGameModel, UpdateGameDto, Game>();
 
-			exp.CreateMap<GamePreviewDto, GamePreviewModel>();
-			exp.CreateMap<GameDetailDto, GameDetailModel>();
-
-			exp.CreateMap<UpdateGameModel, UpdateGameDto>();
 			exp.CreateMap<GameFilterModel, GameFilterDto>();
 
 			exp.CreateMap<Game, GameReferenceDto>();
@@ -91,17 +93,14 @@ namespace OPCAIC.ApiService
 		{
 			exp.CreateMap<NewTournamentModel, NewTournamentDto>();
 
-			exp.CreateMap<Tournament, TournamentPreviewDto>();
-			exp.CreateMap<Tournament, TournamentDetailDto>();
-			exp.CreateMap<Tournament, TournamentReferenceDto>();
+			exp.CreateMap<Tournament, TournamentDetailDto, TournamentDetailModel>();
+			exp.CreateMap<Tournament, TournamentPreviewDto, TournamentPreviewModel>();
+			exp.CreateMap<Tournament, TournamentReferenceDto, TournamentReferenceModel>();
+			exp.CreateMap<UpdateTournamentModel, UpdateTournamentDto, Tournament>();
 
-			exp.CreateMap<TournamentReferenceDto, TournamentReferenceModel>();
-
-			exp.CreateMap<TournamentPreviewDto, TournamentPreviewModel>();
-			exp.CreateMap<TournamentDetailDto, TournamentDetailModel>();
-
-			exp.CreateMap<UpdateTournamentModel, UpdateTournamentDto>();
 			exp.CreateMap<TournamentFilterModel, TournamentFilterDto>();
+
+			exp.CreateMap<TournamentParticipantDto, TournamentParticipantPreview>();
 		}
 
 		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)

@@ -7,7 +7,6 @@ namespace OPCAIC.ApiService.Models.Tournaments
 	public class UpdateTournamentModel
 	{
 		[ApiRequired]
-		[ApiMinLength(1)]
 		[ApiMaxLength(StringLengths.TournamentName)]
 		public string Name { get; set; }
 

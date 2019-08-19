@@ -81,5 +81,10 @@ namespace OPCAIC.Infrastructure.Entities
 		///     When the evaluation finished.
 		/// </summary>
 		public DateTime EvaluationFinished { get; set; }
+
+		/// <summary>
+		///		Participants of tournament.
+		/// </summary>
+		public virtual ICollection<TournamentParticipant> Participants { get; set; }
 	}
 }

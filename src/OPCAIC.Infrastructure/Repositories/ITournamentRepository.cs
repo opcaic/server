@@ -1,11 +1,10 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
+﻿using OPCAIC.Infrastructure.Dtos.Tournaments;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
 	public interface ITournamentRepository
+		: IGenericRepository<TournamentFilterDto, TournamentPreviewDto, TournamentDetailDto,
+			NewTournamentDto, UpdateTournamentDto>
 	{
 		Task<long> CreateAsync(NewTournamentDto tournament, CancellationToken cancellationToken);
 

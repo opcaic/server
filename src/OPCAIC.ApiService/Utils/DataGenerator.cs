@@ -142,6 +142,15 @@ namespace OPCAIC.ApiService.Utils
 							context.Set<Tournament>()
 								.Single(x => x.Name == "Chess ELO tournament"),
 						Content =
+							"2048 is a really _easy_ and _fun_ game. The only rule is that you can merge **two blocks with same number** to create a block with **twice as big number**. The more blocks you merge the blocks, the better!"
+					},
+					new Document
+					{
+						Name = "ELO short description",
+						Tournament =
+							context.Set<Tournament>()
+								.Single(x => x.Name == "Chess ELO tournament"),
+						Content =
 							"Elo is a statistical method of ranking players' abilities. In that system, every player is given a number of **Elo points** representing his skill, and after each match, points of _both_ participating players are updated according to the _expectability_ of the match outcome."
 					});
 				context.SaveChanges();
@@ -312,6 +321,22 @@ namespace OPCAIC.ApiService.Utils
 					SubjectTemplate = "Password reset",
 					BodyTemplate =
 						"<html><body>Move to page, where you can change your password by clicking on: {{ResetUrl}}.</body></html>"
+				},
+				new EmailTemplate
+				{
+					LanguageCode = "cs",
+					Name = "tournamentInvitationEmail",
+					SubjectTemplate = "Přídání do turnaje",
+					BodyTemplate =
+						"<html><body>Byli ste pozváni do následujícího turnaje: {{TournamentUrl}}.</body></html>"
+				},
+				new EmailTemplate
+				{
+					LanguageCode = "en",
+					Name = "tournamentInvitationEmail",
+					SubjectTemplate = "Tournament invitation",
+					BodyTemplate =
+						"<html><body>You were invited to following tournament: {{TournamentUrl}}.</body></html>"
 				});
 		}
 	}

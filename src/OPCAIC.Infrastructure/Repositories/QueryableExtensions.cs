@@ -192,7 +192,8 @@ namespace OPCAIC.Infrastructure.Repositories
 
 			if (filter.UserId != null)
 			{
-				query = query.Where(row => row.Participations.Any(p => p.Submission.AuthorId == filter.UserId));
+				query = query.Where(row
+					=> row.Participations.Any(p => p.Submission.AuthorId == filter.UserId));
 			}
 
 			if (filter.Executed != null)

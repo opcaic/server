@@ -12,10 +12,12 @@ using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
-	public class MatchRepository : Repository<Match>, IMatchRepository
+	public class MatchRepository
+		: LookupRepository<Match, MatchFilterDto, MatchDetailDto, MatchDetailDto>, IMatchRepository
 	{
 		/// <inheritdoc />
-		public MatchRepository(DataContext context, IMapper mapper) : base(context, mapper)
+		public MatchRepository(DataContext context, IMapper mapper)
+			: base(context, mapper, QueryableExtensions.Filter)
 		{
 		}
 
@@ -62,21 +64,9 @@ namespace OPCAIC.Infrastructure.Repositories
 		public Task<MatchExecutionStorageDto> FindExecutionForStorageAsync(long id,
 			CancellationToken cancellationToken = default)
 		{
-			return Context.Set<MatchExecution>().Where(e => e.Id == id)
+			return GetDbSet<MatchExecution>().Where(e => e.Id == id)
 				.ProjectTo<MatchExecutionStorageDto>(Mapper.ConfigurationProvider)
 				.SingleOrDefaultAsync(cancellationToken);
-		}
-
-		/// <inheritdoc />
-		public Match Find(long matchId, long tournamentId)
-		{
-			return DbSet.Find(new {Id = matchId, TournamentId = tournamentId});
-		}
-
-		/// <inheritdoc />
-		public Task<Match> FindAsync(long matchId, long tournamentId)
-		{
-			return DbSet.FindAsync(new {Id = matchId, TournamentId = tournamentId});
 		}
 	}
 }
