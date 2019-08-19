@@ -11,7 +11,7 @@ namespace OPCAIC.ApiService.Exceptions
 		}
 
 		public ConflictException(string code, string message, string field)
-			: this(new ValidationError(code, message, field))
+			: this(new ValidationError(code, message ?? nameof(ConflictException), field))
 		{
 		}
 	}

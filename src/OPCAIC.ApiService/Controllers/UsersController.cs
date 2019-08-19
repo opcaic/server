@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -93,13 +94,13 @@ namespace OPCAIC.ApiService.Controllers
 				if (result.IsNotAllowed)
 				{
 					logger.LoginNotAllowed(user);
-					throw new UnauthorizedException(ValidationErrorCodes.LoginEmailNotConfirmed);
+					throw new UnauthorizedException(null, ValidationErrorCodes.LoginEmailNotConfirmed);
 				}
 
 				if (result.IsLockedOut)
 				{
 					logger.LoginLockout(user);
-					throw new UnauthorizedException(ValidationErrorCodes.LoginLockout);
+					throw new UnauthorizedException(null, ValidationErrorCodes.LoginLockout);
 				}
 
 				logger.LoginInvalidPassword(user);
@@ -109,7 +110,7 @@ namespace OPCAIC.ApiService.Controllers
 				logger.LoginInvalidMail(credentials.Email);
 			}
 
-			throw new UnauthorizedException(ValidationErrorCodes.LoginInvalid);
+			throw new UnauthorizedException(null, ValidationErrorCodes.LoginInvalid);
 		}
 
 		/// <summary>
@@ -138,7 +139,7 @@ namespace OPCAIC.ApiService.Controllers
 
 			if (!await userManager.VerifyJwtRefreshToken(user, model.Token))
 			{
-				throw new UnauthorizedException(ValidationErrorCodes.RefreshTokenInvalid);
+				throw new UnauthorizedException(null, ValidationErrorCodes.RefreshTokenInvalid);
 			}
 
 			return await userManager.GenerateUserTokensAsync(user);

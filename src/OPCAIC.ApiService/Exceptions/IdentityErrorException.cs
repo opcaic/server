@@ -18,7 +18,7 @@ namespace OPCAIC.ApiService.Exceptions
 		}
 
 		/// <summary>
-		///     Errors obtained from the failed <see cref="IdentityResult"/>.
+		///     Errors obtained from the failed <see cref="IdentityResult" />.
 		/// </summary>
 		public IEnumerable<IdentityError> IdentityErrors { get; }
 

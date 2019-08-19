@@ -6,8 +6,9 @@ namespace OPCAIC.ApiService.Exceptions
 	public class ModelValidationException : ApiException
 	{
 		/// <inheritdoc />
-		public ModelValidationException(int statusCode, IEnumerable<ValidationErrorBase> validationErrors) : base(
-			statusCode, "Invalid model.")
+		public ModelValidationException(int statusCode,
+			IEnumerable<ValidationErrorBase> validationErrors) : base(
+			statusCode, nameof(ModelValidationException), null)
 		{
 			ValidationErrors = validationErrors;
 		}
