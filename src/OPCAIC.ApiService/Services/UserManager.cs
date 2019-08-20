@@ -66,8 +66,10 @@ namespace OPCAIC.Infrastructure.Identity
 		{
 			var claims = await base.GetClaimsAsync(user);
 
-			claims.Add(new Claim(RolePolicy.PolicyName, ((UserRole)user.RoleId).ToString()));
 			claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString(), ClaimValueTypes.Integer64));
+			claims.Add(new Claim(ClaimTypes.Name, user.UserName, ClaimValueTypes.Integer64));
+			claims.Add(new Claim(ClaimTypes.Email, user.Email, ClaimValueTypes.Email));
+			claims.Add(new Claim(RolePolicy.PolicyName, ((UserRole)user.RoleId).ToString()));
 
 			return claims;
 		}

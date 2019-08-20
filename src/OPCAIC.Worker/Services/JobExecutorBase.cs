@@ -226,14 +226,16 @@ namespace OPCAIC.Worker.Services
 				subs.Select(s => s.BotInfo));
 		}
 
-		private async Task<(SubTaskResult status, T result)> Invoke<T, U>(string name,
-			Func<EntryPointConfiguration, U, DirectoryInfo, CancellationToken, Task<T>> entryPoint,
-			U botOrBots)
-			where T : GameModuleResult
+		private async Task<(SubTaskResult status, TModuleResult result)>
+			Invoke<TModuleResult, TArg>(string name,
+				Func<EntryPointConfiguration, TArg, DirectoryInfo, CancellationToken,
+					Task<TModuleResult>> entryPoint,
+				TArg botOrBots)
+			where TModuleResult : GameModuleResult
 		{
 			using (Logger.EntryPointScope(name))
 			{
-				T result = null;
+				TModuleResult result = null;
 				SubTaskResult status;
 				try
 				{
@@ -258,30 +260,36 @@ namespace OPCAIC.Worker.Services
 							throw new ArgumentOutOfRangeException();
 					}
 				}
-				catch (Exception e) when (e is TaskCanceledException ||
-					e is OperationCanceledException)
+				catch (Exception e)
+					when ((e is TaskCanceledException || e is OperationCanceledException) &&
+						DoLog(LogLevel.Warning, 0, null,
+							$"{{{LoggingTags.GameModuleEntryPoint}}} stage was aborted", name))
 				{
-					Logger.LogWarning($"{{{LoggingTags.GameModuleEntryPoint}}} stage was aborted",
-						name);
 					status = SubTaskResult.Aborted;
 				}
 				catch (GameModuleException e)
-				{
-					Logger.LogError(LoggingEvents.GameModuleFailure, e,
+					when (DoLog(LogLevel.Error, LoggingEvents.GameModuleFailure, e,
 						$"{{{LoggingTags.GameModuleEntryPoint}}} stage failed with exception ",
-						name);
+						name))
+				{
 					status = SubTaskResult.ModuleError;
 				}
 				catch (Exception e)
-				{
-					Logger.LogCritical(LoggingEvents.GameModuleFailure, e,
+					when (DoLog(LogLevel.Critical, LoggingEvents.GameModuleFailure, e,
 						$"Invocation of {{{LoggingTags.GameModuleEntryPoint}}} stage failed with exception ",
-						name);
+						name))
+				{
 					status = SubTaskResult.PlatformError;
 				}
 
 				return (status, result);
 			}
+		}
+
+		private bool DoLog(LogLevel level, EventId eventId, Exception e, string message,
+			params object[] args)
+		{
+			return true;
 		}
 
 		/// <summary>

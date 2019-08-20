@@ -162,12 +162,14 @@ namespace OPCAIC.ApiService
 				app.UseHttpsRedirection();
 			}
 
-			app.UseAuthentication();
-			app.UseMiddleware<ExceptionMiddleware>();
-			app.UseMiddleware<DbTransactionMiddleware>();
-
 			app.UseSwagger(SwaggerConfig.SetupSwagger);
 			app.UseSwaggerUI(SwaggerConfig.SetupSwaggerUi);
+
+			app.UseAuthentication();
+
+			app.UseMiddleware<ExceptionMiddleware>();
+			app.UseMiddleware<LoggingMiddleware>();
+			app.UseMiddleware<DbTransactionMiddleware>();
 
 			app.UseMvc();
 		}

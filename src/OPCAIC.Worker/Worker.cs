@@ -151,12 +151,9 @@ namespace OPCAIC.Worker
 						}
 					}
 				}
-				catch (Exception e)
+				// log in when handler to preserve scopes.
+				catch (Exception e) when (DoLogExecutionFailure(e, request))
 				{
-					logger.LogError(LoggingEvents.JobExecutionFailure, e,
-						"Exception occured when processing message" +
-						$"{{{LoggingTags.JobPayload}}}",
-						JsonConvert.SerializeObject(request));
 					response.JobStatus = JobStatus.Error;
 				}
 
@@ -166,6 +163,16 @@ namespace OPCAIC.Worker
 					connector.SendMessage(response);
 				}
 			}
+		}
+
+		private bool DoLogExecutionFailure(Exception e, object request)
+		{
+			logger.LogError(LoggingEvents.JobExecutionFailure, e,
+				"Exception occured when processing message" +
+				$"{{{LoggingTags.JobPayload}}}",
+				JsonConvert.SerializeObject(request));
+
+			return true;
 		}
 
 		public void Run()

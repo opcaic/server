@@ -2,12 +2,19 @@
 {
 	public static class LoggingTags
 	{
+		public const string HttpStatusCode = "StatusCode";
+		public const string HttpRequestPath = "RequestPath";
+		public const string HttpRequestMethod = "HttpRequestMethod";
+		public const string HttpElapsedTime = "ElapsedMilliseconds";
+
 		public const string RefreshToken = "RefreshToken";
 
 		public const string IdentityResult = "IdentityResult";
 
 		public const string UserId = "UserId";
-		public const string UserEmail = "Email";
+		public const string UserEmail = "UserEmail";
+		public const string UserName = "Username";
+		public const string UserRole = "UserRole";
 
 		public const string MailId = "MailId";
 
