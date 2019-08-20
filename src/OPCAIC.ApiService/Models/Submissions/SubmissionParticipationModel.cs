@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.ApiService.Models.Matches
+﻿namespace OPCAIC.ApiService.Models.Submissions
 {
 	public class SubmissionParticipationModel
 	{

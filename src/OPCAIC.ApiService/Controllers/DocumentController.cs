@@ -107,5 +107,23 @@ namespace OPCAIC.ApiService.Controllers
 		{
 			return documentService.UpdateAsync(id, model, cancellationToken);
 		}
+
+		/// <summary>
+		///     Deletes a document with given id.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		[Authorize(RolePolicy.Organizer)]
+		[HttpDelete("{id}")]
+		[ProducesResponseType(typeof(DocumentDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public Task DeleteAsync(long id, CancellationToken cancellationToken)
+		{
+			return documentService.DeleteAsync(id, cancellationToken);
+		}
 	}
 }

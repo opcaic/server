@@ -2,6 +2,7 @@
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.Models.Matches;
+using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.Infrastructure.Dtos;
@@ -10,6 +11,7 @@ using OPCAIC.Infrastructure.Dtos.Emails;
 using OPCAIC.Infrastructure.Dtos.EmailTemplates;
 using OPCAIC.Infrastructure.Dtos.Games;
 using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
@@ -33,7 +35,8 @@ namespace OPCAIC.ApiService
 			});
 		}
 
-		private static void CreateMap<TSource, TDto, TDestination>(this IMapperConfigurationExpression exp)
+		private static void CreateMap<TSource, TDto, TDestination>(
+			this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap<TSource, TDto>();
 			exp.CreateMap<TDto, TDestination>();
@@ -69,6 +72,7 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<UserProfileModel, UserProfileDto, User>();
 			exp.CreateMap<UserFilterModel, UserFilterDto>();
 
+			exp.CreateMap<User, UserReferenceDto>();
 			exp.CreateMap<UserReferenceDto, UserReferenceModel>();
 		}
 
@@ -104,7 +108,12 @@ namespace OPCAIC.ApiService
 		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap<Submission, SubmissionStorageDto>();
-			exp.CreateMap<Submission, SubmissionReferenceDto, SubmissionReferenceModel>();
+
+			exp.CreateMap<Submission, SubmissionReferenceDto>();
+			exp.CreateMap<SubmissionReferenceDto, SubmissionReferenceModel>();
+
+			exp.CreateMap<SubmissionParticipation, SubmissionParticipationDto>();
+			exp.CreateMap<SubmissionParticipationDto, SubmissionParticipationModel>();
 		}
 
 		private static void AddEmailMapping(this IMapperConfigurationExpression exp)
@@ -119,16 +128,19 @@ namespace OPCAIC.ApiService
 
 		private static void AddMatchMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<Match, MatchDetailDto, MatchDetailModel>();
-			exp.CreateMap<Match, MatchReferenceDto, MatchReferenceModel>();
+			exp.CreateMap<Match, MatchDetailDto>();
 
+			exp.CreateMap<MatchDetailDto, MatchDetailModel>();
 			exp.CreateMap<MatchFilterModel, MatchFilterDto>();
 
-			exp.CreateMap<SubmissionParticipation, SubmissionParticipationDto, SubmissionParticipationModel>();
+			exp.CreateMap<Match, MatchReferenceDto>();
+			exp.CreateMap<MatchReferenceDto, MatchReferenceModel>();
 
-			exp.CreateMap<MatchExecution, MatchExecutionDto, MatchExecutionModel>();
+			exp.CreateMap<MatchExecution, MatchExecutionDto>();
+			exp.CreateMap<MatchExecutionDto, MatchExecutionModel>();
 
-			exp.CreateMap<SubmissionMatchResult, SubmissionMatchResultDto, SubmissionMatchResultModel>();
+			exp.CreateMap<SubmissionMatchResult, SubmissionMatchResultDto>();
+			exp.CreateMap<SubmissionMatchResultDto, SubmissionMatchResultModel>();
 
 			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
 		}

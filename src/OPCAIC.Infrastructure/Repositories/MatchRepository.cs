@@ -35,6 +35,32 @@ namespace OPCAIC.Infrastructure.Repositories
 		}
 
 		/// <inheritdoc />
+		public Task<MatchDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken)
+		{
+			return DbSet
+				.Where(row => row.Id == id)
+				.ProjectTo<MatchDetailDto>(Mapper.ConfigurationProvider)
+				.SingleOrDefaultAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public async Task<ListDto<MatchDetailDto>> GetByFilterAsync(MatchFilterDto filter,
+			CancellationToken cancellationToken)
+		{
+			var query = DbSet.Filter(filter);
+
+			return new ListDto<MatchDetailDto>
+			{
+				List = await query
+					.Skip(filter.Offset)
+					.Take(filter.Count)
+					.ProjectTo<MatchDetailDto>(Mapper.ConfigurationProvider)
+					.ToListAsync(cancellationToken),
+				Total = await query.CountAsync(cancellationToken)
+			};
+		}
+
+		/// <inheritdoc />
 		public Task<MatchExecutionStorageDto> FindExecutionForStorageAsync(long id,
 			CancellationToken cancellationToken = default)
 		{

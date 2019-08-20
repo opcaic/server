@@ -142,18 +142,6 @@ namespace OPCAIC.ApiService.Utils
 							context.Set<Tournament>()
 								.Single(x => x.Name == "Chess ELO tournament"),
 						Content =
-							"Elo is a statistical method of ranking players' abilities. In that system, every player is given a number of **Elo points** representing his skill, and after each match, points of _both_ participating players are updated according to the _expectability_ of the match outcome."
-					});
-				context.SaveChanges();
-
-				context.Set<Document>().AddRange(
-					new Document
-					{
-						Name = "2048 short description",
-						Tournament =
-							context.Set<Tournament>()
-								.Single(x => x.Name == "2048 single player"),
-						Content =
 							"2048 is a really _easy_ and _fun_ game. The only rule is that you can merge **two blocks with same number** to create a block with **twice as big number**. The more blocks you merge the blocks, the better!"
 					},
 					new Document

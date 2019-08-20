@@ -122,6 +122,25 @@ namespace OPCAIC.Infrastructure.Repositories
 			return true;
 		}
 
+		/// <summary>
+		///     Deletes an entity with given id from the database.
+		/// </summary>
+		/// <param name="id">Id of the entity to delete.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
+		{
+			var entity = await DbSet.SingleOrDefaultAsync(e => e.Id == id, cancellationToken: cancellationToken);
+			if (entity == null)
+			{
+				return false;
+			}
+
+			DbSet.Remove(entity);
+			await SaveChangesAsync(cancellationToken);
+			return true;
+		}
+
 		/// <inheritdoc />
 		public Task<bool> ExistsByIdAsync(long id, CancellationToken cancellationToken = default)
 		{

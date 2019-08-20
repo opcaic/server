@@ -7,8 +7,7 @@ namespace OPCAIC.Infrastructure.Repositories
 {
 	public class TournamentRepository
 		: GenericRepository<Tournament, TournamentFilterDto, TournamentPreviewDto,
-				TournamentDetailDto, NewTournamentDto, UpdateTournamentDto>,
-			ITournamentRepository
+			TournamentDetailDto, NewTournamentDto, UpdateTournamentDto>, ITournamentRepository
 	{
 		/// <inheritdoc />
 		public TournamentRepository(DataContext context, IMapper mapper)

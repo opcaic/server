@@ -25,6 +25,11 @@ namespace OPCAIC.Infrastructure.Repositories
 		Task<IEnumerable<Match>> AllMatchesFromTournamentAsync(long tournamentId,
 			CancellationToken cancellationToken = default);
 
+		Task<MatchDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken);
+
+		Task<ListDto<MatchDetailDto>> GetByFilterAsync(MatchFilterDto filter,
+			CancellationToken cancellationToken);
+
 		// TODO: standalone repository for match executions?
 		/// <summary>
 		///     Returns data needed to find where the archive with results of match execution with given id is stored.

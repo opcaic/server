@@ -1,4 +1,6 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.Documents
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace OPCAIC.Infrastructure.Dtos.Documents
 {
 	public class NewDocumentDto
 	{
