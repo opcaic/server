@@ -7,6 +7,8 @@ namespace OPCAIC.ApiService.Services
 {
 	public interface ITournamentsService
 	{
+		Task<bool> ExistsByIdAsync(long id, CancellationToken cancellationToken);
+
 		Task<long> CreateAsync(NewTournamentModel tournament, CancellationToken cancellationToken);
 
 		Task<ListModel<TournamentPreviewModel>> GetByFilterAsync(TournamentFilterModel filter,

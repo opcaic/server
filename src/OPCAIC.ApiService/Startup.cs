@@ -19,7 +19,6 @@ using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Identity;
 using OPCAIC.Messaging.Config;
 using OPCAIC.Services;
 

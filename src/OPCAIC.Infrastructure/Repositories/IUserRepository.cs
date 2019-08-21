@@ -5,7 +5,8 @@ using OPCAIC.Infrastructure.Dtos.Users;
 namespace OPCAIC.Infrastructure.Repositories
 {
 	public interface IUserRepository
-		: ILookupRepository<UserFilterDto, UserPreviewDto, UserDetailDto>,
+		: IFilterRepository<UserFilterDto, UserPreviewDto>,
+			ILookupRepository<UserDetailDto>,
 			IUpdateRepository<UserProfileDto>
 	{
 		Task<EmailRecipientDto> FindRecipientAsync(long id, CancellationToken cancellationToken);

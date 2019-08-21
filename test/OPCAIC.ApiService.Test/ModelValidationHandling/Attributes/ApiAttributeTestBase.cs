@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Moq;
 using OPCAIC.ApiService.ModelValidationHandling;
@@ -10,12 +11,12 @@ namespace OPCAIC.ApiService.Test.ModelValidationHandling.Attributes
 {
 	public class ApiAttributeTestBase : ServiceTestBase
 	{
-		private readonly Mock<IModelValidationService> modelValidationService;
+		protected readonly Mock<IModelValidationService> ModelValidationService;
 
 		/// <inheritdoc />
 		public ApiAttributeTestBase(ITestOutputHelper output) : base(output)
 		{
-			modelValidationService = Services.Mock<IModelValidationService>();
+			ModelValidationService = Services.Mock<IModelValidationService>();
 		}
 
 		protected void AssertSameResult<TValue>(TValue value, ValidationAttribute apiAttribute,
@@ -26,8 +27,8 @@ namespace OPCAIC.ApiService.Test.ModelValidationHandling.Attributes
 			var expectedValidationResult = new ValidationResult(validationResultId);
 
 			// Setup IModelValidationService.ProcessValidationError()
-			modelValidationService
-				.Setup(x => x.ProcessValidationError(It.IsAny<ValidationResult>(),
+			ModelValidationService
+				.Setup(x => x.ProcessValidationError(It.IsAny<IEnumerable<string>>(),
 					It.IsAny<ValidationErrorBase>())).Returns(expectedValidationResult)
 				.Verifiable();
 
@@ -46,8 +47,8 @@ namespace OPCAIC.ApiService.Test.ModelValidationHandling.Attributes
 			{
 				Assert.Equal(expectedValidationResult, result);
 
-				modelValidationService.Verify(
-					x => x.ProcessValidationError(It.IsAny<ValidationResult>(),
+				ModelValidationService.Verify(
+					x => x.ProcessValidationError(It.IsAny<IEnumerable<string>>(),
 						It.IsAny<ValidationErrorBase>()), Times.Once);
 			}
 		}

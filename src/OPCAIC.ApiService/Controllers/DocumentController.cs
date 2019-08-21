@@ -28,8 +28,8 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[Authorize(RolePolicy.Public)]
-		[HttpGet(Name = nameof(GetDocumentsAsync))]
-		[ProducesResponseType(typeof(ListModel<DocumentDetailModel>), (int)HttpStatusCode.OK)]
+		[HttpGet]
+		[ProducesResponseType(typeof(ListModel<DocumentDetailModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -60,7 +60,7 @@ namespace OPCAIC.ApiService.Controllers
 			CancellationToken cancellationToken)
 		{
 			var id = await documentService.CreateAsync(model, cancellationToken);
-			return CreatedAtRoute(nameof(GetDocumentsAsync), new IdModel {Id = id});
+			return CreatedAtRoute(nameof(GetDocumentByIdAsync), new IdModel {Id = id});
 		}
 
 		/// <summary>
@@ -74,12 +74,12 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
 		[Authorize(RolePolicy.Organizer)]
-		[HttpGet("{id}")]
+		[HttpGet("{id}", Name = nameof(GetDocumentByIdAsync))]
 		[ProducesResponseType(typeof(DocumentDetailModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task<DocumentDetailModel> GetTournamentByIdAsync(long id,
+		public Task<DocumentDetailModel> GetDocumentByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
 			return documentService.GetByIdAsync(id, cancellationToken);

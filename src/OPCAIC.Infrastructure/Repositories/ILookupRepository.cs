@@ -1,11 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Dtos;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
-	public interface ILookupRepository<in TFilterDto, TPreviewDto, TDetailDto>
-		where TPreviewDto : class
+	public interface ILookupRepository<TDetailDto>
 	{
 		/// <summary>
 		///     Checks whether entity with given id exists.
@@ -14,15 +12,6 @@ namespace OPCAIC.Infrastructure.Repositories
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		Task<bool> ExistsByIdAsync(long id, CancellationToken cancellationToken);
-
-		/// <summary>
-		///     Returns list of preview dtos of entities filtered by given filter.
-		/// </summary>
-		/// <param name="filter">The entity filter.</param>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
-		Task<ListDto<TPreviewDto>> GetByFilterAsync(TFilterDto filter,
-			CancellationToken cancellationToken);
 
 		/// <summary>
 		///     Returns detailed dto of the entity with given id.

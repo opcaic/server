@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace OPCAIC.ApiService.ModelValidationHandling.Attributes
 {
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
-	public class ApiMinValueAttribute : ValidationAttribute
+	public class ApiMinValueAttribute : ApiValidationAttribute
 	{
 		public ApiMinValueAttribute(double minValue)
 		{
@@ -39,23 +39,14 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Attributes
 			throw new InvalidOperationException("Wrong usage of attribute.");
 		}
 
-		protected override ValidationResult IsValid(object value,
-			ValidationContext validationContext)
+		/// <inheritdoc />
+		protected override ValidationErrorBase GetValidationError(object value, ValidationContext validationContext)
 		{
-			var originalValidationResult = base.IsValid(value, validationContext);
+			var originalValidationResult = BaseIsValid(value, validationContext);
 
-			if (originalValidationResult == ValidationResult.Success)
-			{
-				return ValidationResult.Success;
-			}
-
-			var errorHandlingService = validationContext.GetService<IModelValidationService>();
-			var error = new ValidationError(originalValidationResult, MinValue);
-
-			var validationResult =
-				errorHandlingService.ProcessValidationError(originalValidationResult, error);
-
-			return validationResult;
+			return originalValidationResult == ValidationResult.Success 
+				? null 
+				: new ValidationError(originalValidationResult, MinValue);
 		}
 
 		public override string FormatErrorMessage(string name)

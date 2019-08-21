@@ -40,14 +40,7 @@ namespace OPCAIC.ApiService.Test
 			startup.ConfigureSecurity(Services);
 			startup.ConfigureOptions(Services);
 
-			// random new name so tests can run in parallel
-			var dbName = Guid.NewGuid().ToString();
-			Services.AddDbContext<DataContext>(options =>
-			{
-				options.UseInMemoryDatabase(dbName);
-				options.EnableSensitiveDataLogging();
-				options.EnableDetailedErrors();
-			});
+			UseDatabase();
 
 			Services.AddServices();
 			Services.AddBroker();

@@ -23,11 +23,15 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
+		public Task<bool> ExistsByIdAsync(long id, CancellationToken cancellationToken)
+		{
+			return tournamentRepository.ExistsByIdAsync(id, cancellationToken);
+		}
+
+		/// <inheritdoc />
 		public async Task<long> CreateAsync(NewTournamentModel tournament,
 			CancellationToken cancellationToken)
 		{
-			// TODO(ON): check if game with a given id exists, also maybe check enums
-
 			var dto = mapper.Map<NewTournamentDto>(tournament);
 
 			return await tournamentRepository.CreateAsync(dto, cancellationToken);
@@ -45,8 +49,7 @@ namespace OPCAIC.ApiService.Services
 			return new ListModel<TournamentPreviewModel>
 			{
 				Total = dto.Total,
-				List = dto.List.Select(tournament
-					=> mapper.Map<TournamentPreviewModel>(tournament))
+				List = dto.List.Select(mapper.Map<TournamentPreviewModel>)
 			};
 		}
 
@@ -68,8 +71,6 @@ namespace OPCAIC.ApiService.Services
 		public async Task UpdateAsync(long id, UpdateTournamentModel model,
 			CancellationToken cancellationToken)
 		{
-			// TODO: check if game with a given id exists, also maybe check enums
-
 			var dto = mapper.Map<UpdateTournamentDto>(model);
 
 			if (!await tournamentRepository.UpdateAsync(id, dto, cancellationToken))

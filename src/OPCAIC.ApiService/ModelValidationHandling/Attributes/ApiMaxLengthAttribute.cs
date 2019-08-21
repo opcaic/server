@@ -23,7 +23,7 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Attributes
 			var error = new ValidationError(originalValidationResult, Length);
 
 			var validationResult =
-				errorHandlingService.ProcessValidationError(originalValidationResult, error);
+				errorHandlingService.ProcessValidationError(originalValidationResult.MemberNames, error);
 
 			return validationResult;
 		}

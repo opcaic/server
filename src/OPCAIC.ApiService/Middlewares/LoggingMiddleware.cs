@@ -15,6 +15,7 @@ namespace OPCAIC.ApiService.Middlewares
 	{
 		private readonly ILogger<LoggingMiddleware> logger;
 		private readonly RequestDelegate next;
+		private bool logged;
 
 		public LoggingMiddleware(RequestDelegate next, ILogger<LoggingMiddleware> logger)
 		{
@@ -29,6 +30,7 @@ namespace OPCAIC.ApiService.Middlewares
 			var start = Stopwatch.GetTimestamp();
 
 			var scope = logger.BeginScope(GetAdditionalProperties(context));
+			logged = false;
 			try
 			{
 				await next(context);
@@ -40,7 +42,7 @@ namespace OPCAIC.ApiService.Middlewares
 			// when() ensures that exception is logged before all logging scopes are left, so their
 			// data can be seen in the logged event.
 			catch (ApiException ex) when (DoLog(context, ex.StatusCode,
-				GetElapsedMilliseconds(start), ex))
+				GetElapsedMilliseconds(start), null))
 			{
 			}
 			catch (Exception ex) when (DoLog(context, 500, GetElapsedMilliseconds(start), ex))
@@ -72,7 +74,7 @@ namespace OPCAIC.ApiService.Middlewares
 		{
 			var level = statusCode >= 500 ? LogLevel.Error : LogLevel.Information;
 
-			if (!logger.IsEnabled(level))
+			if (!logger.IsEnabled(level) || logged)
 			{
 				return false;
 			}
@@ -88,6 +90,7 @@ namespace OPCAIC.ApiService.Middlewares
 				":0.0000} ms";
 			logger.Log(level, 0, ex, logMessageTemplate, context.Request.Method,
 				context.Request.Path, statusCode, elapsedMs);
+			logged = true;
 
 			return false;
 		}

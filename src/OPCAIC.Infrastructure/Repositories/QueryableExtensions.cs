@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using OPCAIC.Infrastructure.Dtos.Documents;
 using OPCAIC.Infrastructure.Dtos.Games;
 using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
@@ -163,7 +164,6 @@ namespace OPCAIC.Infrastructure.Repositories
 			return query.SortBy(filter.SortBy, filter.Asc);
 		}
 
-
 		private static IQueryable<Document> SortBy(this IQueryable<Document> query, string sortBy,
 			bool asc)
 		{
@@ -173,6 +173,48 @@ namespace OPCAIC.Infrastructure.Repositories
 					return query.Sort(row => row.Created, asc);
 				case DocumentFilterDto.SortByName:
 					return query.Sort(row => row.Name, asc);
+				default:
+					return query.Sort(row => row.Id, asc);
+			}
+		}
+
+		#endregion
+
+		#region Submissions
+
+		public static IQueryable<Submission> Filter(this IQueryable<Submission> query,
+			SubmissionFilterDto filter)
+		{
+			if (filter.AuthorId != null)
+			{
+				query = query.Where(row => row.AuthorId == filter.AuthorId);
+			}
+
+			if (filter.IsActive != null)
+			{
+				query = query.Where(row => row.IsActive == filter.IsActive);
+			}
+
+			if (filter.TournamentId != null)
+			{
+				query = query.Where(row => row.TournamentId == filter.TournamentId);
+			}
+
+			if (filter.MatchId != null)
+			{
+				query = query.Where(row => row.Matches.Any(m => m.Id == filter.MatchId));
+			}
+
+			return query.SortBy(filter.SortBy, filter.Asc);
+		}
+
+		private static IQueryable<Submission> SortBy(this IQueryable<Submission> query, string sortBy,
+			bool asc)
+		{
+			switch (sortBy)
+			{
+				case SubmissionFilterDto.SortByCreated:
+					return query.Sort(row => row.Created, asc);
 				default:
 					return query.Sort(row => row.Id, asc);
 			}

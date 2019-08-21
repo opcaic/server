@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Infrastructure.DbContexts;
 using Xunit.Abstractions;
 
 namespace OPCAIC.TestUtils
@@ -31,6 +33,19 @@ namespace OPCAIC.TestUtils
 			LoggerFactory = new LoggerFactory();
 			LoggerFactory.AddProvider(new XUnitLoggerProvider(output));
 			services.AddSingleton(LoggerFactory);
+		}
+
+		protected void UseDatabase()
+		{
+			// random new name so tests can run in parallel
+			var dbName = Guid.NewGuid().ToString();
+
+			Services.AddDbContext<DataContext>(options =>
+			{
+				options.UseInMemoryDatabase(dbName);
+				options.EnableSensitiveDataLogging();
+				options.EnableDetailedErrors();
+			});
 		}
 
 		protected MockingServiceCollection Services

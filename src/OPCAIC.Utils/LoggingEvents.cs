@@ -15,6 +15,9 @@
 		public const int UserPasswordChange = 302;
 		public const int UserEmailConfirm = 303;
 
+		public const int SubmissionCreate = 400;
+		public const int SubmissionUpdate = 401;
+
 		public const int JwtRefreshTokenValidationFailed = 9000;
 
 		public const int Startup = 1000;

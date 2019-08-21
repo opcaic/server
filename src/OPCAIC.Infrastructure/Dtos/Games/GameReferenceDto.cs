@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.Tournaments
+﻿namespace OPCAIC.Infrastructure.Dtos.Games
 {
 	public class GameReferenceDto
 	{

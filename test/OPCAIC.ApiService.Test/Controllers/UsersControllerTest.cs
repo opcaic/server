@@ -13,7 +13,6 @@ using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Identity;
 using Xunit;
 using Xunit.Abstractions;
 

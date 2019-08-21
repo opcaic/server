@@ -5,13 +5,14 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
 	public class UserRepository
-		: LookupRepository<User, UserFilterDto, UserPreviewDto, UserDetailDto>, IUserRepository
+		: GenericRepository<User, UserFilterDto, UserPreviewDto, UserDetailDto, NewUserDto, UserProfileDto>, IUserRepository
 	{
 		/// <inheritdoc />
 		public UserRepository(DataContext context, IMapper mapper)

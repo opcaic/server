@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace OPCAIC.ApiService.ModelValidationHandling
 {
@@ -16,10 +17,10 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 		///     This id is returned in the Message property of the validation result and is used later to
 		///     retrieve the corresponding error.
 		/// </summary>
-		/// <param name="originalValidationResult"></param>
+		/// <param name="memberNames"></param>
 		/// <param name="error"></param>
 		/// <returns></returns>
-		ValidationResult ProcessValidationError(ValidationResult originalValidationResult,
+		ValidationResult ProcessValidationError(IEnumerable<string> memberNames,
 			ValidationErrorBase error);
 	}
 }

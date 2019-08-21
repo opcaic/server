@@ -26,7 +26,7 @@ namespace OPCAIC.ApiService.Test.ModelValidationHandling
 			var validationResult = new ValidationResult(errorMessage);
 
 			var returnedValidationResult =
-				modelValidationService.ProcessValidationError(validationResult, error);
+				modelValidationService.ProcessValidationError(validationResult.MemberNames, error);
 
 			Assert.NotNull(returnedValidationResult);
 			Assert.NotNull(returnedValidationResult.ErrorMessage);

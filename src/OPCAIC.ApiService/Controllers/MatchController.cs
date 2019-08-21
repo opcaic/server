@@ -28,8 +28,8 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[Authorize(RolePolicy.User)]
-		[HttpGet(Name = nameof(GetMatchesAsync))]
-		[ProducesResponseType(typeof(ListModel<MatchDetailModel>), (int)HttpStatusCode.OK)]
+		[HttpGet]
+		[ProducesResponseType(typeof(ListModel<MatchDetailModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]

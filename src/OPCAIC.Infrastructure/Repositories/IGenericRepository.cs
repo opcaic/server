@@ -2,8 +2,9 @@
 {
 	public interface IGenericRepository<in TFilterDto, TPreviewDto, TDetailDto, in TNewDto,
 			in TUpdateDto>
-		: ICreateRepository<TNewDto>,
-			ILookupRepository<TFilterDto, TPreviewDto, TDetailDto>,
+		: IFilterRepository<TFilterDto, TPreviewDto>,
+			ICreateRepository<TNewDto>,
+			ILookupRepository<TDetailDto>,
 			IUpdateRepository<TUpdateDto>
 		where TPreviewDto : class
 	{

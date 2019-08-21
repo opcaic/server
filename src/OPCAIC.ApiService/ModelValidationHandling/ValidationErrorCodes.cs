@@ -69,5 +69,9 @@
 		public static string UserNotTournamentParticipant => "user-not-tounament-participant";
 
 		#endregion
+
+		public static string UploadNotZip => "not-zip-file";
+
+		public static string InvalidReference => "invalid-reference";
 	}
 }

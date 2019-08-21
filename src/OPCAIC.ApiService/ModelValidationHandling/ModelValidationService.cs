@@ -26,14 +26,14 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 		}
 
 		/// <inheritdoc />
-		public ValidationResult ProcessValidationError(ValidationResult originalValidationResult,
+		public ValidationResult ProcessValidationError(IEnumerable<string> memberNames,
 			ValidationErrorBase error)
 		{
 			var guid = Guid.NewGuid();
 
 			errors.Add(guid, error);
 
-			return new ValidationResult(guid.ToString(), originalValidationResult.MemberNames);
+			return new ValidationResult(guid.ToString(), memberNames);
 		}
 	}
 }

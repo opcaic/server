@@ -8,7 +8,7 @@ using OPCAIC.Infrastructure.Entities;
 namespace OPCAIC.Infrastructure.Repositories
 {
 	public interface IMatchRepository
-		: ILookupRepository<MatchFilterDto, MatchDetailDto, MatchDetailDto>
+		: ILookupRepository<MatchDetailDto>, IFilterRepository<MatchFilterDto, MatchDetailDto>
 	{
 		/// <summary>
 		///     Returns all matches from the tournament identified by given id.
@@ -24,11 +24,6 @@ namespace OPCAIC.Infrastructure.Repositories
 		/// <returns></returns>
 		Task<IEnumerable<Match>> AllMatchesFromTournamentAsync(long tournamentId,
 			CancellationToken cancellationToken = default);
-
-		Task<MatchDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken);
-
-		Task<ListDto<MatchDetailDto>> GetByFilterAsync(MatchFilterDto filter,
-			CancellationToken cancellationToken);
 
 		// TODO: standalone repository for match executions?
 		/// <summary>

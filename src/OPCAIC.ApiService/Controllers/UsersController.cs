@@ -14,7 +14,6 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Emails;
-using OPCAIC.Infrastructure.Identity;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -45,10 +44,10 @@ namespace OPCAIC.ApiService.Controllers
 		/// <returns>array of all users</returns>
 		/// <response code="401">User is not authorized.</response>
 		/// <response code="403">User does not have permission to this action.</response>
-		[HttpGet(Name = nameof(GetUsersAsync))]
-		[ProducesResponseType(typeof(ListModel<UserPreviewModel>), (int)HttpStatusCode.OK)]
-		[ProducesResponseType((int)HttpStatusCode.Unauthorized)]
-		[ProducesResponseType((int)HttpStatusCode.Forbidden)]
+		[HttpGet]
+		[ProducesResponseType(typeof(ListModel<UserPreviewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[Authorize(RolePolicy.Admin)]
 		public Task<ListModel<UserPreviewModel>> GetUsersAsync(UserFilterModel filter,
 			CancellationToken cancellationToken)
@@ -146,7 +145,7 @@ namespace OPCAIC.ApiService.Controllers
 		}
 
 		/// <summary>
-		///     Creates new user and returns his id
+		///     Creates new user and returns his id.
 		/// </summary>
 		/// <param name="model"></param>
 		/// <param name="cancellationToken"></param>
@@ -168,7 +167,7 @@ namespace OPCAIC.ApiService.Controllers
 				cancellationToken);
 
 			logger.UserCreated(user);
-			return CreatedAtRoute(nameof(GetUsersAsync), new IdModel {Id = user.Id});
+			return CreatedAtRoute(nameof(GetUserByIdAsync), new IdModel {Id = user.Id});
 		}
 
 		/// <summary>
@@ -181,7 +180,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resouce was not found.</response>
-		[HttpGet("{id}")]
+		[HttpGet("{id}", Name = nameof(GetUserByIdAsync))]
 		[ProducesResponseType(typeof(UserDetailModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]

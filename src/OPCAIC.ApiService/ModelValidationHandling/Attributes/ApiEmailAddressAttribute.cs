@@ -1,29 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace OPCAIC.ApiService.ModelValidationHandling.Attributes
 {
-	public class ApiEmailAddressAttribute : ValidationAttribute
+	public class ApiEmailAddressAttribute : ApiValidationAttribute
 	{
-		protected override ValidationResult IsValid(object value,
-			ValidationContext validationContext)
+		/// <inheritdoc />
+		protected override ValidationErrorBase GetValidationError(object value, ValidationContext validationContext)
 		{
 			var emailAddressAttribute = new EmailAddressAttribute();
 			var originalValidationResult =
 				emailAddressAttribute.GetValidationResult(value, validationContext);
 
-			if (originalValidationResult == ValidationResult.Success)
-			{
-				return ValidationResult.Success;
-			}
-
-			var errorHandlingService = validationContext.GetService<IModelValidationService>();
-			var error = new ValidationError(originalValidationResult);
-
-			var validationResult =
-				errorHandlingService.ProcessValidationError(originalValidationResult, error);
-
-			return validationResult;
+			return originalValidationResult == ValidationResult.Success 
+				? null 
+				: new ValidationError(originalValidationResult);
 		}
 
 		private class ValidationError : ValidationErrorBase

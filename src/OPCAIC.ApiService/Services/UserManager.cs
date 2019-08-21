@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,20 +9,16 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.JsonWebTokens;
-using OPCAIC.ApiService;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
-using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
-using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
 
-namespace OPCAIC.Infrastructure.Identity
+namespace OPCAIC.ApiService.Services
 {
 	public class UserManager : UserManager<User>, IUserManager
 	{
@@ -82,11 +77,7 @@ namespace OPCAIC.Infrastructure.Identity
 
 			var dto = await userRepository.GetByFilterAsync(filterDto, cancellationToken);
 
-			return new ListModel<UserPreviewModel>
-			{
-				Total = dto.Total,
-				List = dto.List.Select(user => mapper.Map<UserPreviewModel>(user))
-			};
+			return mapper.Map<ListModel<UserPreviewModel>>(dto);
 		}
 
 		/// <inheritdoc />

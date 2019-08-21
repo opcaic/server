@@ -26,13 +26,13 @@ namespace OPCAIC.ApiService.Controllers
 		/// </summary>
 		/// <returns>array of all tournaments</returns>
 		[Authorize(RolePolicy.Organizer)]
-		[HttpGet(Name = nameof(GetTournamentsAsync))]
+		[HttpGet]
 		[ProducesResponseType(typeof(ListModel<TournamentPreviewModel>), (int)HttpStatusCode.OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public Task<ListModel<TournamentPreviewModel>> GetTournamentsAsync(
-			TournamentFilterModel filter, CancellationToken cancellationToken)
+			[FromQuery] TournamentFilterModel filter, CancellationToken cancellationToken)
 		{
 			return tournamentsService.GetByFilterAsync(filter, cancellationToken);
 		}
@@ -55,7 +55,7 @@ namespace OPCAIC.ApiService.Controllers
 			CancellationToken cancellationToken)
 		{
 			var id = await tournamentsService.CreateAsync(model, cancellationToken);
-			return CreatedAtRoute(nameof(GetTournamentsAsync), new IdModel {Id = id});
+			return CreatedAtRoute(nameof(GetTournamentByIdAsync), new IdModel {Id = id});
 		}
 
 		/// <summary>
@@ -69,7 +69,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
 		[Authorize(RolePolicy.Organizer)]
-		[HttpGet("{id}")]
+		[HttpGet("{id}", Name = nameof(GetTournamentByIdAsync))]
 		[ProducesResponseType(typeof(TournamentDetailModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -86,13 +86,13 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="id"></param>
 		/// <param name="model"></param>
 		/// <param name="cancellationToken"></param>
-		/// <response code="200">User was successfully updated.</response>
+		/// <response code="200">Tournament was successfully updated.</response>
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
 		[Authorize(RolePolicy.Organizer)]
 		[HttpPut("{id}")]
-		[ProducesResponseType(typeof(TournamentDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]

@@ -2,7 +2,6 @@
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Emails;
-using OPCAIC.Infrastructure.Identity;
 using OPCAIC.Services;
 
 namespace OPCAIC.ApiService.IoC
@@ -22,6 +21,7 @@ namespace OPCAIC.ApiService.IoC
 				.AddHostedService<EmailCronService>()
 				.AddTransient<IDocumentService, DocumentService>()
 				.AddTransient<IFrontendUrlGenerator, FrontendUrlGenerator>()
+				.AddTransient<ISubmissionService, SubmissionService>()
 				.AddScoped<IModelValidationService, ModelValidationService>()
 				.AddTransient<IMatchService, MatchService>();
 		}

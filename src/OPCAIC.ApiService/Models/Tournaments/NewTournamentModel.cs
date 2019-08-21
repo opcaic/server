@@ -1,5 +1,6 @@
 ﻿using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 using OPCAIC.Infrastructure;
+using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.ApiService.Models.Tournaments
@@ -12,6 +13,7 @@ namespace OPCAIC.ApiService.Models.Tournaments
 
 		public string Description { get; set; }
 
+		[ApiEntityReference(typeof(Game))]
 		public long GameId { get; set; }
 
 		public TournamentFormat Format { get; set; }

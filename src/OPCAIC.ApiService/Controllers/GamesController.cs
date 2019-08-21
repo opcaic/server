@@ -26,8 +26,8 @@ namespace OPCAIC.ApiService.Controllers
 		/// </summary>
 		/// <returns>array of all games</returns>
 		[Authorize(RolePolicy.Organizer)]
-		[HttpGet(Name = nameof(GetGamesAsync))]
-		[ProducesResponseType(typeof(ListModel<GamePreviewModel>), (int)HttpStatusCode.OK)]
+		[HttpGet]
+		[ProducesResponseType(typeof(ListModel<GamePreviewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -55,7 +55,7 @@ namespace OPCAIC.ApiService.Controllers
 			CancellationToken cancellationToken)
 		{
 			var id = await gamesService.CreateAsync(model, cancellationToken);
-			return CreatedAtRoute(nameof(GetGamesAsync), new IdModel {Id = id});
+			return CreatedAtRoute(nameof(GetGameByIdAsync), new IdModel {Id = id});
 		}
 
 		/// <summary>
@@ -69,7 +69,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
 		[Authorize(RolePolicy.Admin)]
-		[HttpGet("{id}")]
+		[HttpGet("{id}", Name = nameof(GetGameByIdAsync))]
 		[ProducesResponseType(typeof(GameDetailModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]

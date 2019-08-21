@@ -1,4 +1,5 @@
 ﻿using System;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
 
 namespace OPCAIC.Infrastructure.Dtos.Documents
 {

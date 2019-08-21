@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using OPCAIC.Infrastructure.Dtos.Documents;
 using OPCAIC.Infrastructure.Dtos.Submissions;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
 
 namespace OPCAIC.Infrastructure.Dtos.Matches
 {

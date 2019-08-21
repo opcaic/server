@@ -28,6 +28,7 @@
 		public const string SubmissionId = "SubmissionId";
 		public const string ExecutionId = "ExecutionId";
 		public const string ValidationId = "ValidationId";
+		public const string TournamentId = "TournamentId";
 
 		public const string Game = "Game";
 		public const string GameModuleEntryPoint = "EntryPoint";
