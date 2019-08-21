@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Entities
@@ -10,6 +11,21 @@ namespace OPCAIC.Infrastructure.Entities
 	/// </summary>
 	public class Tournament : SoftDeletableEntity
 	{
+		/// <summary>
+		///     Id of the owner of the tournament.
+		/// </summary>
+		public long OwnerId { get; set; }
+		
+		/// <summary>
+		///     Owner of the tournament.
+		/// </summary>
+		public virtual User Owner { get; set; }
+
+		/// <summary>
+		///     List of managers for this tournaments.
+		/// </summary>
+		public virtual IList<TournamentManager> Managers { get; set; }
+
 		/// <summary>
 		///     Name of the tournament.
 		/// </summary>
@@ -86,5 +102,21 @@ namespace OPCAIC.Infrastructure.Entities
 		///		Participants of tournament.
 		/// </summary>
 		public virtual ICollection<TournamentParticipant> Participants { get; set; }
+	}
+
+	public class TournamentManager
+	{
+		public long UserId { get; set; }
+
+		public virtual User User { get; set; }
+		public long TournamentId { get; set; }
+
+		public virtual Tournament Tournament { get; set; }
+
+		internal static void OnModelCreating(EntityTypeBuilder<TournamentManager> builder)
+		{
+			// mapping table, make sure the same mapping does not exist twice
+			builder.HasKey(nameof(UserId), nameof(TournamentId));
+		}
 	}
 }

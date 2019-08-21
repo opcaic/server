@@ -2,6 +2,7 @@
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Emails;
+using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -21,38 +23,44 @@ namespace OPCAIC.ApiService.Controllers
 	[Authorize]
 	public class UsersController : ControllerBase
 	{
+		private readonly IAuthorizationService authorizationService;
 		private readonly IEmailService emailService;
 		private readonly ILogger<UsersController> logger;
 		private readonly SignInManager signInManager;
 		private readonly IFrontendUrlGenerator urlGenerator;
 		private readonly IUserManager userManager;
+		private readonly IMapper mapper;
 
 		public UsersController(ILogger<UsersController> logger, IEmailService emailService,
 			SignInManager signInManager, IUserManager userManager,
-			IFrontendUrlGenerator urlGenerator)
+			IFrontendUrlGenerator urlGenerator, IAuthorizationService authorizationService, IMapper mapper)
 		{
 			this.logger = logger;
 			this.emailService = emailService;
 			this.signInManager = signInManager;
 			this.userManager = userManager;
 			this.urlGenerator = urlGenerator;
+			this.authorizationService = authorizationService;
+			this.mapper = mapper;
+			this.logger = logger;
 		}
 
 		/// <summary>
 		///     Returns lists of users
 		/// </summary>
 		/// <returns>array of all users</returns>
+		/// <response code="200"></response>
 		/// <response code="401">User is not authorized.</response>
 		/// <response code="403">User does not have permission to this action.</response>
 		[HttpGet]
 		[ProducesResponseType(typeof(ListModel<UserPreviewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
-		[Authorize(RolePolicy.Admin)]
-		public Task<ListModel<UserPreviewModel>> GetUsersAsync(UserFilterModel filter,
+		[RequiresPermission(UserPermission.Search)]
+		public async Task<ListModel<UserPreviewModel>> GetUsersAsync(UserFilterModel filter,
 			CancellationToken cancellationToken)
 		{
-			return userManager.GetByFilterAsync(filter, cancellationToken);
+			return await userManager.GetByFilterAsync(filter, cancellationToken);
 		}
 
 		/// <summary>
@@ -158,7 +166,9 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> PostAsync([FromBody] NewUserModel model,
 			CancellationToken cancellationToken)
 		{
-			var user = await userManager.CreateAsync(model, cancellationToken);
+			var user = mapper.Map<User>(model);
+			var result = await userManager.CreateAsync(user, model.Password);
+			result.ThrowIfFailed(StatusCodes.Status400BadRequest);
 
 			var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 			var url = urlGenerator.EmailConfirmLink(user.Id, token);
@@ -185,10 +195,11 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task<UserDetailModel> GetUserByIdAsync(long id, CancellationToken cancellationToken)
+		public async Task<UserDetailModel> GetUserByIdAsync(long id,
+			CancellationToken cancellationToken)
 		{
-			// TODO: authorize
-			return userManager.GetByIdAsync(id, cancellationToken);
+			await authorizationService.CheckPermissions(User, id, UserPermission.Read);
+			return await userManager.GetByIdAsync(id, cancellationToken);
 		}
 
 		/// <summary>
@@ -202,15 +213,15 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
 		[HttpPut("{id}")]
-		[ProducesResponseType(typeof(UserDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task UpdateAsync(long id, [FromBody] UserProfileModel model,
+		public async Task UpdateAsync(long id, [FromBody] UserProfileModel model,
 			CancellationToken cancellationToken)
 		{
-			// TODO: authorize
-			return userManager.UpdateAsync(id, model, cancellationToken);
+			await authorizationService.CheckPermissions(User, id, UserPermission.Update);
+			await userManager.UpdateAsync(id, model, cancellationToken);
 		}
 
 		/// <summary>
@@ -275,25 +286,19 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="200">Password was changed successfully</response>
 		/// <response code="400">Invalid model values.</response>
 		[HttpPost("password")]
-		[AllowAnonymous]
-		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(UserTokens), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> PostPasswordAsync(
+		public async Task<UserTokens> PostPasswordAsync(
 			[FromBody] NewPasswordModel model,
 			CancellationToken cancellationToken)
 		{
-			var user = await userManager.FindByEmailAsync(model.Email);
-			if (user == null)
-			{
-				return BadRequest();
-			}
-
+			var user = await userManager.GetUserAsync(User);
 			var result = await userManager.ChangePasswordAsync(user,
 				model.OldPassword, model.NewPassword);
 			logger.UserPasswordChange(user, result);
 			result.ThrowIfFailed(StatusCodes.Status400BadRequest);
 
-			return Ok();
+			return await userManager.GenerateUserTokensAsync(user);
 		}
 
 		/// <summary>

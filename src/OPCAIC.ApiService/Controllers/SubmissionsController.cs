@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
-using OPCAIC.ApiService.Models.Submission;
+using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Services;
 

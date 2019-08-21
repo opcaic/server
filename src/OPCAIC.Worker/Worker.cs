@@ -48,7 +48,7 @@ namespace OPCAIC.Worker
 		private string Identity => connector.Identity;
 
 		/// <inheritdoc />
-		public async Task StartAsync(CancellationToken cancellationToken)
+		public Task StartAsync(CancellationToken cancellationToken)
 		{
 			logger.LogInformation(LoggingEvents.Startup, "Starting Worker");
 			SetupThreads();
@@ -56,10 +56,11 @@ namespace OPCAIC.Worker
 			consumerThread.Start();
 			InitConnection();
 			logger.LogInformation(LoggingEvents.Startup, "Worker started");
+			return Task.CompletedTask;
 		}
 
 		/// <inheritdoc />
-		public async Task StopAsync(CancellationToken cancellationToken)
+		public Task StopAsync(CancellationToken cancellationToken)
 		{
 			logger.LogInformation(LoggingEvents.Startup, "Stopping Worker");
 			connector.StopSocket();
@@ -67,6 +68,7 @@ namespace OPCAIC.Worker
 			socketThread.Join();
 			consumerThread.Join();
 			logger.LogInformation(LoggingEvents.Startup, "Worker stopped");
+			return Task.CompletedTask;
 		}
 
 		private void SetupThreads()

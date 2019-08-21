@@ -289,6 +289,7 @@ namespace OPCAIC.Worker.Services
 		private bool DoLog(LogLevel level, EventId eventId, Exception e, string message,
 			params object[] args)
 		{
+			Logger.Log(level, eventId, e, message, args);
 			return true;
 		}
 

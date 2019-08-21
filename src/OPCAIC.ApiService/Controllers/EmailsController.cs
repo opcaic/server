@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using OPCAIC.ApiService.Security;
 using OPCAIC.Infrastructure.Dtos.Emails;
 using OPCAIC.Infrastructure.Repositories.Emails;
 

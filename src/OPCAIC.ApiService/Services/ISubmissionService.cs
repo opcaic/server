@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Models;
-using OPCAIC.ApiService.Models.Submission;
+using OPCAIC.ApiService.Models.Submissions;
 
 namespace OPCAIC.ApiService.Services
 {

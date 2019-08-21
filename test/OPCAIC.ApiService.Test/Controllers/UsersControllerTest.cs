@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Moq;
 using OPCAIC.ApiService.Controllers;
 using OPCAIC.ApiService.Exceptions;
@@ -11,7 +10,6 @@ using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
-using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Infrastructure.Entities;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,6 +21,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		public UsersControllerTest(ITestOutputHelper output) : base(output)
 		{
 			FrontendUrlGeneratorMock = Services.Mock<IFrontendUrlGenerator>();
+			TurnOffAuthorization();
 		}
 
 		private readonly NewUserModel userModel = new NewUserModel
@@ -62,7 +61,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 				Organization = model.Organization,
 				EmailConfirmed = confirmEmail
 			};
-			
+
 			await userManager.CreateAsync(user, model.Password);
 			return user;
 		}
@@ -70,7 +69,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		private async Task<UserIdentityModel> DoLogin(string email, string password)
 		{
 			var identity = await Controller.LoginAsync(
-				new UserCredentialsModel { Email = email, Password = password, RememberMe = false },
+				new UserCredentialsModel {Email = email, Password = password },
 				CancellationToken);
 
 			Assert.Equal(email, identity.Email);
@@ -86,8 +85,10 @@ namespace OPCAIC.ApiService.Test.Controllers
 			var user = await DoCreateUser(userModel);
 			Assert.False(user.EmailConfirmed);
 
-			await AssertInvalidModel(StatusCodes.Status400BadRequest, ValidationErrorCodes.InvalidEmailVerificationToken,
-				() => Controller.GetEmailVerificationAsync(user.Id, "randomToken", CancellationToken));
+			await AssertInvalidModel(StatusCodes.Status400BadRequest,
+				ValidationErrorCodes.InvalidEmailVerificationToken,
+				() => Controller.GetEmailVerificationAsync(user.Id, "randomToken",
+					CancellationToken));
 
 			var detail = await Controller.GetUserByIdAsync(user.Id, CancellationToken);
 			Assert.False(detail.EmailVerified);
@@ -98,7 +99,8 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			// capture email confirm token
 			string token = null;
-			FrontendUrlGeneratorMock.Setup(g => g.EmailConfirmLink(It.IsAny<long>(), It.IsAny<string>()))
+			FrontendUrlGeneratorMock
+				.Setup(g => g.EmailConfirmLink(It.IsAny<long>(), It.IsAny<string>()))
 				.Callback((long id, string resetToken) => { token = resetToken; });
 
 			var user = await CreateUser_Success();
@@ -125,7 +127,8 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			// only short password needs to be tested, rest is the same
 			userModel.Password = "1";
-			await AssertInvalidModel(StatusCodes.Status400BadRequest, ValidationErrorCodes.PasswordTooShort,
+			await AssertInvalidModel(StatusCodes.Status400BadRequest,
+				ValidationErrorCodes.PasswordTooShort,
 				() => Controller.PostAsync(userModel, CancellationToken));
 		}
 
@@ -136,7 +139,8 @@ namespace OPCAIC.ApiService.Test.Controllers
 			await DoCreateUser(userModel);
 
 			userModel.UserName = "secondUser";
-			await AssertInvalidModel(StatusCodes.Status400BadRequest, ValidationErrorCodes.UserEmailConflict,
+			await AssertInvalidModel(StatusCodes.Status400BadRequest,
+				ValidationErrorCodes.UserEmailConflict,
 				() => Controller.PostAsync(userModel, CancellationToken));
 		}
 
@@ -147,7 +151,8 @@ namespace OPCAIC.ApiService.Test.Controllers
 			await DoCreateUser(userModel);
 
 			userModel.Email = "secondUser@a.com";
-			await AssertInvalidModel(StatusCodes.Status400BadRequest, ValidationErrorCodes.UserUsernameConflict,
+			await AssertInvalidModel(StatusCodes.Status400BadRequest,
+				ValidationErrorCodes.UserUsernameConflict,
 				() => Controller.PostAsync(userModel, CancellationToken));
 		}
 
@@ -173,16 +178,16 @@ namespace OPCAIC.ApiService.Test.Controllers
 		}
 
 		[Fact]
-		public async Task Login_BadPassword()
+		public Task ForgotPassword_UnknownUser()
 		{
-			await DoCreateUser(userModel, true);
-
-			await AssertUnauthorizedCode(ValidationErrorCodes.LoginInvalid,
-				() => DoLogin(userModel.Email, "wrong pass"));
+			// should still produce OK result
+			return Controller.PostForgotPasswordAsync(
+				new ForgotPasswordModel {Email = "my@mail.com"},
+				CancellationToken);
 		}
 
 		[Fact]
-		public async Task Login_UnknownUser()
+		public async Task Login_BadPassword()
 		{
 			await DoCreateUser(userModel, true);
 
@@ -207,15 +212,25 @@ namespace OPCAIC.ApiService.Test.Controllers
 		}
 
 		[Fact]
+		public async Task Login_UnknownUser()
+		{
+			await DoCreateUser(userModel, true);
+
+			await AssertUnauthorizedCode(ValidationErrorCodes.LoginInvalid,
+				() => DoLogin("aaaaaaa@a.com", "wrong pass"));
+		}
+
+		[Fact]
 		public async Task PasswordChange_Mismatch()
 		{
 			var user = await DoCreateUser(userModel);
+			HttpContext.User = await GetService<SignInManager>().CreateUserPrincipalAsync(user);
 
-			await AssertInvalidModel(StatusCodes.Status400BadRequest, ValidationErrorCodes.PasswordMismatch,
+			await AssertInvalidModel(StatusCodes.Status400BadRequest,
+				ValidationErrorCodes.PasswordMismatch,
 				() => Controller.PostPasswordAsync(
 					new NewPasswordModel
 					{
-						Email = user.Email,
 						NewPassword = "abfaiwef23r203r92r23rXX#@$",
 						OldPassword = "Not old password"
 					}, CancellationToken));
@@ -226,35 +241,37 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			const string NewPassword = "abfaiwef23r203r92r23rXX#@$";
 			var user = await DoCreateUser(userModel, true);
+			HttpContext.User = await GetService<SignInManager>().CreateUserPrincipalAsync(user);
 
-			Assert.IsAssignableFrom<OkResult>(await Controller.PostPasswordAsync(
+			var newTokens = await Controller.PostPasswordAsync(
 				new NewPasswordModel
 				{
-					Email = user.Email,
 					NewPassword = NewPassword,
 					OldPassword = userModel.Password
-				}, CancellationToken));
+				}, CancellationToken);
 
+			// check that returned tokens are valid
+			await Controller.RefreshAsync(user.Id, new RefreshToken { Token = newTokens.RefreshToken }, CancellationToken);
+
+			// check that login is possible
 			await DoLogin(user.Email, NewPassword);
 		}
 
 		[Fact]
-		public async Task PasswordChange_UnknownUser()
+		public async Task PasswordReset_BadPassword()
 		{
-			Assert.IsAssignableFrom<BadRequestResult>(await Controller.PostPasswordAsync(
-				new NewPasswordModel
-				{
-					Email = "a@a.com",
-					NewPassword = "abfaiwef23r203r92r23rXX#@$",
-					OldPassword = userModel.Password
-				}, CancellationToken));
-		}
+			const string NewPassword = "1";
+			var user = await DoCreateUser(userModel, true);
 
-		[Fact]
-		public Task ForgotPassword_UnknownUser()
-		{
-			return Controller.PostForgotPasswordAsync(new ForgotPasswordModel { Email = "my@mail.com" },
-				CancellationToken);
+			var token = await GetService<UserManager>().GeneratePasswordResetTokenAsync(user);
+
+			await AssertInvalidModel(StatusCodes.Status400BadRequest,
+				ValidationErrorCodes.PasswordTooShort,
+				() => Controller.PostPasswordResetAsync(
+					new PasswordResetModel
+					{
+						Email = user.Email, Password = NewPassword, ResetToken = token
+					}, CancellationToken));
 		}
 
 		[Fact]
@@ -269,16 +286,14 @@ namespace OPCAIC.ApiService.Test.Controllers
 				.Callback((long id, string resetToken) => { token = resetToken; });
 
 			await Controller.PostForgotPasswordAsync(
-				new ForgotPasswordModel { Email = user.Email }, CancellationToken);
+				new ForgotPasswordModel {Email = user.Email}, CancellationToken);
 			Assert.NotNull(token);
 
 			// actual reset
 			await Controller.PostPasswordResetAsync(
 				new PasswordResetModel
 				{
-					Email = user.Email,
-					Password = NewPassword,
-					ResetToken = token
+					Email = user.Email, Password = NewPassword, ResetToken = token
 				}, CancellationToken);
 
 			// try to login
@@ -291,28 +306,8 @@ namespace OPCAIC.ApiService.Test.Controllers
 			await Controller.PostPasswordResetAsync(
 				new PasswordResetModel
 				{
-					Email = "my@mail.com",
-					Password = "Ignored",
-					ResetToken = "Token"
+					Email = "my@mail.com", Password = "Ignored", ResetToken = "Token"
 				}, CancellationToken);
-		}
-
-		[Fact]
-		public async Task PasswordReset_BadPassword()
-		{
-			const string NewPassword = "1";
-			var user = await DoCreateUser(userModel, true);
-
-			var token = await GetService<UserManager>().GeneratePasswordResetTokenAsync(user);
-
-			await AssertInvalidModel(StatusCodes.Status400BadRequest, ValidationErrorCodes.PasswordTooShort,
-				() => Controller.PostPasswordResetAsync(
-				new PasswordResetModel
-				{
-					Email = user.Email,
-					Password = NewPassword,
-					ResetToken = token
-				}, CancellationToken));
 		}
 
 		[Fact]
@@ -324,7 +319,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 			() => Controller.RefreshAsync(identity.Id, new RefreshToken { Token = "eafef" }, CancellationToken));
 
 			await Assert.ThrowsAsync<NotFoundException>(() => Controller.RefreshAsync(
-				-1, new RefreshToken { Token = "eafef" }, CancellationToken));
+				-1, new RefreshToken {Token = "eafef"}, CancellationToken));
 		}
 
 		[Fact]
@@ -333,7 +328,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 			var identity = await Login_Success();
 
 			var tokens = await Controller.RefreshAsync(identity.Id,
-				new RefreshToken { Token = identity.RefreshToken }, CancellationToken);
+				new RefreshToken {Token = identity.RefreshToken}, CancellationToken);
 		}
 	}
 }

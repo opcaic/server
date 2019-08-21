@@ -10,7 +10,5 @@ namespace OPCAIC.ApiService.Models.Users
 
 		[ApiRequired]
 		public string Password { get; set; }
-
-		public bool RememberMe { get; set; }
 	}
 }

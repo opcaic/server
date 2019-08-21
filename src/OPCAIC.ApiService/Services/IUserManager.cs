@@ -11,7 +11,7 @@ namespace OPCAIC.ApiService.Services
 	public interface IUserManager
 	{
 		Task<User> FindByIdAsync(long id, CancellationToken cancellationToken);
-		Task<User> CreateAsync(NewUserModel userModel, CancellationToken cancellationToken);
+		Task<IdentityResult> CreateAsync(User user, string password);
 
 		Task<ListModel<UserPreviewModel>> GetByFilterAsync(UserFilterModel filter,
 			CancellationToken cancellationToken);
@@ -21,7 +21,7 @@ namespace OPCAIC.ApiService.Services
 		Task<UserTokens> GenerateUserTokensAsync(User user);
 
 		string GetUserName(ClaimsPrincipal principal);
-		string GetUserId(ClaimsPrincipal principal);
+		long GetUserId(ClaimsPrincipal principal);
 		Task<User> GetUserAsync(ClaimsPrincipal principal);
 		Task<User> FindByNameAsync(string userName);
 		Task<string> GetUserNameAsync(User user);

@@ -1,25 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using OPCAIC.ApiService.IoC;
-using OPCAIC.ApiService.Services;
-using OPCAIC.Broker;
-using OPCAIC.Infrastructure.DbContexts;
-using OPCAIC.Infrastructure.Emails;
-using OPCAIC.TestUtils;
 using Xunit.Abstractions;
 
 namespace OPCAIC.ApiService.Test
 {
-	public abstract class ControllerTestBase<TController> : ServiceTestBase
+	public abstract class ControllerTestBase<TController> : ApiServiceTestBase
 		where TController : ControllerBase
 	{
 		private readonly Lazy<TController> lazyController;
@@ -27,31 +16,21 @@ namespace OPCAIC.ApiService.Test
 		/// <inheritdoc />
 		protected ControllerTestBase(ITestOutputHelper output) : base(output)
 		{
-			Configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", false)
-				.Build();
-			CancellationTokenSource = new CancellationTokenSource();
 			lazyController = new Lazy<TController>(CreateController);
 
 			HttpContext = new DefaultHttpContext();
+			HttpContext.User = new ClaimsPrincipal();
 			Request = new DefaultHttpRequest(HttpContext);
 			Response = new DefaultHttpResponse(HttpContext);
 
-			var startup = new Startup(Configuration);
-			startup.ConfigureSecurity(Services);
-			startup.ConfigureOptions(Services);
-
-			UseDatabase();
-
-			Services.AddServices();
-			Services.AddBroker();
-			Services.AddRepositories();
-			Services.AddMapper();
-
 			Services.AddTransient<TController>();
-
-			// make sure no email gets actually sent
-			EmailServiceMock = Services.Mock<IEmailService>();
 		}
+
+		protected TController Controller => lazyController.Value;
+
+		protected HttpRequest Request { get; }
+		protected HttpResponse Response { get; }
+		protected HttpContext HttpContext { get; }
 
 		private TController CreateController()
 		{
@@ -59,16 +38,5 @@ namespace OPCAIC.ApiService.Test
 			controller.ControllerContext.HttpContext = HttpContext;
 			return controller;
 		}
-
-		protected TController Controller => lazyController.Value;
-		protected IConfiguration Configuration { get; }
-		protected CancellationTokenSource CancellationTokenSource { get; }
-		protected CancellationToken CancellationToken => CancellationTokenSource.Token;
-
-		protected Mock<IEmailService> EmailServiceMock { get; }
-
-		protected HttpRequest Request { get; }
-		protected HttpResponse Response { get; }
-		protected HttpContext HttpContext { get; }
 	}
 }

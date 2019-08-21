@@ -48,6 +48,11 @@ namespace OPCAIC.Infrastructure.Entities
 		/// </summary>
 		public virtual IList<Submission> Submissions { get; set; }
 
+		/// <summary>
+		///     Mapping to all tournaments this user is the manager of.
+		/// </summary>
+		public virtual IList<TournamentManager> ManagerOfTournaments { get; set; }
+
 		/// <inheritdoc />
 		public DateTime Created { get; set; }
 

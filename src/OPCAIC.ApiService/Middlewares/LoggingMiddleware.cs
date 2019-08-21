@@ -64,7 +64,7 @@ namespace OPCAIC.ApiService.Middlewares
 				props.Add(LoggingTags.UserId, user.FindFirstValue(ClaimTypes.NameIdentifier));
 				props.Add(LoggingTags.UserName, user.FindFirstValue(ClaimTypes.Name));
 				props.Add(LoggingTags.UserEmail, user.FindFirstValue(ClaimTypes.Email));
-				props.Add(LoggingTags.UserRole, user.FindFirstValue(RolePolicy.PolicyName));
+				props.Add(LoggingTags.UserRole, user.FindFirstValue(RolePolicy.UserRoleClaim));
 			}
 
 			return props;

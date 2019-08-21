@@ -18,7 +18,11 @@
 		/// <returns></returns>
 		string EmailConfirmLink(long userId, string token);
 
-		/// <inheritdoc />
+		/// <summary>
+		///     Generates url to send users as invitation to the tournament.
+		/// </summary>
+		/// <param name="tournamentId"></param>
+		/// <returns></returns>
 		string TournamentInviteUrl(long tournamentId);
 	}
 }

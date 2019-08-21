@@ -9,10 +9,6 @@ namespace OPCAIC.ApiService.Models.Users
 	public class NewPasswordModel
 	{
 		[ApiRequired]
-		[ApiEmailAddress]
-		public string Email { get; set; }
-
-		[ApiRequired]
 		public string OldPassword { get; set; }
 
 		[ApiRequired]

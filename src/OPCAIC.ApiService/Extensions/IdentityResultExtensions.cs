@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.ModelValidationHandling;
+using OPCAIC.ApiService.Security;
 using OPCAIC.Utils;
 
-namespace OPCAIC.ApiService.Security
+namespace OPCAIC.ApiService.Extensions
 {
 	public static class IdentityResultExtensions
 	{

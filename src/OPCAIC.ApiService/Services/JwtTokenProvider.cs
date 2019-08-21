@@ -42,7 +42,7 @@ namespace OPCAIC.ApiService.Services
 				case AccessPurpose:
 					return CreateJwtAccessToken(manager, user);
 				case RefreshPurpose:
-					return ResetJwtRefreshToken(manager, user);
+					return CreateJwtRefreshToken(manager, user);
 				default:
 					throw new ArgumentOutOfRangeException(nameof(purpose));
 			}
@@ -114,15 +114,14 @@ namespace OPCAIC.ApiService.Services
 				new ClaimsIdentity(await manager.GetClaimsAsync(user)));
 		}
 
-		private async Task<string> ResetJwtRefreshToken(UserManager<User> manager, User user)
+		private Task<string> CreateJwtRefreshToken(UserManager<User> manager, User user)
 		{
 			var nameClaim = new Claim(ClaimTypes.Name, user.UserName);
 			var stampClaim = new Claim(SecurityStampClaim, GetHashedSecurityStamp(user));
 			var token = CreateToken(TimeSpan.FromDays(securityConfig.RefreshTokenExpirationDays),
 				new ClaimsIdentity(new[] {nameClaim, stampClaim}));
 
-
-			return token;
+			return Task.FromResult(token);
 		}
 
 		private string CreateToken(TimeSpan? expiresIn, ClaimsIdentity identity)

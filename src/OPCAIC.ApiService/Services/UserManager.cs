@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
@@ -45,15 +46,9 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
-		public async Task<User> CreateAsync(NewUserModel userModel,
-			CancellationToken cancellationToken)
+		long IUserManager.GetUserId(ClaimsPrincipal principal)
 		{
-			var user = mapper.Map<User>(userModel);
-
-			var result = await CreateAsync(user, userModel.Password);
-			result.ThrowIfFailed(StatusCodes.Status400BadRequest);
-
-			return user;
+			return long.Parse(base.GetUserId(principal));
 		}
 
 		/// <inheritdoc />
@@ -64,7 +59,7 @@ namespace OPCAIC.ApiService.Services
 			claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString(), ClaimValueTypes.Integer64));
 			claims.Add(new Claim(ClaimTypes.Name, user.UserName, ClaimValueTypes.Integer64));
 			claims.Add(new Claim(ClaimTypes.Email, user.Email, ClaimValueTypes.Email));
-			claims.Add(new Claim(RolePolicy.PolicyName, ((UserRole)user.RoleId).ToString()));
+			claims.Add(new Claim(RolePolicy.UserRoleClaim, ((UserRole)user.RoleId).ToString()));
 
 			return claims;
 		}

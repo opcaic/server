@@ -11,19 +11,19 @@ namespace OPCAIC.ApiService.IoC
 		public static void AddServices(this IServiceCollection services)
 		{
 			services
-				.AddTransient<IEmailService, EmailService>()
-				.AddTransient<IUserManager, UserManager>()
-				.AddTransient<IStorageService, StorageService>()
-				.AddTransient<IGamesService, GamesService>()
-				.AddTransient<ITournamentsService, TournamentsService>()
-				.AddTransient<ITournamentParticipantsService, TournamentParticipantsService>()
+				.AddScoped<IEmailService, EmailService>()
+				.AddScoped<IUserManager, UserManager>()
+				.AddScoped<IStorageService, StorageService>()
+				.AddScoped<IGamesService, GamesService>()
+				.AddScoped<ITournamentsService, TournamentsService>()
+				.AddScoped<ITournamentParticipantsService, TournamentParticipantsService>()
 				.AddTransient<EmailSender>()
 				.AddHostedService<EmailCronService>()
-				.AddTransient<IDocumentService, DocumentService>()
-				.AddTransient<IFrontendUrlGenerator, FrontendUrlGenerator>()
-				.AddTransient<ISubmissionService, SubmissionService>()
-				.AddScoped<IModelValidationService, ModelValidationService>()
-				.AddTransient<IMatchService, MatchService>();
+				.AddScoped<IDocumentService, DocumentService>()
+				.AddScoped<ISubmissionService, SubmissionService>()
+				.AddScoped<IFrontendUrlGenerator, FrontendUrlGenerator>()
+				.AddSingleton<IModelValidationService, ModelValidationService>()
+				.AddScoped<IMatchService, MatchService>();
 		}
 	}
 }

@@ -1,9 +1,9 @@
-﻿using AutoMapper;
+﻿using System.Linq;
+using AutoMapper;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.Models.Matches;
-using OPCAIC.ApiService.Models.Submission;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
@@ -18,7 +18,6 @@ using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
-using SubmissionReferenceModel = OPCAIC.ApiService.Models.Submissions.SubmissionReferenceModel;
 
 namespace OPCAIC.ApiService
 {
@@ -104,6 +103,9 @@ namespace OPCAIC.ApiService
 		private static void AddTournamentMapping(this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap<NewTournamentModel, NewTournamentDto>();
+
+			exp.CreateMap<Tournament, TournamentAuthorizationDto>(MemberList.Destination)
+				.ForMember(d => d.ManagerIds, opt => opt.MapFrom(s => s.Managers.Select(m => m.UserId)));
 
 			exp.CreateMap<Tournament, TournamentDetailDto, TournamentDetailModel>();
 			exp.CreateMap<Tournament, TournamentPreviewDto, TournamentPreviewModel>();

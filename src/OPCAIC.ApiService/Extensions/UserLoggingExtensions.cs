@@ -24,7 +24,7 @@ namespace OPCAIC.ApiService.Extensions
 
 		public static void LoginInvalidPassword(this ILogger logger, User user)
 		{
-			logger.LogInformation(LoggingEvents.LoginInvalidPassword, $"Invalid password for user {{{LoggingTags.UserId}}}.");
+			logger.LogInformation(LoggingEvents.LoginInvalidPassword, $"Invalid password for user {{{LoggingTags.UserId}}}.", user.Id);
 		}
 
 		public static void LoginInvalidMail(this ILogger logger, string email)

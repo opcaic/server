@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>OPCAIC.GameModules.Interface</AssemblyName>
     <RootNamespace>OPCAIC.GameModules.Interface</RootNamespace>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
 </Project>

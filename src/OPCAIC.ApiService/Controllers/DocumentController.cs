@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Security;
@@ -15,10 +16,12 @@ namespace OPCAIC.ApiService.Controllers
 	public class DocumentController : ControllerBase
 	{
 		private readonly IDocumentService documentService;
+		private readonly IAuthorizationService authorizationService;
 
-		public DocumentController(IDocumentService documentService)
+		public DocumentController(IDocumentService documentService, IAuthorizationService authorizationService)
 		{
 			this.documentService = documentService;
+			this.authorizationService = authorizationService;
 		}
 
 		/// <summary>
@@ -27,12 +30,12 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="filter"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		[Authorize(RolePolicy.Public)]
 		[HttpGet]
 		[ProducesResponseType(typeof(ListModel<DocumentDetailModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[RequiresPermission(DocumentPermission.Search)]
 		public Task<ListModel<DocumentDetailModel>> GetDocumentsAsync(
 			[FromQuery] DocumentFilterModel filter, CancellationToken cancellationToken)
 		{
@@ -49,13 +52,13 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="409">Conflict in posting.</response>
-		[Authorize(RolePolicy.Organizer)]
 		[HttpPost]
 		[ProducesResponseType(typeof(IdModel), StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status409Conflict)]
+		[RequiresPermission(DocumentPermission.Create)]
 		public async Task<IActionResult> PostAsync([FromBody] NewDocumentModel model,
 			CancellationToken cancellationToken)
 		{
@@ -73,16 +76,16 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
-		[Authorize(RolePolicy.Organizer)]
 		[HttpGet("{id}", Name = nameof(GetDocumentByIdAsync))]
 		[ProducesResponseType(typeof(DocumentDetailModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task<DocumentDetailModel> GetDocumentByIdAsync(long id,
+		public async Task<DocumentDetailModel> GetDocumentByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			return documentService.GetByIdAsync(id, cancellationToken);
+//			await authorizationService.CheckPermissions(User, id, DocumentPermission.Read);
+			return await documentService.GetByIdAsync(id, cancellationToken);
 		}
 
 		/// <summary>
@@ -102,10 +105,11 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task UpdateAsync(long id, [FromBody] UpdateDocumentModel model,
+		public async Task UpdateAsync(long id, [FromBody] UpdateDocumentModel model,
 			CancellationToken cancellationToken)
 		{
-			return documentService.UpdateAsync(id, model, cancellationToken);
+//			await authorizationService.CheckPermissions(User, id, DocumentPermission.Update);
+			await documentService.UpdateAsync(id, model, cancellationToken);
 		}
 
 		/// <summary>
@@ -123,6 +127,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public Task DeleteAsync(long id, CancellationToken cancellationToken)
 		{
+//			await authorizationService.CheckPermissions(User, id, DocumentPermission.Delete);
 			return documentService.DeleteAsync(id, cancellationToken);
 		}
 	}

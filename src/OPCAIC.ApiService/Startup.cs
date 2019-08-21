@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -14,6 +15,7 @@ using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Middlewares;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
+using OPCAIC.ApiService.Security.Handlers;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
@@ -37,7 +39,7 @@ namespace OPCAIC.ApiService
 
 		public IConfiguration Configuration { get; }
 
-		public void ConfigureSecurity(IServiceCollection services)
+		private void AddIdentity(IServiceCollection services)
 		{
 			services
 				.AddIdentity<User, Role>(options =>
@@ -61,13 +63,23 @@ namespace OPCAIC.ApiService
 				.AddTokenProvider<JwtTokenProvider>(nameof(JwtTokenProvider));
 
 			services.AddScoped<SignInManager>();
+		}
+
+		public void ConfigureSecurity(IServiceCollection services)
+		{
+			AddIdentity(services);
+
+			services
+				.AddSingleton<IAuthorizationHandler, SuperUserAuthorizationHandler>()
+				.AddScoped<IAuthorizationHandler, UserPermissionHandler>()
+				.AddScoped<IAuthorizationHandler, TournamentPermissionHandler>()
+//				.AddScoped<IAuthorizationHandler, SubmissionPermissionHandler>()
+//				.AddScoped<IAuthorizationHandler, MatchPermissionHandler>()
+				.AddScoped<IAuthorizationHandler, GamePermissionHandler>();
 
 			var conf = Configuration.GetSecurityConfiguration();
 
 			var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(conf.Key));
-
-			services.Configure<SecurityConfiguration>(
-				Configuration.GetSection(ConfigNames.Security));
 
 			services.Configure<JwtIssuerOptions>(cfg =>
 			{
@@ -142,6 +154,7 @@ namespace OPCAIC.ApiService
 		public void ConfigureOptions(IServiceCollection services)
 		{
 			services.Configure<UrlGeneratorConfiguration>(Configuration);
+			services.Configure<SecurityConfiguration>(Configuration.GetSection(ConfigNames.Security));
 			services.Configure<StorageConfiguration>(Configuration.GetSection("Storage"));
 			services.Configure<EmailsConfiguration>(Configuration.GetSection("Emails"));
 			services.Configure<SecurityConfiguration>(Configuration.GetSection("Security"));

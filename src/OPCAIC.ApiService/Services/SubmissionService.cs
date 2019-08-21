@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
-using OPCAIC.ApiService.Models.Submission;
+using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Entities;

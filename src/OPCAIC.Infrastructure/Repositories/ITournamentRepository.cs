@@ -1,4 +1,6 @@
-﻿using OPCAIC.Infrastructure.Dtos.Tournaments;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
@@ -6,5 +8,6 @@ namespace OPCAIC.Infrastructure.Repositories
 		: IGenericRepository<TournamentFilterDto, TournamentPreviewDto, TournamentDetailDto,
 			NewTournamentDto, UpdateTournamentDto>
 	{
+		Task<TournamentAuthorizationDto> GetTournamentAuthorizationData(long id, CancellationToken cancellationToken = default);
 	}
 }

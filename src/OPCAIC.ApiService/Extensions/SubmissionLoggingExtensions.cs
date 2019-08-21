@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using OPCAIC.ApiService.Models.Submission;
+using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService.Extensions
