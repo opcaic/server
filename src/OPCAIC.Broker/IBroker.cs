@@ -1,14 +1,33 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.Broker
 {
+	public class WorkerInfo
+	{
+		public string Identity { get; set; }
+		public Guid? CurrentJob { get; set; }
+	}
+
+	public class BrokerStats
+	{
+		public List<WorkerInfo> Workers { get; set; }
+	}
+
 	/// <summary>
 	///     Broker for the load-balanced task distribution.
 	/// </summary>
 	public interface IBroker
 	{
+		/// <summary>
+		///     Returns information about current state of the backend.
+		/// </summary>
+		/// <returns></returns>
+		Task<BrokerStats> GetStats();
+
 		/// <summary>
 		///     Enqueues a work item to be dispatched on a worker.
 		/// </summary>

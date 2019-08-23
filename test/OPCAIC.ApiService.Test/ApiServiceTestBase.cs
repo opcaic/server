@@ -7,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.IoC;
+using OPCAIC.ApiService.Security;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Emails;
@@ -26,7 +28,7 @@ namespace OPCAIC.ApiService.Test
 			CancellationTokenSource = new CancellationTokenSource();
 
 			var startup = new Startup(Configuration);
-			startup.ConfigureSecurity(Services);
+			Services.ConfigureSecurity(Configuration);
 			startup.ConfigureOptions(Services);
 
 			UseDatabase();

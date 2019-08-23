@@ -38,6 +38,19 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
+		public Task<BrokerStats> GetStats()
+		{
+			return Schedule(() => new BrokerStats
+			{
+				Workers = workers.Select(w => new WorkerInfo
+				{
+					Identity = w.Identity,
+					CurrentJob = w.CurrentWorkItem?.Payload.Id
+				}).ToList()
+			});
+		}
+
+		/// <inheritdoc />
 		public void EnqueueWork(WorkMessageBase msg)
 		{
 			EnqueueWork(msg, DateTime.Now);
@@ -48,7 +61,7 @@ namespace OPCAIC.Broker
 		{
 			Require.ArgNotNull(msg, nameof(msg));
 
-			Schedule(() =>
+			PerformTask(() =>
 			{
 				var capableWorkers = identityToWorker.Values.Where(w => CanWorkerExecute(w, msg));
 				if (!capableWorkers.Any())
@@ -70,7 +83,7 @@ namespace OPCAIC.Broker
 		/// <inheritdoc />
 		public void CancelWork(Guid id)
 		{
-			Schedule(() =>
+			PerformTask(() =>
 			{
 				taskQueue.RemoveWhere(w => w.Payload.Id == id);
 				var worker = workers.SingleOrDefault(w => w.CurrentWorkItem?.Payload.Id == id);
@@ -99,7 +112,7 @@ namespace OPCAIC.Broker
 		/// <inheritdoc />
 		public int GetUnfinishedTasksCount()
 		{
-			return Schedule(() =>
+			return PerformTask(() =>
 				workers.Count(w => w.CurrentWorkItem != null) +
 				taskQueue.Count);
 		}
@@ -110,7 +123,7 @@ namespace OPCAIC.Broker
 			shuttingDown = true;
 
 			// make sure no worker is running anything
-			Schedule(() =>
+			PerformTask(() =>
 			{
 				foreach (var worker in workers.Where(w => w.CurrentWorkItem != null))
 				{
@@ -175,7 +188,7 @@ namespace OPCAIC.Broker
 		/// <returns></returns>
 		public bool IsExecutingAnything()
 		{
-			return Schedule(() => { return workers.Any(w => w.CurrentWorkItem != null); });
+			return PerformTask(() => { return workers.Any(w => w.CurrentWorkItem != null); });
 		}
 
 		/// <inheritdoc />
@@ -185,16 +198,26 @@ namespace OPCAIC.Broker
 		}
 
 		/// <summary>
-		///     Schedules an action to be invoked in a brokers consumer thread and waits for the completion.
+		///     Schedules an action to be invoked in a broker consumer thread and returns a <see cref="Task"/> object which can be awaited for completion.
 		/// </summary>
-		/// <param name="a">The action to be invoked.</param>
-		private void Schedule(Action a)
+		/// <param name="a"></param>
+		/// <returns></returns>
+		private Task Schedule(Action a)
 		{
 			var task = new Task(a);
 			connector.EnqueueTask(task);
+			return task;
+		}
+
+		/// <summary>
+		///     Schedules an action to be invoked in a brokers consumer thread and waits for the completion.
+		/// </summary>
+		/// <param name="a">The action to be invoked.</param>
+		private void PerformTask(Action a)
+		{
 			try
 			{
-				task.Wait();
+				Schedule(a).Wait();
 			}
 			catch (AggregateException e)
 			{
@@ -203,17 +226,27 @@ namespace OPCAIC.Broker
 		}
 
 		/// <summary>
+		///     Schedules an action to be invoked in a broker consumer thread and returns a <see cref="Task"/> object which can be awaited for completion.
+		/// </summary>
+		/// <param name="a"></param>
+		/// <returns></returns>
+		private Task<T> Schedule<T>(Func<T> a)
+		{
+			var task = new Task<T>(a);
+			connector.EnqueueTask(task);
+			return task;
+		}
+
+		/// <summary>
 		///     Schedules a function to be invoked in a brokers consumer thread and waits for the completion.
 		/// </summary>
 		/// <param name="a">The function to be invoked.</param>
 		/// <returns>The return value of of a()</returns>
-		private T Schedule<T>(Func<T> a)
+		private T PerformTask<T>(Func<T> a)
 		{
-			var task = new Task<T>(a);
-			connector.EnqueueTask(task);
 			try
 			{
-				return task.Result;
+				return Schedule(a).Result;
 			}
 			catch (AggregateException e)
 			{

@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
+using OPCAIC.ApiService.Health;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Middlewares;
 using OPCAIC.ApiService.ModelValidationHandling;
@@ -39,77 +44,6 @@ namespace OPCAIC.ApiService
 
 		public IConfiguration Configuration { get; }
 
-		private void AddIdentity(IServiceCollection services)
-		{
-			services
-				.AddIdentity<User, Role>(options =>
-				{
-					// use lax settings for now
-					options.Password.RequireDigit = false;
-					options.Password.RequireLowercase = false;
-					options.Password.RequireNonAlphanumeric = false;
-					options.Password.RequireUppercase = false;
-					options.Password.RequiredLength = 4;
-					options.Password.RequiredUniqueChars = 1;
-
-					options.User.RequireUniqueEmail = true;
-
-					options.SignIn.RequireConfirmedEmail = true;
-				})
-				.AddUserManager<UserManager>()
-				.AddEntityFrameworkStores<DataContext>()
-				.AddErrorDescriber<AppIdentityErrorDescriber>()
-				.AddDefaultTokenProviders()
-				.AddTokenProvider<JwtTokenProvider>(nameof(JwtTokenProvider));
-
-			services.AddScoped<SignInManager>();
-		}
-
-		public void ConfigureSecurity(IServiceCollection services)
-		{
-			AddIdentity(services);
-
-			services
-				.AddSingleton<IAuthorizationHandler, SuperUserAuthorizationHandler>()
-				.AddScoped<IAuthorizationHandler, UserPermissionHandler>()
-				.AddScoped<IAuthorizationHandler, TournamentPermissionHandler>()
-//				.AddScoped<IAuthorizationHandler, SubmissionPermissionHandler>()
-//				.AddScoped<IAuthorizationHandler, MatchPermissionHandler>()
-				.AddScoped<IAuthorizationHandler, GamePermissionHandler>();
-
-			var conf = Configuration.GetSecurityConfiguration();
-
-			var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(conf.Key));
-
-			services.Configure<JwtIssuerOptions>(cfg =>
-			{
-				// TODO: Issuer and Audience from config?
-				cfg.SigningCredentials =
-					new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256Signature);
-			});
-
-			services.AddAuthentication(x =>
-				{
-					x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-					x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-				})
-				.AddJwtBearer(x =>
-				{
-					x.RequireHttpsMetadata = false;
-					x.SaveToken = false;
-					x.TokenValidationParameters = new TokenValidationParameters
-					{
-						ValidateIssuerSigningKey = true,
-						IssuerSigningKey = signingKey,
-						ValidateIssuer = false,
-						ValidateAudience = false,
-						ClockSkew = TimeSpan.Zero
-					};
-				});
-
-			services.AddAuthorization(AuthorizationConfiguration.Setup);
-		}
-
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
@@ -124,8 +58,6 @@ namespace OPCAIC.ApiService
 						return new BadRequestObjectResult(problems);
 					};
 				});
-
-			ConfigureSecurity(services);
 
 			services.AddCors(options =>
 			{
@@ -148,6 +80,8 @@ namespace OPCAIC.ApiService
 			services.AddMapper();
 			services.AddSwaggerGen(SwaggerConfig.SetupSwaggerGen);
 
+			services.ConfigureSecurity(Configuration);
+			services.ConfigureHealth();
 			ConfigureOptions(services);
 		}
 
@@ -176,6 +110,7 @@ namespace OPCAIC.ApiService
 
 			app.UseSwagger(SwaggerConfig.SetupSwagger);
 			app.UseSwaggerUI(SwaggerConfig.SetupSwaggerUi);
+			app.UseHealthChecks("/api/health", HealthSetup.Options);
 
 			app.UseAuthentication();
 
@@ -185,5 +120,6 @@ namespace OPCAIC.ApiService
 
 			app.UseMvc();
 		}
+
 	}
 }

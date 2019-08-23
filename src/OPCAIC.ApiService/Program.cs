@@ -10,6 +10,8 @@ using OPCAIC.ApiService.Utils;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Utils;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("OPCAIC.ApiService.Test")]
+
 namespace OPCAIC.ApiService
 {
 	public class Program
