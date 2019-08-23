@@ -27,7 +27,6 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="filter">Filter to use.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		[Authorize(RolePolicy.User)]
 		[HttpGet]
 		[ProducesResponseType(typeof(ListModel<MatchDetailModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -45,7 +44,6 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="id">Id of match to look for.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		[Authorize(RolePolicy.User)]
 		[HttpGet("{id}")]
 		[ProducesResponseType(typeof(MatchDetailModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
