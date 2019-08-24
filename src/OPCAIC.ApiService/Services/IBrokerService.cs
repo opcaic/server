@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Models;
@@ -13,7 +14,7 @@ namespace OPCAIC.ApiService.Services
 		Task<ResultModel> PrioritizeWork(Guid id, CancellationToken cancellationToken);
 		Task<BrokerStatsModel> GetStats(CancellationToken cancellationToken);
 
-		Task<ListModel<WorkItemModel>> GetWorkItems(WorkItemFilterModel filter,
+		Task<List<WorkItemModel>> GetWorkItems(WorkItemFilterModel filter,
 			CancellationToken cancellationToken);
 	}
 }

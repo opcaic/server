@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -35,16 +36,16 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permission to manage broker.</response>
 		/// <returns>Filtered list of current work items.</returns>
 		[HttpGet("items")]
-		[ProducesResponseType(typeof(ListModel<WorkItemModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(List<WorkItemModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
-		public Task<ListModel<WorkItemModel>> GetWorkItemsAsync(WorkItemFilterModel filter,
+		public Task<List<WorkItemModel>> GetWorkItemsAsync(WorkItemFilterModel filter,
 			CancellationToken cancellationToken)
 		{
 			return brokerService.GetWorkItems(filter, cancellationToken);
 		}
-		
+
 		/// <summary>
 		///     Cancel any work item executed on specified worker.
 		/// </summary>

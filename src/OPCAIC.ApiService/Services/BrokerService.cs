@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,16 +29,12 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
-		public async Task<ListModel<WorkItemModel>> GetWorkItems(WorkItemFilterModel filter,
+		public async Task<List<WorkItemModel>> GetWorkItems(WorkItemFilterModel filter,
 			CancellationToken cancellationToken)
 		{
 			var filterDto = mapper.Map<WorkItemFilterDto>(filter);
 			var workItemsDto = await broker.FilterWork(filterDto);
-			var workItems = workItemsDto.Select(wi => mapper.Map<WorkItemModel>(wi));
-			return new ListModel<WorkItemModel>
-			{
-				Total = workItemsDto.Count, List = workItems.ToList()
-			};
+			return workItemsDto.Select(wi => mapper.Map<WorkItemModel>(wi)).ToList();
 		}
 
 		/// <inheritdoc />
