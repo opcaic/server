@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Models;
@@ -10,13 +11,17 @@ using OPCAIC.ApiService.Services;
 namespace OPCAIC.ApiService.Controllers
 {
 	[Route("api/broker")]
+	[Authorize]
 	public class BrokerController : ControllerBase
 	{
+		private readonly IAuthorizationService authorizationService;
 		private readonly IBrokerService brokerService;
 
-		public BrokerController(IBrokerService brokerService)
+		public BrokerController(IBrokerService brokerService,
+			IAuthorizationService authorizationService)
 		{
 			this.brokerService = brokerService;
+			this.authorizationService = authorizationService;
 		}
 
 		/// <summary>
@@ -29,7 +34,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permission to manage broker.</response>
 		/// <returns>Filtered list of current work items.</returns>
-		[HttpGet]
+		[HttpGet("items")]
 		[ProducesResponseType(typeof(ListModel<WorkItemModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -39,22 +44,24 @@ namespace OPCAIC.ApiService.Controllers
 		{
 			return brokerService.GetWorkItems(filter, cancellationToken);
 		}
-
+		
 		/// <summary>
-		///     Cancel a work item queued on broker.
+		///     Cancel any work item executed on specified worker.
 		/// </summary>
-		/// <param name="id">Id of work item to cancel.</param>
+		/// <param name="id">Identity of the worker to cancel work.</param>
 		/// <response code="200">Request ok.</response>
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permission to manage broker.</response>
-		[HttpGet]
+		[HttpPost("cancelled")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
-		public Task CancelWorkAsync(Guid id, CancellationToken cancellationToken)
+		public Task<ResultModel> CancelWorkAsync(string workerIdentity,
+			CancellationToken cancellationToken)
 		{
-			return brokerService.CancelWork(id, cancellationToken);
+			return brokerService.CancelWork(workerIdentity, cancellationToken);
 		}
+
 
 		/// <summary>
 		///     Prioritize a work item queued on broker.
@@ -63,11 +70,11 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="200">Request ok.</response>
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permission to manage broker.</response>
-		[HttpGet]
+		[HttpPost("prioritized")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
-		public Task PrioritizeWork(Guid id, CancellationToken cancellationToken)
+		public Task<ResultModel> PrioritizeWork(Guid id, CancellationToken cancellationToken)
 		{
 			return brokerService.PrioritizeWork(id, cancellationToken);
 		}

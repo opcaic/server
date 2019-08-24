@@ -170,7 +170,7 @@ namespace OPCAIC.ApiService
 		private static void AddBrokerMapping(this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap<WorkItemFilterModel, WorkItemFilterDto>();
-			exp.CreateMap<WorkItemDto, WorkItemModel>();
+			exp.CreateMap<WorkItem, WorkItemModel>();
 			exp.CreateMap<WorkItemFilterDto, WorkItemFilterModel>();
 			exp.CreateMap<BrokerStatsDto, BrokerStatsModel>();
 			exp.CreateMap<WorkerInfoDto, WorkerInfoModel>();

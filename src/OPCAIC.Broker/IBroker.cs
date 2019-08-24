@@ -34,20 +34,27 @@ namespace OPCAIC.Broker
 		///     Moves work item with given id to the start of the queue.
 		/// </summary>
 		/// <param name="id">Id of the job to prioritize.</param>
-		Task PrioritizeWork(Guid id);
+		Task<bool> PrioritizeWork(Guid id);
 
 		/// <summary>
 		///     Filters enqueued work items by the given filter.
 		/// </summary>
 		/// <param name="filter">Filter to use.</param>
 		/// <returns></returns>
-		Task<List<WorkItemDto>> FilterWork(WorkItemFilterDto filter);
+		Task<List<WorkItem>> FilterWork(WorkItemFilterDto filter);
 
 		/// <summary>
 		///     Cancels work job with given id.
 		/// </summary>
 		/// <param name="id">Id of the job to cancel.</param>
-		Task CancelWork(Guid id);
+		Task<bool> CancelWork(Guid id);
+
+		/// <summary>
+		///     Cancels all work on worker with given name.
+		/// </summary>
+		/// <param name="workerIdentity">Identity of the worker.</param>
+		/// <returns></returns>
+		Task<bool> CancelWork(string workerIdentity);
 
 		/// <summary>
 		///     Gets number of scheduled but not finished tasks.

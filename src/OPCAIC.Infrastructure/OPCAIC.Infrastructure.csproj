@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OPCAIC.Broker\OPCAIC.Broker.csproj" />
     <ProjectReference Include="..\OPCAIC.Utils\OPCAIC.Utils.csproj" />
   </ItemGroup>
 

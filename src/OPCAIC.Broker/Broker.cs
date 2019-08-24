@@ -19,7 +19,7 @@ namespace OPCAIC.Broker
 		private readonly IBrokerConnector connector;
 		private readonly Dictionary<string, WorkerEntry> identityToWorker;
 		private readonly ILogger logger;
-		private readonly SortedSet<WorkItemDto> taskQueue;
+		private readonly SortedSet<WorkItem> taskQueue;
 		private readonly List<WorkerEntry> workers;
 		private Thread consumerThread;
 		private bool shuttingDown;
@@ -33,7 +33,7 @@ namespace OPCAIC.Broker
 			this.logger = logger;
 			identityToWorker = new Dictionary<string, WorkerEntry>();
 			workers = new List<WorkerEntry>();
-			taskQueue = new SortedSet<WorkItemDto>();
+			taskQueue = new SortedSet<WorkItem>();
 			RegisterHandlers();
 		}
 
@@ -68,7 +68,7 @@ namespace OPCAIC.Broker
 					logger.LogError($"No worker can execute game {msg.Game}");
 				}
 
-				taskQueue.Add(new WorkItemDto {Payload = msg, QueuedTime = queueTime});
+				taskQueue.Add(new WorkItem {Payload = msg, QueuedTime = queueTime});
 
 				// enqueue to worker with shortest queue
 				var worker = capableWorkers.FirstOrDefault(w => w.CurrentWorkItem == null);
@@ -80,30 +80,28 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public Task PrioritizeWork(Guid id)
+		public Task<bool> PrioritizeWork(Guid id)
 		{
-			Require.That<InvalidOperationException>(taskQueue.Count(wi => wi.Payload.Id == id) > 0,
-				nameof(Guid));
 			return Schedule(() =>
 			{
-				// the item is already beaing evaluated
-				if (workers.Exists(we => we.CurrentWorkItem.Payload.Id == id)) return;
+				if (taskQueue.All(wi => wi.Payload.Id != id)) return false;
 				var workItem = taskQueue.Single(wi => wi.Payload.Id == id);
 				taskQueue.Remove(workItem);
 				workItem.QueuedTime = DateTime.MinValue;
 				taskQueue.Add(workItem);
+				return true;
 			});
 		}
 
 		/// <inheritdoc />
-		public Task<List<WorkItemDto>> FilterWork(WorkItemFilterDto filter)
+		public Task<List<WorkItem>> FilterWork(WorkItemFilterDto filter)
 		{
 			return Schedule(() =>
 				filter.Filter(taskQueue));
 		}
 
 		/// <inheritdoc />
-		public Task CancelWork(Guid id)
+		public Task<bool> CancelWork(Guid id)
 		{
 			return Schedule(() =>
 			{
@@ -113,6 +111,22 @@ namespace OPCAIC.Broker
 				{
 					SetHeartbeat(worker);
 				}
+				return true;
+			});
+		}
+
+		/// <inheritdoc />
+		public Task<bool> CancelWork(string workerIdentity)
+		{
+			return Schedule(() =>
+			{
+				var worker = workers.SingleOrDefault(w => w.Identity == workerIdentity);
+				if (worker != null)
+				{
+					SetHeartbeat(worker);
+					return true;
+				}
+				return false;
 			});
 		}
 

@@ -29,7 +29,7 @@ namespace OPCAIC.Broker
 
 		public string Game { get; set; }
 
-		public List<WorkItemDto> Filter(IEnumerable<WorkItemDto> workItems)
+		public List<WorkItem> Filter(IEnumerable<WorkItem> workItems)
 		{
 			var filtered = workItems;
 			if (Since != null)
