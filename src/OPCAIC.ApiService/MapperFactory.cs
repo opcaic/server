@@ -1,14 +1,16 @@
 ﻿using System.Linq;
 using AutoMapper;
 using OPCAIC.ApiService.Models;
+using OPCAIC.ApiService.Models.Broker;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
-using OPCAIC.ApiService.Security;
+using OPCAIC.Broker;
 using OPCAIC.Infrastructure.Dtos;
+using OPCAIC.Infrastructure.Dtos.Broker;
 using OPCAIC.Infrastructure.Dtos.Documents;
 using OPCAIC.Infrastructure.Dtos.Emails;
 using OPCAIC.Infrastructure.Dtos.EmailTemplates;
@@ -18,6 +20,7 @@ using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.ApiService
 {
@@ -35,6 +38,7 @@ namespace OPCAIC.ApiService
 				exp.AddEmailMapping();
 				exp.AddEmailTemplateMapping();
 				exp.AddGameMapping();
+				exp.AddBrokerMapping();
 				exp.AddOther();
 			});
 		}
@@ -105,7 +109,8 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<NewTournamentModel, NewTournamentDto>();
 
 			exp.CreateMap<Tournament, TournamentAuthorizationDto>(MemberList.Destination)
-				.ForMember(d => d.ManagerIds, opt => opt.MapFrom(s => s.Managers.Select(m => m.UserId)));
+				.ForMember(d => d.ManagerIds,
+					opt => opt.MapFrom(s => s.Managers.Select(m => m.UserId)));
 
 			exp.CreateMap<Tournament, TournamentDetailDto, TournamentDetailModel>();
 			exp.CreateMap<Tournament, TournamentPreviewDto, TournamentPreviewModel>();
@@ -123,11 +128,15 @@ namespace OPCAIC.ApiService
 				.ForSourceMember(d => d.Archive, opt => opt.DoNotValidate());
 			exp.CreateMap<NewSubmissionDto, Submission>(MemberList.Source);
 
-			exp.CreateMap<Submission, SubmissionPreviewDto, SubmissionPreviewModel>(MemberList.Destination);
-			exp.CreateMap<Submission, SubmissionDetailDto, SubmissionDetailModel>(MemberList.Destination);
-			exp.CreateMap<Submission, SubmissionReferenceDto, SubmissionReferenceModel>(MemberList.Destination);
+			exp.CreateMap<Submission, SubmissionPreviewDto, SubmissionPreviewModel>(MemberList
+				.Destination);
+			exp.CreateMap<Submission, SubmissionDetailDto, SubmissionDetailModel>(MemberList
+				.Destination);
+			exp.CreateMap<Submission, SubmissionReferenceDto, SubmissionReferenceModel>(MemberList
+				.Destination);
 
-			exp.CreateMap<UpdateSubmissionModel, UpdateSubmissionDto, Submission>(MemberList.Source);
+			exp.CreateMap<UpdateSubmissionModel, UpdateSubmissionDto, Submission>(MemberList
+				.Source);
 			exp.CreateMap<SubmissionFilterModel, SubmissionFilterDto>(MemberList.Destination);
 
 			exp.CreateMap<Submission, SubmissionStorageDto>(MemberList.Destination);
@@ -157,6 +166,17 @@ namespace OPCAIC.ApiService
 				SubmissionMatchResultModel>();
 
 			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
+		}
+
+		private static void AddBrokerMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<WorkItem, WorkItemDto, WorkItemModel>();
+			exp.CreateMap<BrokerStats, BrokerStatsDto, BrokerStatsModel>();
+			exp.CreateMap<WorkerInfo, WorkerInfoDto, WorkerInfoModel>();
+			exp.CreateMap<WorkMessageBase, WorkMessageBaseDto, WorkMessageBaseModel>();
+			exp.CreateMap<BotInfo, BotInfoDto, BotInfoModel>();
+			exp.CreateMap<MatchExecutionRequest, MatchExecutionRequestDto, MatchExecutionRequestModel>();
+			exp.CreateMap<SubmissionValidationRequest, SubmissionValidationRequestDto, SubmissionValidationRequestModel>();
 		}
 	}
 }

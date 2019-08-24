@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using OPCAIC.Infrastructure.Dtos.Broker;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
@@ -44,24 +45,23 @@ namespace OPCAIC.Broker
 			{
 				Workers = workers.Select(w => new WorkerInfo
 				{
-					Identity = w.Identity,
-					CurrentJob = w.CurrentWorkItem?.Payload.Id
+					Identity = w.Identity, CurrentJob = w.CurrentWorkItem?.Payload.Id
 				}).ToList()
 			});
 		}
 
 		/// <inheritdoc />
-		public void EnqueueWork(WorkMessageBase msg)
+		public Task EnqueueWork(WorkMessageBase msg)
 		{
-			EnqueueWork(msg, DateTime.Now);
+			return EnqueueWork(msg, DateTime.Now);
 		}
 
 		/// <inheritdoc />
-		public void EnqueueWork(WorkMessageBase msg, DateTime queueTime)
+		public Task EnqueueWork(WorkMessageBase msg, DateTime queueTime)
 		{
 			Require.ArgNotNull(msg, nameof(msg));
 
-			PerformTask(() =>
+			return Schedule(() =>
 			{
 				var capableWorkers = identityToWorker.Values.Where(w => CanWorkerExecute(w, msg));
 				if (!capableWorkers.Any())
@@ -81,16 +81,41 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public void CancelWork(Guid id)
+		public Task<bool> PrioritizeWork(Guid id)
 		{
-			PerformTask(() =>
+			return Schedule(() =>
+			{
+				var workItem = taskQueue.SingleOrDefault(wi => wi.Payload.Id == id);
+				if (workItem != null)
+				{
+					taskQueue.Remove(workItem);
+					workItem.QueuedTime = DateTime.MinValue;
+					taskQueue.Add(workItem);
+					return true;
+				}
+
+				return false;
+			});
+		}
+
+		public List<WorkItem> GetWorkItems()
+		{
+			return taskQueue.ToList();
+		}
+		
+		/// <inheritdoc />
+		public Task<bool> CancelWork(Guid id)
+		{
+			return Schedule(() =>
 			{
 				taskQueue.RemoveWhere(w => w.Payload.Id == id);
 				var worker = workers.SingleOrDefault(w => w.CurrentWorkItem?.Payload.Id == id);
 				if (worker != null)
 				{
-					SetHeartbeat(worker);
+					CancelWork(worker);
 				}
+
+				return true;
 			});
 		}
 
@@ -198,7 +223,8 @@ namespace OPCAIC.Broker
 		}
 
 		/// <summary>
-		///     Schedules an action to be invoked in a broker consumer thread and returns a <see cref="Task"/> object which can be awaited for completion.
+		///     Schedules an action to be invoked in a broker consumer thread and returns a <see cref="Task" /> object which can be
+		///     awaited for completion.
 		/// </summary>
 		/// <param name="a"></param>
 		/// <returns></returns>
@@ -226,7 +252,8 @@ namespace OPCAIC.Broker
 		}
 
 		/// <summary>
-		///     Schedules an action to be invoked in a broker consumer thread and returns a <see cref="Task"/> object which can be awaited for completion.
+		///     Schedules an action to be invoked in a broker consumer thread and returns a <see cref="Task" /> object which can be
+		///     awaited for completion.
 		/// </summary>
 		/// <param name="a"></param>
 		/// <returns></returns>

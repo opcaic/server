@@ -6,7 +6,7 @@ namespace OPCAIC.Broker
 	/// <summary>
 	///     Item in a work queue to be scheduled on a worker
 	/// </summary>
-	internal class WorkItem : IComparable<WorkItem>
+	public class WorkItem : IComparable<WorkItem>
 	{
 		/// <summary>
 		///     Timestamp when the workload was enqueued.
