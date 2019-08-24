@@ -15,7 +15,7 @@ namespace OPCAIC.Broker
 		///     Returns information about current state of the backend.
 		/// </summary>
 		/// <returns></returns>
-		Task<BrokerStatsDto> GetStats();
+		Task<BrokerStats> GetStats();
 
 		/// <summary>
 		///     Enqueues a work item to be dispatched on a worker.
@@ -37,11 +37,10 @@ namespace OPCAIC.Broker
 		Task<bool> PrioritizeWork(Guid id);
 
 		/// <summary>
-		///     Filters enqueued work items by the given filter.
+		///     Get all work items in the queue.
 		/// </summary>
-		/// <param name="filter">Filter to use.</param>
 		/// <returns></returns>
-		Task<List<WorkItem>> FilterWork(WorkItemFilterDto filter);
+		List<WorkItem> GetWorkItems();
 
 		/// <summary>
 		///     Cancels work job with given id.
@@ -49,12 +48,6 @@ namespace OPCAIC.Broker
 		/// <param name="id">Id of the job to cancel.</param>
 		Task<bool> CancelWork(Guid id);
 
-		/// <summary>
-		///     Cancels all work on worker with given name.
-		/// </summary>
-		/// <param name="workerIdentity">Identity of the worker.</param>
-		/// <returns></returns>
-		Task<bool> CancelWork(string workerIdentity);
 
 		/// <summary>
 		///     Gets number of scheduled but not finished tasks.

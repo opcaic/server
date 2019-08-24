@@ -10,6 +10,7 @@ using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.Dtos;
+using OPCAIC.Infrastructure.Dtos.Broker;
 using OPCAIC.Infrastructure.Dtos.Documents;
 using OPCAIC.Infrastructure.Dtos.Emails;
 using OPCAIC.Infrastructure.Dtos.EmailTemplates;
@@ -169,12 +170,21 @@ namespace OPCAIC.ApiService
 
 		private static void AddBrokerMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<WorkItemFilterModel, WorkItemFilterDto>();
-			exp.CreateMap<WorkItem, WorkItemModel>();
-			exp.CreateMap<WorkItemFilterDto, WorkItemFilterModel>();
+			exp.CreateMap<WorkItemDto, WorkItemModel>();
 			exp.CreateMap<BrokerStatsDto, BrokerStatsModel>();
 			exp.CreateMap<WorkerInfoDto, WorkerInfoModel>();
-			exp.CreateMap<WorkMessageBase, WorkMessageBaseModel>();
+			exp.CreateMap<WorkMessageBaseDto, WorkMessageBaseModel>();
+			exp.CreateMap<BotInfoDto, BotInfoModel>();
+			exp.CreateMap<MatchExecutionDto, MatchExecutionModel>();
+			exp.CreateMap<SubmissionValidationRequestDto, SubmissionValidationRequestModel>();
+
+			exp.CreateMap<WorkItem, WorkItemDto>();
+			exp.CreateMap<BrokerStats, BrokerStatsDto>();
+			exp.CreateMap<WorkerInfo, WorkerInfoDto>();
+			exp.CreateMap<WorkMessageBase, WorkMessageBaseDto>();
+			exp.CreateMap<MatchExecutionRequest, MatchExecutionRequestDto>();
+			exp.CreateMap<SubmissionValidationRequest, SubmissionValidationRequestDto>();
+			exp.CreateMap<BotInfo, BotInfoDto>();
 		}
 	}
 }

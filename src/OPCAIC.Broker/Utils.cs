@@ -1,53 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using OPCAIC.Infrastructure.Dtos.Broker;
 
 namespace OPCAIC.Broker
 {
-	public class WorkerInfoDto
+	public class WorkerInfo
 	{
 		public string Identity { get; set; }
 		public Guid? CurrentJob { get; set; }
 	}
 
-	public class BrokerStatsDto
+	public class BrokerStats
 	{
-		public List<WorkerInfoDto> Workers { get; set; }
-	}
-
-	public class WorkItemFilterDto
-	{
-		/// <summary>
-		///     Since when (inclusive) we want to filter the items.
-		/// </summary>
-		public DateTime? Since { get; set; }
-
-		/// <summary>
-		///     Since when (inclusive) we want to filter the items.
-		/// </summary>
-		public DateTime? Until { get; set; }
-
-		public string Game { get; set; }
-
-		public List<WorkItem> Filter(IEnumerable<WorkItem> workItems)
-		{
-			var filtered = workItems;
-			if (Since != null)
-			{
-				filtered = filtered.Where(wi => wi.QueuedTime >= Since);
-			}
-
-			if (Until != null)
-			{
-				filtered = filtered.Where(wi => wi.QueuedTime <= Until);
-			}
-
-			if (Game != null)
-			{
-				filtered = filtered.Where(wi => wi.Payload.Game == Game);
-			}
-
-			return filtered.ToList();
-		}
+		public List<WorkerInfo> Workers { get; set; }
 	}
 }

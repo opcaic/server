@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using OPCAIC.Infrastructure.Dtos.Broker;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
@@ -38,11 +39,11 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public Task<BrokerStatsDto> GetStats()
+		public Task<BrokerStats> GetStats()
 		{
-			return Schedule(() => new BrokerStatsDto
+			return Schedule(() => new BrokerStats
 			{
-				Workers = workers.Select(w => new WorkerInfoDto
+				Workers = workers.Select(w => new WorkerInfo
 				{
 					Identity = w.Identity, CurrentJob = w.CurrentWorkItem?.Payload.Id
 				}).ToList()
@@ -84,22 +85,24 @@ namespace OPCAIC.Broker
 		{
 			return Schedule(() =>
 			{
-				if (taskQueue.All(wi => wi.Payload.Id != id)) return false;
-				var workItem = taskQueue.Single(wi => wi.Payload.Id == id);
-				taskQueue.Remove(workItem);
-				workItem.QueuedTime = DateTime.MinValue;
-				taskQueue.Add(workItem);
-				return true;
+				var workItem = taskQueue.SingleOrDefault(wi => wi.Payload.Id == id);
+				if (workItem != null)
+				{
+					taskQueue.Remove(workItem);
+					workItem.QueuedTime = DateTime.MinValue;
+					taskQueue.Add(workItem);
+					return true;
+				}
+
+				return false;
 			});
 		}
 
-		/// <inheritdoc />
-		public Task<List<WorkItem>> FilterWork(WorkItemFilterDto filter)
+		public List<WorkItem> GetWorkItems()
 		{
-			return Schedule(() =>
-				filter.Filter(taskQueue));
+			return taskQueue.ToList();
 		}
-
+		
 		/// <inheritdoc />
 		public Task<bool> CancelWork(Guid id)
 		{
@@ -111,22 +114,8 @@ namespace OPCAIC.Broker
 				{
 					SetHeartbeat(worker);
 				}
-				return true;
-			});
-		}
 
-		/// <inheritdoc />
-		public Task<bool> CancelWork(string workerIdentity)
-		{
-			return Schedule(() =>
-			{
-				var worker = workers.SingleOrDefault(w => w.Identity == workerIdentity);
-				if (worker != null)
-				{
-					SetHeartbeat(worker);
-					return true;
-				}
-				return false;
+				return true;
 			});
 		}
 

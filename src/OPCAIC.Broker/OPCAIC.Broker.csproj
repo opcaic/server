@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OPCAIC.Infrastructure\OPCAIC.Infrastructure.csproj" />
     <ProjectReference Include="..\OPCAIC.Messaging\OPCAIC.Messaging.csproj" />
     <ProjectReference Include="..\OPCAIC.Utils\OPCAIC.Utils.csproj" />
   </ItemGroup>

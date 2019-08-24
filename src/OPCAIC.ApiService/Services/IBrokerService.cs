@@ -10,7 +10,6 @@ namespace OPCAIC.ApiService.Services
 	public interface IBrokerService
 	{
 		Task<ResultModel> CancelWork(Guid id, CancellationToken cancellationToken);
-		Task<ResultModel> CancelWork(string workerIdentity, CancellationToken cancellationToken);
 		Task<ResultModel> PrioritizeWork(Guid id, CancellationToken cancellationToken);
 		Task<BrokerStatsModel> GetStats(CancellationToken cancellationToken);
 
