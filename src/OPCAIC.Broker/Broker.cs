@@ -19,7 +19,7 @@ namespace OPCAIC.Broker
 		private readonly IBrokerConnector connector;
 		private readonly Dictionary<string, WorkerEntry> identityToWorker;
 		private readonly ILogger logger;
-		private readonly SortedSet<WorkItem> taskQueue;
+		private readonly SortedSet<WorkItemDto> taskQueue;
 		private readonly List<WorkerEntry> workers;
 		private Thread consumerThread;
 		private bool shuttingDown;
@@ -33,35 +33,34 @@ namespace OPCAIC.Broker
 			this.logger = logger;
 			identityToWorker = new Dictionary<string, WorkerEntry>();
 			workers = new List<WorkerEntry>();
-			taskQueue = new SortedSet<WorkItem>();
+			taskQueue = new SortedSet<WorkItemDto>();
 			RegisterHandlers();
 		}
 
 		/// <inheritdoc />
-		public Task<BrokerStats> GetStats()
+		public Task<BrokerStatsDto> GetStats()
 		{
-			return Schedule(() => new BrokerStats
+			return Schedule(() => new BrokerStatsDto
 			{
-				Workers = workers.Select(w => new WorkerInfo
+				Workers = workers.Select(w => new WorkerInfoDto
 				{
-					Identity = w.Identity,
-					CurrentJob = w.CurrentWorkItem?.Payload.Id
+					Identity = w.Identity, CurrentJob = w.CurrentWorkItem?.Payload.Id
 				}).ToList()
 			});
 		}
 
 		/// <inheritdoc />
-		public void EnqueueWork(WorkMessageBase msg)
+		public Task EnqueueWork(WorkMessageBase msg)
 		{
-			EnqueueWork(msg, DateTime.Now);
+			return EnqueueWork(msg, DateTime.Now);
 		}
 
 		/// <inheritdoc />
-		public void EnqueueWork(WorkMessageBase msg, DateTime queueTime)
+		public Task EnqueueWork(WorkMessageBase msg, DateTime queueTime)
 		{
 			Require.ArgNotNull(msg, nameof(msg));
 
-			PerformTask(() =>
+			return Schedule(() =>
 			{
 				var capableWorkers = identityToWorker.Values.Where(w => CanWorkerExecute(w, msg));
 				if (!capableWorkers.Any())
@@ -69,7 +68,7 @@ namespace OPCAIC.Broker
 					logger.LogError($"No worker can execute game {msg.Game}");
 				}
 
-				taskQueue.Add(new WorkItem {Payload = msg, QueuedTime = queueTime});
+				taskQueue.Add(new WorkItemDto {Payload = msg, QueuedTime = queueTime});
 
 				// enqueue to worker with shortest queue
 				var worker = capableWorkers.FirstOrDefault(w => w.CurrentWorkItem == null);
@@ -81,9 +80,32 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public void CancelWork(Guid id)
+		public Task PrioritizeWork(Guid id)
 		{
-			PerformTask(() =>
+			Require.That<InvalidOperationException>(taskQueue.Count(wi => wi.Payload.Id == id) > 0,
+				nameof(Guid));
+			return Schedule(() =>
+			{
+				// the item is already beaing evaluated
+				if (workers.Exists(we => we.CurrentWorkItem.Payload.Id == id)) return;
+				var workItem = taskQueue.Single(wi => wi.Payload.Id == id);
+				taskQueue.Remove(workItem);
+				workItem.QueuedTime = DateTime.MinValue;
+				taskQueue.Add(workItem);
+			});
+		}
+
+		/// <inheritdoc />
+		public Task<List<WorkItemDto>> FilterWork(WorkItemFilterDto filter)
+		{
+			return Schedule(() =>
+				filter.Filter(taskQueue));
+		}
+
+		/// <inheritdoc />
+		public Task CancelWork(Guid id)
+		{
+			return Schedule(() =>
 			{
 				taskQueue.RemoveWhere(w => w.Payload.Id == id);
 				var worker = workers.SingleOrDefault(w => w.CurrentWorkItem?.Payload.Id == id);
@@ -110,9 +132,9 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public int GetUnfinishedTasksCount()
+		public Task<int> GetUnfinishedTasksCount()
 		{
-			return PerformTask(() =>
+			return Schedule(() =>
 				workers.Count(w => w.CurrentWorkItem != null) +
 				taskQueue.Count);
 		}
@@ -198,7 +220,8 @@ namespace OPCAIC.Broker
 		}
 
 		/// <summary>
-		///     Schedules an action to be invoked in a broker consumer thread and returns a <see cref="Task"/> object which can be awaited for completion.
+		///     Schedules an action to be invoked in a broker consumer thread and returns a <see cref="Task" /> object which can be
+		///     awaited for completion.
 		/// </summary>
 		/// <param name="a"></param>
 		/// <returns></returns>
@@ -226,7 +249,8 @@ namespace OPCAIC.Broker
 		}
 
 		/// <summary>
-		///     Schedules an action to be invoked in a broker consumer thread and returns a <see cref="Task"/> object which can be awaited for completion.
+		///     Schedules an action to be invoked in a broker consumer thread and returns a <see cref="Task" /> object which can be
+		///     awaited for completion.
 		/// </summary>
 		/// <param name="a"></param>
 		/// <returns></returns>

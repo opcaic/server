@@ -25,6 +25,6 @@ namespace OPCAIC.Broker
 		/// <summary>
 		///     Currently executing item on the worker.
 		/// </summary>
-		public WorkItem CurrentWorkItem { get; set; }
+		public WorkItemDto CurrentWorkItem { get; set; }
 	}
 }

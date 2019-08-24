@@ -6,17 +6,6 @@ using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.Broker
 {
-	public class WorkerInfo
-	{
-		public string Identity { get; set; }
-		public Guid? CurrentJob { get; set; }
-	}
-
-	public class BrokerStats
-	{
-		public List<WorkerInfo> Workers { get; set; }
-	}
-
 	/// <summary>
 	///     Broker for the load-balanced task distribution.
 	/// </summary>
@@ -26,32 +15,45 @@ namespace OPCAIC.Broker
 		///     Returns information about current state of the backend.
 		/// </summary>
 		/// <returns></returns>
-		Task<BrokerStats> GetStats();
+		Task<BrokerStatsDto> GetStats();
 
 		/// <summary>
 		///     Enqueues a work item to be dispatched on a worker.
 		/// </summary>
 		/// <param name="msg"></param>
-		void EnqueueWork(WorkMessageBase msg);
+		Task EnqueueWork(WorkMessageBase msg);
 
 		/// <summary>
 		///     Enqueues a work item to be dispatched on a worker with set queuing time for priority
 		///     scheduling.
 		/// </summary>
 		/// <param name="msg"></param>
-		void EnqueueWork(WorkMessageBase msg, DateTime queueTime);
+		Task EnqueueWork(WorkMessageBase msg, DateTime queueTime);
+
+		/// <summary>
+		///     Moves work item with given id to the start of the queue.
+		/// </summary>
+		/// <param name="id">Id of the job to prioritize.</param>
+		Task PrioritizeWork(Guid id);
+
+		/// <summary>
+		///     Filters enqueued work items by the given filter.
+		/// </summary>
+		/// <param name="filter">Filter to use.</param>
+		/// <returns></returns>
+		Task<List<WorkItemDto>> FilterWork(WorkItemFilterDto filter);
 
 		/// <summary>
 		///     Cancels work job with given id.
 		/// </summary>
 		/// <param name="id">Id of the job to cancel.</param>
-		void CancelWork(Guid id);
+		Task CancelWork(Guid id);
 
 		/// <summary>
 		///     Gets number of scheduled but not finished tasks.
 		/// </summary>
 		/// <returns></returns>
-		int GetUnfinishedTasksCount();
+		Task<int> GetUnfinishedTasksCount();
 
 		/// <summary>
 		///     Starts the socket and consumer thread for the broker.

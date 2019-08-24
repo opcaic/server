@@ -32,7 +32,7 @@ namespace OPCAIC.ApiService.Services
 
 			var dto = await matchRepository.GetByFilterAsync(filterDto, cancellationToken);
 
-			return new ListModel<MatchDetailModel>()
+			return new ListModel<MatchDetailModel>
 			{
 				Total = dto.Total,
 				List = dto.List.Select(match => mapper.Map<MatchDetailModel>(match))

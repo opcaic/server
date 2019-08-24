@@ -6,7 +6,7 @@ namespace OPCAIC.Broker
 	/// <summary>
 	///     Item in a work queue to be scheduled on a worker
 	/// </summary>
-	internal class WorkItem : IComparable<WorkItem>
+	public class WorkItemDto : IComparable<WorkItemDto>
 	{
 		/// <summary>
 		///     Timestamp when the workload was enqueued.
@@ -20,7 +20,7 @@ namespace OPCAIC.Broker
 
 
 		/// <inheritdoc />
-		public int CompareTo(WorkItem other)
+		public int CompareTo(WorkItemDto other)
 		{
 			if (ReferenceEquals(this, other))
 			{
