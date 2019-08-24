@@ -170,21 +170,13 @@ namespace OPCAIC.ApiService
 
 		private static void AddBrokerMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<WorkItemDto, WorkItemModel>();
-			exp.CreateMap<BrokerStatsDto, BrokerStatsModel>();
-			exp.CreateMap<WorkerInfoDto, WorkerInfoModel>();
-			exp.CreateMap<WorkMessageBaseDto, WorkMessageBaseModel>();
-			exp.CreateMap<BotInfoDto, BotInfoModel>();
-			exp.CreateMap<MatchExecutionDto, MatchExecutionModel>();
-			exp.CreateMap<SubmissionValidationRequestDto, SubmissionValidationRequestModel>();
-
-			exp.CreateMap<WorkItem, WorkItemDto>();
-			exp.CreateMap<BrokerStats, BrokerStatsDto>();
-			exp.CreateMap<WorkerInfo, WorkerInfoDto>();
-			exp.CreateMap<WorkMessageBase, WorkMessageBaseDto>();
-			exp.CreateMap<MatchExecutionRequest, MatchExecutionRequestDto>();
-			exp.CreateMap<SubmissionValidationRequest, SubmissionValidationRequestDto>();
-			exp.CreateMap<BotInfo, BotInfoDto>();
+			exp.CreateMap<WorkItem, WorkItemDto, WorkItemModel>();
+			exp.CreateMap<BrokerStats, BrokerStatsDto, BrokerStatsModel>();
+			exp.CreateMap<WorkerInfo, WorkerInfoDto, WorkerInfoModel>();
+			exp.CreateMap<WorkMessageBase, WorkMessageBaseDto, WorkMessageBaseModel>();
+			exp.CreateMap<BotInfo, BotInfoDto, BotInfoModel>();
+			exp.CreateMap<MatchExecutionRequest, MatchExecutionRequestDto, MatchExecutionRequestModel>();
+			exp.CreateMap<SubmissionValidationRequest, SubmissionValidationRequestDto, SubmissionValidationRequestModel>();
 		}
 	}
 }
