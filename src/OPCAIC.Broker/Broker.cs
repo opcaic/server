@@ -112,7 +112,7 @@ namespace OPCAIC.Broker
 				var worker = workers.SingleOrDefault(w => w.CurrentWorkItem?.Payload.Id == id);
 				if (worker != null)
 				{
-					SetHeartbeat(worker);
+					CancelWork(worker);
 				}
 
 				return true;
