@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Broker;
 using OPCAIC.ApiService.Services;
@@ -13,7 +10,6 @@ using OPCAIC.ApiService.Services;
 namespace OPCAIC.ApiService.Controllers
 {
 	[Route("api/broker")]
-	[Authorize]
 	public class BrokerController : ControllerBase
 	{
 		private readonly IBrokerService brokerService;

@@ -132,9 +132,9 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public Task<int> GetUnfinishedTasksCount()
+		public int GetUnfinishedTasksCount()
 		{
-			return Schedule(() =>
+			return PerformTask(() =>
 				workers.Count(w => w.CurrentWorkItem != null) +
 				taskQueue.Count);
 		}

@@ -1,12 +1,9 @@
-﻿using System.Net;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Matches;
-using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 
 namespace OPCAIC.ApiService.Controllers

@@ -53,7 +53,7 @@ namespace OPCAIC.Broker
 		///     Gets number of scheduled but not finished tasks.
 		/// </summary>
 		/// <returns></returns>
-		Task<int> GetUnfinishedTasksCount();
+		int GetUnfinishedTasksCount();
 
 		/// <summary>
 		///     Starts the socket and consumer thread for the broker.
