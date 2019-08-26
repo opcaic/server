@@ -33,7 +33,7 @@ namespace OPCAIC.ApiService.Services
 		public async Task<List<WorkItemModel>> GetWorkItems(WorkItemFilterModel filter,
 			CancellationToken cancellationToken)
 		{
-			var items = broker.GetWorkItems();
+			var items = await broker.GetWorkItems();
 			return FilterWorkItems(filter, items).Select(wi => mapper.Map<WorkItemModel>(wi)).ToList();
 		}
 

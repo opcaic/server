@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using OPCAIC.Infrastructure.Dtos.Broker;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
@@ -57,30 +55,6 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public Task EnqueueWork(WorkMessageBase msg, DateTime queueTime)
-		{
-			Require.ArgNotNull(msg, nameof(msg));
-
-			return Schedule(() =>
-			{
-				var capableWorkers = identityToWorker.Values.Where(w => CanWorkerExecute(w, msg));
-				if (!capableWorkers.Any())
-				{
-					logger.LogError($"No worker can execute game {msg.Game}");
-				}
-
-				taskQueue.Add(new WorkItem {Payload = msg, QueuedTime = queueTime});
-
-				// enqueue to worker with shortest queue
-				var worker = capableWorkers.FirstOrDefault(w => w.CurrentWorkItem == null);
-				if (worker != null)
-				{
-					DispatchWork(worker);
-				}
-			});
-		}
-
-		/// <inheritdoc />
 		public Task<bool> PrioritizeWork(Guid id)
 		{
 			return Schedule(() =>
@@ -98,11 +72,11 @@ namespace OPCAIC.Broker
 			});
 		}
 
-		public List<WorkItem> GetWorkItems()
+		public Task<List<WorkItem>> GetWorkItems()
 		{
-			return taskQueue.ToList();
+			return Schedule(taskQueue.Select(i => (WorkItem)i.Clone()).ToList);
 		}
-		
+
 		/// <inheritdoc />
 		public Task<bool> CancelWork(Guid id)
 		{
@@ -120,12 +94,13 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public void StartBrokering()
+		public Task StartBrokering()
 		{
 			shuttingDown = false;
 			SetupThreads();
 			socketThread.Start();
 			consumerThread.Start();
+			return Task.CompletedTask;
 		}
 
 		/// <inheritdoc />
@@ -135,20 +110,20 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public int GetUnfinishedTasksCount()
+		public Task<int> GetUnfinishedTasksCount()
 		{
-			return PerformTask(() =>
+			return Schedule(() =>
 				workers.Count(w => w.CurrentWorkItem != null) +
 				taskQueue.Count);
 		}
 
 		/// <inheritdoc />
-		public void StopBrokering(CancellationToken cancellationToken)
+		public async Task StopBrokering(CancellationToken cancellationToken)
 		{
 			shuttingDown = true;
 
 			// make sure no worker is running anything
-			PerformTask(() =>
+			await Schedule(() =>
 			{
 				foreach (var worker in workers.Where(w => w.CurrentWorkItem != null))
 				{
@@ -156,13 +131,10 @@ namespace OPCAIC.Broker
 				}
 			});
 
-			var force = false;
-			cancellationToken.Register(() => force = true);
-
 			// wait until all workers report stopped or grace period expires
-			while (!Volatile.Read(ref force) && IsExecutingAnything())
+			while (!cancellationToken.IsCancellationRequested && await IsExecutingAnything())
 			{
-				Thread.Sleep(1);
+				await Task.Delay(1, cancellationToken);
 			}
 
 			connector.StopSocket();
@@ -180,23 +152,43 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public Task StartAsync(CancellationToken cancellationToken)
+		public async Task StartAsync(CancellationToken cancellationToken)
 		{
 			logger.LogInformation("Starting Broker");
-			StartBrokering();
+			await StartBrokering();
 			logger.LogInformation("Broker started");
-
-			return Task.CompletedTask;
 		}
 
 		/// <inheritdoc />
-		public Task StopAsync(CancellationToken cancellationToken)
+		public async Task StopAsync(CancellationToken cancellationToken)
 		{
 			logger.LogInformation("Stopping Broker");
-			StopBrokering(cancellationToken);
+			await StopBrokering(cancellationToken);
 			logger.LogInformation("Broker stopped");
+		}
 
-			return Task.CompletedTask;
+		/// <inheritdoc />
+		private Task EnqueueWork(WorkMessageBase msg, DateTime queueTime)
+		{
+			Require.ArgNotNull(msg, nameof(msg));
+
+			return Schedule(() =>
+			{
+				var capableWorkers = identityToWorker.Values.Where(w => CanWorkerExecute(w, msg)).ToArray();
+				if (capableWorkers.Length == 0)
+				{
+					logger.LogError($"No worker can execute game {msg.Game}");
+				}
+
+				taskQueue.Add(new WorkItem {Payload = msg, QueuedTime = queueTime});
+
+				// enqueue to worker with shortest queue
+				var worker = capableWorkers.FirstOrDefault(w => w.CurrentWorkItem == null);
+				if (worker != null)
+				{
+					DispatchWork(worker);
+				}
+			});
 		}
 
 		private void SetupThreads()
@@ -211,15 +203,9 @@ namespace OPCAIC.Broker
 		///     Returns true if some worker is executing anything.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsExecutingAnything()
+		private Task<bool> IsExecutingAnything()
 		{
-			return PerformTask(() => { return workers.Any(w => w.CurrentWorkItem != null); });
-		}
-
-		/// <inheritdoc />
-		public void ClearWorkQueue()
-		{
-			taskQueue.Clear();
+			return Schedule(() => { return workers.Any(w => w.CurrentWorkItem != null); });
 		}
 
 		/// <summary>
@@ -236,22 +222,6 @@ namespace OPCAIC.Broker
 		}
 
 		/// <summary>
-		///     Schedules an action to be invoked in a brokers consumer thread and waits for the completion.
-		/// </summary>
-		/// <param name="a">The action to be invoked.</param>
-		private void PerformTask(Action a)
-		{
-			try
-			{
-				Schedule(a).Wait();
-			}
-			catch (AggregateException e)
-			{
-				ExceptionDispatchInfo.Throw(e.InnerExceptions[0]);
-			}
-		}
-
-		/// <summary>
 		///     Schedules an action to be invoked in a broker consumer thread and returns a <see cref="Task" /> object which can be
 		///     awaited for completion.
 		/// </summary>
@@ -262,24 +232,6 @@ namespace OPCAIC.Broker
 			var task = new Task<T>(a);
 			connector.EnqueueTask(task);
 			return task;
-		}
-
-		/// <summary>
-		///     Schedules a function to be invoked in a brokers consumer thread and waits for the completion.
-		/// </summary>
-		/// <param name="a">The function to be invoked.</param>
-		/// <returns>The return value of of a()</returns>
-		private T PerformTask<T>(Func<T> a)
-		{
-			try
-			{
-				return Schedule(a).Result;
-			}
-			catch (AggregateException e)
-			{
-				ExceptionDispatchInfo.Throw(e.InnerExceptions[0]);
-				return default; // unreachable
-			}
 		}
 
 		private void Send(WorkerEntry worker, object msg)

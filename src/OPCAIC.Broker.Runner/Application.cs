@@ -167,7 +167,7 @@ namespace OPCAIC.Broker.Runner
 			return newWorker;
 		}
 
-		private void Main()
+		private async void Main()
 		{
 			var results = new List<ReplyMessageBase>();
 
@@ -181,7 +181,7 @@ namespace OPCAIC.Broker.Runner
 			while (!stop && i < 200)
 			{
 				Thread.Sleep(50);
-				if (broker.GetUnfinishedTasksCount() > 20)
+				if (await broker.GetUnfinishedTasksCount() > 20)
 				{
 					continue;
 				}
@@ -189,7 +189,7 @@ namespace OPCAIC.Broker.Runner
 				try
 				{
 					i++;
-					broker.EnqueueWork(new SubmissionValidationRequest
+					await broker.EnqueueWork(new SubmissionValidationRequest
 					{
 						Id = Guid.NewGuid(),
 						SubmissionId = 1,

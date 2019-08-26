@@ -6,7 +6,7 @@ namespace OPCAIC.Broker
 	/// <summary>
 	///     Item in a work queue to be scheduled on a worker
 	/// </summary>
-	public class WorkItem : IComparable<WorkItem>
+	public class WorkItem : IComparable<WorkItem>, ICloneable
 	{
 		/// <summary>
 		///     Timestamp when the workload was enqueued.
@@ -18,6 +18,14 @@ namespace OPCAIC.Broker
 		/// </summary>
 		public WorkMessageBase Payload { get; set; }
 
+		/// <inheritdoc />
+		public object Clone()
+		{
+			return new WorkItem
+			{
+				Payload = (WorkMessageBase)Payload.Clone(), QueuedTime = QueuedTime
+			};
+		}
 
 		/// <inheritdoc />
 		public int CompareTo(WorkItem other)

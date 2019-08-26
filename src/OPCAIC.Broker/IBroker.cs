@@ -24,13 +24,6 @@ namespace OPCAIC.Broker
 		Task EnqueueWork(WorkMessageBase msg);
 
 		/// <summary>
-		///     Enqueues a work item to be dispatched on a worker with set queuing time for priority
-		///     scheduling.
-		/// </summary>
-		/// <param name="msg"></param>
-		Task EnqueueWork(WorkMessageBase msg, DateTime queueTime);
-
-		/// <summary>
 		///     Moves work item with given id to the start of the queue.
 		/// </summary>
 		/// <param name="id">Id of the job to prioritize.</param>
@@ -40,7 +33,7 @@ namespace OPCAIC.Broker
 		///     Get all work items in the queue.
 		/// </summary>
 		/// <returns></returns>
-		List<WorkItem> GetWorkItems();
+		Task<List<WorkItem>> GetWorkItems();
 
 		/// <summary>
 		///     Cancels work job with given id.
@@ -53,19 +46,19 @@ namespace OPCAIC.Broker
 		///     Gets number of scheduled but not finished tasks.
 		/// </summary>
 		/// <returns></returns>
-		int GetUnfinishedTasksCount();
+		Task<int> GetUnfinishedTasksCount();
 
 		/// <summary>
 		///     Starts the socket and consumer thread for the broker.
 		/// </summary>
-		void StartBrokering();
+		Task StartBrokering();
 
 		/// <summary>
 		///     Stops the broker. Waits until workers finish up untill the cancellation token requests
 		///     immediate termination.
 		/// </summary>
 		/// <param name="cancellationToken">Indicates that the shutdown process should no longer be graceful.</param>
-		void StopBrokering(CancellationToken cancellationToken);
+		Task StopBrokering(CancellationToken cancellationToken);
 
 		/// <summary>
 		///     Registers a handler for the messages sent from the worker.

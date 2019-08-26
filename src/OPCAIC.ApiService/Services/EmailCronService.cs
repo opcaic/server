@@ -14,6 +14,8 @@ namespace OPCAIC.ApiService.Services
 		private readonly CancellationTokenSource cancellationTokenSource;
 		private readonly ILogger<EmailCronService> logger;
 		private readonly IServiceProvider serviceProvider;
+		private Task theTask;
+		private bool isRunning;
 
 		public EmailCronService(IServiceProvider serviceProvider)
 		{
@@ -25,24 +27,23 @@ namespace OPCAIC.ApiService.Services
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
 			logger.LogInformation($"{nameof(EmailCronService)} - started.");
-			ExecuteAsync(cancellationTokenSource.Token);
+			isRunning = true;
+			theTask = ExecuteAsync(cancellationTokenSource.Token);
 			return Task.CompletedTask;
 		}
 
-		public Task StopAsync(CancellationToken cancellationToken)
+		public async Task StopAsync(CancellationToken cancellationToken)
 		{
+			cancellationToken.Register(cancellationTokenSource.Cancel);
+			Volatile.Write(ref isRunning, false);
+			await theTask;
 			logger.LogInformation($"{nameof(EmailCronService)} - stopped.");
-
-			cancellationTokenSource.Cancel();
-			return Task.CompletedTask;
 		}
 
 		private async Task ExecuteAsync(CancellationToken cancellationToken)
 		{
-			while (!cancellationToken.IsCancellationRequested)
+			while (Volatile.Read(ref isRunning))
 			{
-				await Task.Delay(tickMilliseconds);
-
 				try
 				{
 					using (var scope = serviceProvider.CreateScope())
@@ -56,6 +57,8 @@ namespace OPCAIC.ApiService.Services
 					logger.LogError(ex,
 						$"An error has occured during execution of {nameof(EmailCronService)}.");
 				}
+
+				await Task.Delay(tickMilliseconds, cancellationToken);
 			}
 		}
 	}

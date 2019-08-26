@@ -6,7 +6,7 @@ namespace OPCAIC.Messaging.Messages
 	///     Base type of messages sent from Broker to Workers.
 	/// </summary>
 	[Serializable]
-	public class WorkMessageBase
+	public class WorkMessageBase : ICloneable
 	{
 		/// <summary>
 		///     Unique identifier of the job.
@@ -17,5 +17,11 @@ namespace OPCAIC.Messaging.Messages
 		///     Game which the work task concerns.
 		/// </summary>
 		public string Game { get; set; }
+
+		/// <inheritdoc />
+		public virtual object Clone()
+		{
+			return MemberwiseClone();
+		}
 	}
 }
