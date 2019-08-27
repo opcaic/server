@@ -8,5 +8,6 @@ namespace OPCAIC.ApiService.Models.Submissions
 		public long Id { get; set; }
 		public UserReferenceModel Author { get; set; }
 		public TournamentReferenceModel Tournament { get; set; }
+		public bool IsActive { get; set; }
 	}
 }

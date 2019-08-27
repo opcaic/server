@@ -2,6 +2,5 @@
 {
 	public class SubmissionDetailDto : SubmissionPreviewDto
 	{
-		public bool IsActive { get; set; }
 	}
 }
