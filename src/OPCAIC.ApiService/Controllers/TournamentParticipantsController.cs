@@ -29,12 +29,12 @@ namespace OPCAIC.ApiService.Controllers
 		/// </summary>
 		/// <returns>array of all tournaments</returns>
 		[HttpGet]
-		[ProducesResponseType(typeof(TournamentParticipantPreview[]), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(TournamentParticipantPreviewModel[]), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<TournamentParticipantPreview[]> GetParticipantsAsync([ApiMinValue(1)] long tournamentId, CancellationToken cancellationToken)
+		public async Task<TournamentParticipantPreviewModel[]> GetParticipantsAsync([ApiMinValue(1)] long tournamentId, CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageInvites);
 			return await tournamentParticipantsService.GetParticipantsAsync(tournamentId, cancellationToken);
