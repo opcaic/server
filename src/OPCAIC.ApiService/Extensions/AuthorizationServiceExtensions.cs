@@ -11,7 +11,7 @@ namespace OPCAIC.ApiService.Extensions
 	public static class AuthorizationServiceExtensions
 	{
 		private static async Task InternalAuthorizeAsync<TPermission>(
-			IAuthorizationService authService, ClaimsPrincipal user, long resourceId,
+			IAuthorizationService authService, ClaimsPrincipal user, long? resourceId,
 			params TPermission[] permissions)
 			where TPermission : Enum
 		{
@@ -38,7 +38,7 @@ namespace OPCAIC.ApiService.Extensions
 			params TPermission[] permissions)
 			where TPermission : Enum
 		{
-			return InternalAuthorizeAsync(authService, user, 0, permissions);
+			return InternalAuthorizeAsync(authService, user, null, permissions);
 		}
 	}
 }

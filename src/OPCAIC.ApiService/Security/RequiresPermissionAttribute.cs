@@ -20,9 +20,10 @@ namespace OPCAIC.ApiService.Security
 
 			Arguments = new object[]
 			{
-				from @group in lookup
-					let reqType = typeof(PermissionRequirement<>).MakeGenericType(@group.Key)
-					select (IAuthorizationRequirement)Activator.CreateInstance(reqType, @group.ToArray())
+				permissions.GroupBy(p => p.GetType()).Select(g
+						=> (IAuthorizationRequirement)Activator.CreateInstance(
+							typeof(PermissionRequirement<>).MakeGenericType(g.Key), g.ToArray()))
+					.ToArray()
 			};
 		}
 
@@ -47,7 +48,8 @@ namespace OPCAIC.ApiService.Security
 					return;
 				}
 
-				if (!(await authorizationService.AuthorizeAsync(context.HttpContext.User, 0L, requirements)).Succeeded)
+				if (!(await authorizationService.AuthorizeAsync(context.HttpContext.User, null,
+					requirements)).Succeeded)
 				{
 					context.Result = new ForbidResult();
 					return;
