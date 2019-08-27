@@ -10,12 +10,13 @@ using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.Tournaments;
+using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 
 namespace OPCAIC.ApiService.Controllers
 {
-	[Route("api/submissions")]
 	[Authorize]
+	[Route("api/submissions")]
 	public class SubmissionsController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;
@@ -44,10 +45,10 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[RequiresPermission(SubmissionPermission.Search)]
 		public Task<ListModel<SubmissionPreviewModel>> GetSubmissionsAsync(
 			[FromQuery] SubmissionFilterModel filter, CancellationToken cancellationToken)
 		{
-			// TODO: authorize based on the filter
 			return submissionService.GetByFilterAsync(filter, cancellationToken);
 		}
 
@@ -65,10 +66,12 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[RequiresPermission(SubmissionPermission.Create)]
 		public async Task<IActionResult> PostAsync([FromForm] NewSubmissionModel model,
 			CancellationToken cancellationToken)
 		{
-			// TODO: authorize creating submission for specified tournament (visibility etc.)
+			await authorizationService.CheckPermissions(User, model.TournamentId,
+				TournamentPermission.Submit);
 			var id = await submissionService.CreateAsync(model, User.GetId(), cancellationToken);
 			// TODO: queue validation
 			logger.SubmissionCreated(id, model);
@@ -90,11 +93,11 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task<SubmissionDetailModel> GetSubmissionByIdAsync(long id,
+		public async Task<SubmissionDetailModel> GetSubmissionByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			// TODO: authorize 
-			return submissionService.GetByIdAsync(id, cancellationToken);
+			await authorizationService.CheckPermissions(User, id, SubmissionPermission.Read);
+			return await submissionService.GetByIdAsync(id, cancellationToken);
 		}
 
 		/// <summary>
@@ -115,7 +118,8 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> GetSubmissionArchiveAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			// TODO: authorize user AND WORKERS
+			// TODO: authorize WORKERS
+			await authorizationService.CheckPermissions(User, id, SubmissionPermission.Download);
 			return File(await submissionService.GetSubmissionArchiveAsync(id, cancellationToken), Constants.GzipMimeType);
 		}
 
@@ -135,12 +139,12 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task UpdateAsync(long id, [FromBody] UpdateSubmissionModel model,
+		public async Task UpdateAsync(long id, [FromBody] UpdateSubmissionModel model,
 			CancellationToken cancellationToken)
 		{
-			// TODO: authorize
+			await authorizationService.CheckPermissions(User, id, SubmissionPermission.Update);
 			logger.SubmissionUpdated(id, model);
-			return submissionService.UpdateAsync(id, model, cancellationToken);
+			await submissionService.UpdateAsync(id, model, cancellationToken);
 		}
 	}
 }

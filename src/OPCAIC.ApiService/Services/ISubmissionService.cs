@@ -21,5 +21,7 @@ namespace OPCAIC.ApiService.Services
 
 		Task UpdateAsync(long id, UpdateSubmissionModel model,
 			CancellationToken cancellationToken);
+
+		Task<bool> ExistsByIdAsync(long id, CancellationToken cancellationToken);
 	}
 }

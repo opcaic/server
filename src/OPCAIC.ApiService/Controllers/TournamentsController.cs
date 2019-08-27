@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -12,14 +11,15 @@ using OPCAIC.ApiService.Services;
 
 namespace OPCAIC.ApiService.Controllers
 {
-	[Route("api/tournaments")]
 	[Authorize]
+	[Route("api/tournaments")]
 	public class TournamentsController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;
 		private readonly ITournamentsService tournamentsService;
 
-		public TournamentsController(ITournamentsService tournamentsService, IAuthorizationService authorizationService)
+		public TournamentsController(ITournamentsService tournamentsService,
+			IAuthorizationService authorizationService)
 		{
 			this.tournamentsService = tournamentsService;
 			this.authorizationService = authorizationService;

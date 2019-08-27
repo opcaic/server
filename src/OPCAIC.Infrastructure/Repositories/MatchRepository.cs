@@ -31,33 +31,8 @@ namespace OPCAIC.Infrastructure.Repositories
 		public async Task<IEnumerable<Match>> AllMatchesFromTournamentAsync(long tournamentId,
 			CancellationToken cancellationToken = default)
 		{
-			return await DbSet.Where(m => m.TournamentId == tournamentId).ToListAsync();
-		}
-
-		/// <inheritdoc />
-		public Task<MatchDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken)
-		{
-			return DbSet
-				.Where(row => row.Id == id)
-				.ProjectTo<MatchDetailDto>(Mapper.ConfigurationProvider)
-				.SingleOrDefaultAsync(cancellationToken);
-		}
-
-		/// <inheritdoc />
-		public async Task<ListDto<MatchDetailDto>> GetByFilterAsync(MatchFilterDto filter,
-			CancellationToken cancellationToken)
-		{
-			var query = DbSet.Filter(filter);
-
-			return new ListDto<MatchDetailDto>
-			{
-				List = await query
-					.Skip(filter.Offset)
-					.Take(filter.Count)
-					.ProjectTo<MatchDetailDto>(Mapper.ConfigurationProvider)
-					.ToListAsync(cancellationToken),
-				Total = await query.CountAsync(cancellationToken)
-			};
+			return await DbSet.Where(m => m.TournamentId == tournamentId)
+				.ToListAsync(cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -67,6 +42,21 @@ namespace OPCAIC.Infrastructure.Repositories
 			return GetDbSet<MatchExecution>().Where(e => e.Id == id)
 				.ProjectTo<MatchExecutionStorageDto>(Mapper.ConfigurationProvider)
 				.SingleOrDefaultAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<MatchAuthDto> GetAuthorizationData(long id,
+			CancellationToken cancellationToken = default)
+		{
+			return DbSet.Where(m => m.Id == id)
+				.Select(m => new MatchAuthDto
+				{
+					TournamentOwnerId = m.Tournament.OwnerId,
+					ParticipantsIds =
+						m.Participations.Select(p => p.Submission.AuthorId).ToArray(),
+					TournamentManagersIds =
+						m.Tournament.Managers.Select(u => u.UserId).ToArray()
+				}).SingleOrDefaultAsync(cancellationToken);
 		}
 	}
 }

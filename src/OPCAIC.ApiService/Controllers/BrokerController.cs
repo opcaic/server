@@ -7,12 +7,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Broker;
+using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 
 namespace OPCAIC.ApiService.Controllers
 {
 	[Route("api/broker")]
-	[Authorize]
+	[Authorize(RolePolicy.Admin)]
 	public class BrokerController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;

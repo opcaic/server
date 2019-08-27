@@ -7,7 +7,8 @@ namespace OPCAIC.Infrastructure.Repositories
 {
 	public interface ISubmissionRepository
 		: IGenericRepository<SubmissionFilterDto, SubmissionPreviewDto, SubmissionDetailDto,
-			NewSubmissionDto, UpdateSubmissionDto>
+				NewSubmissionDto, UpdateSubmissionDto>,
+			IAuthDataRepository<SubmissionAuthDto>
 	{
 		Task<SubmissionStorageDto> FindSubmissionForStorageAsync(long id,
 			CancellationToken cancellationToken = default);

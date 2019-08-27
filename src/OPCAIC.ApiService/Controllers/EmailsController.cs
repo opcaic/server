@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Infrastructure.Dtos.Emails;
@@ -7,6 +8,7 @@ using OPCAIC.Infrastructure.Repositories.Emails;
 
 namespace OPCAIC.ApiService.Controllers
 {
+	[Authorize]
 	[Route("api/emails")]
 	public class EmailsController : ControllerBase
 	{
@@ -22,6 +24,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[HttpGet]
+		[RequiresPermission(EmailPermission.Read)]
 		public Task<EmailPreviewDto[]> GetEmailsAsync(CancellationToken cancellationToken)
 		{
 			return emailRepository.GetEmailsAsync(cancellationToken);

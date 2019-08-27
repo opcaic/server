@@ -108,7 +108,7 @@ namespace OPCAIC.ApiService
 		{
 			exp.CreateMap<NewTournamentModel, NewTournamentDto>();
 
-			exp.CreateMap<Tournament, TournamentAuthorizationDto>(MemberList.Destination)
+			exp.CreateMap<Tournament, TournamentAuthDto>(MemberList.Destination)
 				.ForMember(d => d.ManagerIds,
 					opt => opt.MapFrom(s => s.Managers.Select(m => m.UserId)));
 

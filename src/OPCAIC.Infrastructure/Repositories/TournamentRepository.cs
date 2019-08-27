@@ -19,10 +19,10 @@ namespace OPCAIC.Infrastructure.Repositories
 		}
 
 		/// <inheritdoc />
-		public Task<TournamentAuthorizationDto> GetTournamentAuthorizationData(long id,
+		public Task<TournamentAuthDto> GetAuthorizationData(long id,
 			CancellationToken cancellationToken)
 		{
-			return GetDtoByIdAsync<TournamentAuthorizationDto>(id, cancellationToken);
+			return GetDtoByIdAsync<TournamentAuthDto>(id, cancellationToken);
 		}
 	}
 }

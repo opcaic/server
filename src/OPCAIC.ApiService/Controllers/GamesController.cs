@@ -12,8 +12,8 @@ using OPCAIC.ApiService.Services;
 
 namespace OPCAIC.ApiService.Controllers
 {
-	[Route("api/games")]
 	[Authorize]
+	[Route("api/games")]
 	public class GamesController : ControllerBase
 	{
 		private readonly IGamesService gamesService;

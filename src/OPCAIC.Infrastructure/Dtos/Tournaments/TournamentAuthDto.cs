@@ -2,8 +2,10 @@
 
 namespace OPCAIC.Infrastructure.Dtos.Tournaments
 {
-	public class TournamentAuthorizationDto
+	public class TournamentAuthDto
 	{
+		public long Id { get; set; }
+
 		public long OwnerId { get; set; }
 
 		public long[] ManagerIds { get; set; }

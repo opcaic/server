@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Repositories;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {
-	public class GamePermissionHandler : ResourcePermissionAuthorizationHandler<GamePermission>
+	public class GamePermissionHandler
+		: ResourcePermissionAuthorizationHandler<GamePermission, EmptyAuthData>
 	{
 		private readonly IGameRepository gameRepository;
 
@@ -16,19 +17,27 @@ namespace OPCAIC.ApiService.Security.Handlers
 		}
 
 		/// <inheritdoc />
-		protected override Task<bool> HandlePermissionAsync(long userId, ClaimsPrincipal user, GamePermission permission,
-			long resourceId)
+		protected override Task<EmptyAuthData> GetAuthorizationData(long resourceId,
+			CancellationToken cancellationToken = default)
+		{
+			return Task.FromResult(EmptyAuthData.Instance);
+		}
+
+		/// <inheritdoc />
+		protected override bool HandlePermissionAsync(long userId, ClaimsPrincipal user,
+			GamePermission permission,
+			EmptyAuthData _)
 		{
 			switch (permission)
 			{
 				case GamePermission.Create:
 				case GamePermission.Update:
 				case GamePermission.Delete:
-					return Task.FromResult(false); // only admin, and he has his own handler
+					return false; // only admin, and he has his own handler
 
 				case GamePermission.Read:
 				case GamePermission.Search:
-					return Task.FromResult(true); // TODO: Verify, or maybe more granular level (details or not)
+					return true; // TODO: Verify, or maybe more granular level (details or not)
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
 			}

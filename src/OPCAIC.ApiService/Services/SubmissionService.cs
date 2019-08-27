@@ -92,5 +92,11 @@ namespace OPCAIC.ApiService.Services
 				throw new NotFoundException(nameof(Submission), id);
 			}
 		}
+
+		/// <inheritdoc />
+		public Task<bool> ExistsByIdAsync(long id, CancellationToken cancellationToken)
+		{
+			return repository.ExistsByIdAsync(id, cancellationToken);
+		}
 	}
 }

@@ -1,6 +1,8 @@
-﻿using System.Threading;
+﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Submissions;
@@ -24,6 +26,20 @@ namespace OPCAIC.Infrastructure.Repositories
 			CancellationToken cancellationToken = default)
 		{
 			return GetDtoByIdAsync<SubmissionStorageDto>(id, cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<SubmissionAuthDto> GetAuthorizationData(long id,
+			CancellationToken cancellationToken = default)
+		{
+			return DbSet.Where(d => d.Id == id)
+				.Select(s => new SubmissionAuthDto
+				{
+					AuthorId = s.AuthorId,
+					TournamentOwnerId = s.Tournament.OwnerId,
+					TournamentManagersIds = s.Tournament.Managers.Select(m => m.UserId).ToArray()
+				})
+				.SingleOrDefaultAsync(cancellationToken);
 		}
 	}
 }

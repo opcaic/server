@@ -1,21 +1,27 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Matches;
+using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 
 namespace OPCAIC.ApiService.Controllers
 {
+	[Authorize]
 	[Route("api/matches")]
 	public class MatchController : ControllerBase
 	{
 		private readonly IMatchService matchService;
+		private readonly IAuthorizationService authorizationService;
 
-		public MatchController(IMatchService matchService)
+		public MatchController(IMatchService matchService, IAuthorizationService authorizationService)
 		{
 			this.matchService = matchService;
+			this.authorizationService = authorizationService;
 		}
 
 		/// <summary>
@@ -29,6 +35,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[RequiresPermission(MatchPermission.Search)]
 		public Task<ListModel<MatchDetailModel>> GetMatchesAsync(MatchFilterModel filter,
 			CancellationToken cancellationToken)
 		{
@@ -46,9 +53,10 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task<MatchDetailModel> GetMatchById(long id, CancellationToken cancellationToken)
+		public async Task<MatchDetailModel> GetMatchById(long id, CancellationToken cancellationToken)
 		{
-			return matchService.GetByIdAsync(id, cancellationToken);
+			await authorizationService.CheckPermissions(User, id, MatchPermission.Read);
+			return await matchService.GetByIdAsync(id, cancellationToken);
 		}
 	}
 }

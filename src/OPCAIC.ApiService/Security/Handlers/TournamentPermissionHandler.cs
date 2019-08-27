@@ -1,35 +1,48 @@
 ﻿using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {
-	public class TournamentPermissionHandler : ResourcePermissionAuthorizationHandler<TournamentPermission>
+	public class TournamentPermissionHandler
+		: ResourcePermissionAuthorizationHandler<TournamentPermission, TournamentAuthDto>
 	{
-		private readonly ITournamentRepository tournamentRepository;
 		private readonly ITournamentParticipantRepository participantRepository;
+		private readonly ITournamentRepository tournamentRepository;
 
-		public TournamentPermissionHandler(ITournamentRepository tournamentRepository, ITournamentParticipantRepository participantRepository)
+		public TournamentPermissionHandler(ITournamentRepository tournamentRepository,
+			ITournamentParticipantRepository participantRepository)
 		{
 			this.tournamentRepository = tournamentRepository;
 			this.participantRepository = participantRepository;
 		}
 
 		/// <inheritdoc />
-		protected override async Task<bool> HandlePermissionAsync(long userId, ClaimsPrincipal user, TournamentPermission permission,
-			long resourceId)
+		protected override Task<TournamentAuthDto> GetAuthorizationData(long resourceId,
+			CancellationToken cancellationToken = default)
 		{
-			var authData = await tournamentRepository.GetTournamentAuthorizationData(resourceId);
+			return tournamentRepository.GetAuthorizationData(resourceId, cancellationToken);
+		}
+
+		/// <inheritdoc />
+		protected override bool HandlePermissionAsync(long userId, ClaimsPrincipal user,
+			TournamentPermission permission,
+			TournamentAuthDto authData)
+		{
 			switch (permission)
 			{
 				case TournamentPermission.Create:
 					// only organizers
 					return user.GetUserRole() == UserRole.Organizer;
 
+				case TournamentPermission.ManageInvites:
+				case TournamentPermission.EditDocument:
 				case TournamentPermission.Update:
 					// only owner and managers
 					return userId == authData.OwnerId ||
@@ -55,7 +68,8 @@ namespace OPCAIC.ApiService.Security.Handlers
 						case TournamentAvailability.Private:
 							// only invited
 							var participants =
-								await participantRepository.GetParticipantsAsync(resourceId);
+								participantRepository.GetParticipantsAsync(authData.Id)
+									.Result;
 							return participants.Any(p => p.User.Id == userId);
 
 						default:

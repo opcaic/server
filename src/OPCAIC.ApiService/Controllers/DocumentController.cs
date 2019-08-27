@@ -12,6 +12,7 @@ using OPCAIC.ApiService.Services;
 
 namespace OPCAIC.ApiService.Controllers
 {
+	[Authorize]
 	[Route("api/documents")]
 	public class DocumentController : ControllerBase
 	{
@@ -62,6 +63,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> PostAsync([FromBody] NewDocumentModel model,
 			CancellationToken cancellationToken)
 		{
+			await authorizationService.CheckPermissions(User, model.TournamentId, TournamentPermission.EditDocument);
 			var id = await documentService.CreateAsync(model, cancellationToken);
 			return CreatedAtRoute(nameof(GetDocumentByIdAsync), new IdModel {Id = id});
 		}
@@ -84,7 +86,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<DocumentDetailModel> GetDocumentByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
-//			await authorizationService.CheckPermissions(User, id, DocumentPermission.Read);
+			await authorizationService.CheckPermissions(User, id, DocumentPermission.Read);
 			return await documentService.GetByIdAsync(id, cancellationToken);
 		}
 
@@ -98,7 +100,6 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
-		[Authorize(RolePolicy.Organizer)]
 		[HttpPut("{id}")]
 		[ProducesResponseType(typeof(DocumentDetailModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -108,7 +109,8 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UpdateAsync(long id, [FromBody] UpdateDocumentModel model,
 			CancellationToken cancellationToken)
 		{
-//			await authorizationService.CheckPermissions(User, id, DocumentPermission.Update);
+			await authorizationService.CheckPermissions(User, id, DocumentPermission.Update);
+			await authorizationService.CheckPermissions(User, model.TournamentId, TournamentPermission.EditDocument);
 			await documentService.UpdateAsync(id, model, cancellationToken);
 		}
 
@@ -118,17 +120,16 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="id"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		[Authorize(RolePolicy.Organizer)]
 		[HttpDelete("{id}")]
 		[ProducesResponseType(typeof(DocumentDetailModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public Task DeleteAsync(long id, CancellationToken cancellationToken)
+		public async Task DeleteAsync(long id, CancellationToken cancellationToken)
 		{
-//			await authorizationService.CheckPermissions(User, id, DocumentPermission.Delete);
-			return documentService.DeleteAsync(id, cancellationToken);
+			await authorizationService.CheckPermissions(User, id, DocumentPermission.Delete);
+			await documentService.DeleteAsync(id, cancellationToken);
 		}
 	}
 }

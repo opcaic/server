@@ -20,8 +20,10 @@ namespace OPCAIC.ApiService.Security
 				.AddSingleton<IAuthorizationHandler, SuperUserAuthorizationHandler>()
 				.AddScoped<IAuthorizationHandler, UserPermissionHandler>()
 				.AddScoped<IAuthorizationHandler, TournamentPermissionHandler>()
-//				.AddScoped<IAuthorizationHandler, SubmissionPermissionHandler>()
-//				.AddScoped<IAuthorizationHandler, MatchPermissionHandler>()
+				.AddScoped<IAuthorizationHandler, DocumentPermissionHandler>()
+				.AddScoped<IAuthorizationHandler, SubmissionPermissionHandler>()
+				.AddScoped<IAuthorizationHandler, MatchExecutionPermissionHandler>()
+				.AddScoped<IAuthorizationHandler, MatchPermissionHandler>()
 				.AddScoped<IAuthorizationHandler, GamePermissionHandler>();
 
 			var conf = configuration.GetSecurityConfiguration();

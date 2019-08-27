@@ -1,28 +1,39 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
-using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {
-	public class UserPermissionHandler : ResourcePermissionAuthorizationHandler<UserPermission>
+	public class UserAuthDto
+	{
+		public long Id { get; set; }
+	}
+
+	public class UserPermissionHandler
+		: ResourcePermissionAuthorizationHandler<UserPermission, UserAuthDto>
 	{
 		/// <inheritdoc />
-		protected override Task<bool> HandlePermissionAsync(long userId, ClaimsPrincipal user, UserPermission permission,
-			long resourceId)
+		protected override Task<UserAuthDto> GetAuthorizationData(long resourceId,
+			CancellationToken cancellationToken = default)
+		{
+			return Task.FromResult(new UserAuthDto {Id = resourceId});
+		}
+
+		/// <inheritdoc />
+		protected override bool HandlePermissionAsync(long userId, ClaimsPrincipal user,
+			UserPermission permission,
+			UserAuthDto resourceId)
 		{
 			switch (permission)
 			{
 				case UserPermission.Read:
 				case UserPermission.Update:
 					// user can do anything to themselves
-					return Task.FromResult(userId == resourceId);
+					return userId == resourceId.Id;
 				case UserPermission.Search:
 					// no search for non-admin user's
-					return Task.FromResult(false);
+					return false;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
 			}

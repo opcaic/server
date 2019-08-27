@@ -8,7 +8,9 @@
 		Delete,
 		Search,
 		Submit,
+		ManageInvites,
 		Join,
+		EditDocument,
 	}
 
 	public enum UserPermission
@@ -43,12 +45,23 @@
 
 	public enum SubmissionPermission
 	{
-		DownloadSubmission,
+		Read,
+		Update,
+		Create,
+		Download,
+		Search,
 	}
 
 	public enum MatchPermission
 	{
-		ViewMatch,
+		Read,
 		QueueMatchExecution,
+		Search
+	}
+
+	public enum MatchExecutionPermission
+	{
+		UploadResult,
+		DownloadResults
 	}
 }
