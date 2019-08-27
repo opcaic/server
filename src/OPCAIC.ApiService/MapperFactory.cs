@@ -52,7 +52,7 @@ namespace OPCAIC.ApiService
 
 		private static void AddOther(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap(typeof(ListDto<>), typeof(ListModel<>));
+			exp.CreateMap(typeof(ListDto<>), typeof(ListModel<>), MemberList.Destination);
 		}
 
 		private static void AddDocumentMapping(this IMapperConfigurationExpression exp)
@@ -70,56 +70,60 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<NewUserModel, User>(MemberList.Source)
 				.ForSourceMember(m => m.Password, opt => opt.DoNotValidate());
 
-			exp.CreateMap<User, UserPreviewDto>()
+			exp.CreateMap<User, UserPreviewDto>(MemberList.Destination)
 				.ForMember(usr => usr.UserRole,
 					opt => opt.MapFrom(usr => usr.RoleId))
 				.ForMember(u => u.EmailVerified,
 					opt => opt.MapFrom(u => u.EmailConfirmed));
 
-			exp.CreateMap<User, EmailRecipientDto>();
-			exp.CreateMap<User, UserDetailModel>()
+			exp.CreateMap<User, EmailRecipientDto>(MemberList.Destination);
+			exp.CreateMap<User, UserDetailModel>(MemberList.Destination)
 				.ForMember(u => u.EmailVerified,
 					opt => opt.MapFrom(u => u.EmailConfirmed))
 				.ForMember(usr => usr.UserRole,
 					opt => opt.MapFrom(usr => usr.RoleId));
 
-			exp.CreateMap<UserPreviewDto, UserPreviewModel>();
+			exp.CreateMap<UserPreviewDto, UserPreviewModel>(MemberList.Destination);
 
-			exp.CreateMap<UserProfileModel, UserProfileDto, User>();
-			exp.CreateMap<UserFilterModel, UserFilterDto>();
+			exp.CreateMap<UserProfileModel, UserProfileDto, User>(MemberList.Source);
+			exp.CreateMap<UserFilterModel, UserFilterDto>(MemberList.Source);
 
-			exp.CreateMap<User, UserReferenceDto>();
-			exp.CreateMap<UserReferenceDto, UserReferenceModel>();
+			exp.CreateMap<User, UserReferenceDto, UserReferenceModel>(MemberList.Destination);
 		}
 
 		private static void AddGameMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<NewGameModel, NewGameDto>();
+			exp.CreateMap<NewGameModel, NewGameDto>(MemberList.Source);
 
-			exp.CreateMap<Game, GameDetailDto, GameDetailModel>();
-			exp.CreateMap<Game, GamePreviewDto, GamePreviewModel>();
-			exp.CreateMap<Game, GameReferenceDto, GameReferenceModel>();
-			exp.CreateMap<UpdateGameModel, UpdateGameDto, Game>();
+			exp.CreateMap<Game, GameDetailDto, GameDetailModel>(MemberList.Destination);
+			exp.CreateMap<Game, GamePreviewDto, GamePreviewModel>(MemberList.Destination);
+			exp.CreateMap<Game, GameReferenceDto, GameReferenceModel>(MemberList.Destination);
+			exp.CreateMap<UpdateGameModel, UpdateGameDto, Game>(MemberList.Source);
 
-			exp.CreateMap<GameFilterModel, GameFilterDto>();
+			exp.CreateMap<GameFilterModel, GameFilterDto>(MemberList.Source);
 		}
 
 		private static void AddTournamentMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<NewTournamentModel, NewTournamentDto>();
+			exp.CreateMap<NewTournamentModel, NewTournamentDto>(MemberList.Source);
 
 			exp.CreateMap<Tournament, TournamentAuthDto>(MemberList.Destination)
 				.ForMember(d => d.ManagerIds,
 					opt => opt.MapFrom(s => s.Managers.Select(m => m.UserId)));
 
-			exp.CreateMap<Tournament, TournamentDetailDto, TournamentDetailModel>();
-			exp.CreateMap<Tournament, TournamentPreviewDto, TournamentPreviewModel>();
-			exp.CreateMap<Tournament, TournamentReferenceDto, TournamentReferenceModel>();
-			exp.CreateMap<UpdateTournamentModel, UpdateTournamentDto, Tournament>();
+			exp.CreateMap<Tournament, TournamentDetailDto, TournamentDetailModel>(MemberList
+				.Destination);
+			exp.CreateMap<Tournament, TournamentPreviewDto, TournamentPreviewModel>(MemberList
+				.Destination);
+			exp.CreateMap<Tournament, TournamentReferenceDto, TournamentReferenceModel>(MemberList
+				.Destination);
+			exp.CreateMap<UpdateTournamentModel, UpdateTournamentDto, Tournament>(MemberList
+				.Source);
 
-			exp.CreateMap<TournamentFilterModel, TournamentFilterDto>();
+			exp.CreateMap<TournamentFilterModel, TournamentFilterDto>(MemberList.Source);
 
-			exp.CreateMap<TournamentParticipantDto, TournamentParticipantPreview>();
+			exp.CreateMap<TournamentParticipantDto, TournamentParticipantPreviewModel>(MemberList
+				.Destination);
 		}
 
 		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)
@@ -141,42 +145,46 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<Submission, SubmissionStorageDto>(MemberList.Destination);
 
-			exp.CreateMap<SubmissionParticipation, SubmissionParticipationDto>();
-			exp.CreateMap<SubmissionParticipationDto, SubmissionParticipationModel>();
+			exp.CreateMap<SubmissionParticipation, SubmissionParticipationDto,
+				SubmissionParticipationModel>(MemberList.Destination);
 		}
 
 		private static void AddEmailMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<Email, EmailPreviewDto>();
+			exp.CreateMap<Email, EmailPreviewDto>(MemberList.Destination);
 		}
 
 		private static void AddEmailTemplateMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<EmailTemplate, EmailTemplateDto>();
+			exp.CreateMap<EmailTemplate, EmailTemplateDto>(MemberList.Destination);
 		}
 
 		private static void AddMatchMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<MatchFilterModel, MatchFilterDto>();
+			exp.CreateMap<MatchFilterModel, MatchFilterDto>(MemberList.Source);
 
-			exp.CreateMap<Match, MatchDetailDto, MatchDetailModel>();
-			exp.CreateMap<Match, MatchReferenceDto, MatchReferenceModel>();
-			exp.CreateMap<MatchExecution, MatchExecutionDto, MatchExecutionModel>();
+			exp.CreateMap<Match, MatchDetailDto, MatchDetailModel>(MemberList.Destination);
+			exp.CreateMap<Match, MatchReferenceDto, MatchReferenceModel>(MemberList.Destination);
+			exp.CreateMap<MatchExecution, MatchExecutionDto, MatchExecutionModel>(MemberList
+				.Destination);
 			exp.CreateMap<SubmissionMatchResult, SubmissionMatchResultDto,
-				SubmissionMatchResultModel>();
+				SubmissionMatchResultModel>(MemberList.Destination);
 
-			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>();
+			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>(MemberList.Destination);
 		}
 
 		private static void AddBrokerMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<WorkItem, WorkItemDto, WorkItemModel>();
-			exp.CreateMap<BrokerStats, BrokerStatsDto, BrokerStatsModel>();
-			exp.CreateMap<WorkerInfo, WorkerInfoDto, WorkerInfoModel>();
-			exp.CreateMap<WorkMessageBase, WorkMessageBaseDto, WorkMessageBaseModel>();
-			exp.CreateMap<BotInfo, BotInfoDto, BotInfoModel>();
-			exp.CreateMap<MatchExecutionRequest, MatchExecutionRequestDto, MatchExecutionRequestModel>();
-			exp.CreateMap<SubmissionValidationRequest, SubmissionValidationRequestDto, SubmissionValidationRequestModel>();
+			exp.CreateMap<WorkItem, WorkItemDto, WorkItemModel>(MemberList.Destination);
+			exp.CreateMap<BrokerStats, BrokerStatsDto, BrokerStatsModel>(MemberList.Destination);
+			exp.CreateMap<WorkerInfo, WorkerInfoDto, WorkerInfoModel>(MemberList.Destination);
+			exp.CreateMap<WorkMessageBase, WorkMessageBaseDto, WorkMessageBaseModel>(MemberList
+				.Destination);
+			exp.CreateMap<BotInfo, BotInfoDto, BotInfoModel>(MemberList.Destination);
+			exp.CreateMap<MatchExecutionRequest, MatchExecutionRequestDto,
+				MatchExecutionRequestModel>(MemberList.Destination);
+			exp.CreateMap<SubmissionValidationRequest, SubmissionValidationRequestDto,
+				SubmissionValidationRequestModel>(MemberList.Destination);
 		}
 	}
 }

@@ -3,7 +3,7 @@ using OPCAIC.Infrastructure.Dtos.Users;
 
 namespace OPCAIC.ApiService.Models.Tournaments
 {
-	public class TournamentParticipantPreview
+	public class TournamentParticipantPreviewModel
 	{
 		public long Id { get; set; }
 

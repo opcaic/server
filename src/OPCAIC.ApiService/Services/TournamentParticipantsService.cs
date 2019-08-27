@@ -62,13 +62,13 @@ namespace OPCAIC.ApiService.Services
 				throw new ConflictException(ValidationErrorCodes.UserNotTournamentParticipant, $"User with email '{email}' is not participant of tournament with id {tournamentId}", nameof(email));
 		}
 
-		public async Task<TournamentParticipantPreview[]> GetParticipantsAsync(long tournamentId, CancellationToken cancellationToken)
+		public async Task<TournamentParticipantPreviewModel[]> GetParticipantsAsync(long tournamentId, CancellationToken cancellationToken)
 		{
 			if (!await tournamentRepository.ExistsByIdAsync(tournamentId, cancellationToken))
 				throw new NotFoundException(nameof(Tournament), tournamentId);
 
 			var dtoArray = await tournamentParticipantRepository.GetParticipantsAsync(tournamentId, cancellationToken);
-			return Array.ConvertAll(dtoArray, dto => mapper.Map<TournamentParticipantPreview>(dto));
+			return Array.ConvertAll(dtoArray, dto => mapper.Map<TournamentParticipantPreviewModel>(dto));
 		}
 	}
 }
