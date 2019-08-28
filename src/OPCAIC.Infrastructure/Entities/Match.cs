@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 using System.Linq;
+using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Entities
 {
@@ -48,5 +51,32 @@ namespace OPCAIC.Infrastructure.Entities
 		[NotMapped]
 		public MatchExecution LastExecution
 			=> Executions?.AsQueryable().OrderBy(e => e.Created).FirstOrDefault();
+
+		/// <summary>
+		///     Simplified state of this match.
+		/// </summary>
+		[NotMapped]
+		public MatchState State
+		{
+			get
+			{
+				switch (LastExecution.ExecutorResult)
+				{
+					case GameModuleEntryPointResult.NotExecuted:
+						return MatchState.Queued;
+
+					case GameModuleEntryPointResult.Success:
+						return MatchState.Executed;
+
+					case GameModuleEntryPointResult.UserError:
+					case GameModuleEntryPointResult.ModuleError:
+					case GameModuleEntryPointResult.PlatformError:
+						return MatchState.Failed;
+
+					default:
+						throw new ArgumentOutOfRangeException();
+				}
+			}
+		}
 	}
 }

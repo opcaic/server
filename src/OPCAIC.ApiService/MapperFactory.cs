@@ -144,9 +144,6 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<SubmissionFilterModel, SubmissionFilterDto>(MemberList.Destination);
 
 			exp.CreateMap<Submission, SubmissionStorageDto>(MemberList.Destination);
-
-			exp.CreateMap<SubmissionParticipation, SubmissionParticipationDto,
-				SubmissionParticipationModel>(MemberList.Destination);
 		}
 
 		private static void AddEmailMapping(this IMapperConfigurationExpression exp)
@@ -163,7 +160,13 @@ namespace OPCAIC.ApiService
 		{
 			exp.CreateMap<MatchFilterModel, MatchFilterDto>(MemberList.Source);
 
-			exp.CreateMap<Match, MatchDetailDto, MatchDetailModel>(MemberList.Destination);
+			exp.CreateMap<Match, MatchDetailDto>(MemberList.Destination)
+				.ForMember(d => d.State, 
+					opt => opt.MapFrom(m => m.State))
+				.ForMember(d => d.Submissions,
+					opt => opt.MapFrom(m => m.Participations.Select(p => p.Submission)));
+
+			exp.CreateMap<MatchDetailDto, MatchDetailModel>(MemberList.Destination);
 			exp.CreateMap<Match, MatchReferenceDto, MatchReferenceModel>(MemberList.Destination);
 			exp.CreateMap<MatchExecution, MatchExecutionDto, MatchExecutionModel>(MemberList
 				.Destination);

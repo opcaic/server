@@ -21,6 +21,6 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Timestamp when the job was finished.
 		/// </summary>
-		DateTime? Finished { get; set; }
+		DateTime? Executed { get; set; }
 	}
 }

@@ -8,6 +8,7 @@ using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
@@ -208,7 +209,8 @@ namespace OPCAIC.Infrastructure.Repositories
 			return query.SortBy(filter.SortBy, filter.Asc);
 		}
 
-		private static IQueryable<Submission> SortBy(this IQueryable<Submission> query, string sortBy,
+		private static IQueryable<Submission> SortBy(this IQueryable<Submission> query,
+			string sortBy,
 			bool asc)
 		{
 			switch (sortBy)
@@ -238,9 +240,26 @@ namespace OPCAIC.Infrastructure.Repositories
 					=> row.Participations.Any(p => p.Submission.AuthorId == filter.UserId));
 			}
 
-			if (filter.Executed != null)
+			switch (filter.State)
 			{
-				query = query.Where(row => row.Executions.Any() == filter.Executed);
+				case null:
+					break; // nothing
+				case MatchState.Queued:
+					query = query.Where(row => !row.Executions
+						.OrderByDescending(e => e.Created).First().Executed.HasValue);
+					break;
+				case MatchState.Executed:
+					query = query.Where(row => row.Executions
+							.OrderByDescending(e => e.Created).First().ExecutorResult ==
+						GameModuleEntryPointResult.Success);
+					break;
+				case MatchState.Failed:
+					query = query.Where(row => row.Executions
+							.OrderByDescending(e => e.Created).First().ExecutorResult >=
+						GameModuleEntryPointResult.UserError);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
 			}
 
 			return query.SortBy(filter.SortBy, filter.Asc);

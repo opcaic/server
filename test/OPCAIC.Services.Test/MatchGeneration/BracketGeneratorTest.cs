@@ -133,7 +133,7 @@ namespace OPCAIC.Services.Test.MatchGeneration
 				MatchId = match.Id,
 				Created = DateTime.Today,
 				Updated = DateTime.Now,
-				Finished = DateTime.Now,
+				Executed = DateTime.Now,
 				BotResults = Enumerable.Range(0, 2).Select(i =>
 					new SubmissionMatchResult
 					{

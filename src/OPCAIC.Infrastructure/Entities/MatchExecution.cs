@@ -41,6 +41,6 @@ namespace OPCAIC.Infrastructure.Entities
 		public WorkerJobState State { get; set; }
 
 		/// <inheritdoc />
-		public DateTime? Finished { get; set; }
+		public DateTime? Executed { get; set; }
 	}
 }
