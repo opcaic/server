@@ -65,7 +65,7 @@ namespace OPCAIC.ApiService.Controllers
 		{
 			await authorizationService.CheckPermissions(User, model.TournamentId, TournamentPermission.EditDocument);
 			var id = await documentService.CreateAsync(model, cancellationToken);
-			return CreatedAtRoute(nameof(GetDocumentByIdAsync), new IdModel {Id = id});
+			return CreatedAtRoute(nameof(GetDocumentByIdAsync), new { id }, new IdModel {Id = id});
 		}
 
 		/// <summary>

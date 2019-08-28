@@ -75,7 +75,7 @@ namespace OPCAIC.ApiService.Controllers
 			var id = await submissionService.CreateAsync(model, User.GetId(), cancellationToken);
 			// TODO: queue validation
 			logger.SubmissionCreated(id, model);
-			return CreatedAtRoute(nameof(GetSubmissionByIdAsync), new IdModel {Id = id});
+			return CreatedAtRoute(nameof(GetSubmissionByIdAsync), new { id }, new IdModel {Id = id});
 		}
 
 		/// <summary>

@@ -59,7 +59,7 @@ namespace OPCAIC.ApiService.Controllers
 			CancellationToken cancellationToken)
 		{
 			var id = await gamesService.CreateAsync(model, cancellationToken);
-			return CreatedAtRoute(nameof(GetGameByIdAsync), new IdModel {Id = id});
+			return CreatedAtRoute(nameof(GetGameByIdAsync), new { id }, new IdModel {Id = id});
 		}
 
 		/// <summary>

@@ -177,7 +177,7 @@ namespace OPCAIC.ApiService.Controllers
 				cancellationToken);
 
 			logger.UserCreated(user);
-			return CreatedAtRoute(nameof(GetUserByIdAsync), new IdModel {Id = user.Id});
+			return CreatedAtRoute(nameof(GetUserByIdAsync), new { id = user.Id }, new IdModel {Id = user.Id});
 		}
 
 		/// <summary>

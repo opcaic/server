@@ -105,7 +105,7 @@ namespace OPCAIC.ApiService
 
 		private static void AddTournamentMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<NewTournamentModel, NewTournamentDto>(MemberList.Source);
+			exp.CreateMap<NewTournamentModel, NewTournamentDto, Tournament>(MemberList.Source);
 
 			exp.CreateMap<Tournament, TournamentAuthDto>(MemberList.Destination)
 				.ForMember(d => d.ManagerIds,
