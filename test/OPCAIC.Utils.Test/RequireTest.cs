@@ -66,6 +66,19 @@ namespace OPCAIC.Utils.Test
 		}
 
 		[Fact]
+		public void GreaterThanDoesNotThrow()
+		{
+			Require.GreaterThan(1, 0, argName);
+		}
+
+		[Fact]
+		public void GreaterThanThrows()
+		{
+			var ex = Assert.Throws<ArgumentOutOfRangeException>(() => Require.GreaterThan(1, 1, argName));
+			Assert.Equal(argName, ex.ParamName);
+		}
+
+		[Fact]
 		public void ThatDoesNotThrow()
 		{
 			Require.That<Exception>(true, argName);

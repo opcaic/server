@@ -50,6 +50,10 @@ namespace OPCAIC.Worker.Test
 					It.IsAny<CancellationToken>()))
 				.Callback(MockExtensions.WriteRandomContentToTargetFolder);
 
+			Services.Mock<IDownloadServiceFactory>()
+				.Setup(f => f.Create(It.IsAny<string>()))
+				.Returns(downloadServiceMock.Object);
+
 			var reg = Services.Mock<IGameModuleRegistry>();
 			reg.Setup(r => r.FindGameModule(It.IsAny<string>())).Returns(ExternalGameModule);
 			reg.Setup(r => r.GetAllModules()).Returns(new[] {ExternalGameModule});
@@ -73,7 +77,13 @@ namespace OPCAIC.Worker.Test
 				() => EntryPoints.ExitWithCode(validate, null, null, null));
 
 			connectorHelper.SetupConsumerReceive(
-				new SubmissionValidationRequest {Game = "", Id = Guid.NewGuid()});
+				new SubmissionValidationRequest
+				{
+					Game = "",
+					Id = Guid.NewGuid(),
+					AccessToken = "",
+					ConfigurationJson = "{}"
+				});
 
 			GetService<Worker>().Run();
 

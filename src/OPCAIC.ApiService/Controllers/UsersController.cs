@@ -19,8 +19,8 @@ using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.ApiService.Controllers
 {
-	[Route("api/users")]
 	[Authorize]
+	[Route("api/users")]
 	public class UsersController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;

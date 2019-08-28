@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.Extensions.Options;
 using OPCAIC.Infrastructure.Dtos;
+using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Utils;
 
 namespace OPCAIC.Services
@@ -10,14 +11,18 @@ namespace OPCAIC.Services
 	public class StorageService : IStorageService
 	{
 		private const string SubmissionsDir = "Submissions";
-		private const string ResultsDir = "Results";
+		private const string MatchResultsDir = "Results";
+		private const string ValidationsDir = "Validations";
+		private const string TournamentFilesDir = "Tournaments";
+
 		private readonly DirectoryInfo directory;
 
 		public StorageService(IOptions<StorageConfiguration> config)
 		{
 			directory = Directory.CreateDirectory(config.Value.Directory);
 			directory.CreateSubdirectory(SubmissionsDir);
-			directory.CreateSubdirectory(ResultsDir);
+			directory.CreateSubdirectory(MatchResultsDir);
+			directory.CreateSubdirectory(ValidationsDir);
 		}
 
 		/// <inheritdoc />
@@ -44,7 +49,36 @@ namespace OPCAIC.Services
 			return WriteFile(MatchResultPath(matchExecution));
 		}
 
+		/// <inheritdoc />
+		public Stream WriteSubmissionValidationResultArchive(SubmissionValidationStorageDto validation)
+		{
+			return WriteFile(ValidationPath(validation));
+		}
+
+		/// <inheritdoc />
+		public Stream ReadSubmissionValidationResultArchive(SubmissionValidationStorageDto validation)
+		{
+			return ReadFile(ValidationPath(validation));
+		}
+
+		/// <inheritdoc />
+		public Stream ReadTournamentAdditionalFiles(long id)
+		{
+			return ReadFile(TournamentFilesPath(id));
+		}
+
+		/// <inheritdoc />
+		public Stream WriteTournamentAdditionalFiles(long id)
+		{
+			return WriteFile(TournamentFilesPath(id));
+		}
+
 		// TODO: choose better folder hierarchy once we have complete domain model
+		private string TournamentFilesPath(long id)
+		{
+			return Path.Combine(directory.FullName, TournamentFilesDir, $"{id}.zip");
+		}
+
 		private string SubmissionPath(SubmissionStorageDto sub)
 		{
 			return Path.Combine(directory.FullName, SubmissionsDir, $"{sub.Id}.zip");
@@ -52,7 +86,12 @@ namespace OPCAIC.Services
 
 		private string MatchResultPath(MatchExecutionStorageDto m)
 		{
-			return Path.Combine(directory.FullName, ResultsDir, $"{m.Id}.zip");
+			return Path.Combine(directory.FullName, MatchResultsDir, $"{m.Id}.zip");
+		}
+
+		private string ValidationPath(SubmissionValidationStorageDto dto)
+		{
+			return Path.Combine(directory.FullName, ValidationsDir, $"{dto.Id}.zip");
 		}
 
 		private Stream ReadFile(string path)

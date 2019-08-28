@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Moq;
 using OPCAIC.GameModules.Interface;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker.Services;
@@ -25,7 +26,9 @@ namespace OPCAIC.Worker.Test
 				Bots = new List<BotInfo>
 				{
 					new BotInfo {SubmissionId = 1}, new BotInfo {SubmissionId = 2}
-				}
+				},
+				AccessToken = "",
+				ConfigurationJson = "{}"
 			};
 		}
 

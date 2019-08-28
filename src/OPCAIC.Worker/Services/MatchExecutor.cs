@@ -16,8 +16,8 @@ namespace OPCAIC.Worker.Services
 	{
 		/// <inheritdoc />
 		public MatchExecutor(ILogger<MatchExecutor> logger, IExecutionServices services,
-			IDownloadService downloadService, IGameModuleRegistry gameModuleRegistry) : base(logger,
-			services, downloadService, gameModuleRegistry)
+			IDownloadServiceFactory downloadServiceFactory, IGameModuleRegistry gameModuleRegistry) 
+			: base(logger, services, downloadServiceFactory, gameModuleRegistry)
 		{
 		}
 

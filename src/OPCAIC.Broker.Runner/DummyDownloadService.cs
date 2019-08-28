@@ -68,6 +68,13 @@ namespace OPCAIC.Broker.Runner
 			return DoUpload(executionsDir, executionId, path);
 		}
 
+		/// <inheritdoc />
+		public Task DownloadArchive(string url, string path, CancellationToken cancellationToken = default)
+		{
+			CopyDirectory(url, path);
+			return Task.CompletedTask;
+		}
+
 		private Task DoUpload(DirectoryInfo target, long id, string source)
 		{
 			var destinationPath = Path.Combine(target.FullName, id.ToString());

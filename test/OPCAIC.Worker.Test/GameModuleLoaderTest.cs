@@ -29,7 +29,7 @@ namespace OPCAIC.Worker.Test
 
 		private void SetupConfig(string json)
 		{
-			File.WriteAllText(Path.Combine(moduleDir.FullName, Constants.FileNames.ModuleConfig),
+			File.WriteAllText(Path.Combine(moduleDir.FullName, Constants.FileNames.EntryPointsConfig),
 				json);
 		}
 

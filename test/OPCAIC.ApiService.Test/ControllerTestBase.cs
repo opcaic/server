@@ -23,6 +23,7 @@ namespace OPCAIC.ApiService.Test
 			Request = new DefaultHttpRequest(HttpContext);
 			Response = new DefaultHttpResponse(HttpContext);
 
+			ApiConfigureServices();
 			Services.AddTransient<TController>();
 		}
 

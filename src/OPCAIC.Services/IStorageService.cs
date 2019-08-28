@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using OPCAIC.Infrastructure.Dtos;
+using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 
 namespace OPCAIC.Services
 {
@@ -39,5 +40,33 @@ namespace OPCAIC.Services
 		/// <exception cref="InvalidOperationException">When such file already exists.</exception>
 		/// <returns></returns>
 		Stream WriteMatchResultArchive(MatchExecutionStorageDto matchExecution);
+
+		/// <summary>
+		///     Opens stream for writing archive for given submission validation.
+		/// </summary>
+		/// <param name="validation"></param>
+		/// <returns></returns>
+		Stream WriteSubmissionValidationResultArchive(SubmissionValidationStorageDto validation);
+
+		/// <summary>
+		///     Opens stream for reading archive for given submission validation.
+		/// </summary>
+		/// <param name="validation"></param>
+		/// <returns></returns>
+		Stream ReadSubmissionValidationResultArchive(SubmissionValidationStorageDto validation);
+
+		/// <summary>
+		///     Opens stream for reading archive for additional files for given tournament.
+		/// </summary>
+		/// <param name="id">Id of the tournament.</param>
+		/// <returns></returns>
+		Stream ReadTournamentAdditionalFiles(long id);
+
+		/// <summary>
+		///     Opens stream for writing archive for additional files for given tournament.
+		/// </summary>
+		/// <param name="id">Id of the tournament.</param>
+		/// <returns></returns>
+		Stream WriteTournamentAdditionalFiles(long id);
 	}
 }

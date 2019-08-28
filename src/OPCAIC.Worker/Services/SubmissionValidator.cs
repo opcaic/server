@@ -12,8 +12,8 @@ namespace OPCAIC.Worker.Services
 	{
 		/// <inheritdoc />
 		public SubmissionValidator(ILogger<SubmissionValidator> logger, IExecutionServices services,
-			IDownloadService downloadService, IGameModuleRegistry registry) : base(logger, services,
-			downloadService, registry)
+			IDownloadServiceFactory downloadServiceFactory, IGameModuleRegistry registry) 
+			: base(logger, services, downloadServiceFactory, registry)
 		{
 		}
 

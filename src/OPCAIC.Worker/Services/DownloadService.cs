@@ -1,62 +1,73 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using OPCAIC.Utils;
-using OPCAIC.Worker.Config;
 
 namespace OPCAIC.Worker.Services
 {
 	internal class DownloadService : IDownloadService, IDisposable
 	{
-		private readonly WebClient webClient;
+		private readonly HttpClient httpClient;
 
-		public DownloadService(IOptions<FileServerConfig> config)
+		public DownloadService(HttpClient httpClient)
 		{
-			webClient = new WebClient();
-			if (config.Value.UserName != null)
-			{
-				webClient.Credentials =
-					new NetworkCredential(
-						config.Value.UserName,
-						config.Value.Password);
-			}
-
-			webClient.BaseAddress = config.Value.ServerAddress;
+			this.httpClient = httpClient;
 		}
 
 		public void Dispose()
 		{
-			webClient?.Dispose();
+			httpClient?.Dispose();
 		}
 
 		/// <inheritdoc />
-		public async Task DownloadSubmission(long submissionId, string path,
+		public Task DownloadSubmission(long submissionId, string path,
 			CancellationToken cancellationToken = default)
 		{
-			Debug.Assert(submissionId > 0);
+			Require.GreaterThan(submissionId, 0, nameof(submissionId));
 			Require.ArgNotNull(path, nameof(path));
 
-			var bytes = await webClient.DownloadDataTaskAsync($"submissions/{submissionId}");
-
-			using (var archive = new ZipArchive(new MemoryStream(bytes), ZipArchiveMode.Read))
-			{
-				archive.ExtractToDirectory(path);
-			}
+			return DownloadAndUnzip($"submissions/{submissionId}", path, cancellationToken);
 		}
 
 		/// <inheritdoc />
 		public Task UploadValidationResults(long validationId, string path,
 			CancellationToken cancellationToken = default)
 		{
+			Require.GreaterThan(validationId, 0, nameof(validationId));
 			Require.ArgNotNull(path, nameof(path));
+
+			return UploadFolderContents($"results/{validationId}", path, cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task UploadMatchResults(long executionId, string path,
+			CancellationToken cancellationToken = default)
+		{
+			Require.GreaterThan(executionId, 0, nameof(executionId));
+			Require.ArgNotNull(path, nameof(path));
+
+			return UploadFolderContents($"match-execution/{executionId}", path, cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task DownloadArchive(string url, string path, CancellationToken cancellationToken = default)
+		{
+			Require.ArgNotNull(url, nameof(url));
+			Require.ArgNotNull(path, nameof(path));
+
+			return DownloadAndUnzip(url, path, cancellationToken);
+		}
+
+		private async Task UploadFolderContents(string url, string path, CancellationToken cancellationToken)
+		{
 			var outputDirectory = new DirectoryInfo(path);
 			Require.That<ArgumentException>(outputDirectory.Exists, "Directory does not exist");
-
 			var stream = new MemoryStream();
 			using (var archive = new ZipArchive(stream, ZipArchiveMode.Create))
 			{
@@ -68,14 +79,17 @@ namespace OPCAIC.Worker.Services
 				}
 			}
 
-			return webClient.UploadDataTaskAsync($"results/{validationId}", stream.ToArray());
+			var response = await httpClient.PostAsync(url, new StreamContent(stream), cancellationToken);
+			response.EnsureSuccessStatusCode();
 		}
 
-		/// <inheritdoc />
-		public Task UploadMatchResults(long executionId, string path,
-			CancellationToken cancellationToken = default)
+		private async Task DownloadAndUnzip(string url, string path, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var stream = await httpClient.GetStreamAsync(url);
+			using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
+			{
+				archive.ExtractToDirectory(path);
+			}
 		}
 	}
 }

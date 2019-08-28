@@ -62,7 +62,7 @@ namespace OPCAIC.Worker.Services
 			{
 				var gameName = Path.GetFileName(directory.FullName);
 				var configFile = Path.Combine(directory.FullName,
-					Constants.FileNames.ModuleConfig);
+					Constants.FileNames.EntryPointsConfig);
 
 				ExternalGameModuleConfiguration config;
 

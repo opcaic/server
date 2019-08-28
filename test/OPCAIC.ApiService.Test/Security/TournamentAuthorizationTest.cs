@@ -13,7 +13,7 @@ namespace OPCAIC.ApiService.Test.Security
 		/// <inheritdoc />
 		public TournamentAuthorizationTest(ITestOutputHelper output) : base(output)
 		{
-
+			ApiConfigureServices();
 		}
 
 		private IAuthorizationService AuthorizationService => GetService<IAuthorizationService>();

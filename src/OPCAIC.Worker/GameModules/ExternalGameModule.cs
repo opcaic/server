@@ -43,7 +43,7 @@ namespace OPCAIC.Worker.GameModules
 		public string GameName { get; }
 
 		/// <inheritdoc />
-		public async Task<CheckerResult> Check(EntryPointConfiguration config, BotInfo bot,
+		public Task<CheckerResult> Check(EntryPointConfiguration config, BotInfo bot,
 			DirectoryInfo outputDir,
 			CancellationToken cancellationToken)
 		{
@@ -60,7 +60,8 @@ namespace OPCAIC.Worker.GameModules
 				Arguments = {config.AdditionalFiles.FullName, bot.SourceDirectory.FullName}
 			};
 
-			return await InvokeGameModule<CheckerResult>(procStart, logPrefix, cancellationToken);
+			return ConfigureAndInvoke<CheckerResult>(procStart, logPrefix, config,
+				cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -86,7 +87,8 @@ namespace OPCAIC.Worker.GameModules
 				}
 			};
 
-			return InvokeGameModule<CompilerResult>(procStart, logPrefix, cancellationToken);
+			return ConfigureAndInvoke<CompilerResult>(procStart, logPrefix, config,
+				cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -107,7 +109,8 @@ namespace OPCAIC.Worker.GameModules
 				Arguments = {config.AdditionalFiles.FullName, bot.BinaryDirectory.FullName}
 			};
 
-			return InvokeGameModule<ValidatorResult>(procStart, logPrefix, cancellationToken);
+			return ConfigureAndInvoke<ValidatorResult>(procStart, logPrefix, config,
+				cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -135,7 +138,8 @@ namespace OPCAIC.Worker.GameModules
 			procStart.Arguments.Add(outputDir.FullName);
 
 			var entryPointRes =
-				await InvokeGameModule<ExecutorResult>(procStart, logPrefix, cancellationToken);
+				await ConfigureAndInvoke<ExecutorResult>(procStart, logPrefix, config,
+					cancellationToken);
 
 			if (entryPointRes.EntryPointResult == GameModuleEntryPointResult.Success)
 			{
@@ -152,6 +156,32 @@ namespace OPCAIC.Worker.GameModules
 		public Task Clean(CancellationToken cancellationToken)
 		{
 			return Task.CompletedTask;
+		}
+
+		private async Task<T> ConfigureAndInvoke<T>(GameModuleProcessArgs procStart,
+			string logPrefix,
+			EntryPointConfiguration config, CancellationToken cancellationToken)
+			where T : GameModuleResult, new()
+		{
+			var configPath = Path.Combine(config.AdditionalFiles.FullName,
+				Constants.FileNames.GameModuleConfig);
+			if (File.Exists(configPath))
+			{
+				logger.LogWarning(
+					$"file {configPath} already exists. Contents will be overwritten.");
+			}
+
+			try
+			{
+				File.WriteAllText(
+					configPath,
+					JsonConvert.SerializeObject(config.Configuration));
+				return await InvokeGameModule<T>(procStart, logPrefix, cancellationToken);
+			}
+			finally
+			{
+				File.Delete(configPath);
+			}
 		}
 
 		/// <summary>

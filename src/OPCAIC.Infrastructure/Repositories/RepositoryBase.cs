@@ -92,8 +92,7 @@ namespace OPCAIC.Infrastructure.Repositories
 		protected Task<TDto> GetDtoByQueryAsync<TDto>(Expression<Func<TEntity, bool>> predicate,
 			CancellationToken cancellationToken)
 		{
-			return DbSet
-				.Where(predicate)
+			return Query(predicate)
 				.ProjectTo<TDto>(Mapper.ConfigurationProvider)
 				.SingleOrDefaultAsync(cancellationToken);
 		}
@@ -157,6 +156,16 @@ namespace OPCAIC.Infrastructure.Repositories
 			CancellationToken cancellationToken = default)
 		{
 			return DbSet.AnyAsync(predicate, cancellationToken);
+		}
+
+		protected IQueryable<TEntity> QueryById(long id)
+		{
+			return Query(e => e.Id == id);
+		}
+
+		protected IQueryable<TEntity> Query(Expression<Func<TEntity, bool>> predicate)
+		{
+			return DbSet.Where(predicate);
 		}
 
 		protected Task SaveChangesAsync(CancellationToken cancellationToken)

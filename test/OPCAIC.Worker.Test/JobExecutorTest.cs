@@ -47,6 +47,10 @@ namespace OPCAIC.Worker.Test
 				.Setup(s => s.DownloadSubmission(It.IsAny<long>(), It.IsAny<string>(),
 					It.IsAny<CancellationToken>()))
 				.Callback(MockExtensions.WriteRandomContentToTargetFolder);
+
+			Services.Mock<IDownloadServiceFactory>()
+				.Setup(f => f.Create(It.IsAny<string>()))
+				.Returns(DownloadServiceMock.Object);
 		}
 
 		private DirectoryInfo ArchiveDirectory { get; }

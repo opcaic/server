@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using OPCAIC.ApiService.Controllers;
@@ -10,6 +8,7 @@ using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Infrastructure.Entities;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,6 +20,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		public UsersControllerTest(ITestOutputHelper output) : base(output)
 		{
 			FrontendUrlGeneratorMock = Services.Mock<IFrontendUrlGenerator>();
+			EmailServiceMock = Services.Mock<IEmailService>();
 			TurnOffAuthorization();
 		}
 
@@ -28,27 +28,14 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			Email = "a@a.com",
 			Password = "11afiejofa#XFAEFF@#23fafw",
-			UserName = "user",
+			Username = "user",
 			Organization = "opcaic",
 			LocalizationLanguage = "en"
 		};
 
 		private Mock<IFrontendUrlGenerator> FrontendUrlGeneratorMock { get; }
 
-		private async Task AssertUnauthorizedCode(string errorCode, Func<Task> testCode)
-		{
-			var ex = await Assert.ThrowsAsync<UnauthorizedException>(testCode);
-			Assert.Equal(errorCode, ex.Code);
-		}
-
-		private async Task AssertInvalidModel(int statusCode, string errorCode, Func<Task> testCode)
-		{
-			var ex = await Assert.ThrowsAsync<ModelValidationException>(testCode);
-			Assert.Equal(statusCode, ex.StatusCode);
-
-			var error = Assert.Single(ex.ValidationErrors);
-			Assert.Equal(errorCode, error.Code);
-		}
+		public Mock<IEmailService> EmailServiceMock { get; }
 
 		private async Task<User> DoCreateUser(NewUserModel model, bool confirmEmail = false)
 		{
@@ -56,7 +43,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 			var user = new User
 			{
 				Email = model.Email,
-				UserName = model.UserName,
+				UserName = model.Username,
 				LocalizationLanguage = model.LocalizationLanguage,
 				Organization = model.Organization,
 				EmailConfirmed = confirmEmail
@@ -69,7 +56,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		private async Task<UserIdentityModel> DoLogin(string email, string password)
 		{
 			var identity = await Controller.LoginAsync(
-				new UserCredentialsModel {Email = email, Password = password },
+				new UserCredentialsModel {Email = email, Password = password},
 				CancellationToken);
 
 			Assert.Equal(email, identity.Email);
@@ -85,8 +72,9 @@ namespace OPCAIC.ApiService.Test.Controllers
 			var user = await DoCreateUser(userModel);
 			Assert.False(user.EmailConfirmed);
 
-			await AssertInvalidModel(StatusCodes.Status400BadRequest,
+			await AssertInvalidModel(
 				ValidationErrorCodes.InvalidEmailVerificationToken,
+				null,
 				() => Controller.GetEmailVerificationAsync(user.Id, "randomToken",
 					CancellationToken));
 
@@ -127,8 +115,9 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			// only short password needs to be tested, rest is the same
 			userModel.Password = "1";
-			await AssertInvalidModel(StatusCodes.Status400BadRequest,
+			await AssertInvalidModel(
 				ValidationErrorCodes.PasswordTooShort,
+				nameof(userModel.Password),
 				() => Controller.PostAsync(userModel, CancellationToken));
 		}
 
@@ -138,9 +127,10 @@ namespace OPCAIC.ApiService.Test.Controllers
 			// prepare conflicting user
 			await DoCreateUser(userModel);
 
-			userModel.UserName = "secondUser";
-			await AssertInvalidModel(StatusCodes.Status400BadRequest,
+			userModel.Username = "secondUser";
+			await AssertInvalidModel(
 				ValidationErrorCodes.UserEmailConflict,
+				nameof(userModel.Email),
 				() => Controller.PostAsync(userModel, CancellationToken));
 		}
 
@@ -151,8 +141,9 @@ namespace OPCAIC.ApiService.Test.Controllers
 			await DoCreateUser(userModel);
 
 			userModel.Email = "secondUser@a.com";
-			await AssertInvalidModel(StatusCodes.Status400BadRequest,
+			await AssertInvalidModel(
 				ValidationErrorCodes.UserUsernameConflict,
+				nameof(userModel.Username),
 				() => Controller.PostAsync(userModel, CancellationToken));
 		}
 
@@ -172,7 +163,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 			Assert.Equal(userModel.Email, detail.Email);
 			Assert.Equal(userModel.LocalizationLanguage, detail.LocalizationLanguage);
 			Assert.Equal(userModel.Organization, detail.Organization);
-			Assert.Equal(userModel.UserName, detail.Username);
+			Assert.Equal(userModel.Username, detail.Username);
 
 			return detail;
 		}
@@ -191,7 +182,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			await DoCreateUser(userModel, true);
 
-			await AssertUnauthorizedCode(ValidationErrorCodes.LoginInvalid,
+			await AssertUnauthorized(ValidationErrorCodes.LoginInvalid,
 				() => DoLogin("aaaaaaa@a.com", "wrong pass"));
 		}
 
@@ -200,7 +191,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			await DoCreateUser(userModel);
 
-			await AssertUnauthorizedCode(ValidationErrorCodes.LoginEmailNotConfirmed,
+			await AssertUnauthorized(ValidationErrorCodes.LoginEmailNotConfirmed,
 				() => DoLogin(userModel.Email, userModel.Password));
 		}
 
@@ -216,7 +207,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			await DoCreateUser(userModel, true);
 
-			await AssertUnauthorizedCode(ValidationErrorCodes.LoginInvalid,
+			await AssertUnauthorized(ValidationErrorCodes.LoginInvalid,
 				() => DoLogin("aaaaaaa@a.com", "wrong pass"));
 		}
 
@@ -226,8 +217,9 @@ namespace OPCAIC.ApiService.Test.Controllers
 			var user = await DoCreateUser(userModel);
 			HttpContext.User = await GetService<SignInManager>().CreateUserPrincipalAsync(user);
 
-			await AssertInvalidModel(StatusCodes.Status400BadRequest,
+			await AssertInvalidModel(
 				ValidationErrorCodes.PasswordMismatch,
+				nameof(userModel.Password),
 				() => Controller.PostPasswordAsync(
 					new NewPasswordModel
 					{
@@ -244,14 +236,12 @@ namespace OPCAIC.ApiService.Test.Controllers
 			HttpContext.User = await GetService<SignInManager>().CreateUserPrincipalAsync(user);
 
 			var newTokens = await Controller.PostPasswordAsync(
-				new NewPasswordModel
-				{
-					NewPassword = NewPassword,
-					OldPassword = userModel.Password
-				}, CancellationToken);
+				new NewPasswordModel {NewPassword = NewPassword, OldPassword = userModel.Password},
+				CancellationToken);
 
 			// check that returned tokens are valid
-			await Controller.RefreshAsync(user.Id, new RefreshToken { Token = newTokens.RefreshToken }, CancellationToken);
+			await Controller.RefreshAsync(user.Id,
+				new RefreshToken {Token = newTokens.RefreshToken}, CancellationToken);
 
 			// check that login is possible
 			await DoLogin(user.Email, NewPassword);
@@ -265,8 +255,9 @@ namespace OPCAIC.ApiService.Test.Controllers
 
 			var token = await GetService<UserManager>().GeneratePasswordResetTokenAsync(user);
 
-			await AssertInvalidModel(StatusCodes.Status400BadRequest,
+			await AssertInvalidModel(
 				ValidationErrorCodes.PasswordTooShort,
+				nameof(userModel.Password),
 				() => Controller.PostPasswordResetAsync(
 					new PasswordResetModel
 					{
@@ -315,8 +306,9 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			var identity = await Login_Success();
 
-			await AssertUnauthorizedCode(ValidationErrorCodes.RefreshTokenInvalid,
-			() => Controller.RefreshAsync(identity.Id, new RefreshToken { Token = "eafef" }, CancellationToken));
+			await AssertUnauthorized(ValidationErrorCodes.RefreshTokenInvalid,
+				() => Controller.RefreshAsync(identity.Id, new RefreshToken {Token = "eafef"},
+					CancellationToken));
 
 			await Assert.ThrowsAsync<NotFoundException>(() => Controller.RefreshAsync(
 				-1, new RefreshToken {Token = "eafef"}, CancellationToken));

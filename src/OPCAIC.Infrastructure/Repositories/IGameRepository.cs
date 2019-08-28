@@ -15,5 +15,13 @@ namespace OPCAIC.Infrastructure.Repositories
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken);
+
+		/// <summary>
+		///     Gets JSON schema for configurations of tournaments in given game.
+		/// </summary>
+		/// <param name="id">Id of the game.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		Task<string> GetConfigurationSchemaAsync(long id, in CancellationToken cancellationToken);
 	}
 }

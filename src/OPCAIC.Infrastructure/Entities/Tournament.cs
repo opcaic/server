@@ -34,6 +34,11 @@ namespace OPCAIC.Infrastructure.Entities
 		public string Name { get; set; }
 
 		/// <summary>
+		///     JSON serialized configuration of the game for this tournament.
+		/// </summary>
+		public string ConfigurationJson { get; set; }
+
+		/// <summary>
 		///     Description of the tournament.
 		/// </summary>
 		public string Description { get; set; }

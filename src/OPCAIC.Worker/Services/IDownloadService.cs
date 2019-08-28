@@ -37,5 +37,15 @@ namespace OPCAIC.Worker.Services
 		/// <returns></returns>
 		Task UploadMatchResults(long executionId, string path,
 			CancellationToken cancellationToken = default);
+
+		/// <summary>
+		///     Downloads a file specified by given url.
+		/// </summary>
+		/// <param name="url">Unique id of the match execution.</param>
+		/// <param name="path">Path to the result directory.</param>
+		/// <param name="cancellationToken">Cancellation token to be used if the task should be cancelled.</param>
+		/// <returns></returns>
+		Task DownloadArchive(string url, string path,
+			CancellationToken cancellationToken = default);
 	}
 }

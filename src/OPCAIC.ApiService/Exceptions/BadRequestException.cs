@@ -6,7 +6,7 @@ namespace OPCAIC.ApiService.Exceptions
 	public class BadRequestException : ModelValidationException
 	{
 		public BadRequestException(string code, string message, string field)
-			: base(StatusCodes.Status409Conflict, new[] {new ValidationError(code, message, field)})
+			: base(StatusCodes.Status400BadRequest, new[] {new ValidationError(code, message, field)})
 		{
 		}
 	}

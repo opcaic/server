@@ -17,11 +17,15 @@ namespace OPCAIC.Infrastructure.Entities
 		[MaxLength(StringLengths.GameName)]
 		public string Name { get; set; }
 
-
 		/// <summary>
 		///     Description of the game.
 		/// </summary>
 		public string Description { get; set; }
+
+		/// <summary>
+		///     Describes the structure of the game's configuration file.
+		/// </summary>
+		public string ConfigurationSchemaJson { get; set; }
 
 		/// <summary>
 		///     All tournaments in this game.

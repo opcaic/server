@@ -1,5 +1,7 @@
 ﻿using System.Linq;
 using AutoMapper;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Broker;
 using OPCAIC.ApiService.Models.Documents;
@@ -93,9 +95,15 @@ namespace OPCAIC.ApiService
 
 		private static void AddGameMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<NewGameModel, NewGameDto>(MemberList.Source);
+			exp.CreateMap<NewGameModel, NewGameDto>(MemberList.Source)
+				.ForMember(g => g.ConfigurationSchemaJson,
+					opt => opt.MapFrom(g => JsonConvert.SerializeObject(g.ConfigurationSchema)));
 
-			exp.CreateMap<Game, GameDetailDto, GameDetailModel>(MemberList.Destination);
+			exp.CreateMap<Game, GameDetailDto>(MemberList.Destination);
+			exp.CreateMap<GameDetailDto, GameDetailModel>(MemberList.Destination)
+				.ForMember(m => m.ConfigurationSchema,
+					opt => opt.MapFrom(d => JObject.Parse(d.ConfigurationSchemaJson)));
+
 			exp.CreateMap<Game, GamePreviewDto, GamePreviewModel>(MemberList.Destination);
 			exp.CreateMap<Game, GameReferenceDto, GameReferenceModel>(MemberList.Destination);
 			exp.CreateMap<UpdateGameModel, UpdateGameDto, Game>(MemberList.Source);
@@ -105,7 +113,9 @@ namespace OPCAIC.ApiService
 
 		private static void AddTournamentMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<NewTournamentModel, NewTournamentDto, Tournament>(MemberList.Source);
+			exp.CreateMap<NewTournamentModel, NewTournamentDto>(MemberList.Source)
+				.ForMember(d => d.ConfigurationJson,
+					opt => opt.MapFrom(m => JsonConvert.SerializeObject(m.Configuration)));
 
 			exp.CreateMap<Tournament, TournamentAuthDto>(MemberList.Destination)
 				.ForMember(d => d.ManagerIds,

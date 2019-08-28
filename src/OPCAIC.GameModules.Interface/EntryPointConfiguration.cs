@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace OPCAIC.GameModules.Interface
 {
@@ -11,5 +12,10 @@ namespace OPCAIC.GameModules.Interface
 		///     Path to directory containing any additional files which may be needed by the game module.
 		/// </summary>
 		public DirectoryInfo AdditionalFiles { get; set; }
+
+		/// <summary>
+		///     Configuration for the game module to use for given task.
+		/// </summary>
+		public JObject Configuration { get; set; }
 	}
 }

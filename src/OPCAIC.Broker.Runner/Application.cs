@@ -154,6 +154,7 @@ namespace OPCAIC.Broker.Runner
 			services
 				.ReplaceSingleton<IGameModuleRegistry>(registry)
 				.ReplaceSingleton<IDownloadService, DummyDownloadService>()
+				.ReplaceSingleton<IDownloadServiceFactory, DummyDownloadServiceFactory>()
 				.Configure<FileServerConfig>(cfg =>
 				{
 					// use your own directory with examples
@@ -194,7 +195,9 @@ namespace OPCAIC.Broker.Runner
 						Id = Guid.NewGuid(),
 						SubmissionId = 1,
 						ValidationId = i,
-						Game = config.Games[rand.Next(config.Games.Length)]
+						Game = config.Games[rand.Next(config.Games.Length)],
+						AccessToken = "",
+						ConfigurationJson = "{}",
 					});
 				}
 				catch (Exception e)

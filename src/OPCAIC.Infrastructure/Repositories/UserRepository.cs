@@ -29,8 +29,7 @@ namespace OPCAIC.Infrastructure.Repositories
 		public Task<EmailRecipientDto> FindRecipientAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			return DbSet
-				.Where(row => row.Id == id)
+			return QueryById(id)
 				.ProjectTo<EmailRecipientDto>(Mapper.ConfigurationProvider)
 				.SingleOrDefaultAsync(cancellationToken);
 		}
@@ -38,8 +37,7 @@ namespace OPCAIC.Infrastructure.Repositories
 		public Task<EmailRecipientDto> FindRecipientAsync(string email,
 			CancellationToken cancellationToken)
 		{
-			return DbSet
-				.Where(row => row.Email == email)
+			return Query(row => row.Email == email)
 				.ProjectTo<EmailRecipientDto>(Mapper.ConfigurationProvider)
 				.SingleOrDefaultAsync(cancellationToken);
 		}

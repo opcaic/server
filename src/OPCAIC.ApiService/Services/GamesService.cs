@@ -1,7 +1,12 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
+using Newtonsoft.Json.Schema.Generation;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Games;
@@ -9,6 +14,7 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Infrastructure.Dtos.Games;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
+using ValidationError = OPCAIC.ApiService.ModelValidationHandling.ValidationError;
 
 namespace OPCAIC.ApiService.Services
 {
@@ -26,6 +32,11 @@ namespace OPCAIC.ApiService.Services
 		/// <inheritdoc />
 		public async Task<long> CreateAsync(NewGameModel game, CancellationToken cancellationToken)
 		{
+			if (!game.ConfigurationSchema.IsValid(JsonSchemaDefinition.Version7, out IList<string> messages))
+			{
+				throw new BadRequestException(ValidationErrorCodes.InvalidSchema, string.Join("\n", messages), nameof(NewGameModel.ConfigurationSchema));
+			}
+
 			if (await gameRepository.ExistsByNameAsync(game.Name, cancellationToken))
 			{
 				throw new ConflictException(

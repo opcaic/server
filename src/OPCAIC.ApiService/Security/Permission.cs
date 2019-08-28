@@ -11,6 +11,8 @@
 		ManageInvites,
 		Join,
 		EditDocument,
+		DownloadAdditionalFiles,
+		UploadAdditionalFiles
 	}
 
 	public enum UserPermission
@@ -50,6 +52,11 @@
 		Create,
 		Download,
 		Search,
+	}
+
+	public enum SubmissionValidationPermission
+	{
+		UploadResult
 	}
 
 	public enum MatchPermission

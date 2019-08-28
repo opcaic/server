@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Games;
@@ -58,6 +61,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> PostAsync([FromBody] NewGameModel model,
 			CancellationToken cancellationToken)
 		{
+			var schema = JSchema.Load(new JTokenReader(model.ConfigurationSchema));
 			var id = await gamesService.CreateAsync(model, cancellationToken);
 			return CreatedAtRoute(nameof(GetGameByIdAsync), new { id }, new IdModel {Id = id});
 		}

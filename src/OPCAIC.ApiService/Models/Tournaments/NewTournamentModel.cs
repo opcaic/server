@@ -1,4 +1,5 @@
-﻿using OPCAIC.ApiService.ModelValidationHandling.Attributes;
+﻿using Newtonsoft.Json.Linq;
+using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 using OPCAIC.Infrastructure;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
@@ -15,6 +16,8 @@ namespace OPCAIC.ApiService.Models.Tournaments
 
 		[ApiEntityReference(typeof(Game))]
 		public long GameId { get; set; }
+
+		public JObject Configuration { get; set; }
 
 		public TournamentFormat Format { get; set; }
 

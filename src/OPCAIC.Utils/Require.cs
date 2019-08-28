@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -28,6 +29,12 @@ namespace OPCAIC.Utils
 		{
 			Debug.Assert(itemCount >= 0);
 			That<ArgumentOutOfRangeException>(i >= 0 && i < itemCount, name);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void GreaterThan<T>(T i, T bound, string name) where T : IComparable<T>
+		{
+			That<ArgumentOutOfRangeException>(Comparer<T>.Default.Compare(i, bound) > 0, name);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

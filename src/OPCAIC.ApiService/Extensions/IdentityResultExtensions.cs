@@ -24,7 +24,7 @@ namespace OPCAIC.ApiService.Extensions
 						}
 
 						return new AppIdentityErrorDescriber.IdentityValidationError(
-							ValidationErrorCodes.GenericError) {Message = e.Description};
+							ValidationErrorCodes.GenericError, null) {Message = e.Description};
 					}));
 			}
 		}

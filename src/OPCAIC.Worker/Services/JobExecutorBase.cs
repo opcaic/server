@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using OPCAIC.GameModules.Interface;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
@@ -16,11 +17,13 @@ namespace OPCAIC.Worker.Services
 	internal abstract class JobExecutorBase<TRequest, TResult> : IJobExecutor<TRequest, TResult>
 		where TRequest : WorkMessageBase where TResult : ReplyMessageBase, new()
 	{
+		private readonly IDownloadServiceFactory downloadServiceFactory;
+
 		protected JobExecutorBase(ILogger logger, IExecutionServices services,
-			IDownloadService downloadService, IGameModuleRegistry gameModuleRegistry)
+			IDownloadServiceFactory downloadServiceFactory, IGameModuleRegistry gameModuleRegistry)
 		{
+			this.downloadServiceFactory = downloadServiceFactory;
 			Services = services;
-			DownloadService = downloadService;
 			GameModuleRegistry = gameModuleRegistry;
 			Logger = logger;
 			Response = new TResult();
@@ -36,7 +39,7 @@ namespace OPCAIC.Worker.Services
 		/// <summary>
 		///     Service for downloading/uploading files.
 		/// </summary>
-		protected IDownloadService DownloadService { get; }
+		protected IDownloadService DownloadService { get; private set; }
 
 		/// <summary>
 		///     Various useful services.
@@ -108,25 +111,34 @@ namespace OPCAIC.Worker.Services
 			CancellationToken cancellationToken = new CancellationToken())
 		{
 			Require.ArgNotNull(request, nameof(request));
+			Request = request;
+			Response.Id = request.Id;
+			CancellationToken = cancellationToken;
+			DownloadService = downloadServiceFactory.Create(request.AccessToken);
+
 			using (CreateLoggingScope(request))
 			{
-				Request = request;
-				Response.Id = request.Id;
-				CancellationToken = cancellationToken;
-
-				// create directory structure 
-				GameModule = GameModuleRegistry.FindGameModule(request.Game);
-				TaskDirectory = Services.GetWorkingDirectory(request);
-				SourcesDirectory =
-					TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Source);
-				BinariesDirectory =
-					TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Binary);
-				OutputDirectory = TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Output);
-				EntryPointConfig.AdditionalFiles =
-					TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Input);
-
 				try
 				{
+					// create directory structure 
+					GameModule = GameModuleRegistry.FindGameModule(request.Game);
+					TaskDirectory = Services.GetWorkingDirectory(request);
+					SourcesDirectory =
+						TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Source);
+					BinariesDirectory =
+						TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Binary);
+					OutputDirectory = TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Output);
+					EntryPointConfig.AdditionalFiles =
+						TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Input);
+
+					EntryPointConfig.Configuration = JObject.Parse(request.ConfigurationJson);
+
+					if (request.AdditionalFilesUri != null)
+					{
+						await DownloadService.DownloadArchive(request.AdditionalFilesUri,
+							InputDirectory.FullName, CancellationToken);
+					}
+
 					await InternalExecute();
 				}
 				finally
@@ -159,9 +171,8 @@ namespace OPCAIC.Worker.Services
 					await DoUploadResults();
 				}
 			}
-			catch (Exception e)
+			catch (Exception e) when (DoLog(LogLevel.Error, LoggingEvents.JobExecutionFailure, e, "Failed to upload results"))
 			{
-				Logger.LogError(LoggingEvents.JobExecutionFailure, e, "Failed to upload results");
 				// do not rethrow, there are other things that need to be done.
 			}
 		}

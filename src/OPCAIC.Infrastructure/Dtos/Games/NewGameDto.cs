@@ -1,7 +1,9 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.Games
+﻿
+namespace OPCAIC.Infrastructure.Dtos.Games
 {
 	public class NewGameDto
 	{
 		public string Name { get; set; }
+		public string ConfigurationSchemaJson { get; set; }
 	}
 }

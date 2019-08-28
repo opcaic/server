@@ -1,10 +1,13 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Newtonsoft.Json.Schema;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
+using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
@@ -15,11 +18,13 @@ namespace OPCAIC.ApiService.Services
 	{
 		private readonly IMapper mapper;
 		private readonly ITournamentRepository tournamentRepository;
+		private readonly IGameRepository gameRepository;
 
-		public TournamentsService(ITournamentRepository tournamentRepository, IMapper mapper)
+		public TournamentsService(ITournamentRepository tournamentRepository, IMapper mapper, IGameRepository gameRepository)
 		{
 			this.tournamentRepository = tournamentRepository;
 			this.mapper = mapper;
+			this.gameRepository = gameRepository;
 		}
 
 		/// <inheritdoc />
@@ -33,6 +38,15 @@ namespace OPCAIC.ApiService.Services
 			CancellationToken cancellationToken)
 		{
 			var dto = mapper.Map<NewTournamentDto>(tournament);
+
+			var schema = JSchema.Parse(
+				await gameRepository.GetConfigurationSchemaAsync(tournament.GameId,
+					cancellationToken));
+
+			if (!tournament.Configuration.IsValid(schema, out IList<string> messages))
+			{
+				throw new BadRequestException(ValidationErrorCodes.InvalidConfiguration, string.Join("\n", messages), nameof(tournament.Configuration));
+			}
 
 			return await tournamentRepository.CreateAsync(dto, cancellationToken);
 		}

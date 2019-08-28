@@ -21,7 +21,8 @@
 			public static string CompilerResult => "compile-result" + ResultFileExt;
 			public static string ValidatorResult => "validate-result" + ResultFileExt;
 			public static string ExecutorResult => "match-result" + ResultFileExt;
-			public static string ModuleConfig => "config.json";
+			public static string EntryPointsConfig => "entrypoints.json";
+			public static string GameModuleConfig => "config.json";
 			public static string Log4NetConfig => "log4net.config";
 			public static string CheckerPrefix => "check";
 			public static string CompilerPrefix => "compile";

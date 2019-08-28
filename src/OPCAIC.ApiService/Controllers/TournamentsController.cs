@@ -1,13 +1,19 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Runtime.InteropServices.ComTypes;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
+using OPCAIC.ApiService.ModelValidationHandling;
+using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Services;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -17,12 +23,14 @@ namespace OPCAIC.ApiService.Controllers
 	{
 		private readonly IAuthorizationService authorizationService;
 		private readonly ITournamentsService tournamentsService;
+		private readonly IStorageService storage;
 
 		public TournamentsController(ITournamentsService tournamentsService,
-			IAuthorizationService authorizationService)
+			IAuthorizationService authorizationService, IStorageService storage)
 		{
 			this.tournamentsService = tournamentsService;
 			this.authorizationService = authorizationService;
+			this.storage = storage;
 		}
 
 		/// <summary>
@@ -65,7 +73,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <summary>
 		///     Gets tournament by id.
 		/// </summary>
-		/// <param name="id"></param>
+		/// <param name="id">Id of the tournament.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		/// <response code="200">Tournament data found.</response>
@@ -87,7 +95,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <summary>
 		///     Updates tournament data by id.
 		/// </summary>
-		/// <param name="id"></param>
+		/// <param name="id">Id of the tournament.</param>
 		/// <param name="model"></param>
 		/// <param name="cancellationToken"></param>
 		/// <response code="200">Tournament was successfully updated.</response>
@@ -105,6 +113,56 @@ namespace OPCAIC.ApiService.Controllers
 		{
 			await authorizationService.CheckPermissions(User, id, TournamentPermission.Update);
 			await tournamentsService.UpdateAsync(id, model, cancellationToken);
+		}
+
+		/// <summary>
+		///     Downloads additional files needed for match execution and submission validation.
+		/// </summary>
+		/// <param name="id">Id of the tournament.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		[HttpGet("{id}/files")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<Stream> DownloadAdditionalFiles(long id,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, id,
+				TournamentPermission.DownloadAdditionalFiles);
+
+			return storage.ReadTournamentAdditionalFiles(id) ??
+				throw new NotFoundException("TournamentFile", id);
+		}
+
+		/// <summary>
+		///     Uploads additional files needed for match execution and submission validation.
+		/// </summary>
+		/// <param name="id">Id of the tournament.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		[HttpPost("{id}/files")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task UploadAdditionalFiles(long id, [ApiRequired] IFormFile archive,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, id,
+				TournamentPermission.UploadAdditionalFiles);
+
+			if (Path.GetExtension(archive.FileName) != ".zip")
+			{
+				throw new BadRequestException(ValidationErrorCodes.UploadNotZip, null, nameof(archive));
+			}
+
+			using (var stream = storage.WriteTournamentAdditionalFiles(id))
+			{
+				await archive.CopyToAsync(stream, cancellationToken);
+			}
 		}
 	}
 }

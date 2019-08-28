@@ -73,5 +73,8 @@
 		public static string UploadNotZip => "not-zip-file";
 
 		public static string InvalidReference => "invalid-reference";
+
+		public static string InvalidSchema => "invalid-schema";
+		public static string InvalidConfiguration => "invalid-configuration";
 	}
 }

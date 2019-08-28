@@ -72,7 +72,7 @@ namespace OPCAIC.Worker
 				.AddTransient<
 					IJobExecutor<SubmissionValidationRequest, SubmissionValidationResult>,
 					SubmissionValidator>()
-				.AddTransient<IDownloadService, DownloadService>()
+				.AddTransient<IDownloadServiceFactory, DownloadServiceFactory>()
 				.AddTransient<IExecutionServices, ExecutionServices>()
 				.AddSingleton<IGameModuleRegistry, GameModuleLoader>();
 		}

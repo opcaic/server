@@ -35,14 +35,14 @@ namespace OPCAIC.ApiService.Security
 		/// <inheritdoc />
 		public override IdentityError PasswordMismatch()
 		{
-			return Map(base.PasswordMismatch(), new IdentityValidationError(ValidationErrorCodes.PasswordMismatch));
+			return Map(base.PasswordMismatch(), new IdentityValidationError(ValidationErrorCodes.PasswordMismatch, nameof(UserCredentialsModel.Password)));
 		}
 
 		/// <inheritdoc />
 		public override IdentityError InvalidToken()
 		{
 			// TODO: can this be called for non-email token in our code?
-			return Map(base.InvalidToken(), new IdentityValidationError(ValidationErrorCodes.InvalidEmailVerificationToken));
+			return Map(base.InvalidToken(), new IdentityValidationError(ValidationErrorCodes.InvalidEmailVerificationToken, null));
 		}
 
 		/// <inheritdoc />
@@ -138,83 +138,80 @@ namespace OPCAIC.ApiService.Security
 		public override IdentityError PasswordRequiresNonAlphanumeric()
 		{
 			return Map(base.PasswordRequiresNonAlphanumeric(),
-				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresNonAlphanumeric));
+				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresNonAlphanumeric, nameof(NewUserModel.Password)));
 		}
 
 		/// <inheritdoc />
 		public override IdentityError PasswordRequiresDigit()
 		{
 			return Map(base.PasswordRequiresDigit(),
-				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresDigit));
+				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresDigit, nameof(NewUserModel.Password)));
 		}
 
 		/// <inheritdoc />
 		public override IdentityError PasswordRequiresLower()
 		{
 			return Map(base.PasswordRequiresLower(),
-				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresLower));
+				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresLower, nameof(NewUserModel.Password)));
 		}
 
 		/// <inheritdoc />
 		public override IdentityError PasswordRequiresUpper()
 		{
 			return Map(base.PasswordRequiresUpper(),
-				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresUpper));
+				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresUpper, nameof(NewUserModel.Password)));
 		}
 
 		public class IdentityValidationError : ValidationErrorBase
 		{
 			/// <inheritdoc />
-			public IdentityValidationError(string code)
+			public IdentityValidationError(string code, string field)
 				: base(code, "") // message will be replaced by IdentityError.Description
 			{
+				Field = field;
 			}
 		}
 
-		public class UserNameValidationError : IdentityValidationError
+		private class UserNameValidationError : IdentityValidationError
 		{
 			/// <inheritdoc />
 			public UserNameValidationError(string code, string username)
-				: base(code)
+				: base(code, nameof(Username))
 			{
 				Username = username;
-				Field = nameof(Username);
 			}
 
 			public string Username { get; set; }
 		}
 
-		public class EmailValidationError : IdentityValidationError
+		private class EmailValidationError : IdentityValidationError
 		{
 			public EmailValidationError(string code, string email)
-				: base(code)
+				: base(code, nameof(Email))
 			{
 				Email = email;
-				Field = nameof(Email);
 			}
 
 			public string Email { get; set; }
 		}
 
-		public class PasswordLengthError : IdentityValidationError
+		private class PasswordLengthError : IdentityValidationError
 		{
 			public PasswordLengthError(int length)
-				: base(ValidationErrorCodes.PasswordTooShort)
+				: base(ValidationErrorCodes.PasswordTooShort, nameof(NewUserModel.Password))
 			{
 				Minimum = length;
-				Field = nameof(UserCredentialsModel.Password);
 			}
 
 			public int Minimum { get; set; }
 		}
 
-		public class PasswordUniqueCharsError : IdentityValidationError
+		private class PasswordUniqueCharsError : IdentityValidationError
 		{
 			public PasswordUniqueCharsError(int count)
-				: base(ValidationErrorCodes.PasswordRequiresUnique)
+				: base(ValidationErrorCodes.PasswordRequiresUnique, nameof(NewUserModel.Password))
 			{
 				Count = count;
-				Field = nameof(UserCredentialsModel.Password);
 			}
 
 			public int Count { get; set; }
