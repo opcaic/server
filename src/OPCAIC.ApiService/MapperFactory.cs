@@ -171,8 +171,6 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<MatchFilterModel, MatchFilterDto>(MemberList.Source);
 
 			exp.CreateMap<Match, MatchDetailDto>(MemberList.Destination)
-				.ForMember(d => d.State, 
-					opt => opt.MapFrom(m => m.State))
 				.ForMember(d => d.Submissions,
 					opt => opt.MapFrom(m => m.Participations.Select(p => p.Submission)));
 

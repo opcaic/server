@@ -203,7 +203,7 @@ namespace OPCAIC.Infrastructure.Repositories
 
 			if (filter.MatchId != null)
 			{
-				query = query.Where(row => row.Matches.Any(m => m.Id == filter.MatchId));
+				query = query.Where(row => row.Participations.Any(m => m.MatchId == filter.MatchId));
 			}
 
 			return query.SortBy(filter.SortBy, filter.Asc);

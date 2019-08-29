@@ -45,7 +45,7 @@ namespace OPCAIC.Services
 				case MatchTreeLinkType.Winner:
 				case MatchTreeLinkType.Looser:
 					var execution = matches.GetValueOrDefault(link.SourceNode.MatchIndex)
-						?.LastExecution;
+						?.Executions?.OrderBy(e => e.Created).FirstOrDefault();
 					return link.Type == MatchTreeLinkType.Winner
 						? execution?.BotResults.ArgMaxOrDefault(r => r.Score).Submission
 						: execution?.BotResults.ArgMinOrDefault(r => r.Score).Submission;
@@ -122,7 +122,8 @@ namespace OPCAIC.Services
 		{
 			Debug.Assert(match.Participations.Count == 2);
 
-			return match.LastExecution?.BotResults.ArgMax(r => r.Score).Submission;
+			return match.Executions?.OrderBy(e => e.Created).FirstOrDefault()?.BotResults
+				.ArgMax(r => r.Score).Submission;
 		}
 	}
 

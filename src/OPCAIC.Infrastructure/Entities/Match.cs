@@ -35,48 +35,8 @@ namespace OPCAIC.Infrastructure.Entities
 		public virtual IList<SubmissionParticipation> Participations { get; set; }
 
 		/// <summary>
-		///     List of participating submissions.
-		/// </summary>
-		[NotMapped]
-		public IEnumerable<Submission> Submissions => Participations.Select(p => p.Submission);
-
-		/// <summary>
 		///     List of execution attempts for this match.
 		/// </summary>
 		public virtual IList<MatchExecution> Executions { get; set; }
-
-		/// <summary>
-		///     Last execution of this match.
-		/// </summary>
-		[NotMapped]
-		public MatchExecution LastExecution
-			=> Executions?.AsQueryable().OrderBy(e => e.Created).FirstOrDefault();
-
-		/// <summary>
-		///     Simplified state of this match.
-		/// </summary>
-		[NotMapped]
-		public MatchState State
-		{
-			get
-			{
-				switch (LastExecution.ExecutorResult)
-				{
-					case GameModuleEntryPointResult.NotExecuted:
-						return MatchState.Queued;
-
-					case GameModuleEntryPointResult.Success:
-						return MatchState.Executed;
-
-					case GameModuleEntryPointResult.UserError:
-					case GameModuleEntryPointResult.ModuleError:
-					case GameModuleEntryPointResult.PlatformError:
-						return MatchState.Failed;
-
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
-			}
-		}
 	}
 }

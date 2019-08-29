@@ -157,7 +157,7 @@ namespace OPCAIC.Services.Test.MatchGeneration
 			foreach (var match in matches)
 			{
 				Assert.Equal(2, match.Participations.Count);
-				Assert.Contains(string.Join("+", match.Submissions.Select(p => p.Author.FirstName)),
+				Assert.Contains(string.Join("+", match.Participations.Select(p => p.Submission).Select(p => p.Author.FirstName)),
 					new[] {"0+3", "1+2"});
 			}
 		}
@@ -175,7 +175,7 @@ namespace OPCAIC.Services.Test.MatchGeneration
 			foreach (var match in matches)
 			{
 				Assert.Equal(2, match.Participations.Count);
-				Assert.Contains(string.Join("+", match.Submissions.Select(p => p.Author.FirstName)),
+				Assert.Contains(string.Join("+", match.Participations.Select(p => p.Submission).Select(p => p.Author.FirstName)),
 					new[] {"3+4", "2+5"});
 			}
 		}

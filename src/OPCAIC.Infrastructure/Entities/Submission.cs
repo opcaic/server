@@ -1,7 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Entities
 {
@@ -41,28 +38,8 @@ namespace OPCAIC.Infrastructure.Entities
 		public virtual IList<SubmissionParticipation> Participations { get; set; }
 
 		/// <summary>
-		///     All matches this submission participates in.
-		/// </summary>
-		[NotMapped]
-		public IEnumerable<Match> Matches => Participations.Select(p => p.Match);
-
-		/// <summary>
 		///     All validations of this submission.
 		/// </summary>
 		public virtual IList<SubmissionValidation> Validations { get; set; }
-
-		/// <summary>
-		///     Last validation, result of which determines whether the submission is valid or not.
-		/// </summary>
-		[NotMapped]
-		public SubmissionValidation LastValidation
-			=> Validations?.AsQueryable().OrderByDescending(v => v.Created).FirstOrDefault();
-
-		/// <summary>
-		///     Flag whether the submission has been successfully validated.
-		/// </summary>
-		[NotMapped]
-		public bool IsValid
-			=> LastValidation?.ValidatorResult == GameModuleEntryPointResult.Success;
 	}
 }
