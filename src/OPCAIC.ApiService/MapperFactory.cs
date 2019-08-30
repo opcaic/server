@@ -132,8 +132,8 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<TournamentFilterModel, TournamentFilterDto>(MemberList.Source);
 
-			exp.CreateMap<TournamentParticipantDto, TournamentParticipantPreviewModel>(MemberList
-				.Destination);
+			exp.CreateMap<TournamentParticipantDto, TournamentParticipantPreviewModel>(MemberList.Destination);
+			exp.CreateMap<TournamentParticipantFilter, TournamentParticipantFilterDto>(MemberList.Destination);
 		}
 
 		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)
@@ -159,6 +159,7 @@ namespace OPCAIC.ApiService
 		private static void AddEmailMapping(this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap<Email, EmailPreviewDto>(MemberList.Destination);
+			exp.CreateMap<NewEmailDto, Email>(MemberList.Source);
 		}
 
 		private static void AddEmailTemplateMapping(this IMapperConfigurationExpression exp)

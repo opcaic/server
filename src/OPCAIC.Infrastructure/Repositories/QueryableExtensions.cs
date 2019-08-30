@@ -147,6 +147,26 @@ namespace OPCAIC.Infrastructure.Repositories
 
 		#endregion
 
+		#region TournamentParticipants
+
+		public static IQueryable<TournamentParticipant> Filter(this IQueryable<TournamentParticipant> query, TournamentParticipantFilterDto filter)
+		{
+			return query.SortBy(filter.SortBy, filter.Asc);
+		}
+
+		private static IQueryable<TournamentParticipant> SortBy(this IQueryable<TournamentParticipant> query, string sortBy, bool asc)
+		{
+			switch (sortBy)
+			{
+				case TournamentParticipantFilterDto.SortByEmail:
+					return query.Sort(row => row.Email, asc);
+				default:
+					return query.Sort(row => row.Id, asc);
+			}
+		}
+
+		#endregion
+
 		#region Documents
 
 		public static IQueryable<Document> Filter(this IQueryable<Document> query,

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 using OPCAIC.ApiService.Security;
@@ -29,15 +30,15 @@ namespace OPCAIC.ApiService.Controllers
 		/// </summary>
 		/// <returns>array of all tournaments</returns>
 		[HttpGet]
-		[ProducesResponseType(typeof(TournamentParticipantPreviewModel[]), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(ListModel<TournamentParticipantPreviewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<TournamentParticipantPreviewModel[]> GetParticipantsAsync([ApiMinValue(1)] long tournamentId, CancellationToken cancellationToken)
+		public async Task<ListModel<TournamentParticipantPreviewModel>> GetParticipantsAsync(long tournamentId, [FromQuery] TournamentParticipantFilter filter, CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageInvites);
-			return await tournamentParticipantsService.GetParticipantsAsync(tournamentId, cancellationToken);
+			return await tournamentParticipantsService.GetParticipantsAsync(tournamentId, filter, cancellationToken);
 		}
 
 		/// <summary>

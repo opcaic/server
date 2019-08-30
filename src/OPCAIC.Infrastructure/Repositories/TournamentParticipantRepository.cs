@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
@@ -16,10 +17,16 @@ namespace OPCAIC.Infrastructure.Repositories
 		public TournamentParticipantRepository(DataContext context, IMapper mapper)
 			:base(context, mapper) { }
 
-		public Task<TournamentParticipantDto[]> GetParticipantsAsync(long tournamentId, CancellationToken cancellationToken)
+		public async Task<ListDto<TournamentParticipantDto>> GetParticipantsAsync(long tournamentId, TournamentParticipantFilterDto filter, CancellationToken cancellationToken)
 		{
-			return DbSet
-				.Where(row => row.TournamentId == tournamentId)
+			var query = DbSet.Where(row => row.TournamentId == tournamentId);
+
+			if (filter != null)
+				query = query.Filter(filter);
+
+			return new ListDto<TournamentParticipantDto>
+			{
+				List = await query
 				.Select(row => new TournamentParticipantDto
 				{
 					Id = row.Id,
@@ -29,7 +36,9 @@ namespace OPCAIC.Infrastructure.Repositories
 					.Select(usr => new UserReferenceDto { Id = usr.Id, Username = usr.UserName })
 					.FirstOrDefault()
 				})
-				.ToArrayAsync(cancellationToken);
+				.ToArrayAsync(cancellationToken),
+				Total = await query.CountAsync(cancellationToken)
+			};
 		}
 
 		public async Task<bool> CreateAsync(long tournamentId, IEnumerable<string> emails, CancellationToken cancellationToken)

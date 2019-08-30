@@ -100,7 +100,7 @@ namespace OPCAIC.ApiService.Utils
 						UserName = "organizer",
 						RoleId = (long)UserRole.Organizer,
 						Email = "organizer@opcaic.com",
-						EmailConfirmed = false,
+						EmailConfirmed = true,
 						LocalizationLanguage = "en"
 					},
 					"Password"

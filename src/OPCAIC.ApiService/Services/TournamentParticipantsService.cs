@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Options;
-using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.ModelValidationHandling;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
@@ -38,15 +38,15 @@ namespace OPCAIC.ApiService.Services
 			if (!await tournamentRepository.ExistsByIdAsync(tournamentId, cancellationToken))
 				throw new NotFoundException(nameof(Tournament), tournamentId);
 
-			var participantsDto = await tournamentParticipantRepository.GetParticipantsAsync(tournamentId, cancellationToken);
+			var participantsDto = await tournamentParticipantRepository.GetParticipantsAsync(tournamentId, null, cancellationToken);
 
 			// add only those addresses, which are not already added
-			emails = emails.Where(email => !participantsDto.Select(dto => dto.Email).Contains(email));
+			emails = emails.Where(email => !participantsDto.List.Select(dto => dto.Email).Contains(email));
 
 			await tournamentParticipantRepository.CreateAsync(tournamentId, emails, cancellationToken);
 
 			string tournamentUrl = urlGenerator.TournamentInviteUrl(tournamentId);
-
+			
 			foreach (string email in emails)
 			{
 				await emailService.SendTournamentInvitationEmailAsync(email, tournamentUrl, cancellationToken);
@@ -62,13 +62,20 @@ namespace OPCAIC.ApiService.Services
 				throw new ConflictException(ValidationErrorCodes.UserNotTournamentParticipant, $"User with email '{email}' is not participant of tournament with id {tournamentId}", nameof(email));
 		}
 
-		public async Task<TournamentParticipantPreviewModel[]> GetParticipantsAsync(long tournamentId, CancellationToken cancellationToken)
+		public async Task<ListModel<TournamentParticipantPreviewModel>> GetParticipantsAsync(long tournamentId, TournamentParticipantFilter filter, CancellationToken cancellationToken)
 		{
 			if (!await tournamentRepository.ExistsByIdAsync(tournamentId, cancellationToken))
 				throw new NotFoundException(nameof(Tournament), tournamentId);
 
-			var dtoArray = await tournamentParticipantRepository.GetParticipantsAsync(tournamentId, cancellationToken);
-			return Array.ConvertAll(dtoArray, dto => mapper.Map<TournamentParticipantPreviewModel>(dto));
+			var filterDto = mapper.Map<TournamentParticipantFilterDto>(filter);
+
+			var dtoArray = await tournamentParticipantRepository.GetParticipantsAsync(tournamentId, filterDto, cancellationToken);
+
+			return new ListModel<TournamentParticipantPreviewModel>
+			{
+				List = dtoArray.List.Select(dto => mapper.Map<TournamentParticipantPreviewModel>(dto)),
+				Total = dtoArray.Total
+			};
 		}
 	}
 }

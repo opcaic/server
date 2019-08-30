@@ -68,9 +68,9 @@ namespace OPCAIC.ApiService.Security.Handlers
 						case TournamentAvailability.Private:
 							// only invited
 							var participants =
-								participantRepository.GetParticipantsAsync(authData.Id)
-									.Result;
-							return participants.Any(p => p.User.Id == userId);
+								participantRepository.GetParticipantsAsync(authData.Id, null)
+                .Result;
+							return participants.List.Any(p => p.User.Id == userId);
 
 						default:
 							throw new ArgumentOutOfRangeException();
