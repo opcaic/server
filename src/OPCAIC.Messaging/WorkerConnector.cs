@@ -143,20 +143,18 @@ namespace OPCAIC.Messaging
 			{
 				EnqueueConsumerTask(OnDisconnected);
 
-				if (sleepInterval <= HeartbeatConfig.ReconnectIntervalMax)
+				Logger.LogError(
+					$"[{Identity}] - Broker unreachable, retrying in {sleepInterval} ms");
+				Thread.Sleep(sleepInterval);
+
+				if (sleepInterval < HeartbeatConfig.ReconnectIntervalMax)
 				{
-					Logger.LogError(
-						$"[{Identity}] - Broker unreachable, retrying in {sleepInterval} ms");
-					Thread.Sleep(sleepInterval);
 					sleepInterval *= 2; // exponential back off
-				}
-				else
-				{
-					throw new InvalidOperationException("The broker is unreachable");
 				}
 
 				connected = false;
 				ResetConnection();
+				SendHeartbeat();
 				liveness = HeartbeatConfig.Liveness;
 			}
 			else if (liveness < HeartbeatConfig.Liveness - 1)

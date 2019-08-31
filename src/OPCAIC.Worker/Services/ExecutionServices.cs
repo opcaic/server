@@ -30,7 +30,7 @@ namespace OPCAIC.Worker.Services
 		public DirectoryInfo GetWorkingDirectory(WorkMessageBase request)
 		{
 			return Directory.CreateDirectory(Path.Combine(config.WorkingDirectoryRoot,
-				request.Id.ToString()));
+				request.JobId.ToString()));
 		}
 
 		/// <inheritdoc />

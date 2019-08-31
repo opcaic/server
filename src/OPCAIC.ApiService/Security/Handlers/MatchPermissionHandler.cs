@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.ApiService.Extensions;
 using OPCAIC.Infrastructure.Dtos.Matches;
 using OPCAIC.Infrastructure.Repositories;
 
@@ -26,7 +27,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 		}
 
 		/// <inheritdoc />
-		protected override bool HandlePermissionAsync(long userId, ClaimsPrincipal user,
+		protected override bool HandlePermissionAsync(ClaimsPrincipal user,
 			MatchPermission permission,
 			MatchAuthDto authData)
 		{
@@ -34,6 +35,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 			{
 				case MatchPermission.Read:
 					// authors of participated submissions and tournament managers
+					var userId = user.TryGetId();
 					return authData.ParticipantsIds.Contains(userId) ||
 						authData.TournamentManagersIds.Contains(userId) ||
 						authData.TournamentOwnerId == userId;

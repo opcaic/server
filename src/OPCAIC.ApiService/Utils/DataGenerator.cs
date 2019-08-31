@@ -24,10 +24,10 @@ namespace OPCAIC.ApiService.Utils
 				}
 
 				context.Set<Game>().AddRange(
-					new Game {Name = "Chess", Created = DateTime.Now},
-					new Game {Name = "2048", Created = DateTime.Now},
-					new Game {Name = "Dota", Created = DateTime.Now},
-					new Game {Name = "Tic-Tao-Toe", Created = DateTime.Now}
+					new Game { Name = "Chess", Key = "chess", ConfigurationSchema = "{}" },
+					new Game { Name = "2048", Key = "2048", ConfigurationSchema = "{}" },
+					new Game { Name = "Dota", Key = "dota", ConfigurationSchema = "{}" },
+					new Game { Name = "Tic-Tac-Toe", Key = "tic-tac-toe", ConfigurationSchema = "{}" }
 				);
 
 				context.SaveChanges();
@@ -41,7 +41,9 @@ namespace OPCAIC.ApiService.Utils
 						Created = DateTime.Now,
 						Format = TournamentFormat.Elo,
 						RankingStrategy = TournamentRankingStrategy.Maximum,
-						Scope = TournamentScope.Ongoing
+						Scope = TournamentScope.Ongoing,
+						Availability = TournamentAvailability.Public,
+						Configuration = "{}"
 					},
 					new Tournament
 					{
@@ -51,7 +53,9 @@ namespace OPCAIC.ApiService.Utils
 						Created = DateTime.Now,
 						Format = TournamentFormat.SinglePlayer,
 						RankingStrategy = TournamentRankingStrategy.Maximum,
-						Scope = TournamentScope.Ongoing
+						Scope = TournamentScope.Ongoing,
+						Availability = TournamentAvailability.Public,
+						Configuration = "{}"
 					},
 					new Tournament
 					{
@@ -61,7 +65,9 @@ namespace OPCAIC.ApiService.Utils
 						Created = DateTime.Now,
 						Format = TournamentFormat.SingleElimination,
 						RankingStrategy = TournamentRankingStrategy.Maximum,
-						Scope = TournamentScope.Deadline
+						Scope = TournamentScope.Deadline,
+						Availability = TournamentAvailability.Public,
+						Configuration = "{}"
 					},
 					new Tournament
 					{
@@ -71,7 +77,9 @@ namespace OPCAIC.ApiService.Utils
 						Created = DateTime.Now,
 						Format = TournamentFormat.Elo,
 						RankingStrategy = TournamentRankingStrategy.Maximum,
-						Scope = TournamentScope.Ongoing
+						Scope = TournamentScope.Ongoing,
+						Availability = TournamentAvailability.Public,
+						Configuration = "{}"
 					}
 				);
 

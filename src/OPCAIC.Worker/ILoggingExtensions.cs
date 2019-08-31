@@ -13,7 +13,7 @@ namespace OPCAIC.Worker
 		{
 			return logger.BeginScope(new Dictionary<string, object>
 			{
-				[LoggingTags.JobId] = message.Id,
+				[LoggingTags.JobId] = message.JobId,
 				[LoggingTags.Game] = message.Game,
 				[LoggingTags.JobType] = typeof(TMessage)
 			});

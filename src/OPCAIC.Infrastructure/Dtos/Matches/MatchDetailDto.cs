@@ -19,15 +19,15 @@ namespace OPCAIC.Infrastructure.Dtos.Matches
 				switch (Executions.LastOrDefault()?.ExecutorResult)
 				{
 					case null:
-					case GameModuleEntryPointResult.NotExecuted:
+					case EntryPointResult.NotExecuted:
 						return MatchState.Queued;
 
-					case GameModuleEntryPointResult.Success:
+					case EntryPointResult.Success:
 						return MatchState.Executed;
 
-					case GameModuleEntryPointResult.UserError:
-					case GameModuleEntryPointResult.ModuleError:
-					case GameModuleEntryPointResult.PlatformError:
+					case EntryPointResult.UserError:
+					case EntryPointResult.ModuleError:
+					case EntryPointResult.PlatformError:
 						return MatchState.Failed;
 
 					default:

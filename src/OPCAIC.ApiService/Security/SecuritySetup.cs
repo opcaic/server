@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Security.Handlers;
+using OPCAIC.ApiService.Services;
 
 namespace OPCAIC.ApiService.Security
 {
@@ -23,8 +24,11 @@ namespace OPCAIC.ApiService.Security
 				.AddScoped<IAuthorizationHandler, DocumentPermissionHandler>()
 				.AddScoped<IAuthorizationHandler, SubmissionPermissionHandler>()
 				.AddScoped<IAuthorizationHandler, MatchExecutionPermissionHandler>()
+				.AddScoped<IAuthorizationHandler, SubmissionValidationPermissionHandler>()
 				.AddScoped<IAuthorizationHandler, MatchPermissionHandler>()
 				.AddScoped<IAuthorizationHandler, GamePermissionHandler>();
+
+			services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
 			var conf = configuration.GetSecurityConfiguration();
 

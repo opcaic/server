@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -22,8 +21,8 @@ namespace OPCAIC.ApiService.Controllers
 	public class TournamentsController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;
-		private readonly ITournamentsService tournamentsService;
 		private readonly IStorageService storage;
+		private readonly ITournamentsService tournamentsService;
 
 		public TournamentsController(ITournamentsService tournamentsService,
 			IAuthorizationService authorizationService, IStorageService storage)
@@ -67,7 +66,7 @@ namespace OPCAIC.ApiService.Controllers
 			CancellationToken cancellationToken)
 		{
 			var id = await tournamentsService.CreateAsync(model, cancellationToken);
-			return CreatedAtRoute(nameof(GetTournamentByIdAsync), new { id }, new IdModel {Id = id});
+			return CreatedAtRoute(nameof(GetTournamentByIdAsync), new {id}, new IdModel {Id = id});
 		}
 
 		/// <summary>
@@ -123,23 +122,30 @@ namespace OPCAIC.ApiService.Controllers
 		/// <returns></returns>
 		[HttpGet("{id}/files")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<Stream> DownloadAdditionalFiles(long id,
+		public async Task<IActionResult> DownloadAdditionalFiles(long id,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id,
 				TournamentPermission.DownloadAdditionalFiles);
 
-			return storage.ReadTournamentAdditionalFiles(id) ??
-				throw new NotFoundException("TournamentFile", id);
+			var archive = storage.ReadTournamentAdditionalFiles(id);
+			if (archive == null)
+			{
+				return NoContent();
+			}
+
+			return File(archive, Constants.GzipMimeType, "tournamentFiles.zip");
 		}
 
 		/// <summary>
 		///     Uploads additional files needed for match execution and submission validation.
 		/// </summary>
 		/// <param name="id">Id of the tournament.</param>
+		/// <param name="archive">Archive containing the additional files.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[HttpPost("{id}/files")]
@@ -156,10 +162,11 @@ namespace OPCAIC.ApiService.Controllers
 
 			if (Path.GetExtension(archive.FileName) != ".zip")
 			{
-				throw new BadRequestException(ValidationErrorCodes.UploadNotZip, null, nameof(archive));
+				throw new BadRequestException(ValidationErrorCodes.UploadNotZip, null,
+					nameof(archive));
 			}
 
-			using (var stream = storage.WriteTournamentAdditionalFiles(id))
+			using (var stream = storage.WriteTournamentAdditionalFiles(id, true))
 			{
 				await archive.CopyToAsync(stream, cancellationToken);
 			}

@@ -11,16 +11,11 @@ namespace OPCAIC.Messaging.Messages
 		/// <summary>
 		///     Unique identifier of the job.
 		/// </summary>
-		public Guid Id { get; set; }
+		public Guid JobId { get; set; }
 
 		/// <summary>
 		///     Execution status of the job.
 		/// </summary>
 		public JobStatus JobStatus { get; set; }
-
-		/// <summary>
-		///     Exception which led to an error status of the job.
-		/// </summary>
-		public Exception Exception { get; set; }
 	}
 }

@@ -21,7 +21,7 @@
 		/// <summary>
 		///     Generates url to send users as invitation to the tournament.
 		/// </summary>
-		/// <param name="tournamentId"></param>
+		/// <param name="tournamentId">Id of the tournament.</param>
 		/// <returns></returns>
 		string TournamentInviteUrl(long tournamentId);
 	}

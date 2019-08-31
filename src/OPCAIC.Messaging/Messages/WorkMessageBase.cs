@@ -12,7 +12,7 @@ namespace OPCAIC.Messaging.Messages
 		/// <summary>
 		///     Unique identifier of the job.
 		/// </summary>
-		public Guid Id { get; set; }
+		public Guid JobId { get; set; }
 
 		/// <summary>
 		///     Game which the work task concerns.
@@ -22,7 +22,7 @@ namespace OPCAIC.Messaging.Messages
 		/// <summary>
 		///     Game module configuration to use for the task.
 		/// </summary>
-		public string ConfigurationJson { get; set; }
+		public string Configuration { get; set; }
 
 		/// <summary>
 		///     Relative url to the server where additional files for the task can be downloaded from.

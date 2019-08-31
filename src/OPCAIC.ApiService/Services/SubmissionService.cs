@@ -41,6 +41,7 @@ namespace OPCAIC.ApiService.Services
 			using (var stream = storage.WriteSubmissionArchive(storeDto))
 			{
 				// TODO: do we really want to permit cancellation here?
+				// TODO: connect db transactions and filesystem transactions storage
 				await model.Archive.CopyToAsync(stream, cancellationToken);
 			}
 

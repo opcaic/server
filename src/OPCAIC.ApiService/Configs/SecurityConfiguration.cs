@@ -7,5 +7,7 @@
 		public int AccessTokenExpirationMinutes { get; set; }
 
 		public int RefreshTokenExpirationDays { get; set; }
+
+		public int WorkerTokenExpirationMinutes { get; set; }
 	}
 }

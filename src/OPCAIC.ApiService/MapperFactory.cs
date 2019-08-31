@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using AutoMapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,9 +20,11 @@ using OPCAIC.Infrastructure.Dtos.EmailTemplates;
 using OPCAIC.Infrastructure.Dtos.Games;
 using OPCAIC.Infrastructure.Dtos.Matches;
 using OPCAIC.Infrastructure.Dtos.Submissions;
+using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.ApiService
@@ -35,6 +38,7 @@ namespace OPCAIC.ApiService
 				exp.AddUserMapping();
 				exp.AddTournamentMapping();
 				exp.AddSubmissionMapping();
+				exp.AddSubmissionValidationMapping();
 				exp.AddDocumentMapping();
 				exp.AddMatchMapping();
 				exp.AddEmailMapping();
@@ -55,6 +59,52 @@ namespace OPCAIC.ApiService
 		private static void AddOther(this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap(typeof(ListDto<>), typeof(ListModel<>), MemberList.Destination);
+
+			exp.CreateMap<JObject, string>().ConvertUsing(j => JsonConvert.SerializeObject(j));
+			exp.CreateMap<string, JObject>().ConvertUsing(j => JObject.Parse(j));
+			exp.CreateMap<SubTaskResult, EntryPointResult>()
+				.ConvertUsing(s => SubTaskResultToEntryPointResult(s));
+			exp.CreateMap<JobStatus, WorkerJobState>()
+				.ConvertUsing(s => JobStatusToWorkerJobState(s));
+		}
+
+		private static WorkerJobState JobStatusToWorkerJobState(JobStatus status)
+		{
+			switch (status)
+			{
+				case JobStatus.Ok:
+				case JobStatus.Timeout:
+				case JobStatus.Error:
+					return WorkerJobState.Finished;
+
+				case JobStatus.Canceled:
+					return WorkerJobState.Cancelled;
+
+				case JobStatus.Unknown:
+				default:
+					throw new ArgumentOutOfRangeException(nameof(status), status, null);
+			}
+		}
+
+		private static EntryPointResult SubTaskResultToEntryPointResult(SubTaskResult status)
+		{
+			switch (status)
+			{
+				case SubTaskResult.Unknown:
+					return EntryPointResult.NotExecuted;
+				case SubTaskResult.Ok:
+					return EntryPointResult.Success;
+				case SubTaskResult.NotOk:
+					return EntryPointResult.UserError;
+				case SubTaskResult.Aborted:
+					return EntryPointResult.Cancelled;
+				case SubTaskResult.ModuleError:
+					return EntryPointResult.ModuleError;
+				case SubTaskResult.PlatformError:
+					return EntryPointResult.PlatformError;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(status), status, null);
+			}
 		}
 
 		private static void AddDocumentMapping(this IMapperConfigurationExpression exp)
@@ -95,14 +145,8 @@ namespace OPCAIC.ApiService
 
 		private static void AddGameMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<NewGameModel, NewGameDto>(MemberList.Source)
-				.ForMember(g => g.ConfigurationSchemaJson,
-					opt => opt.MapFrom(g => JsonConvert.SerializeObject(g.ConfigurationSchema)));
-
-			exp.CreateMap<Game, GameDetailDto>(MemberList.Destination);
-			exp.CreateMap<GameDetailDto, GameDetailModel>(MemberList.Destination)
-				.ForMember(m => m.ConfigurationSchema,
-					opt => opt.MapFrom(d => JObject.Parse(d.ConfigurationSchemaJson)));
+			exp.CreateMap<NewGameModel, NewGameDto, Game>(MemberList.Source);
+			exp.CreateMap<Game, GameDetailDto, GameDetailModel>(MemberList.Destination);
 
 			exp.CreateMap<Game, GamePreviewDto, GamePreviewModel>(MemberList.Destination);
 			exp.CreateMap<Game, GameReferenceDto, GameReferenceModel>(MemberList.Destination);
@@ -113,9 +157,7 @@ namespace OPCAIC.ApiService
 
 		private static void AddTournamentMapping(this IMapperConfigurationExpression exp)
 		{
-			exp.CreateMap<NewTournamentModel, NewTournamentDto>(MemberList.Source)
-				.ForMember(d => d.ConfigurationJson,
-					opt => opt.MapFrom(m => JsonConvert.SerializeObject(m.Configuration)));
+			exp.CreateMap<NewTournamentModel, NewTournamentDto, Tournament>(MemberList.Source);
 
 			exp.CreateMap<Tournament, TournamentAuthDto>(MemberList.Destination)
 				.ForMember(d => d.ManagerIds,
@@ -132,8 +174,10 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<TournamentFilterModel, TournamentFilterDto>(MemberList.Source);
 
-			exp.CreateMap<TournamentParticipantDto, TournamentParticipantPreviewModel>(MemberList.Destination);
-			exp.CreateMap<TournamentParticipantFilter, TournamentParticipantFilterDto>(MemberList.Destination);
+			exp.CreateMap<TournamentParticipantDto, TournamentParticipantPreviewModel>(MemberList
+				.Destination);
+			exp.CreateMap<TournamentParticipantFilter, TournamentParticipantFilterDto>(MemberList
+				.Destination);
 		}
 
 		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)
@@ -142,6 +186,9 @@ namespace OPCAIC.ApiService
 				.ForSourceMember(d => d.Archive, opt => opt.DoNotValidate());
 			exp.CreateMap<NewSubmissionDto, Submission>(MemberList.Source);
 
+			exp.CreateMap<Submission, SubmissionAuthDto>(MemberList.Destination)
+				.ForMember(d => d.TournamentManagersIds,
+					opt => opt.MapFrom(s => s.Tournament.Managers.Select(m => m.UserId)));
 			exp.CreateMap<Submission, SubmissionPreviewDto, SubmissionPreviewModel>(MemberList
 				.Destination);
 			exp.CreateMap<Submission, SubmissionDetailDto, SubmissionDetailModel>(MemberList
@@ -154,6 +201,18 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<SubmissionFilterModel, SubmissionFilterDto>(MemberList.Destination);
 
 			exp.CreateMap<Submission, SubmissionStorageDto>(MemberList.Destination);
+		}
+
+		private static void AddSubmissionValidationMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<SubmissionValidation, SubmissionValidationStorageDto>(MemberList
+				.Destination);
+			exp.CreateMap<NewSubmissionValidationDto, SubmissionValidation>(MemberList.Source);
+			exp.CreateMap<SubmissionValidationResult, UpdateSubmissionValidationDto>(MemberList
+					.Destination)
+				.ForMember(d => d.State, opt => opt.MapFrom(r => r.JobStatus))
+				.ForMember(d => d.Executed, opt => opt.Ignore());
+			exp.CreateMap<UpdateSubmissionValidationDto, SubmissionValidation>(MemberList.Source);
 		}
 
 		private static void AddEmailMapping(this IMapperConfigurationExpression exp)
@@ -188,8 +247,8 @@ namespace OPCAIC.ApiService
 		private static void AddBrokerMapping(this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap<WorkItem, WorkItemDto, WorkItemModel>(MemberList.Destination);
-			exp.CreateMap<BrokerStats, BrokerStatsDto, BrokerStatsModel>(MemberList.Destination);
-			exp.CreateMap<WorkerInfo, WorkerInfoDto, WorkerInfoModel>(MemberList.Destination);
+			exp.CreateMap<BrokerStats, BrokerStatsModel>(MemberList.Destination);
+			exp.CreateMap<WorkerInfo, WorkerInfoModel>(MemberList.Destination);
 			exp.CreateMap<WorkMessageBase, WorkMessageBaseDto, WorkMessageBaseModel>(MemberList
 				.Destination);
 			exp.CreateMap<BotInfo, BotInfoDto, BotInfoModel>(MemberList.Destination);

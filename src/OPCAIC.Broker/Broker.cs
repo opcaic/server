@@ -16,10 +16,9 @@ namespace OPCAIC.Broker
 	public class Broker : IBroker, IHostedService
 	{
 		private readonly IBrokerConnector connector;
-		private readonly Dictionary<string, WorkerEntry> identityToWorker;
+		private readonly Dictionary<string, WorkerEntry> workers;
 		private readonly ILogger logger;
 		private readonly SortedSet<WorkItem> taskQueue;
-		private readonly List<WorkerEntry> workers;
 		private Thread consumerThread;
 		private bool shuttingDown;
 
@@ -30,8 +29,7 @@ namespace OPCAIC.Broker
 			shuttingDown = false;
 			this.connector = connector;
 			this.logger = logger;
-			identityToWorker = new Dictionary<string, WorkerEntry>();
-			workers = new List<WorkerEntry>();
+			workers = new Dictionary<string, WorkerEntry>();
 			taskQueue = new SortedSet<WorkItem>();
 			RegisterHandlers();
 		}
@@ -41,9 +39,11 @@ namespace OPCAIC.Broker
 		{
 			return Schedule(() => new BrokerStats
 			{
-				Workers = workers.Select(w => new WorkerInfo
+				Workers = workers.Values.Select(w => new WorkerInfo
 				{
-					Identity = w.Identity, CurrentJob = w.CurrentWorkItem?.Payload.Id
+					Identity = w.Identity,
+					CurrentJob = w.CurrentWorkItem?.Payload.JobId,
+					Games = w.Capabilities.SupportedGames
 				}).ToList()
 			});
 		}
@@ -59,7 +59,7 @@ namespace OPCAIC.Broker
 		{
 			return Schedule(() =>
 			{
-				var workItem = taskQueue.SingleOrDefault(wi => wi.Payload.Id == id);
+				var workItem = taskQueue.SingleOrDefault(wi => wi.Payload.JobId == id);
 				if (workItem != null)
 				{
 					taskQueue.Remove(workItem);
@@ -82,8 +82,8 @@ namespace OPCAIC.Broker
 		{
 			return Schedule(() =>
 			{
-				taskQueue.RemoveWhere(w => w.Payload.Id == id);
-				var worker = workers.SingleOrDefault(w => w.CurrentWorkItem?.Payload.Id == id);
+				taskQueue.RemoveWhere(w => w.Payload.JobId == id);
+				var worker = workers.Values.SingleOrDefault(w => w.CurrentWorkItem?.Payload.JobId == id);
 				if (worker != null)
 				{
 					CancelWork(worker);
@@ -113,7 +113,7 @@ namespace OPCAIC.Broker
 		public Task<int> GetUnfinishedTasksCount()
 		{
 			return Schedule(() =>
-				workers.Count(w => w.CurrentWorkItem != null) +
+				workers.Values.Count(w => w.CurrentWorkItem != null) +
 				taskQueue.Count);
 		}
 
@@ -125,7 +125,7 @@ namespace OPCAIC.Broker
 			// make sure no worker is running anything
 			await Schedule(() =>
 			{
-				foreach (var worker in workers.Where(w => w.CurrentWorkItem != null))
+				foreach (var worker in workers.Values.Where(w => w.CurrentWorkItem != null))
 				{
 					CancelWork(worker);
 				}
@@ -174,7 +174,7 @@ namespace OPCAIC.Broker
 
 			return Schedule(() =>
 			{
-				var capableWorkers = identityToWorker.Values.Where(w => CanWorkerExecute(w, msg)).ToArray();
+				var capableWorkers = workers.Values.Where(w => CanWorkerExecute(w, msg)).ToArray();
 				if (capableWorkers.Length == 0)
 				{
 					logger.LogError($"No worker can execute game {msg.Game}");
@@ -205,7 +205,7 @@ namespace OPCAIC.Broker
 		/// <returns></returns>
 		private Task<bool> IsExecutingAnything()
 		{
-			return Schedule(() => { return workers.Any(w => w.CurrentWorkItem != null); });
+			return Schedule(() => { return workers.Values.Any(w => w.CurrentWorkItem != null); });
 		}
 
 		/// <summary>
@@ -273,13 +273,20 @@ namespace OPCAIC.Broker
 
 		private void OnMessageReceived(string sender, object message)
 		{
-			if (!identityToWorker.TryGetValue(sender, out var worker))
+			switch (message)
+			{
+				case WorkerConnectMessage _:
+				case ReplyMessageBase msg when msg.JobStatus == JobStatus.Canceled:
+					return; // no more reaction needed
+			}
+
+			if (!workers.TryGetValue(sender, out var worker))
 			{
 				logger.LogError($"Ignoring message from unknown worker {sender}");
 				return;
 			}
 
-			if (worker.CurrentWorkItem == null && !(message is WorkerConnectMessage))
+			if (worker.CurrentWorkItem == null)
 			{
 				logger.LogError($"Received unexpected result message from '{worker.Identity}'");
 			}
@@ -297,7 +304,7 @@ namespace OPCAIC.Broker
 		{
 			connector.RegisterAsyncHandler<TMessage>((identity, message) =>
 			{
-				if (!identityToWorker.TryGetValue(identity, out var worker))
+				if (!workers.TryGetValue(identity, out var worker))
 				{
 					return; // ignore, unknown workers are handled elsewhere
 				}
@@ -316,20 +323,22 @@ namespace OPCAIC.Broker
 
 		private void OnWorkerConnected(WorkerEntry worker, WorkerConnectMessage msg)
 		{
+			logger.LogInformation($"Worker capabilities received from '{worker.Identity}'");
 			worker.Capabilities = msg.Capabilities;
+
+			DispatchWork(worker);
 		}
 
 		private void OnWorkerConnected(string identity)
 		{
-			if (identityToWorker.ContainsKey(identity))
+			if (workers.ContainsKey(identity))
 			{
 				logger.LogError($"Worker {identity} already connected.");
 				return;
 			}
 
 			var worker = new WorkerEntry(identity);
-			identityToWorker.Add(identity, worker);
-			workers.Add(worker);
+			workers.Add(identity, worker);
 			SetHeartbeat(worker);
 
 			// make sure worker executes something
@@ -350,7 +359,7 @@ namespace OPCAIC.Broker
 
 		private void OnWorkerDisconnected(string identity)
 		{
-			if (!identityToWorker.Remove(identity, out var worker))
+			if (!workers.Remove(identity, out var worker))
 			{
 				logger.LogError($"Trying to disconnect unconnected worker {identity}");
 				return;

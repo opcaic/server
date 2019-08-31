@@ -31,16 +31,19 @@ namespace OPCAIC.ApiService.Security.Handlers
 		}
 
 		/// <inheritdoc />
-		protected override bool HandlePermissionAsync(long userId, ClaimsPrincipal user,
+		protected override bool HandlePermissionAsync(ClaimsPrincipal user,
 			TournamentPermission permission,
 			TournamentAuthDto authData)
 		{
+			var userId = user.TryGetId();
+
 			switch (permission)
 			{
 				case TournamentPermission.Create:
 					// only organizers
 					return user.GetUserRole() == UserRole.Organizer;
 
+				case TournamentPermission.UploadAdditionalFiles:
 				case TournamentPermission.ManageInvites:
 				case TournamentPermission.EditDocument:
 				case TournamentPermission.Update:
@@ -75,6 +78,12 @@ namespace OPCAIC.ApiService.Security.Handlers
 						default:
 							throw new ArgumentOutOfRangeException();
 					}
+
+				case TournamentPermission.DownloadAdditionalFiles:
+					return
+						user.HasClaim(WorkerClaimTypes.TournamentId, authData.Id.ToString()) ||
+						userId == authData.OwnerId ||
+						authData.ManagerIds.Contains(userId);
 
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);

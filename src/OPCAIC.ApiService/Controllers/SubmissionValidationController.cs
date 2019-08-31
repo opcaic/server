@@ -9,24 +9,22 @@ using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 using OPCAIC.ApiService.Security;
-using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Services;
 
 namespace OPCAIC.ApiService.Controllers
 {
-	// TODO: Authorization for both users and workers
 	[Authorize]
 	[Route("api/validation")]
 	public class ValidationController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;
-		private readonly ISubmissionValidationRepository validationRepository;
 		private readonly IStorageService storage;
+		private readonly ISubmissionValidationRepository validationRepository;
 
 		/// <inheritdoc />
-		public ValidationController(IAuthorizationService authorizationService, ISubmissionValidationRepository validationRepository, IStorageService storage)
+		public ValidationController(IAuthorizationService authorizationService,
+			ISubmissionValidationRepository validationRepository, IStorageService storage)
 		{
 			this.authorizationService = authorizationService;
 			this.validationRepository = validationRepository;
@@ -49,22 +47,16 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UploadResult(long id, [ApiRequired] IFormFile archive,
 			CancellationToken cancellationToken)
 		{
+			if (Path.GetExtension(archive.FileName) != ".zip")
+			{
+				throw new BadRequestException(ValidationErrorCodes.UploadNotZip, null,
+					nameof(archive));
+			}
+
 			await authorizationService.CheckPermissions(User, id,
 				SubmissionValidationPermission.UploadResult);
 
 			var storageDto = await validationRepository.FindStorageAsync(id, cancellationToken);
-			if (storageDto == null)
-			{
-				throw new NotFoundException(nameof(MatchExecution), id);
-			}
-
-			await authorizationService.CheckPermissions(User, id, MatchExecutionPermission.UploadResult);
-
-			if (Path.GetExtension(archive.FileName) != ".zip")
-			{
-				throw new BadRequestException(ValidationErrorCodes.UploadNotZip, null, nameof(archive));
-			}
-
 			using (var stream = storage.WriteSubmissionValidationResultArchive(storageDto))
 			{
 				await archive.CopyToAsync(stream, cancellationToken);

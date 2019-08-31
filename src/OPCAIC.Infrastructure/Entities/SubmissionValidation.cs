@@ -21,17 +21,17 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Result of the checker game module entry point.
 		/// </summary>
-		public GameModuleEntryPointResult CheckerResult { get; set; }
+		public EntryPointResult CheckerResult { get; set; }
 
 		/// <summary>
 		///     Result of the compiler game module entry point.
 		/// </summary>
-		public GameModuleEntryPointResult CompilerResult { get; set; }
+		public EntryPointResult CompilerResult { get; set; }
 
 		/// <summary>
 		///     Result of the validator game module entry point.
 		/// </summary>
-		public GameModuleEntryPointResult ValidatorResult { get; set; }
+		public EntryPointResult ValidatorResult { get; set; }
 
 		/// <inheritdoc />
 		public Guid JobId { get; set; }

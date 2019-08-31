@@ -32,14 +32,7 @@ namespace OPCAIC.Infrastructure.Repositories
 		public Task<SubmissionAuthDto> GetAuthorizationData(long id,
 			CancellationToken cancellationToken = default)
 		{
-			return DbSet.Where(d => d.Id == id)
-				.Select(s => new SubmissionAuthDto
-				{
-					AuthorId = s.AuthorId,
-					TournamentOwnerId = s.Tournament.OwnerId,
-					TournamentManagersIds = s.Tournament.Managers.Select(m => m.UserId).ToArray()
-				})
-				.SingleOrDefaultAsync(cancellationToken);
+			return GetDtoByIdAsync<SubmissionAuthDto>(id, cancellationToken);
 		}
 	}
 }

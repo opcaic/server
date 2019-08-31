@@ -1,6 +1,6 @@
 ﻿namespace OPCAIC.Infrastructure.Enums
 {
-	public enum GameModuleEntryPointResult
+	public enum EntryPointResult
 	{
 		/// <summary>
 		///     Unknown result, should never occur.
@@ -11,6 +11,11 @@
 		///     Stage of the game module finished successfully, the result of the stage is Success.
 		/// </summary>
 		Success,
+
+		/// <summary>
+		///     Execution of the job was cancelled during given stage.
+		/// </summary>
+		Cancelled,
 
 		/// <summary>
 		///     Stage of the game module finished successfully, the result of the stage is Failure.

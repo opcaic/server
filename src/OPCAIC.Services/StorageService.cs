@@ -23,6 +23,7 @@ namespace OPCAIC.Services
 			directory.CreateSubdirectory(SubmissionsDir);
 			directory.CreateSubdirectory(MatchResultsDir);
 			directory.CreateSubdirectory(ValidationsDir);
+			directory.CreateSubdirectory(TournamentFilesDir);
 		}
 
 		/// <inheritdoc />
@@ -68,9 +69,9 @@ namespace OPCAIC.Services
 		}
 
 		/// <inheritdoc />
-		public Stream WriteTournamentAdditionalFiles(long id)
+		public Stream WriteTournamentAdditionalFiles(long id, bool overwrite)
 		{
-			return WriteFile(TournamentFilesPath(id));
+			return WriteFile(TournamentFilesPath(id), overwrite);
 		}
 
 		// TODO: choose better folder hierarchy once we have complete domain model
@@ -104,14 +105,14 @@ namespace OPCAIC.Services
 				: null;
 		}
 
-		private Stream WriteFile(string path)
+		private Stream WriteFile(string path, bool overwrite = false)
 		{
 			Require.ArgNotNull(path, nameof(path));
-			Require.That<InvalidOperationException>(!File.Exists(path),
+			Require.That<InvalidOperationException>(overwrite || !File.Exists(path),
 				$"File {path} already exists");
 			Debug.Assert(Path.IsPathFullyQualified(path));
 
-			return File.Open(path, FileMode.CreateNew, FileAccess.Write);
+			return File.Open(path, overwrite ? FileMode.Create : FileMode.CreateNew, FileAccess.Write);
 		}
 	}
 }

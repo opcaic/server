@@ -9,7 +9,7 @@ namespace OPCAIC.Infrastructure.Dtos.Matches
 	{
 		public MatchReferenceDto Match { get; set; }
 		public IList<SubmissionMatchResultDto> BotResults { get; set; }
-		public GameModuleEntryPointResult ExecutorResult { get; set; }
+		public EntryPointResult ExecutorResult { get; set; }
 		public DateTime? Executed { get; set; }
 	}
 }

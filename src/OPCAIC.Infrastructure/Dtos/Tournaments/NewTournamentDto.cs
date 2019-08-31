@@ -8,7 +8,7 @@ namespace OPCAIC.Infrastructure.Dtos.Tournaments
 
 		public string Description { get; set; }
 
-		public string ConfigurationJson { get; set; }
+		public string Configuration { get; set; }
 
 		public long GameId { get; set; }
 

@@ -80,9 +80,9 @@ namespace OPCAIC.Worker.Test
 				new SubmissionValidationRequest
 				{
 					Game = "",
-					Id = Guid.NewGuid(),
+					JobId = Guid.NewGuid(),
 					AccessToken = "",
-					ConfigurationJson = "{}"
+					Configuration = "{}"
 				});
 
 			GetService<Worker>().Run();

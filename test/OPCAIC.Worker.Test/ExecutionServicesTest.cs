@@ -40,7 +40,7 @@ namespace OPCAIC.Worker.Test
 		{
 			var id = Guid.NewGuid();
 
-			var dir = ExecutionServices.GetWorkingDirectory(new MatchExecutionRequest {Id = id});
+			var dir = ExecutionServices.GetWorkingDirectory(new MatchExecutionRequest {JobId = id});
 
 			Assert.True(dir.Exists);
 			Assert.True(Directory.Exists(Path.Combine(workdir.FullName, id.ToString())));

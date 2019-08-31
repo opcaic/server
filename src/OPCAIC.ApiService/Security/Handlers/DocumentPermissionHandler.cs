@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.ApiService.Extensions;
 using OPCAIC.Infrastructure.Dtos.Documents;
 using OPCAIC.Infrastructure.Repositories;
 
@@ -26,7 +27,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 		}
 
 		/// <inheritdoc />
-		protected override bool HandlePermissionAsync(long userId, ClaimsPrincipal user,
+		protected override bool HandlePermissionAsync(ClaimsPrincipal user,
 			DocumentPermission permission,
 			DocumentAuthDto authData)
 		{
@@ -40,6 +41,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case DocumentPermission.Update:
 				case DocumentPermission.Delete:
 					// only tournament owners and managers
+					var userId = user.TryGetId();
 					return userId == authData.TournamentOwnerId ||
 						authData.TournamentManagersIds.Contains(userId);
 

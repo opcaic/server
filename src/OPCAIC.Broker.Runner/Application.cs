@@ -175,7 +175,7 @@ namespace OPCAIC.Broker.Runner
 			var i = 0;
 			broker.RegisterHandler<SubmissionValidationResult>(a =>
 			{
-				logger.LogInformation($"Finished: {a.Id}");
+				logger.LogInformation($"Finished: {a.JobId}");
 				results.Add(a);
 			});
 
@@ -192,12 +192,12 @@ namespace OPCAIC.Broker.Runner
 					i++;
 					await broker.EnqueueWork(new SubmissionValidationRequest
 					{
-						Id = Guid.NewGuid(),
+						JobId = Guid.NewGuid(),
 						SubmissionId = 1,
 						ValidationId = i,
 						Game = config.Games[rand.Next(config.Games.Length)],
 						AccessToken = "",
-						ConfigurationJson = "{}",
+						Configuration = "{}",
 					});
 				}
 				catch (Exception e)

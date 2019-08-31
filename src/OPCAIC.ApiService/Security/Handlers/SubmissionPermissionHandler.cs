@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.ApiService.Extensions;
 using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Repositories;
 
@@ -26,17 +27,20 @@ namespace OPCAIC.ApiService.Security.Handlers
 		}
 
 		/// <inheritdoc />
-		protected override bool HandlePermissionAsync(long userId, ClaimsPrincipal user,
+		protected override bool HandlePermissionAsync(ClaimsPrincipal user,
 			SubmissionPermission permission,
 			SubmissionAuthDto authData)
 		{
+			var userId = user.TryGetId();
+
 			switch (permission)
 			{
 				case SubmissionPermission.Read:
 				case SubmissionPermission.Download:
-					// Authors and tournament managers
-					// TODO: API key for workers
-					return authData.AuthorId == userId ||
+					// Authors tournament managers and workers
+					return
+						user.HasClaim(WorkerClaimTypes.SubmissionId, authData.Id.ToString()) ||
+						authData.AuthorId == userId ||
 						authData.TournamentOwnerId == userId ||
 						authData.TournamentManagersIds.Contains(userId);
 
@@ -46,6 +50,9 @@ namespace OPCAIC.ApiService.Security.Handlers
 
 				case SubmissionPermission.Search:
 					return true; // TODO: More granular?
+
+				case SubmissionPermission.QueueValidation:
+					return false; // admin only
 
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);

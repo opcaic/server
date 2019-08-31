@@ -66,7 +66,8 @@ namespace OPCAIC.Services
 		///     Opens stream for writing archive for additional files for given tournament.
 		/// </summary>
 		/// <param name="id">Id of the tournament.</param>
+		/// <param name="overwrite">Whether an existing file should be overwritten.</param>
 		/// <returns></returns>
-		Stream WriteTournamentAdditionalFiles(long id);
+		Stream WriteTournamentAdditionalFiles(long id, bool overwrite = false);
 	}
 }

@@ -30,7 +30,7 @@ namespace OPCAIC.Infrastructure.Repositories
 		public Task<string> GetConfigurationSchemaAsync(long id, in CancellationToken cancellationToken)
 		{
 			return QueryById(id)
-				.Select(g => g.ConfigurationSchemaJson)
+				.Select(g => g.ConfigurationSchema)
 				.SingleOrDefaultAsync(cancellationToken);
 		}
 	}

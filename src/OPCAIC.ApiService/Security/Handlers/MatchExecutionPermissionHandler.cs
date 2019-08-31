@@ -7,7 +7,7 @@ using OPCAIC.Infrastructure.Repositories;
 namespace OPCAIC.ApiService.Security.Handlers
 {
 	public class MatchExecutionPermissionHandler
-		: ResourcePermissionAuthorizationHandler<MatchExecutionPermission, EmptyAuthData>
+		: ResourcePermissionAuthorizationHandler<MatchExecutionPermission, ResourceIdAuth>
 	{
 		private readonly IMatchRepository matchRepository;
 
@@ -17,16 +17,16 @@ namespace OPCAIC.ApiService.Security.Handlers
 		}
 
 		/// <inheritdoc />
-		protected override async Task<EmptyAuthData> GetAuthorizationData(long resourceId,
+		protected override Task<ResourceIdAuth> GetAuthorizationData(long resourceId,
 			CancellationToken cancellationToken = default)
 		{
-			return EmptyAuthData.Instance;
+			return Task.FromResult(new ResourceIdAuth(resourceId));
 		}
 
 		/// <inheritdoc />
-		protected override bool HandlePermissionAsync(long userId, ClaimsPrincipal user,
+		protected override bool HandlePermissionAsync(ClaimsPrincipal user,
 			MatchExecutionPermission permission,
-			EmptyAuthData _)
+			ResourceIdAuth authData)
 		{
 			switch (permission)
 			{

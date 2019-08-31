@@ -91,6 +91,9 @@ namespace OPCAIC.Worker
 		{
 			logger.LogInformation(LoggingEvents.WorkerConnection, "Resetting heartbeat config.");
 			connector.SetHeartbeatConfig(msg.HeartbeatConfig);
+			
+			// resend worker capabilities, this makes sure the capabilities are not forgotten when reconnecting after timeout
+			SendCapabilities();
 		}
 
 		private void CancelTask(CancelTaskMessage _)
@@ -135,7 +138,7 @@ namespace OPCAIC.Worker
 				Debug.Assert(currentTaskCts == null);
 
 				// Make sure we always send non-null message
-				var response = new TResult {Id = request.Id, JobStatus = JobStatus.Error};
+				var response = new TResult {JobId = request.JobId, JobStatus = JobStatus.Error};
 
 				var token = SetupCancellation();
 
@@ -156,14 +159,18 @@ namespace OPCAIC.Worker
 				// log in when handler to preserve scopes.
 				catch (Exception e) when (DoLogExecutionFailure(e, request))
 				{
-					response.JobStatus = JobStatus.Error;
+					response.JobStatus = e is OperationCanceledException
+						? JobStatus.Canceled
+						: JobStatus.Error;
 				}
 
 				var forced = FinalizeCancellation();
-				if (!forced) // do not send back cancelled tasks
+				if (forced)
 				{
-					connector.SendMessage(response);
+					response.JobStatus = JobStatus.Canceled;
 				}
+
+				connector.SendMessage(response);
 			}
 		}
 
@@ -192,7 +199,11 @@ namespace OPCAIC.Worker
 		private void InitConnection()
 		{
 			logger.LogInformation(LoggingEvents.WorkerConnection, "Initiating connection");
+			SendCapabilities();
+		}
 
+		private void SendCapabilities()
+		{
 			connector.SendMessage(new WorkerConnectMessage
 			{
 				Capabilities = new WorkerCapabilities

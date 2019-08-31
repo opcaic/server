@@ -49,9 +49,9 @@
 	{
 		Read,
 		Update,
-		Create,
 		Download,
 		Search,
+		QueueValidation,
 	}
 
 	public enum SubmissionValidationPermission

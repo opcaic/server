@@ -1,15 +1,12 @@
-﻿using System.Net;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Submissions;
-using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 
@@ -22,14 +19,17 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly IAuthorizationService authorizationService;
 		private readonly ILogger<SubmissionsController> logger;
 		private readonly ISubmissionService submissionService;
+		private readonly ISubmissionValidationService validationService;
 
 		/// <inheritdoc />
 		public SubmissionsController(ILogger<SubmissionsController> logger,
-			IAuthorizationService authorizationService, ISubmissionService submissionService)
+			IAuthorizationService authorizationService, ISubmissionService submissionService,
+			ISubmissionValidationService validationService)
 		{
 			this.logger = logger;
 			this.authorizationService = authorizationService;
 			this.submissionService = submissionService;
+			this.validationService = validationService;
 		}
 
 		/// <summary>
@@ -66,16 +66,17 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
-		[RequiresPermission(SubmissionPermission.Create)]
 		public async Task<IActionResult> PostAsync([FromForm] NewSubmissionModel model,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, model.TournamentId,
 				TournamentPermission.Submit);
+
 			var id = await submissionService.CreateAsync(model, User.GetId(), cancellationToken);
-			// TODO: queue validation
+			await validationService.EnqueueValidationAsync(id, cancellationToken);
+
 			logger.SubmissionCreated(id, model);
-			return CreatedAtRoute(nameof(GetSubmissionByIdAsync), new { id }, new IdModel {Id = id});
+			return CreatedAtRoute(nameof(GetSubmissionByIdAsync), new {id}, new IdModel {Id = id});
 		}
 
 		/// <summary>
@@ -118,9 +119,9 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> GetSubmissionArchiveAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			// TODO: authorize WORKERS
 			await authorizationService.CheckPermissions(User, id, SubmissionPermission.Download);
-			return File(await submissionService.GetSubmissionArchiveAsync(id, cancellationToken), Constants.GzipMimeType);
+			return File(await submissionService.GetSubmissionArchiveAsync(id, cancellationToken),
+				Constants.GzipMimeType);
 		}
 
 		/// <summary>
@@ -145,6 +146,28 @@ namespace OPCAIC.ApiService.Controllers
 			await authorizationService.CheckPermissions(User, id, SubmissionPermission.Update);
 			logger.SubmissionUpdated(id, model);
 			await submissionService.UpdateAsync(id, model, cancellationToken);
+		}
+
+		/// <summary>
+		///     Queues a new validation of the given submission.
+		/// </summary>
+		/// <param name="id">Id of the submission.</param>
+		/// <param name="cancellationToken"></param>
+		/// <response code="200">Validation was queued.</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to do this action.</response>
+		/// <response code="404">Resource was not found.</response>
+		[HttpPost("{id}/validate")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task ValidateAsync(long id, CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, id,
+				SubmissionPermission.QueueValidation);
+			await validationService.EnqueueValidationAsync(id, cancellationToken);
 		}
 	}
 }

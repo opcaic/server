@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.Extensions;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {
@@ -17,13 +18,6 @@ namespace OPCAIC.ApiService.Security.Handlers
 			PermissionRequirement<TPermission> requirement,
 			long? resourceId)
 		{
-			var idClaim = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-			if (idClaim == null ||
-				!long.TryParse(idClaim, out var userId))
-			{
-				return; // cannot authorize user without id
-			}
-
 			TAuthData authData = default;
 			if (resourceId.HasValue)
 			{
@@ -38,7 +32,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 
 			foreach (var permission in requirement.RequiredPermissions)
 			{
-				if (!HandlePermissionAsync(userId, context.User, permission, authData))
+				if (!HandlePermissionAsync(context.User, permission, authData))
 				{
 					return;
 				}
@@ -53,7 +47,6 @@ namespace OPCAIC.ApiService.Security.Handlers
 		/// <summary>
 		///     Handles the authorization for the given permission.
 		/// </summary>
-		/// <param name="userId">Id of the current user to be authorized.</param>
 		/// <param name="user">Instance of <see cref="ClaimsPrincipal" /> containing further claims.</param>
 		/// <param name="permission">The permission to be verified.</param>
 		/// <param name="authData">
@@ -61,7 +54,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 		///     Otherwise null.
 		/// </param>
 		/// <returns></returns>
-		protected abstract bool HandlePermissionAsync(long userId, ClaimsPrincipal user,
+		protected abstract bool HandlePermissionAsync(ClaimsPrincipal user,
 			TPermission permission,
 			TAuthData authData);
 	}

@@ -271,12 +271,12 @@ namespace OPCAIC.Infrastructure.Repositories
 				case MatchState.Executed:
 					query = query.Where(row => row.Executions
 							.OrderByDescending(e => e.Created).First().ExecutorResult ==
-						GameModuleEntryPointResult.Success);
+						EntryPointResult.Success);
 					break;
 				case MatchState.Failed:
 					query = query.Where(row => row.Executions
 							.OrderByDescending(e => e.Created).First().ExecutorResult >=
-						GameModuleEntryPointResult.UserError);
+						EntryPointResult.UserError);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();

@@ -11,11 +11,18 @@ namespace OPCAIC.Infrastructure.Entities
 	public class Game : SoftDeletableEntity
 	{
 		/// <summary>
-		///     Name of the game. Should be unique on the platform.
+		///     Human readable name of the game.
 		/// </summary>
 		[Required]
 		[MaxLength(StringLengths.GameName)]
 		public string Name { get; set; }
+
+		/// <summary>
+		///     Key name of the game which will be used to dispatch work items to workers.
+		/// </summary>
+		[Required]
+		[MaxLength(StringLengths.GameKey)]
+		public string Key { get; set; }
 
 		/// <summary>
 		///     Description of the game.
@@ -25,7 +32,7 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Describes the structure of the game's configuration file.
 		/// </summary>
-		public string ConfigurationSchemaJson { get; set; }
+		public string ConfigurationSchema { get; set; }
 
 		/// <summary>
 		///     All tournaments in this game.

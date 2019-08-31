@@ -24,9 +24,9 @@ namespace OPCAIC.ApiService.Security.Handlers
 		}
 
 		/// <inheritdoc />
-		protected override bool HandlePermissionAsync(long userId, ClaimsPrincipal user,
+		protected override bool HandlePermissionAsync(ClaimsPrincipal user,
 			GamePermission permission,
-			EmptyAuthData _)
+			EmptyAuthData authData)
 		{
 			switch (permission)
 			{

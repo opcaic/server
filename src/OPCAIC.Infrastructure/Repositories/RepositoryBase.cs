@@ -106,11 +106,25 @@ namespace OPCAIC.Infrastructure.Repositories
 		/// <param name="dto">Data to update.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		protected async Task<bool> UpdateFromDtoAsync<TDto>(long id, TDto dto,
+		protected Task<bool> UpdateFromDtoAsync<TDto>(long id, TDto dto,
 			CancellationToken cancellationToken)
 		{
+			return UpdateFromDtoByQueryAsync(row => row.Id == id, dto, cancellationToken);
+		}
+
+		/// <summary>
+		///     Updates entity in the database with values from the supplied data transfer object. Returns true if an entity was
+		///     updated.
+		/// </summary>
+		/// <typeparam name="TDto">DTO Type with properties which should be updated.</typeparam>
+		/// <param name="query">Query identifying the unique entity to update.</param>
+		/// <param name="dto">Data to update.</param>
+		/// <param name="cancellationToken"></param>
+		protected async Task<bool> UpdateFromDtoByQueryAsync<TDto>(
+			Expression<Func<TEntity, bool>> query, TDto dto, CancellationToken cancellationToken)
+		{
 			// TODO: update without fetching the entity first (or fetch only concurrency stamp)
-			var entity = await DbSet.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
+			var entity = await DbSet.SingleOrDefaultAsync(query, cancellationToken);
 			if (entity == null)
 			{
 				return false;

@@ -22,7 +22,7 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Result of the executor game module entry point.
 		/// </summary>
-		public GameModuleEntryPointResult ExecutorResult { get; set; }
+		public EntryPointResult ExecutorResult { get; set; }
 
 		/// <summary>
 		///     Results of individual bots in this match.

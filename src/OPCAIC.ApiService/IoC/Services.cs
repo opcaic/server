@@ -11,6 +11,7 @@ namespace OPCAIC.ApiService.IoC
 		public static void AddServices(this IServiceCollection services)
 		{
 			services
+				.AddHostedService<BrokerReactor>()
 				.AddScoped<IEmailService, EmailService>()
 				.AddScoped<IUserManager, UserManager>()
 				.AddScoped<IStorageService, StorageService>()
@@ -21,9 +22,12 @@ namespace OPCAIC.ApiService.IoC
 				.AddHostedService<EmailCronService>()
 				.AddScoped<IDocumentService, DocumentService>()
 				.AddScoped<ISubmissionService, SubmissionService>()
-				.AddScoped<IFrontendUrlGenerator, FrontendUrlGenerator>()
+				.AddScoped<IFrontendUrlGenerator, UrlGenerator>()
+				.AddScoped<IWorkerUrlGenerator, UrlGenerator>()
 				.AddSingleton<IModelValidationService, ModelValidationService>()
 				.AddScoped<IMatchService, MatchService>()
+				.AddScoped<ISubmissionValidationService, SubmissionValidationService>()
+				.AddScoped<IWorkerService, WorkerService>()
 				.AddScoped<IBrokerService, BrokerService>();
 		}
 	}

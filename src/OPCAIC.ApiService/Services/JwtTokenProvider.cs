@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -7,9 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
-using OPCAIC.ApiService.Security;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Utils;
 
@@ -17,21 +14,20 @@ namespace OPCAIC.ApiService.Services
 {
 	public class JwtTokenProvider : IUserTwoFactorTokenProvider<User>
 	{
+		private const string SecurityStampClaim = "stamp";
 		public const string RefreshPurpose = "Refresh";
 		public const string AccessPurpose = "Access";
-		public const string SecurityStampClaim = "stamp";
-
-		private readonly JwtIssuerOptions jwtOptions;
+		private readonly IJwtTokenService jwtTokenService;
 		private readonly ILogger<JwtTokenProvider> logger;
-		private readonly SecurityConfiguration securityConfig;
-		private readonly JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
 
-		public JwtTokenProvider(IOptions<JwtIssuerOptions> jwtOptions,
-			IOptions<SecurityConfiguration> securityConfig, ILogger<JwtTokenProvider> logger)
+		private readonly SecurityConfiguration securityConfig;
+
+		public JwtTokenProvider(IOptions<SecurityConfiguration> securityConfig,
+			ILogger<JwtTokenProvider> logger, IJwtTokenService jwtTokenService)
 		{
-			this.logger = logger;
-			this.jwtOptions = jwtOptions.Value;
 			this.securityConfig = securityConfig.Value;
+			this.logger = logger;
+			this.jwtTokenService = jwtTokenService;
 		}
 
 		/// <inheritdoc />
@@ -78,7 +74,7 @@ namespace OPCAIC.ApiService.Services
 
 			try
 			{
-				var principal = ExtractClaimsPrincipal(token);
+				var principal = jwtTokenService.ExtractClaimsPrincipal(token);
 
 				return Task.FromResult(
 					principal != null &&
@@ -95,60 +91,23 @@ namespace OPCAIC.ApiService.Services
 			return Task.FromResult(false);
 		}
 
-		private ClaimsPrincipal ExtractClaimsPrincipal(string token)
-		{
-			try
-			{
-				return tokenHandler.ValidateToken(token, GetValidationParameters(), out _);
-			}
-			catch (ArgumentException)
-			{
-				// malformed token
-				return null;
-			}
-		}
-
 		private async Task<string> CreateJwtAccessToken(UserManager<User> manager, User user)
 		{
-			return CreateToken(TimeSpan.FromMinutes(securityConfig.AccessTokenExpirationMinutes),
-				new ClaimsIdentity(await manager.GetClaimsAsync(user)));
+			var identity = new ClaimsIdentity(await manager.GetClaimsAsync(user));
+			return jwtTokenService.CreateToken(
+				TimeSpan.FromMinutes(securityConfig.AccessTokenExpirationMinutes), identity);
 		}
 
 		private Task<string> CreateJwtRefreshToken(UserManager<User> manager, User user)
 		{
 			var nameClaim = new Claim(ClaimTypes.Name, user.UserName);
 			var stampClaim = new Claim(SecurityStampClaim, GetHashedSecurityStamp(user));
-			var token = CreateToken(TimeSpan.FromDays(securityConfig.RefreshTokenExpirationDays),
-				new ClaimsIdentity(new[] {nameClaim, stampClaim}));
+			var identity = new ClaimsIdentity(new[] {nameClaim, stampClaim});
+			var token =
+				jwtTokenService.CreateToken(
+					TimeSpan.FromDays(securityConfig.RefreshTokenExpirationDays), identity);
 
 			return Task.FromResult(token);
-		}
-
-		private string CreateToken(TimeSpan? expiresIn, ClaimsIdentity identity)
-		{
-			var tokenDescriptor = new SecurityTokenDescriptor
-			{
-				Subject = identity,
-				Expires =
-					expiresIn != null ? DateTime.Now.Add(expiresIn.Value) : (DateTime?)null,
-				Audience = jwtOptions.Audience,
-				Issuer = jwtOptions.Issuer,
-				SigningCredentials = jwtOptions.SigningCredentials
-			};
-			var token = tokenHandler.CreateToken(tokenDescriptor);
-
-			return tokenHandler.WriteToken(token);
-		}
-
-		private TokenValidationParameters GetValidationParameters()
-		{
-			return new TokenValidationParameters
-			{
-				ValidateLifetime = true,
-				ValidateAudience = false,
-				ValidateIssuer = false,
-				IssuerSigningKey = jwtOptions.SigningCredentials.Key
-			};
 		}
 
 		private string GetHashedSecurityStamp(User user)

@@ -3,6 +3,7 @@
 	public static class StringLengths
 	{
 		public const int GameName = 30;
+		public const int GameKey = 30;
 		public const int TournamentName = 30;
 		public const int DocumentName = 30;
 

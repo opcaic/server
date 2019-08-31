@@ -30,7 +30,7 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Result of the compiler game module entry point of the compilation prior to the match execution.
 		/// </summary>
-		public GameModuleEntryPointResult CompilerResult { get; set; }
+		public EntryPointResult CompilerResult { get; set; }
 
 		/// <summary>
 		///     Score of the submission in the match execution. Meaning depends on the format of the

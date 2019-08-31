@@ -32,7 +32,7 @@ namespace OPCAIC.Worker.Services
 			Require.GreaterThan(submissionId, 0, nameof(submissionId));
 			Require.ArgNotNull(path, nameof(path));
 
-			return DownloadAndUnzip($"submissions/{submissionId}", path, cancellationToken);
+			return DownloadAndUnzip($"submissions/{submissionId}/download", path, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -42,7 +42,7 @@ namespace OPCAIC.Worker.Services
 			Require.GreaterThan(validationId, 0, nameof(validationId));
 			Require.ArgNotNull(path, nameof(path));
 
-			return UploadFolderContents($"results/{validationId}", path, cancellationToken);
+			return UploadFolderContents($"validation/{validationId}", path, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -68,19 +68,27 @@ namespace OPCAIC.Worker.Services
 		{
 			var outputDirectory = new DirectoryInfo(path);
 			Require.That<ArgumentException>(outputDirectory.Exists, "Directory does not exist");
-			var stream = new MemoryStream();
-			using (var archive = new ZipArchive(stream, ZipArchiveMode.Create))
-			{
-				foreach (var fileInfo in outputDirectory.GetFiles("*", SearchOption.AllDirectories))
-				{
-					archive.CreateEntryFromFile(
-						fileInfo.FullName,
-						Path.GetRelativePath(outputDirectory.FullName, fileInfo.FullName));
-				}
-			}
 
-			var response = await httpClient.PostAsync(url, new StreamContent(stream), cancellationToken);
-			response.EnsureSuccessStatusCode();
+			using (var stream = new MemoryStream())
+			{
+				using (var archive = new ZipArchive(stream, ZipArchiveMode.Create, true))
+				{
+					foreach (var fileInfo in outputDirectory.GetFiles("*", SearchOption.AllDirectories))
+					{
+						archive.CreateEntryFromFile(
+							fileInfo.FullName,
+							Path.GetRelativePath(outputDirectory.FullName, fileInfo.FullName));
+					}
+				}
+
+				var content = new MultipartFormDataContent
+				{
+					{new StreamContent(stream), "archive", "archive.zip"}
+				};
+
+				var response = await httpClient.PostAsync(url, content, cancellationToken);
+				response.EnsureSuccessStatusCode();
+			}
 		}
 
 		private async Task DownloadAndUnzip(string url, string path, CancellationToken cancellationToken)

@@ -20,7 +20,7 @@ namespace OPCAIC.Worker.Test
 		{
 			Request = new MatchExecutionRequest
 			{
-				Id = Guid.NewGuid(),
+				JobId = Guid.NewGuid(),
 				Game = "",
 				ExecutionId = 1,
 				Bots = new List<BotInfo>
@@ -28,7 +28,7 @@ namespace OPCAIC.Worker.Test
 					new BotInfo {SubmissionId = 1}, new BotInfo {SubmissionId = 2}
 				},
 				AccessToken = "",
-				ConfigurationJson = "{}"
+				Configuration = "{}"
 			};
 		}
 
@@ -59,7 +59,6 @@ namespace OPCAIC.Worker.Test
 			Assert.Equal(SubTaskResult.Ok, result.ExecutionResult);
 			Assert.NotNull(result.AdditionalData);
 			Assert.NotNull(result.BotResults);
-			Assert.Null(result.Exception);
 		}
 
 		private Action<BotResult> AssertBotResult(SubTaskResult result)

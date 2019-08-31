@@ -112,7 +112,7 @@ namespace OPCAIC.Worker.Services
 		{
 			Require.ArgNotNull(request, nameof(request));
 			Request = request;
-			Response.Id = request.Id;
+			Response.JobId = request.JobId;
 			CancellationToken = cancellationToken;
 			DownloadService = downloadServiceFactory.Create(request.AccessToken);
 
@@ -131,7 +131,7 @@ namespace OPCAIC.Worker.Services
 					EntryPointConfig.AdditionalFiles =
 						TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Input);
 
-					EntryPointConfig.Configuration = JObject.Parse(request.ConfigurationJson);
+					EntryPointConfig.Configuration = JObject.Parse(request.Configuration);
 
 					if (request.AdditionalFilesUri != null)
 					{
@@ -271,9 +271,8 @@ namespace OPCAIC.Worker.Services
 							throw new ArgumentOutOfRangeException();
 					}
 				}
-				catch (Exception e)
-					when ((e is TaskCanceledException || e is OperationCanceledException) &&
-						DoLog(LogLevel.Warning, 0, null,
+				catch (OperationCanceledException)
+					when (DoLog(LogLevel.Warning, 0, null,
 							$"{{{LoggingTags.GameModuleEntryPoint}}} stage was aborted", name))
 				{
 					status = SubTaskResult.Aborted;

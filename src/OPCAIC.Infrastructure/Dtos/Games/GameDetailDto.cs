@@ -2,6 +2,6 @@
 {
 	public class GameDetailDto : GamePreviewDto
 	{
-		public string ConfigurationSchemaJson { get; set; }
+		public string ConfigurationSchema { get; set; }
 	}
 }

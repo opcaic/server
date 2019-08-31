@@ -3,11 +3,11 @@ using OPCAIC.ApiService.Configs;
 
 namespace OPCAIC.ApiService.Services
 {
-	internal class FrontendUrlGenerator : IFrontendUrlGenerator
+	internal class UrlGenerator : IFrontendUrlGenerator, IWorkerUrlGenerator
 	{
 		private readonly UrlGeneratorConfiguration config;
 
-		public FrontendUrlGenerator(IOptions<UrlGeneratorConfiguration> config)
+		public UrlGenerator(IOptions<UrlGeneratorConfiguration> config)
 		{
 			this.config = config.Value;
 		}
@@ -28,6 +28,12 @@ namespace OPCAIC.ApiService.Services
 		public string TournamentInviteUrl(long tournamentId)
 		{
 			return $"{config.FrontendUrl}/tournament/{tournamentId}";
+		}
+
+		/// <inheritdoc />
+		public string GenerateAdditionalFilesUrl(long tournamentId)
+		{
+			return $"api/tournaments/{tournamentId}/files";
 		}
 	}
 }
