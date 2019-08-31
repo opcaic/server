@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics;
-using System.Linq;
-using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Entities
 {

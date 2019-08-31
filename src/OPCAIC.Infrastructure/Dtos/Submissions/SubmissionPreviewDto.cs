@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
+﻿using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 
 namespace OPCAIC.Infrastructure.Dtos.Submissions

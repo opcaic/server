@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace OPCAIC.Infrastructure.Dtos.Submissions
+﻿namespace OPCAIC.Infrastructure.Dtos.Submissions
 {
 	public class NewSubmissionDto
 	{

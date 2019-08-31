@@ -1,6 +1,6 @@
 ﻿namespace OPCAIC.Infrastructure.Entities
 {
-	public class TournamentParticipant: Entity
+	public class TournamentParticipant : Entity
 	{
 		public long TournamentId { get; set; }
 

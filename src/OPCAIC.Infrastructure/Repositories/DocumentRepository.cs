@@ -28,7 +28,8 @@ namespace OPCAIC.Infrastructure.Repositories
 				.Select(d => new DocumentAuthDto
 				{
 					TournamentOwnerId = d.Tournament.OwnerId,
-					TournamentManagersIds = d.Tournament.Managers.Select(m => m.UserId).ToArray()
+					TournamentManagersIds =
+						d.Tournament.Managers.Select(m => m.UserId).ToArray()
 				})
 				.SingleOrDefaultAsync(cancellationToken);
 		}

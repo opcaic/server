@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -6,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Dtos.Games;
 using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Repositories
 {
@@ -14,6 +17,11 @@ namespace OPCAIC.Infrastructure.Repositories
 				UpdateGameDto>,
 			IGameRepository
 	{
+		public static readonly Expression<Func<Game, int>> ActiveTournamentsExpression
+			= g => g.Tournaments.Count(t
+				=> t.State == TournamentState.Published &&
+				(t.Deadline == null || t.Deadline > DateTime.Now));
+
 		/// <inheritdoc />
 		public GameRepository(DataContext context, IMapper mapper)
 			: base(context, mapper, QueryableExtensions.Filter)
@@ -27,7 +35,8 @@ namespace OPCAIC.Infrastructure.Repositories
 		}
 
 		/// <inheritdoc />
-		public Task<string> GetConfigurationSchemaAsync(long id, in CancellationToken cancellationToken)
+		public Task<string> GetConfigurationSchemaAsync(long id,
+			in CancellationToken cancellationToken)
 		{
 			return QueryById(id)
 				.Select(g => g.ConfigurationSchema)

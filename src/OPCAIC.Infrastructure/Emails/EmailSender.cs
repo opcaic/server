@@ -17,35 +17,40 @@ namespace OPCAIC.Infrastructure.Emails
 		private readonly IEmailRepository emailRepository;
 		private readonly ILogger logger;
 
-		public EmailSender(IOptions<EmailsConfiguration> options, IEmailRepository emailRepository, ILogger<EmailSender> logger)
+		public EmailSender(IOptions<EmailsConfiguration> options, IEmailRepository emailRepository,
+			ILogger<EmailSender> logger)
 		{
-			this.configuration = options.Value;
+			configuration = options.Value;
 			this.emailRepository = emailRepository;
 			this.logger = logger;
 		}
 
 		public async Task TickAsync(CancellationToken cancellationToken)
 		{
-			int totalSent = 0;
+			var totalSent = 0;
 			EmailPreviewDto[] emails;
 			do
 			{
 				emails = await emailRepository.GetEmailsToSendAsync(cancellationToken);
 				if (emails.Length == 0)
+				{
 					break;
+				}
 
 				using (var client = new SmtpClient())
 				{
 					try
 					{
-						await client.ConnectAsync(configuration.SmtpServerUrl, configuration.Port, configuration.UseSsl, cancellationToken);
-						await client.AuthenticateAsync(configuration.UserName, configuration.Password, cancellationToken);
+						await client.ConnectAsync(configuration.SmtpServerUrl, configuration.Port,
+							configuration.UseSsl, cancellationToken);
+						await client.AuthenticateAsync(configuration.UserName,
+							configuration.Password, cancellationToken);
 
-						logger.LogInformation($"Connection to SMTP server established.");
+						logger.LogInformation("Connection to SMTP server established.");
 					}
 					catch (Exception ex)
 					{
-						logger.LogError(ex, $"Establishing connection to SMTP server failed.");
+						logger.LogError(ex, "Establishing connection to SMTP server failed.");
 						return;
 					}
 
@@ -55,7 +60,7 @@ namespace OPCAIC.Infrastructure.Emails
 						{
 							var mail = new MimeMessage
 							{
-								Body = new TextPart { Text = email.Body },
+								Body = new TextPart {Text = email.Body},
 								Subject = email.Subject,
 								Sender = new MailboxAddress(configuration.SenderAddress)
 							};
@@ -63,22 +68,30 @@ namespace OPCAIC.Infrastructure.Emails
 
 							await client.SendAsync(mail, cancellationToken);
 
-							logger.LogInformation(LoggingEvents.MailSentSuccess, $"Email with id '{{{LoggingTags.MailId}}}' succesfully sent to '{{{LoggingTags.UserEmail}}}'", email.Id, email.RecipientEmail);
-							await emailRepository.UpdateResultAsync(email.Id, new EmailResultDto { SentAt = DateTime.Now }, cancellationToken);
+							logger.LogInformation(LoggingEvents.MailSentSuccess,
+								$"Email with id '{{{LoggingTags.MailId}}}' succesfully sent to '{{{LoggingTags.UserEmail}}}'",
+								email.Id, email.RecipientEmail);
+							await emailRepository.UpdateResultAsync(email.Id,
+								new EmailResultDto {SentAt = DateTime.Now}, cancellationToken);
 						}
 						catch (Exception ex)
 						{
-							var result = new EmailResultDto { RemainingAttempts = email.RemainingAttempts - 1 };
-							await emailRepository.UpdateResultAsync(email.Id, result, cancellationToken);
+							var result = new EmailResultDto
+							{
+								RemainingAttempts = email.RemainingAttempts - 1
+							};
+							await emailRepository.UpdateResultAsync(email.Id, result,
+								cancellationToken);
 
-							logger.LogWarning(LoggingEvents.MailSentFailed, ex, $"Sending email with id '{{{LoggingTags.MailId}}}' to user '{{{LoggingTags.UserEmail}}}' failed.", email.Id, email.RecipientEmail);
+							logger.LogWarning(LoggingEvents.MailSentFailed, ex,
+								$"Sending email with id '{{{LoggingTags.MailId}}}' to user '{{{LoggingTags.UserEmail}}}' failed.",
+								email.Id, email.RecipientEmail);
 						}
 					}
 				}
 
 				totalSent += emails.Length;
-			}
-			while (emails.Length > 0);
+			} while (emails.Length > 0);
 
 			if (totalSent > 0)
 			{

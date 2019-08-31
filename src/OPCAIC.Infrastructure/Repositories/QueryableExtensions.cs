@@ -149,12 +149,14 @@ namespace OPCAIC.Infrastructure.Repositories
 
 		#region TournamentParticipants
 
-		public static IQueryable<TournamentParticipant> Filter(this IQueryable<TournamentParticipant> query, TournamentParticipantFilterDto filter)
+		public static IQueryable<TournamentParticipant> Filter(
+			this IQueryable<TournamentParticipant> query, TournamentParticipantFilterDto filter)
 		{
 			return query.SortBy(filter.SortBy, filter.Asc);
 		}
 
-		private static IQueryable<TournamentParticipant> SortBy(this IQueryable<TournamentParticipant> query, string sortBy, bool asc)
+		private static IQueryable<TournamentParticipant> SortBy(
+			this IQueryable<TournamentParticipant> query, string sortBy, bool asc)
 		{
 			switch (sortBy)
 			{
@@ -223,7 +225,8 @@ namespace OPCAIC.Infrastructure.Repositories
 
 			if (filter.MatchId != null)
 			{
-				query = query.Where(row => row.Participations.Any(m => m.MatchId == filter.MatchId));
+				query = query.Where(row
+					=> row.Participations.Any(m => m.MatchId == filter.MatchId));
 			}
 
 			return query.SortBy(filter.SortBy, filter.Asc);

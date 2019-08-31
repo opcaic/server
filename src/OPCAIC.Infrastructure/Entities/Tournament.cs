@@ -15,7 +15,7 @@ namespace OPCAIC.Infrastructure.Entities
 		///     Id of the owner of the tournament.
 		/// </summary>
 		public long OwnerId { get; set; }
-		
+
 		/// <summary>
 		///     Owner of the tournament.
 		/// </summary>
@@ -91,22 +91,42 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     When the tournament was published on the website.
 		/// </summary>
-		public DateTime Published { get; set; }
+		public DateTime? Published { get; set; }
 
 		/// <summary>
-		///     When the tournament's evaluation started (or will start in case of deadline tournaments).
+		///     When the tournament's evaluation started.
 		/// </summary>
-		public DateTime EvaluationStarted { get; set; }
+		public DateTime? EvaluationStarted { get; set; }
 
 		/// <summary>
 		///     When the evaluation finished.
 		/// </summary>
-		public DateTime EvaluationFinished { get; set; }
+		public DateTime? EvaluationFinished { get; set; }
 
 		/// <summary>
-		///		Participants of tournament.
+		///     When is the deadline of the tournament.
+		/// </summary>
+		public DateTime? Deadline { get; set; }
+
+		/// <summary>
+		///     Participants of tournament.
 		/// </summary>
 		public virtual ICollection<TournamentParticipant> Participants { get; set; }
+
+		/// <summary>
+		///     Image url that is used both in tournament list and tournament detail.
+		/// </summary>
+		public string ImageUrl { get; set; }
+
+		/// <summary>
+		///     Opacity of a black layer that is used over tournament's image in the detail.
+		/// </summary>
+		public double? ImageOverlay { get; set; }
+
+		/// <summary>
+		///     Theme color of the tournament.
+		/// </summary>
+		public string ThemeColor { get; set; }
 	}
 
 	public class TournamentManager

@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Dtos.Documents;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
+﻿using OPCAIC.Infrastructure.Dtos.Documents;
 
 namespace OPCAIC.Infrastructure.Repositories
 {

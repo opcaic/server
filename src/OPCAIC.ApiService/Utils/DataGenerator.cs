@@ -24,10 +24,46 @@ namespace OPCAIC.ApiService.Utils
 				}
 
 				context.Set<Game>().AddRange(
-					new Game { Name = "Chess", Key = "chess", ConfigurationSchema = "{}" },
-					new Game { Name = "2048", Key = "2048", ConfigurationSchema = "{}" },
-					new Game { Name = "Dota", Key = "dota", ConfigurationSchema = "{}" },
-					new Game { Name = "Tic-Tac-Toe", Key = "tic-tac-toe", ConfigurationSchema = "{}" }
+					new Game
+					{
+						Name = "Chess",
+						Created = DateTime.Now,
+                        ImageUrl = "https://images.chesscomfiles.com/uploads/v1/article/17623.87bb05cd.668x375o.47d81802f1eb@2x.jpeg",
+                        DefaultTournamentImageOverlay = 0.7f,
+                        DefaultTournamentImage = "https://images.chesscomfiles.com/uploads/v1/article/17623.87bb05cd.668x375o.47d81802f1eb@2x.jpeg",
+                        DefaultTournamentThemeColor = "#491e01",
+						ConfigurationSchema = "{}",
+					},
+					new Game
+					{
+						Name = "2048",
+						Created = DateTime.Now,
+						ImageUrl = "https://upload.wikimedia.org/wikipedia/commons/6/64/2048_Screenshot.png",
+						DefaultTournamentImageOverlay = 0.7f,
+						DefaultTournamentImage = "https://upload.wikimedia.org/wikipedia/commons/6/64/2048_Screenshot.png",
+						DefaultTournamentThemeColor = "#f67c5f",
+						ConfigurationSchema = "{}",
+					},
+					new Game
+					{
+						Name = "Dota 2",
+						Created = DateTime.Now,
+						ImageUrl = "https://wallpapercave.com/wp/V8Ee1Bm.jpg",
+						DefaultTournamentImageOverlay = 0.2f,
+						DefaultTournamentImage = "https://wallpapercave.com/wp/V8Ee1Bm.jpg",
+						DefaultTournamentThemeColor = "#2d0f0a",
+						ConfigurationSchema = "{}",
+					},
+					new Game
+					{
+						Name = "Super Mario Bros.",
+						Created = DateTime.Now,
+						ImageUrl = "https://cdn02.nintendo-europe.com/media/images/10_share_images/games_15/nintendo_ds_22/SI_NDS_NewSuperMarioBrosDS_image1600w.jpg",
+						DefaultTournamentImageOverlay = 0.6f,
+						DefaultTournamentImage = "https://cdn02.nintendo-europe.com/media/images/10_share_images/games_15/nintendo_ds_22/SI_NDS_NewSuperMarioBrosDS_image1600w.jpg",
+						DefaultTournamentThemeColor = "#db0522",
+						ConfigurationSchema = "{}",
+					}
 				);
 
 				context.SaveChanges();
@@ -42,8 +78,9 @@ namespace OPCAIC.ApiService.Utils
 						Format = TournamentFormat.Elo,
 						RankingStrategy = TournamentRankingStrategy.Maximum,
 						Scope = TournamentScope.Ongoing,
-						Availability = TournamentAvailability.Public,
-						Configuration = "{}"
+						Availability = TournamentAvailability.Private,
+						State = TournamentState.Published,
+						Configuration = "{}",
 					},
 					new Tournament
 					{
@@ -54,32 +91,50 @@ namespace OPCAIC.ApiService.Utils
 						Format = TournamentFormat.SinglePlayer,
 						RankingStrategy = TournamentRankingStrategy.Maximum,
 						Scope = TournamentScope.Ongoing,
-						Availability = TournamentAvailability.Public,
-						Configuration = "{}"
+						Availability = TournamentAvailability.Private,
+						State = TournamentState.Published,
+						Configuration = "{}",
 					},
 					new Tournament
 					{
 						Name = "Summer Dota single elimination",
-						Game = context.Set<Game>().Single(x => x.Name == "Dota"),
-						GameId = context.Set<Game>().Single(x => x.Name == "Dota").Id,
+						Game = context.Set<Game>().Single(x => x.Name == "Dota 2"),
+						GameId = context.Set<Game>().Single(x => x.Name == "Dota 2").Id,
 						Created = DateTime.Now,
 						Format = TournamentFormat.SingleElimination,
 						RankingStrategy = TournamentRankingStrategy.Maximum,
 						Scope = TournamentScope.Deadline,
+						Deadline = DateTime.Now.AddDays(6),
 						Availability = TournamentAvailability.Public,
-						Configuration = "{}"
+						State = TournamentState.Published,
+						Configuration = "{}",
 					},
 					new Tournament
 					{
 						Name = "Ongoing Dota ELO",
-						Game = context.Set<Game>().Single(x => x.Name == "Dota"),
-						GameId = context.Set<Game>().Single(x => x.Name == "Dota").Id,
+						Game = context.Set<Game>().Single(x => x.Name == "Dota 2"),
+						GameId = context.Set<Game>().Single(x => x.Name == "Dota 2").Id,
 						Created = DateTime.Now,
 						Format = TournamentFormat.Elo,
 						RankingStrategy = TournamentRankingStrategy.Maximum,
 						Scope = TournamentScope.Ongoing,
 						Availability = TournamentAvailability.Public,
-						Configuration = "{}"
+						State = TournamentState.Published,
+						Configuration = "{}",
+					},
+					new Tournament
+					{
+						Name = "Super Mario Bros.",
+						Game = context.Set<Game>().Single(x => x.Name == "Super Mario Bros."),
+						GameId = context.Set<Game>().Single(x => x.Name == "Super Mario Bros.").Id,
+						Created = DateTime.Now,
+						Format = TournamentFormat.SinglePlayer,
+						RankingStrategy = TournamentRankingStrategy.Maximum,
+						Scope = TournamentScope.Deadline,
+						Deadline = DateTime.Now.AddDays(17),
+						Availability = TournamentAvailability.Public,
+						State = TournamentState.Published,
+						Configuration = "{}",
 					}
 				);
 
@@ -176,6 +231,25 @@ namespace OPCAIC.ApiService.Utils
 					new Submission
 					{
 						Author = context.Set<User>()
+							.Single(x => x.UserName == "admin"),
+						Created = DateTime.Now,
+						Participations = new List<SubmissionParticipation>(),
+						Tournament = context.Set<Tournament>()
+							.Single(x => x.Name == "Chess ELO tournament"),
+						IsActive = true,
+					},
+					new Submission
+					{
+						Author = context.Set<User>()
+							.Single(x => x.UserName == "admin"),
+						Created = DateTime.Now,
+						Participations = new List<SubmissionParticipation>(),
+						Tournament = context.Set<Tournament>()
+							.Single(x => x.Name == "Chess ELO tournament")
+					},
+					new Submission
+					{
+						Author = context.Set<User>()
 							.Single(x => x.UserName == "organizer"),
 						Created = DateTime.Now,
 						Participations = new List<SubmissionParticipation>(),
@@ -192,7 +266,7 @@ namespace OPCAIC.ApiService.Utils
 							new SubmissionMatchResult
 							{
 								Submission =
-									context.Set<Submission>().Single(s
+									context.Set<Submission>().First(s
 										=> s.Author.UserName == "admin"),
 								Score = -1.0,
 								AdditionalDataJson =
@@ -201,7 +275,7 @@ namespace OPCAIC.ApiService.Utils
 							new SubmissionMatchResult
 							{
 								Submission =
-									context.Set<Submission>().Single(s
+									context.Set<Submission>().First(s
 										=> s.Author.UserName ==
 										"organizer"),
 								Score = 1.0,
@@ -217,7 +291,7 @@ namespace OPCAIC.ApiService.Utils
 							new SubmissionMatchResult
 							{
 								Submission =
-									context.Set<Submission>().Single(s
+									context.Set<Submission>().First(s
 										=> s.Author.UserName == "admin"),
 								Score = 1.0,
 								AdditionalDataJson =
@@ -226,7 +300,7 @@ namespace OPCAIC.ApiService.Utils
 							new SubmissionMatchResult
 							{
 								Submission =
-									context.Set<Submission>().Single(s
+									context.Set<Submission>().First(s
 										=> s.Author.UserName ==
 										"organizer"),
 								Score = -1.0,
@@ -249,12 +323,12 @@ namespace OPCAIC.ApiService.Utils
 								new SubmissionParticipation
 								{
 									Submission = context.Set<Submission>()
-										.Single(s => s.Author.UserName == "admin")
+										.First(s => s.Author.UserName == "admin")
 								},
 								new SubmissionParticipation
 								{
 									Submission = context.Set<Submission>()
-										.Single(s => s.Author.UserName == "organizer")
+										.First(s => s.Author.UserName == "organizer")
 								}
 							},
 						Executions = new List<MatchExecution>
@@ -275,17 +349,17 @@ namespace OPCAIC.ApiService.Utils
 								new SubmissionParticipation
 								{
 									Submission = context.Set<Submission>()
-										.Single(s => s.Author.UserName == "admin")
+										.First(s => s.Author.UserName == "admin")
 								},
 								new SubmissionParticipation
 								{
 									Submission = context.Set<Submission>()
-										.Single(s => s.Author.UserName == "organizer")
+										.First(s => s.Author.UserName == "organizer")
 								}
 							},
 						Executions = new List<MatchExecution>
 						{
-							context.Set<MatchExecution>().Single(me
+							context.Set<MatchExecution>().First(me
 								=> me.BotResults.All(br
 									=> br.AdditionalDataJson ==
 									"{message = \"Organizer won\"}"))

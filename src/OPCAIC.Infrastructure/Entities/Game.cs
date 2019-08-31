@@ -44,6 +44,26 @@ namespace OPCAIC.Infrastructure.Entities
 		/// </summary>
 		public GameType GameType { get; set; }
 
+		/// <summary>
+		///     Image url that is used in game list.
+		/// </summary>
+		public string ImageUrl { get; set; }
+
+		/// <summary>
+		///     Default image URL that is used both in tournament list and tournament detail.
+		/// </summary>
+		public string DefaultTournamentImage { get; set; }
+
+		/// <summary>
+		///     Default opacity of a black layer that is used over tournament's image in the detail.
+		/// </summary>
+		public float? DefaultTournamentImageOverlay { get; set; }
+
+		/// <summary>
+		///     Default tournament theme color of the tournament.
+		/// </summary>
+		public string DefaultTournamentThemeColor { get; set; }
+
 		internal static void OnModelCreating(EntityTypeBuilder<Game> builder)
 		{
 			builder.HasIndex(g => g.Name).IsUnique();

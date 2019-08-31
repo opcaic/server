@@ -4,7 +4,7 @@ namespace OPCAIC.Infrastructure.Repositories
 {
 	public interface ITournamentRepository
 		: IGenericRepository<TournamentFilterDto, TournamentPreviewDto, TournamentDetailDto,
-			NewTournamentDto, UpdateTournamentDto>,
+				NewTournamentDto, UpdateTournamentDto>,
 			IAuthDataRepository<TournamentAuthDto>
 	{
 	}

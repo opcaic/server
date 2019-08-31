@@ -8,7 +8,8 @@ using OPCAIC.Infrastructure.Entities;
 namespace OPCAIC.Infrastructure.Repositories
 {
 	public interface IMatchRepository
-		: ILookupRepository<MatchDetailDto>, IFilterRepository<MatchFilterDto, MatchDetailDto>,
+		: ILookupRepository<MatchDetailDto>,
+			IFilterRepository<MatchFilterDto, MatchDetailDto>,
 			IAuthDataRepository<MatchAuthDto>
 	{
 		/// <summary>

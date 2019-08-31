@@ -1,6 +1,4 @@
-﻿using OPCAIC.Infrastructure.Dtos.Matches;
-
-namespace OPCAIC.Infrastructure.Dtos.Submissions
+﻿namespace OPCAIC.Infrastructure.Dtos.Submissions
 {
 	public class SubmissionMatchResultDto
 	{

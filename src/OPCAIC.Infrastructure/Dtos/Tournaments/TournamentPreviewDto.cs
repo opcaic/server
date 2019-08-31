@@ -19,5 +19,19 @@ namespace OPCAIC.Infrastructure.Dtos.Tournaments
 		public TournamentRankingStrategy RankingStrategy { get; set; }
 
 		public DateTime Created { get; set; }
+
+		public int PlayersCount { get; set; }
+
+		public int SubmissionsCount { get; set; }
+
+		public string ImageUrl { get; set; }
+
+		public double? ImageOverlay { get; set; }
+
+		public string ThemeColor { get; set; }
+
+		public DateTime? Deadline { get; set; }
+
+		public TournamentAvailability Availability { get; set; }
 	}
 }

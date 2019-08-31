@@ -25,6 +25,7 @@ using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.ApiService
@@ -129,13 +130,12 @@ namespace OPCAIC.ApiService
 					opt => opt.MapFrom(u => u.EmailConfirmed));
 
 			exp.CreateMap<User, EmailRecipientDto>(MemberList.Destination);
-			exp.CreateMap<User, UserDetailModel>(MemberList.Destination)
-				.ForMember(u => u.EmailVerified,
-					opt => opt.MapFrom(u => u.EmailConfirmed))
-				.ForMember(usr => usr.UserRole,
-					opt => opt.MapFrom(usr => usr.RoleId));
 
-			exp.CreateMap<UserPreviewDto, UserPreviewModel>(MemberList.Destination);
+			exp.CreateMap<User, UserDetailModel>(MemberList.Destination)
+				.ForMember(usr => usr.UserRole,
+					opt => opt.MapFrom(usr => usr.RoleId))
+				.ForMember(u => u.EmailVerified,
+					opt => opt.MapFrom(u => u.EmailConfirmed));
 
 			exp.CreateMap<UserProfileModel, UserProfileDto, User>(MemberList.Source);
 			exp.CreateMap<UserFilterModel, UserFilterDto>(MemberList.Source);
@@ -146,9 +146,18 @@ namespace OPCAIC.ApiService
 		private static void AddGameMapping(this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap<NewGameModel, NewGameDto, Game>(MemberList.Source);
-			exp.CreateMap<Game, GameDetailDto, GameDetailModel>(MemberList.Destination);
 
-			exp.CreateMap<Game, GamePreviewDto, GamePreviewModel>(MemberList.Destination);
+			exp.CreateMap<Game, GameDetailDto>(MemberList.Destination)
+				.IncludeBase<Game, GamePreviewDto>();
+
+			exp.CreateMap<GameDetailDto, GameDetailModel>(MemberList.Destination);
+
+			exp.CreateMap<Game, GamePreviewDto>(MemberList.Destination)
+				.ForMember(d => d.ActiveTournamentsCount,
+					opt => opt.MapFrom(GameRepository.ActiveTournamentsExpression));
+
+			exp.CreateMap<GamePreviewDto, GamePreviewModel>(MemberList.Destination);
+
 			exp.CreateMap<Game, GameReferenceDto, GameReferenceModel>(MemberList.Destination);
 			exp.CreateMap<UpdateGameModel, UpdateGameDto, Game>(MemberList.Source);
 
@@ -163,10 +172,30 @@ namespace OPCAIC.ApiService
 				.ForMember(d => d.ManagerIds,
 					opt => opt.MapFrom(s => s.Managers.Select(m => m.UserId)));
 
-			exp.CreateMap<Tournament, TournamentDetailDto, TournamentDetailModel>(MemberList
+			exp.CreateMap<Tournament, TournamentDetailDto>(MemberList.Destination)
+				.IncludeBase<Tournament, TournamentPreviewDto>();
+
+			exp.CreateMap<TournamentDetailDto, TournamentDetailModel>(MemberList
 				.Destination);
-			exp.CreateMap<Tournament, TournamentPreviewDto, TournamentPreviewModel>(MemberList
+
+			exp.CreateMap<Tournament, TournamentPreviewDto>(MemberList
+				.Destination)
+				.ForMember(d => d.PlayersCount,
+					opt => opt.MapFrom(s
+						=> s.Submissions.Select(x => x.Author.Id).Distinct().Count()))
+				.ForMember(d => d.ImageUrl,
+					opt => opt.MapFrom(s
+						=> s.ImageUrl ?? s.Game.DefaultTournamentImage))
+				.ForMember(d => d.ImageOverlay,
+					opt => opt.MapFrom(s
+						=> s.ImageOverlay ?? s.Game.DefaultTournamentImageOverlay))
+				.ForMember(d => d.ThemeColor,
+					opt => opt.MapFrom(s
+						=> s.ThemeColor ?? s.Game.DefaultTournamentThemeColor));
+
+			exp.CreateMap<TournamentPreviewDto, TournamentPreviewModel>(MemberList
 				.Destination);
+
 			exp.CreateMap<Tournament, TournamentReferenceDto, TournamentReferenceModel>(MemberList
 				.Destination);
 			exp.CreateMap<UpdateTournamentModel, UpdateTournamentDto, Tournament>(MemberList

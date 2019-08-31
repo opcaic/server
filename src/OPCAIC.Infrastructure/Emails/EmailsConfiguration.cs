@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OPCAIC.Infrastructure.Emails
+﻿namespace OPCAIC.Infrastructure.Emails
 {
 	public class EmailsConfiguration
 	{

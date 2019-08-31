@@ -143,7 +143,7 @@ namespace OPCAIC.Infrastructure.Repositories
 		/// <returns></returns>
 		public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
 		{
-			var entity = await DbSet.SingleOrDefaultAsync(e => e.Id == id, cancellationToken: cancellationToken);
+			var entity = await DbSet.SingleOrDefaultAsync(e => e.Id == id, cancellationToken);
 			if (entity == null)
 			{
 				return false;
