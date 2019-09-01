@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\test\GameModuleMock\GameModuleMock.csproj" />
+    <ProjectReference Include="..\..\test\OPCAIC.Worker.Test\OPCAIC.Worker.Test.csproj" />
     <ProjectReference Include="..\OPCAIC.Broker\OPCAIC.Broker.csproj" />
     <ProjectReference Include="..\OPCAIC.Messaging\OPCAIC.Messaging.csproj" />
     <ProjectReference Include="..\OPCAIC.Utils\OPCAIC.Utils.csproj" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using Newtonsoft.Json;
@@ -19,6 +20,7 @@ using OPCAIC.Infrastructure.Dtos.Emails;
 using OPCAIC.Infrastructure.Dtos.EmailTemplates;
 using OPCAIC.Infrastructure.Dtos.Games;
 using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Infrastructure.Dtos.MatchExecutions;
 using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
@@ -42,6 +44,7 @@ namespace OPCAIC.ApiService
 				exp.AddSubmissionValidationMapping();
 				exp.AddDocumentMapping();
 				exp.AddMatchMapping();
+				exp.AddMatchExecutionMapping();
 				exp.AddEmailMapping();
 				exp.AddEmailTemplateMapping();
 				exp.AddGameMapping();
@@ -61,6 +64,7 @@ namespace OPCAIC.ApiService
 		{
 			exp.CreateMap(typeof(ListDto<>), typeof(ListModel<>), MemberList.Destination);
 
+			exp.CreateMap<Dictionary<string, object>, string>().ConvertUsing(d => JsonConvert.SerializeObject(d));
 			exp.CreateMap<JObject, string>().ConvertUsing(j => JsonConvert.SerializeObject(j));
 			exp.CreateMap<string, JObject>().ConvertUsing(j => JObject.Parse(j));
 			exp.CreateMap<SubTaskResult, EntryPointResult>()
@@ -265,12 +269,25 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<MatchDetailDto, MatchDetailModel>(MemberList.Destination);
 			exp.CreateMap<Match, MatchReferenceDto, MatchReferenceModel>(MemberList.Destination);
+		}
+
+		private static void AddMatchExecutionMapping(this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<NewMatchExecutionDto, MatchExecution>(MemberList.Source);
+			exp.CreateMap<MatchExecution, MatchExecutionAuthDto>(MemberList.Destination);
+			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>(MemberList.Destination);
+
 			exp.CreateMap<MatchExecution, MatchExecutionDto, MatchExecutionModel>(MemberList
 				.Destination);
 			exp.CreateMap<SubmissionMatchResult, SubmissionMatchResultDto,
 				SubmissionMatchResultModel>(MemberList.Destination);
+			exp.CreateMap<MatchExecutionResult, UpdateMatchExecutionDto>()
+				.ForMember(d => d.State, opt => opt.MapFrom(r => r.JobStatus))
+				.ForMember(d => d.Executed, opt => opt.Ignore());
+			exp.CreateMap<BotResult, NewSubmissionMatchResultDto>(MemberList.Source);
 
-			exp.CreateMap<MatchExecution, MatchExecutionStorageDto>(MemberList.Destination);
+			exp.CreateMap<NewSubmissionMatchResultDto, SubmissionMatchResult>(MemberList.Source);
+			exp.CreateMap<UpdateMatchExecutionDto, MatchExecution>(MemberList.Source);
 		}
 
 		private static void AddBrokerMapping(this IMapperConfigurationExpression exp)

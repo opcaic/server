@@ -20,25 +20,25 @@ namespace OPCAIC.ApiService.Controllers
 	{
 		private readonly IAuthorizationService authorizationService;
 		private readonly IStorageService storage;
-		private readonly ISubmissionValidationRepository validationRepository;
+		private readonly ISubmissionValidationRepository repository;
 
 		/// <inheritdoc />
 		public ValidationController(IAuthorizationService authorizationService,
-			ISubmissionValidationRepository validationRepository, IStorageService storage)
+			ISubmissionValidationRepository repository, IStorageService storage)
 		{
 			this.authorizationService = authorizationService;
-			this.validationRepository = validationRepository;
+			this.repository = repository;
 			this.storage = storage;
 		}
 
 		/// <summary>
 		///     Uploads zip archived results of a submission validation.
 		/// </summary>
-		/// <param name="id">Id of the match execution.</param>
+		/// <param name="id">Id of the submission validation.</param>
 		/// <param name="archive">Zip archive with the results.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		[HttpPost("{id}")]
+		[HttpPost("{id}/result")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -47,20 +47,50 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UploadResult(long id, [ApiRequired] IFormFile archive,
 			CancellationToken cancellationToken)
 		{
+			await authorizationService.CheckPermissions(User, id,
+				SubmissionValidationPermission.UploadResult);
+
 			if (Path.GetExtension(archive.FileName) != ".zip")
 			{
 				throw new BadRequestException(ValidationErrorCodes.UploadNotZip, null,
 					nameof(archive));
 			}
 
-			await authorizationService.CheckPermissions(User, id,
-				SubmissionValidationPermission.UploadResult);
-
-			var storageDto = await validationRepository.FindStorageAsync(id, cancellationToken);
+			var storageDto = await repository.FindStorageAsync(id, cancellationToken);
 			using (var stream = storage.WriteSubmissionValidationResultArchive(storageDto))
 			{
 				await archive.CopyToAsync(stream, cancellationToken);
 			}
+		}
+
+		/// <summary>
+		///     Downloads zip archived results of a submission validation.
+		/// </summary>
+		/// <param name="id">Id of the submission validation.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		[HttpGet("{id}/result")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<IActionResult> DownloadResult(long id,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, id,
+				SubmissionValidationPermission.DownloadResult);
+
+			var storageDto = await repository.FindStorageAsync(id, cancellationToken);
+
+			var stream = storage.ReadSubmissionValidationResultArchive(storageDto);
+			if (stream == null)
+			{
+				// no results yet
+				return NotFound();
+			}
+
+			return File(stream, Constants.GzipMimeType);
 		}
 	}
 }

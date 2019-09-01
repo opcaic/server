@@ -15,6 +15,7 @@ using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker.Config;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
+using OPCAIC.Worker.Test;
 
 namespace OPCAIC.Broker.Runner
 {

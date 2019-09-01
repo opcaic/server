@@ -3,39 +3,27 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OPCAIC.Broker;
-using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Messaging.Messages;
+using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService.Services
 {
 	public class BrokerReactor : IHostedService
 	{
-		private readonly IBroker broker;
 		private readonly IServiceProvider serviceProvider;
+		private readonly ILogger<BrokerReactor> logger;
 
-		public BrokerReactor(IBroker broker, IServiceProvider serviceProvider)
+		public BrokerReactor(IBroker broker, IServiceProvider serviceProvider, ILogger<BrokerReactor> logger)
 		{
-			this.broker = broker;
 			this.serviceProvider = serviceProvider;
+			this.logger = logger;
 
-			broker.RegisterHandler<MatchExecutionResult>(msg => Task.Run(() => OnMatchExecuted(msg)));
-			broker.RegisterHandler<SubmissionValidationResult>(msg => Task.Run(() => OnSubmissionValidated(msg)));
-		}
-
-		private Task OnMatchExecuted(MatchExecutionResult result)
-		{
-			// TODO
-			return Task.CompletedTask;
-		}
-
-		private async Task OnSubmissionValidated(SubmissionValidationResult result)
-		{
-			using (var scope = serviceProvider.CreateScope())
-			{
-				var validationService = scope.ServiceProvider.GetRequiredService<ISubmissionValidationService>();
-				await validationService.UpdateFromMessage(result);
-			}
+			broker.RegisterHandler<MatchExecutionResult>(
+				msg => Task.Run(() => ScopeExecute(sp => OnMatchExecuted(sp, msg))));
+			broker.RegisterHandler<SubmissionValidationResult>(
+				msg => Task.Run(() => ScopeExecute(sp => OnSubmissionValidated(sp, msg))));
 		}
 
 
@@ -49,6 +37,47 @@ namespace OPCAIC.ApiService.Services
 		public Task StopAsync(CancellationToken cancellationToken)
 		{
 			return Task.CompletedTask;
+		}
+
+		private async Task ScopeExecute(Func<IServiceProvider, Task> action)
+		{
+			var scope = serviceProvider.CreateScope();
+			try
+			{
+				await action(scope.ServiceProvider);
+			}
+			catch (Exception e) when (Log(e))
+			{ 
+				// already logged in Log(e)
+			}
+			finally
+			{
+				scope.Dispose();
+			}
+		}
+
+		private bool Log(Exception e)
+		{
+			logger.LogCritical(e, e.Message);
+			return true;
+		}
+
+		private async Task OnMatchExecuted(IServiceProvider services, MatchExecutionResult result)
+		{
+			using (logger.BeginScope((LoggingTags.JobId, result.JobId)))
+			{
+				var executionService = services.GetRequiredService<IMatchExecutionService>();
+				await executionService.UpdateFromMessage(result);
+			}
+		}
+
+		private async Task OnSubmissionValidated(IServiceProvider services, SubmissionValidationResult result)
+		{
+			using (logger.BeginScope((LoggingTags.JobId, result.JobId)))
+			{
+				var validationService = services.GetRequiredService<ISubmissionValidationService>();
+				await validationService.UpdateFromMessage(result);
+			}
 		}
 	}
 }

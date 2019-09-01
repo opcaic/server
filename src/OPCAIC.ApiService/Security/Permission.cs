@@ -56,7 +56,8 @@
 
 	public enum SubmissionValidationPermission
 	{
-		UploadResult
+		UploadResult,
+		DownloadResult,
 	}
 
 	public enum MatchPermission

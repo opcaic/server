@@ -47,9 +47,9 @@ namespace OPCAIC.Worker.Services
 
 			Logger.LogInformation("Executing the match.");
 			ExecutorResult result;
-			(Response.ExecutionResult, result) = await Execute(Submissions);
+			(Response.ExecutorResult, result) = await Execute(Submissions);
 
-			if (Response.ExecutionResult < SubTaskResult.Aborted)
+			if (Response.ExecutorResult < SubTaskResult.Aborted)
 			{
 				Debug.Assert(result != null);
 
@@ -61,13 +61,14 @@ namespace OPCAIC.Worker.Services
 				{
 					var botResult = matchResult.Results[i];
 
+					Response.BotResults[i].SubmissionId = Submissions[i].SubmissionId;
 					Response.BotResults[i].Score = botResult.Score;
 					Response.BotResults[i].AdditionalData = botResult.AdditionalInfo;
 					Response.BotResults[i].Crashed = botResult.HasCrashed;
 				}
 			}
 
-			Response.JobStatus = SelectJobStatus(Response.ExecutionResult, true);
+			Response.JobStatus = SelectJobStatus(Response.ExecutorResult, true);
 		}
 
 		private void PrepareResponse()
@@ -99,7 +100,7 @@ namespace OPCAIC.Worker.Services
 
 			var status = await Compile(sub);
 
-			Response.BotResults[sub.BotInfo.Index].CompilationResult = status;
+			Response.BotResults[sub.BotInfo.Index].CompilerResult = status;
 
 			return status;
 		}

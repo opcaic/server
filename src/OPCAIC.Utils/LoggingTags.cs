@@ -26,6 +26,7 @@
 		public const string JobType = "JobType";
 
 		public const string SubmissionId = "SubmissionId";
+		public const string MatchId = "MatchId";
 		public const string ExecutionId = "ExecutionId";
 		public const string ValidationId = "ValidationId";
 		public const string TournamentId = "TournamentId";

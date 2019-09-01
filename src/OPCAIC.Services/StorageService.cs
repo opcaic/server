@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.Extensions.Options;
 using OPCAIC.Infrastructure.Dtos;
+using OPCAIC.Infrastructure.Dtos.MatchExecutions;
+using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Utils;
 

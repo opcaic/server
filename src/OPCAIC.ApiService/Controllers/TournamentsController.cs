@@ -36,6 +36,9 @@ namespace OPCAIC.ApiService.Controllers
 		///     Returns lists of tournaments
 		/// </summary>
 		/// <returns>array of all tournaments</returns>
+		/// <response code="200">Tournament data found.</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to this action.</response>
 		[HttpGet]
 		[ProducesResponseType(typeof(ListModel<TournamentPreviewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -119,7 +122,10 @@ namespace OPCAIC.ApiService.Controllers
 		/// </summary>
 		/// <param name="id">Id of the tournament.</param>
 		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
+		/// <response code="200">Additional files found.</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to this action.</response>
+		/// <response code="404">Tournament not found or has no additional files.</response>
 		[HttpGet("{id}/files")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -147,7 +153,10 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="id">Id of the tournament.</param>
 		/// <param name="archive">Archive containing the additional files.</param>
 		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
+		/// <response code="200">Successfully uploaded.</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to this action.</response>
+		/// <response code="404">Tournament not found.</response>
 		[HttpPost("{id}/files")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]

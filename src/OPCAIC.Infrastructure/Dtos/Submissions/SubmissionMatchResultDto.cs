@@ -4,6 +4,6 @@
 	{
 		public SubmissionReferenceDto Submission { get; set; }
 		public double Score { get; set; }
-		public string AdditionalDataJson { get; set; }
+		public string AdditionalData { get; set; }
 	}
 }

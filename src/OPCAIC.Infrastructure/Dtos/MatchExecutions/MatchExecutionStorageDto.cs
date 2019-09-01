@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Dtos
+﻿namespace OPCAIC.Infrastructure.Dtos.MatchExecutions
 {
 	public class MatchExecutionStorageDto
 	{

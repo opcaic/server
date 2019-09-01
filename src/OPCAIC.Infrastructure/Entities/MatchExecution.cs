@@ -32,7 +32,7 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Additional key-value data for this match provided by the game module. Serialized as a JSON object.
 		/// </summary>
-		public string AdditionalDataJson { get; set; }
+		public string AdditionalData { get; set; }
 
 		/// <inheritdoc />
 		public Guid JobId { get; set; }

@@ -27,6 +27,7 @@ namespace OPCAIC.ApiService.IoC
 				.AddSingleton<IModelValidationService, ModelValidationService>()
 				.AddScoped<IMatchService, MatchService>()
 				.AddScoped<ISubmissionValidationService, SubmissionValidationService>()
+				.AddScoped<IMatchExecutionService, MatchExecutionService>()
 				.AddScoped<IWorkerService, WorkerService>()
 				.AddScoped<IBrokerService, BrokerService>();
 		}

@@ -39,8 +39,13 @@ namespace OPCAIC.Infrastructure.Entities
 		public double Score { get; set; }
 
 		/// <summary>
+		///     Flag whether the submission misbehaved (invalid input or runtime crash).
+		/// </summary>
+		public bool Crashed { get; set; }
+
+		/// <summary>
 		///     Additional key-value data received from the game module serialized as JSON object.
 		/// </summary>
-		public string AdditionalDataJson { get; set; }
+		public string AdditionalData { get; set; }
 	}
 }

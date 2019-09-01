@@ -1,4 +1,5 @@
-﻿using OPCAIC.ApiService.Models.Matches;
+﻿using Newtonsoft.Json.Linq;
+using OPCAIC.ApiService.Models.Matches;
 
 namespace OPCAIC.ApiService.Models.Submissions
 {
@@ -6,6 +7,6 @@ namespace OPCAIC.ApiService.Models.Submissions
 	{
 		public SubmissionReferenceModel Submission { get; set; }
 		public double Score { get; set; }
-		public string AdditionalDataJson { get; set; }
+		public JObject AdditionalData{ get; set; }
 	}
 }

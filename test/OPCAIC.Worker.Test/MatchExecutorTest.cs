@@ -56,7 +56,7 @@ namespace OPCAIC.Worker.Test
 		private static void AssertResultSuccess(MatchExecutionResult result)
 		{
 			Assert.Equal(JobStatus.Ok, result.JobStatus);
-			Assert.Equal(SubTaskResult.Ok, result.ExecutionResult);
+			Assert.Equal(SubTaskResult.Ok, result.ExecutorResult);
 			Assert.NotNull(result.AdditionalData);
 			Assert.NotNull(result.BotResults);
 		}
@@ -69,7 +69,7 @@ namespace OPCAIC.Worker.Test
 				Assert.NotNull(botResult);
 				Assert.NotNull(botResult.AdditionalData);
 				Assert.False(botResult.Crashed);
-				Assert.Equal(result, botResult.CompilationResult);
+				Assert.Equal(result, botResult.CompilerResult);
 			};
 		}
 
@@ -83,7 +83,7 @@ namespace OPCAIC.Worker.Test
 			var result = await MatchExecutor.ExecuteAsync(Request);
 
 			Assert.Equal(JobStatus.Timeout, result.JobStatus);
-			Assert.Equal(SubTaskResult.Unknown, result.ExecutionResult);
+			Assert.Equal(SubTaskResult.Unknown, result.ExecutorResult);
 
 			Assert.Collection(result.BotResults,
 				AssertBotResult(SubTaskResult.Ok),
@@ -117,7 +117,7 @@ namespace OPCAIC.Worker.Test
 			Assert.Equal(JobStatus.Error, result.JobStatus);
 
 			// was not executed
-			Assert.Equal(SubTaskResult.Unknown, result.ExecutionResult);
+			Assert.Equal(SubTaskResult.Unknown, result.ExecutorResult);
 
 			Assert.Collection(result.BotResults,
 				AssertBotResult(SubTaskResult.Ok),
@@ -137,7 +137,7 @@ namespace OPCAIC.Worker.Test
 			Assert.All(result.BotResults, AssertBotResult(SubTaskResult.Ok));
 
 			Assert.Equal(JobStatus.Error, result.JobStatus);
-			Assert.Equal(SubTaskResult.ModuleError, result.ExecutionResult);
+			Assert.Equal(SubTaskResult.ModuleError, result.ExecutorResult);
 		}
 	}
 }

@@ -10,6 +10,7 @@ using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 using OPCAIC.ApiService.Security;
+using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Services;
@@ -22,14 +23,14 @@ namespace OPCAIC.ApiService.Controllers
 	public class MatchExecutionController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;
-		private readonly IMatchRepository matchRepository;
+		private readonly IMatchExecutionRepository repository;
 		private readonly IStorageService storage;
 
 		public MatchExecutionController(IStorageService storage,
-			IMatchRepository matchRepository, IAuthorizationService authorizationService)
+			IMatchExecutionRepository repository, IAuthorizationService authorizationService)
 		{
 			this.storage = storage;
-			this.matchRepository = matchRepository;
+			this.repository = repository;
 			this.authorizationService = authorizationService;
 		}
 
@@ -40,7 +41,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="archive">Zip archive with the results.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		[HttpPost("{id}")]
+		[HttpPost("{id}/result")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -49,12 +50,6 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UploadResult(long id, [ApiRequired] IFormFile archive,
 			CancellationToken cancellationToken)
 		{
-			var storageDto = await matchRepository.FindExecutionForStorageAsync(id, cancellationToken);
-			if (storageDto == null)
-			{
-				throw new NotFoundException(nameof(MatchExecution), id);
-			}
-
 			await authorizationService.CheckPermissions(User, id, MatchExecutionPermission.UploadResult);
 
 			if (Path.GetExtension(archive.FileName) != ".zip")
@@ -62,6 +57,7 @@ namespace OPCAIC.ApiService.Controllers
 				throw new BadRequestException(ValidationErrorCodes.UploadNotZip, null, nameof(archive));
 			}
 
+			var storageDto = await repository.FindExecutionForStorageAsync(id, cancellationToken);
 			using (var stream = storage.WriteMatchResultArchive(storageDto))
 			{
 				await archive.CopyToAsync(stream, cancellationToken);
@@ -81,11 +77,9 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<IActionResult> DownloadResult(int id, CancellationToken cancellationToken)
 		{
-			var storageDto = await matchRepository.FindExecutionForStorageAsync(id, cancellationToken);
-			if (storageDto == null)
-			{
-				return NotFound();
-			}
+			await authorizationService.CheckPermissions(User, id, MatchExecutionPermission.DownloadResults);
+
+			var storageDto = await repository.FindExecutionForStorageAsync(id, cancellationToken);
 
 			var stream = storage.ReadMatchResultArchive(storageDto);
 			if (stream == null)
@@ -93,8 +87,6 @@ namespace OPCAIC.ApiService.Controllers
 				// no results yet
 				return NotFound();
 			}
-
-			await authorizationService.CheckPermissions(User, id, MatchExecutionPermission.DownloadResults);
 
 			return File(stream, Constants.GzipMimeType);
 		}

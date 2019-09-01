@@ -81,5 +81,32 @@ than the stdout one.";
 			File.WriteAllText(Path.Combine(outDir, "match-result.json"), contents);
 			return 0;
 		}
+
+		public static int TwoPlayerExecute(string inputDir, string bin1, string bin2,
+			string outDir)
+		{
+			Console.WriteLine($"Executing in two player game");
+			Console.WriteLine("Input:");
+			Console.WriteLine(inputDir);
+			Console.WriteLine($"Players:");
+			Console.WriteLine(bin1);
+			Console.WriteLine(bin2);
+			Console.WriteLine("Output:");
+			Console.WriteLine(outDir);
+
+			var contents = @"{ 
+	""results"": [
+		{
+			""Score"" : 1
+		},
+		{
+			""Score"" : 0
+		}
+	]
+}";
+			Console.WriteLine(contents);
+			File.WriteAllText(Path.Combine(outDir, "match-result.json"), contents);
+			return 0;
+		}
 	}
 }

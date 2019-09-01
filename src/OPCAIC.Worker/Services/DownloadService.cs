@@ -42,7 +42,7 @@ namespace OPCAIC.Worker.Services
 			Require.GreaterThan(validationId, 0, nameof(validationId));
 			Require.ArgNotNull(path, nameof(path));
 
-			return UploadFolderContents($"validation/{validationId}", path, cancellationToken);
+			return UploadFolderContents($"validation/{validationId}/result", path, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -52,7 +52,7 @@ namespace OPCAIC.Worker.Services
 			Require.GreaterThan(executionId, 0, nameof(executionId));
 			Require.ArgNotNull(path, nameof(path));
 
-			return UploadFolderContents($"match-execution/{executionId}", path, cancellationToken);
+			return UploadFolderContents($"match-execution/{executionId}/result", path, cancellationToken);
 		}
 
 		/// <inheritdoc />

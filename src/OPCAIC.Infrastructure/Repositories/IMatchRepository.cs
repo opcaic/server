@@ -26,15 +26,5 @@ namespace OPCAIC.Infrastructure.Repositories
 		/// <returns></returns>
 		Task<IEnumerable<Match>> AllMatchesFromTournamentAsync(long tournamentId,
 			CancellationToken cancellationToken = default);
-
-		// TODO: standalone repository for match executions?
-		/// <summary>
-		///     Returns data needed to find where the archive with results of match execution with given id is stored.
-		/// </summary>
-		/// <param name="id">Id of the match execution.</param>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
-		Task<MatchExecutionStorageDto> FindExecutionForStorageAsync(long id,
-			CancellationToken cancellationToken = default);
 	}
 }

@@ -147,10 +147,8 @@ namespace OPCAIC.Messaging
 					$"[{Identity}] - Broker unreachable, retrying in {sleepInterval} ms");
 				Thread.Sleep(sleepInterval);
 
-				if (sleepInterval < HeartbeatConfig.ReconnectIntervalMax)
-				{
-					sleepInterval *= 2; // exponential back off
-				}
+				// exponential back off
+				sleepInterval = Math.Min(2 * sleepInterval, HeartbeatConfig.ReconnectIntervalMax);
 
 				connected = false;
 				ResetConnection();

@@ -46,11 +46,8 @@ namespace OPCAIC.ApiService.Services
 			var tournament =
 				await tournamentRepository.FindByIdAsync(submission.Tournament.Id,
 					cancellationToken);
-			var validation = new NewSubmissionValidationDto
-			{
-				SubmissionId = submissionId, JobId = Guid.NewGuid()
-			};
 
+			var validation = new NewSubmissionValidationDto { SubmissionId = submissionId, JobId = Guid.NewGuid() };
 			var validationId = await repository.CreateAsync(validation, cancellationToken);
 
 			var m = new SubmissionValidationRequest
@@ -64,16 +61,11 @@ namespace OPCAIC.ApiService.Services
 				AccessToken = CreateAccessToken(submissionId, validationId, tournament.Id)
 			};
 
-			LogValidationQueued(m, tournament.Game.key, tournament.Id);
-			await broker.EnqueueWork(m);
-		}
-
-		private void LogValidationQueued(SubmissionValidationRequest request, string game,
-			long tournamentId)
-		{
-			logger.LogInformation(LoggingEvents.SubmissionQueueValidate,
+			logger.LogInformation(LoggingEvents.SubmissionQueueValidation,
 				$"Queueing validation of submission {{{LoggingTags.SubmissionId}}} in tournament {{{LoggingTags.TournamentId}}} and game {{{LoggingTags.Game}}} as job {{{LoggingTags.JobId}}}.",
-				request.SubmissionId, tournamentId, game, request.JobId);
+				m.SubmissionId, tournament.Id, tournament.Game.key, m.JobId);
+
+			await broker.EnqueueWork(m);
 		}
 
 		public Task UpdateFromMessage(SubmissionValidationResult result)

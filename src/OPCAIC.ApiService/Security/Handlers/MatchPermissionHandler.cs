@@ -41,7 +41,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 						authData.TournamentOwnerId == userId;
 
 				case MatchPermission.QueueMatchExecution:
-					return false; // only admin //TODO: really?
+					return false; // only admin //TODO: not tournament managers?
 
 				case MatchPermission.Search:
 					return true; // TODO: maybe more granular.

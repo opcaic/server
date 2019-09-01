@@ -5,5 +5,6 @@
 		public static string TournamentId => "TournamentId";
 		public static string SubmissionId => "SubmissionId";
 		public static string ValidationId => "ValidationId";
+		public static string ExecutionId => "ExecutionId";
 	}
 }

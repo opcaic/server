@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Infrastructure.Dtos.MatchExecutions;
 using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.Repositories
@@ -33,15 +34,6 @@ namespace OPCAIC.Infrastructure.Repositories
 		{
 			return await DbSet.Where(m => m.TournamentId == tournamentId)
 				.ToListAsync(cancellationToken);
-		}
-
-		/// <inheritdoc />
-		public Task<MatchExecutionStorageDto> FindExecutionForStorageAsync(long id,
-			CancellationToken cancellationToken = default)
-		{
-			return GetDbSet<MatchExecution>().Where(e => e.Id == id)
-				.ProjectTo<MatchExecutionStorageDto>(Mapper.ConfigurationProvider)
-				.SingleOrDefaultAsync(cancellationToken);
 		}
 
 		/// <inheritdoc />

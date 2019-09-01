@@ -184,6 +184,7 @@ namespace OPCAIC.Worker.Services
 			var index = Submissions.Count;
 			var data = new SubmissionData
 			{
+				SubmissionId = submissionId,
 				BotInfo = new BotInfo
 				{
 					Index = index,

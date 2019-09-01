@@ -4,9 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using GameModuleMock;
 using OPCAIC.Worker.GameModules;
 
-namespace GameModuleMock
+namespace OPCAIC.Worker.Test
 {
 	public static class ExternalGameModuleHelper
 	{
