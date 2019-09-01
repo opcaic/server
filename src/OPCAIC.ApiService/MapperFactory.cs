@@ -141,6 +141,8 @@ namespace OPCAIC.ApiService
 				.ForMember(u => u.EmailVerified,
 					opt => opt.MapFrom(u => u.EmailConfirmed));
 
+			exp.CreateMap<UserPreviewDto, UserPreviewModel>(MemberList.Destination);
+
 			exp.CreateMap<UserProfileModel, UserProfileDto, User>(MemberList.Source);
 			exp.CreateMap<UserFilterModel, UserFilterDto>(MemberList.Source);
 
