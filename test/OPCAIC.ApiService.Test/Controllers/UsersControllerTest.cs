@@ -75,7 +75,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 			await AssertInvalidModel(
 				ValidationErrorCodes.InvalidEmailVerificationToken,
 				null,
-				() => Controller.GetEmailVerificationAsync(user.Id, "randomToken",
+				() => Controller.GetEmailVerificationAsync(new EmailVerificationModel() { Email = user.Email, Token = "random token"}, 
 					CancellationToken));
 
 			var detail = await Controller.GetUserByIdAsync(user.Id, CancellationToken);
@@ -88,15 +88,15 @@ namespace OPCAIC.ApiService.Test.Controllers
 			// capture email confirm token
 			string token = null;
 			FrontendUrlGeneratorMock
-				.Setup(g => g.EmailConfirmLink(It.IsAny<long>(), It.IsAny<string>()))
-				.Callback((long id, string resetToken) => { token = resetToken; });
+				.Setup(g => g.EmailConfirmLink(It.IsAny<string>(), It.IsAny<string>()))
+				.Callback((string email, string resetToken) => { token = resetToken; });
 
 			var user = await CreateUser_Success();
 			Assert.False(user.EmailVerified);
 			Assert.NotNull(token);
 
 			var result =
-				await Controller.GetEmailVerificationAsync(user.Id, token, CancellationToken);
+				await Controller.GetEmailVerificationAsync(new EmailVerificationModel() { Email = user.Email, Token = token }, CancellationToken);
 			Assert.IsAssignableFrom<NoContentResult>(result);
 
 			var detail = await Controller.GetUserByIdAsync(user.Id, CancellationToken);
@@ -107,7 +107,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		public async Task ConfirmEmail_UserNotFound()
 		{
 			Assert.IsAssignableFrom<BadRequestResult>(
-				await Controller.GetEmailVerificationAsync(-1, "randomToken", CancellationToken));
+				await Controller.GetEmailVerificationAsync(new EmailVerificationModel() { Email = "not email", Token = "random token" }, CancellationToken));
 		}
 
 		[Fact]
@@ -273,8 +273,8 @@ namespace OPCAIC.ApiService.Test.Controllers
 
 			// capture password reset token
 			string token = null;
-			FrontendUrlGeneratorMock.Setup(g => g.PasswordResetLink(user.Id, It.IsAny<string>()))
-				.Callback((long id, string resetToken) => { token = resetToken; });
+			FrontendUrlGeneratorMock.Setup(g => g.PasswordResetLink(user.Email, It.IsAny<string>()))
+				.Callback((string email, string resetToken) => { token = resetToken; });
 
 			await Controller.PostForgotPasswordAsync(
 				new ForgotPasswordModel {Email = user.Email}, CancellationToken);

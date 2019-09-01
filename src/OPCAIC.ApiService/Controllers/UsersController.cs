@@ -171,7 +171,7 @@ namespace OPCAIC.ApiService.Controllers
 			result.ThrowIfFailed(StatusCodes.Status400BadRequest);
 
 			var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-			var url = urlGenerator.EmailConfirmLink(user.Id, token);
+			var url = urlGenerator.EmailConfirmLink(user.Email, token);
 
 			await emailService.SendEmailVerificationEmailAsync(user.Id, url,
 				cancellationToken);
@@ -245,7 +245,7 @@ namespace OPCAIC.ApiService.Controllers
 
 			logger.UserForgotPassword(user);
 			var token = await userManager.GeneratePasswordResetTokenAsync(user);
-			var url = urlGenerator.PasswordResetLink(user.Id, token);
+			var url = urlGenerator.PasswordResetLink(user.Email, token);
 
 			await emailService.SendPasswordResetEmailAsync(model.Email, url, cancellationToken);
 		}
@@ -261,20 +261,22 @@ namespace OPCAIC.ApiService.Controllers
 		[AllowAnonymous]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task PostPasswordResetAsync([FromBody] PasswordResetModel model,
+		public async Task<IActionResult> PostPasswordResetAsync([FromBody] PasswordResetModel model,
 			CancellationToken cancellationToken)
 		{
 			var user = await userManager.FindByEmailAsync(model.Email);
 			if (user == null)
 			{
 				// Do not reveal that the user does not exist or mail not confirmed.
-				return;
+				return BadRequest();
 			}
 
 			var result =
 				await userManager.ResetPasswordAsync(user, model.ResetToken, model.Password);
 			logger.UserPasswordReset(user, result);
 			result.ThrowIfFailed(StatusCodes.Status400BadRequest);
+
+			return NoContent();
 		}
 
 		/// <summary>
@@ -304,25 +306,24 @@ namespace OPCAIC.ApiService.Controllers
 		/// <summary>
 		///     Verifies user's email, if he provided valid token created by server.
 		/// </summary>
-		/// <param name="userId">id of the user, who verifies the mail</param>
-		/// <param name="token">verification token created by server</param>
+		/// <param name="model"></param>
 		/// <param name="cancellationToken"></param>
 		/// <response code="200">Email was confirmed.</response>
 		/// <response code="400">Invalid model values.</response>
-		[HttpGet("emailVerification")]
+		[HttpPost("emailVerification")]
 		[AllowAnonymous]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> GetEmailVerificationAsync(long userId, string token,
+		public async Task<IActionResult> GetEmailVerificationAsync([FromBody] EmailVerificationModel model,
 			CancellationToken cancellationToken)
 		{
-			var user = await userManager.FindByIdAsync(userId, cancellationToken);
-			if (user == null || token == null)
+			var user = await userManager.FindByEmailAsync(model.Email);
+			if (user == null || user.EmailConfirmed || model.Token == null)
 			{
 				return BadRequest();
 			}
 
-			var result = await userManager.ConfirmEmailAsync(user, token);
+			var result = await userManager.ConfirmEmailAsync(user, model.Token);
 			result.ThrowIfFailed(StatusCodes.Status400BadRequest);
 			logger.UserConfirmEmail(user, result);
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System;
+using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Configs;
 
 namespace OPCAIC.ApiService.Services
@@ -13,15 +14,15 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
-		public string PasswordResetLink(long userId, string token)
+		public string PasswordResetLink(string email, string token)
 		{
-			return $"{config.FrontendUrl}/passwordReset?userId={userId}&token={token}";
+			return $"{config.FrontendUrl}/reset-password?email={email}&token={Uri.EscapeDataString(token)}";
 		}
 
 		/// <inheritdoc />
-		public string EmailConfirmLink(long userId, string token)
+		public string EmailConfirmLink(string email, string token)
 		{
-			return $"{config.FrontendUrl}/confirmEmail?userId={userId}&token={token}";
+			return $"{config.FrontendUrl}/confirm-email?email={email}&token={Uri.EscapeDataString(token)}";
 		}
 
 		/// <inheritdoc />
