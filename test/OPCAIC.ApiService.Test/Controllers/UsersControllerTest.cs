@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using OPCAIC.ApiService.Controllers;
@@ -64,6 +65,35 @@ namespace OPCAIC.ApiService.Test.Controllers
 			Assert.NotNull(identity.RefreshToken);
 
 			return identity;
+		}
+
+		[Fact]
+		public async Task GetUsersAsync_Sucess()
+		{
+			var user = await DoCreateUser(userModel, true);
+
+			var list = await Controller.GetUsersAsync(new UserFilterModel()
+			{
+				Count = 5,
+			}, CancellationToken);
+
+			Assert.Equal(1, list.Total);
+			var preview = Assert.Single(list.List);
+			Assert.Equal(user.UserName, preview.Username);
+		}
+
+		[Fact]
+		public async Task UpdateUser_Success()
+		{
+			var user = await DoCreateUser(userModel, true);
+			await Controller.UpdateAsync(user.Id,
+				new UserProfileModel {LocalizationLanguage = "cz", Organization = "org"},
+				CancellationToken);
+			var model = await Controller.GetUserByIdAsync(user.Id, CancellationToken);
+			Assert.NotEqual(userModel.LocalizationLanguage, user.LocalizationLanguage);
+			Assert.NotEqual(userModel.Organization, user.Organization);
+			Assert.Equal("cz", user.LocalizationLanguage);
+			Assert.Equal("org", user.Organization);
 		}
 
 		[Fact]

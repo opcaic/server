@@ -72,6 +72,13 @@ namespace OPCAIC.ApiService.Test
 			Assert.Equal(errorCode, ex.Code);
 		}
 
+		protected async Task AssertNotFound<TEntity>(long id, Func<Task> testCode)
+		{
+			var ex = await Assert.ThrowsAsync<NotFoundException>(testCode);
+			Assert.Equal(id, ex.ResourceId);
+			Assert.Equal(typeof(TEntity).Name, ex.Resource);
+		}
+
 		protected async Task AssertModelValidationException<TEx>(int statusCode, string errorCode,
 			string field, Func<Task> testCode)
 			where TEx : ModelValidationException

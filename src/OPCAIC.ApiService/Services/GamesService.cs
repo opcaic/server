@@ -57,11 +57,7 @@ namespace OPCAIC.ApiService.Services
 
 			var dto = await gameRepository.GetByFilterAsync(filterDto, cancellationToken);
 
-			return new ListModel<GamePreviewModel>
-			{
-				Total = dto.Total,
-				List = dto.List.Select(game => mapper.Map<GamePreviewModel>(game))
-			};
+			return mapper.Map<ListModel<GamePreviewModel>>(dto);
 		}
 
 		/// <inheritdoc />
