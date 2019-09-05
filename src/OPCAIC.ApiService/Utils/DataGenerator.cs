@@ -22,6 +22,7 @@ namespace OPCAIC.ApiService.Utils
 	public class DataGenerator
 	{
 		private static Mapper mapper = new Mapper(MapperConfigurationFactory.Create());
+        private static Random random = new Random(0);
 
 		public static void WriteRandomZipArchive(Stream archive)
 		{
@@ -168,6 +169,19 @@ namespace OPCAIC.ApiService.Utils
 					State = TournamentState.Published,
 					Configuration = "{}",
 				};
+				var tournamentChessTable = new Tournament
+				{
+					Name = "Chess Table tournament",
+					Game = gameChess,
+					Created = DateTime.Now,
+					Format = TournamentFormat.Table,
+					RankingStrategy = TournamentRankingStrategy.Maximum,
+					Scope = TournamentScope.Deadline,
+					Deadline = DateTime.Now.AddDays(60),
+					Availability = TournamentAvailability.Public,
+					State = TournamentState.Published,
+					Configuration = "{}",
+				};
 				var tournament2048 = new Tournament
 				{
 					Name = "2048 single player",
@@ -193,14 +207,15 @@ namespace OPCAIC.ApiService.Utils
 					State = TournamentState.Published,
 					Configuration = "{}",
 				};
-				var tournamentDotaElo = new Tournament
+				var tournamentDotaDe = new Tournament
 				{
-					Name = "Ongoing Dota ELO",
+					Name = "Winter Dota double elimination",
 					Game = gameDota,
 					Created = DateTime.Now,
-					Format = TournamentFormat.Elo,
+					Format = TournamentFormat.DoubleElimination,
 					RankingStrategy = TournamentRankingStrategy.Maximum,
-					Scope = TournamentScope.Ongoing,
+					Scope = TournamentScope.Deadline,
+                    Deadline = DateTime.Now.AddDays(30),
 					Availability = TournamentAvailability.Public,
 					State = TournamentState.Published,
 					Configuration = "{}",
@@ -221,9 +236,10 @@ namespace OPCAIC.ApiService.Utils
 
 				context.Set<Tournament>().AddRange(
 					tournamentChessElo,
+					tournamentChessTable,
 					tournament2048,
 					tournamentDotaSe,
-					tournamentDotaElo,
+					tournamentDotaDe,
 					tournamentMario
 				);
 
@@ -304,11 +320,20 @@ namespace OPCAIC.ApiService.Utils
 
 				context.SaveChanges();
 
-				var matchChessAdminOrganizer = CreateMatch(tournamentChessElo, 1,
+				var matchChessAdminOrganizerSuccess = CreateMatch(tournamentChessElo, 1,
 					submissionChessAdmin, submissionChessOrganizer);
+				AddExecution(matchChessAdminOrganizerSuccess, EntryPointResult.Success, DateTime.Now);
 
-				AddExecution(matchChessAdminOrganizer);
-				context.Set<Match>().AddRange(matchChessAdminOrganizer);
+				var matchChessAdminOrganizerQueued = CreateMatch(tournamentChessElo, 2,
+					submissionChessAdmin, submissionChessOrganizer);
+				AddExecution(matchChessAdminOrganizerQueued);
+
+				var matchChessAdminOrganizerError = CreateMatch(tournamentChessElo, 3,
+					submissionChessAdmin, submissionChessOrganizer);
+				AddExecution(matchChessAdminOrganizerError, EntryPointResult.PlatformError, DateTime.Now.AddDays(-2));
+				AddExecution(matchChessAdminOrganizerError, EntryPointResult.UserError, DateTime.Now.AddDays(-1));
+
+				context.Set<Match>().AddRange(matchChessAdminOrganizerSuccess, matchChessAdminOrganizerQueued, matchChessAdminOrganizerError);
 				context.SaveChanges();
 
 				// add necessary files
@@ -342,7 +367,7 @@ namespace OPCAIC.ApiService.Utils
 			};
 		}
 
-		private static MatchExecution AddExecution(Match match)
+		private static MatchExecution AddExecution(Match match, EntryPointResult executorResult = EntryPointResult.NotExecuted, DateTime? executed = null)
 		{
 			int i = 0;
 			var matchExecution = new MatchExecution()
@@ -353,10 +378,10 @@ namespace OPCAIC.ApiService.Utils
 					Submission = s.Submission,
 					CompilerResult = EntryPointResult.Success,
 					Score = i++,
-					AdditionalData = "{ 'moves': 10 }"
+					AdditionalData = $"{{ 'moves': {random.Next(1, 100)}, 'timePerMove': {random.Next(1, 100) / 3}, 'bonusPoints': {{ time: {random.Next(1, 1000)}, accuracy: {random.Next(1, 500)} }} }}"
 				}).ToList(),
-                ExecutorResult = EntryPointResult.Success,
-                Executed = DateTime.Now,
+                ExecutorResult = executorResult,
+                Executed = executed,
 			};
 			match.Executions.Add(matchExecution);
 			return matchExecution;
