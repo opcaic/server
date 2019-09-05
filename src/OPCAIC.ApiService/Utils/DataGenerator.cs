@@ -354,7 +354,9 @@ namespace OPCAIC.ApiService.Utils
 					CompilerResult = EntryPointResult.Success,
 					Score = i++,
 					AdditionalData = "{ 'moves': 10 }"
-				}).ToList()
+				}).ToList(),
+                ExecutorResult = EntryPointResult.Success,
+                Executed = DateTime.Now,
 			};
 			match.Executions.Add(matchExecution);
 			return matchExecution;
