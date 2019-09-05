@@ -52,6 +52,8 @@ namespace OPCAIC.ApiService.Test
 		protected CancellationTokenSource CancellationTokenSource { get; }
 		protected CancellationToken CancellationToken => CancellationTokenSource.Token;
 
+		protected EntityFaker Faker { get; } = new EntityFaker();
+
 		private readonly Lazy<DataContext> lazyDbContext;
 		protected DataContext DbContext => lazyDbContext.Value;
 		protected void TurnOffAuthorization()

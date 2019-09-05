@@ -46,9 +46,9 @@ namespace OPCAIC.Worker.Services
 		}
 
 		/// <inheritdoc />
-		protected override async Task DoUploadResults()
+		protected override Task DoUploadResults()
 		{
-			await DownloadService.UploadValidationResults(Request.ValidationId,
+			return DownloadService.UploadValidationResults(Request.ValidationId,
 				OutputDirectory.FullName, CancellationToken);
 		}
 

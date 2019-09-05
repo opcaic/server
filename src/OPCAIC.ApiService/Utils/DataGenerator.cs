@@ -10,7 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Infrastructure.Dtos.MatchExecutions;
 using OPCAIC.Infrastructure.Dtos.Submissions;
+using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Services;
@@ -20,6 +22,15 @@ namespace OPCAIC.ApiService.Utils
 	public class DataGenerator
 	{
 		private static Mapper mapper = new Mapper(MapperConfigurationFactory.Create());
+
+		public static void WriteRandomZipArchive(Stream archive)
+		{
+			using (var archive1 = new ZipArchive(archive, ZipArchiveMode.Create, true))
+			using (var writer = new StreamWriter(archive1.CreateEntry("a.txt").Open()))
+			{
+				writer.WriteLine("Random content");
+			}
+		}
 
 		public static void EnsureSubmissionArchiveExists(IStorageService storage, Submission sub)
 		{
@@ -34,10 +45,46 @@ namespace OPCAIC.ApiService.Utils
 
 			// write something so that we have at least some file
 			using (archive = storage.WriteSubmissionArchive(storageDto))
-			using (var archive1 = new ZipArchive(archive, ZipArchiveMode.Create, true))
-			using (var writer = new StreamWriter(archive1.CreateEntry("a.txt").Open()))
 			{
-				writer.WriteLine("Random content");
+				WriteRandomZipArchive(archive);
+			}
+		}
+
+		public static void EnsureSubmissionValidationResultExists(IStorageService storage,
+			SubmissionValidation sub)
+		{
+			var storageDto = mapper.Map<SubmissionValidationStorageDto>(sub);
+
+			var archive = storage.ReadSubmissionValidationResultArchive(storageDto);
+			if (archive != null)
+			{
+				archive.Dispose();
+				return; // already exists
+			}
+
+			// write something so that we have at least some file
+			using (archive = storage.WriteSubmissionValidationResultArchive(storageDto))
+			{
+				WriteRandomZipArchive(archive);
+			}
+		}
+
+		public static void EnsureMatchExecutionResultExists(IStorageService storage,
+			MatchExecution execution)
+		{
+			var storageDto = mapper.Map<MatchExecutionStorageDto>(execution);
+
+			var archive = storage.ReadMatchResultArchive(storageDto);
+			if (archive != null)
+			{
+				archive.Dispose();
+				return; // already exists
+			}
+
+			// write something so that we have at least some file
+			using (archive = storage.WriteMatchResultArchive(storageDto))
+			{
+				WriteRandomZipArchive(archive);
 			}
 		}
 
@@ -251,20 +298,17 @@ namespace OPCAIC.ApiService.Utils
 					});
 
 
-				var submissionChessAdmin = new Submission
-				{
-					Author = userAdmin,
-					Tournament = tournamentChessElo,
-					IsActive = true
-				};
-				var submissionChessOrganizer = new Submission
-				{
-					Author = userOrganizer,
-					Tournament = tournamentChessElo,
-					IsActive = true
-				};
+				var submissionChessAdmin = CreateSubmission(userAdmin, tournamentChessElo);
+				var submissionChessOrganizer = CreateSubmission(userOrganizer, tournamentChessElo);
 				context.Submissions.AddRange(submissionChessAdmin, submissionChessOrganizer);
 
+				context.SaveChanges();
+
+				var matchChessAdminOrganizer = CreateMatch(tournamentChessElo, 1,
+					submissionChessAdmin, submissionChessOrganizer);
+
+				AddExecution(matchChessAdminOrganizer);
+				context.Set<Match>().AddRange(matchChessAdminOrganizer);
 				context.SaveChanges();
 
 				// add necessary files
@@ -273,26 +317,68 @@ namespace OPCAIC.ApiService.Utils
 					EnsureSubmissionArchiveExists(storage, submission);
 				}
 
-				var matchChessAdminOrganizer = new Match
+				foreach (var validation in context.SubmissionValidations)
 				{
-					Tournament = tournamentChessElo,
-					Index = 1,
-					Participations = new List<SubmissionParticipation>
-						{
-							new SubmissionParticipation
-							{
-								Submission = submissionChessAdmin
-							},
-							new SubmissionParticipation
-							{
-								Submission = submissionChessOrganizer
-							}
-						}
-				};
+					EnsureSubmissionValidationResultExists(storage, validation);
+				}
 
-				context.Set<Match>().AddRange(matchChessAdminOrganizer);
-				context.SaveChanges();
+				foreach (var execution in context.MatchExecutions)
+				{
+					EnsureMatchExecutionResultExists(storage, execution);
+				}
 			}
+		}
+
+		private static Match CreateMatch(Tournament tournament, int index, params Submission[] participants)
+		{
+			return new Match
+			{
+				Tournament = tournament,
+				Index = index,
+				Participations =
+					participants.Select(s => new SubmissionParticipation {Submission = s})
+						.ToList(),
+				Executions = new List<MatchExecution>() // executions to be added separately.
+			};
+		}
+
+		private static MatchExecution AddExecution(Match match)
+		{
+			int i = 0;
+			var matchExecution = new MatchExecution()
+			{
+				AdditionalData = "{ 'time': 10000 }",
+				BotResults = match.Participations.Select(s => new SubmissionMatchResult
+				{
+					Submission = s.Submission,
+					CompilerResult = EntryPointResult.Success,
+					Score = i++,
+					AdditionalData = "{ 'moves': 10 }"
+				}).ToList()
+			};
+			match.Executions.Add(matchExecution);
+			return matchExecution;
+		}
+
+		private static Submission CreateSubmission(User author, Tournament tournament)
+		{
+			return new Submission
+			{
+				Author = author,
+				Tournament = tournament,
+				IsActive = true,
+				Validations = new List<SubmissionValidation>
+					{
+						new SubmissionValidation
+						{
+							CheckerResult = EntryPointResult.Success,
+							CompilerResult = EntryPointResult.Success,
+							ValidatorResult = EntryPointResult.Success,
+							State = WorkerJobState.Finished,
+							Executed = DateTime.Now
+						}
+					}
+			};
 		}
 
 		private static void AddEmailTemplates(DataContext context)

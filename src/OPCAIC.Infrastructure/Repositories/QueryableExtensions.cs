@@ -265,6 +265,7 @@ namespace OPCAIC.Infrastructure.Repositories
 
 			switch (filter.State)
 			{
+				// a match should always have at least one execution
 				case null:
 					break; // nothing
 				case MatchState.Queued:

@@ -46,7 +46,7 @@ namespace OPCAIC.Worker
 
 			// The ILoggingBuilder minimum level determines the the lowest possible level for
 			// logging. The log4net level then sets the level that we actually log at.
-			logging.SetMinimumLevel(LogLevel.Debug);
+			logging.SetMinimumLevel(LogLevel.Trace);
 		}
 
 		/// <summary>

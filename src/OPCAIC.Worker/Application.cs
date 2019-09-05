@@ -20,22 +20,24 @@ namespace OPCAIC.Worker
 		}
 
 		/// <inheritdoc />
-		public async Task StartAsync(CancellationToken cancellationToken)
+		public Task StartAsync(CancellationToken cancellationToken)
 		{
 			// start async
-			Task.Factory.StartNew(Run);
+			Task.Factory.StartNew(Run, CancellationToken.None);
+			return Task.CompletedTask;
 		}
 
 		/// <inheritdoc />
-		public async Task StopAsync(CancellationToken cancellationToken)
+		public Task StopAsync(CancellationToken cancellationToken)
 		{
 			// do nothing
+			return Task.CompletedTask;
 		}
 
 		/// <summary>
 		///     The application entry point.
 		/// </summary>
-		public void Run()
+		private void Run()
 		{
 			worker.Run();
 		}

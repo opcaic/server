@@ -57,9 +57,11 @@ namespace OPCAIC.Worker.Services
 		/// <param name="modulePath">Path to game modules.</param>
 		private void LoadModules(string modulePath)
 		{
+			logger.LogInformation($"Loading game modules from folder '{modulePath}'");
 			var moduleDirectory = Directory.CreateDirectory(modulePath);
 			foreach (var directory in moduleDirectory.GetDirectories())
 			{
+				logger.LogInformation($"Loading game module from '{directory.FullName}'");
 				var gameName = Path.GetFileName(directory.FullName);
 				var configFile = Path.Combine(directory.FullName,
 					Constants.FileNames.EntryPointsConfig);

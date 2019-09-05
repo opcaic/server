@@ -143,9 +143,12 @@ namespace OPCAIC.Worker.Services
 				}
 				finally
 				{
-					await UploadResults();
-					Services.ArchiveDirectory(TaskDirectory);
-					TaskDirectory.Delete(true);
+					if (TaskDirectory != null)
+					{
+						await UploadResults();
+						Services.ArchiveDirectory(TaskDirectory);
+						TaskDirectory.Delete(true);
+					}
 				}
 
 				// If we got here, the evaluation of the job finished successfully.
@@ -166,7 +169,8 @@ namespace OPCAIC.Worker.Services
 		{
 			try
 			{
-				if (!CancellationToken.IsCancellationRequested)
+				if (!CancellationToken.IsCancellationRequested &&
+					OutputDirectory?.Exists == true)
 				{
 					await DoUploadResults();
 				}

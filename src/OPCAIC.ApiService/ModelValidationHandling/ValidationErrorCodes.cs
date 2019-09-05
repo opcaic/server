@@ -26,6 +26,8 @@
 
 		public static string RangeError => "field-range-error";
 
+		public static string TournamentDeadlinePassed => "deadline-passed";
+
 		#endregion
 
 		#region Password

@@ -20,6 +20,8 @@ namespace OPCAIC.Infrastructure.Dtos.Tournaments
 
 		public DateTime Created { get; set; }
 
+		public TournamentState State { get; set; }
+
 		public int PlayersCount { get; set; }
 
 		public int SubmissionsCount { get; set; }

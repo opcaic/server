@@ -13,6 +13,12 @@ namespace OPCAIC.Utils
 	public static class Require
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void NotNull(object arg, string msg)
+		{
+			That<InvalidOperationException>(arg != null, msg);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void ArgNotNull(object arg, string name)
 		{
 			That<ArgumentNullException>(arg != null, name);

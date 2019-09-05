@@ -31,7 +31,7 @@ namespace OPCAIC.Worker.Services
 		protected override Task DoUploadResults()
 		{
 			return DownloadService.UploadMatchResults(Request.ExecutionId, OutputDirectory.FullName,
-				CancellationToken);
+		CancellationToken);
 		}
 
 		/// <inheritdoc />
