@@ -11,5 +11,7 @@ namespace OPCAIC.Infrastructure.Dtos.Matches
 		public IList<SubmissionMatchResultDto> BotResults { get; set; }
 		public EntryPointResult ExecutorResult { get; set; }
 		public DateTime? Executed { get; set; }
+		public DateTime Created { get; set; }
+		public string AdditionalData { get; set; }
 	}
 }
