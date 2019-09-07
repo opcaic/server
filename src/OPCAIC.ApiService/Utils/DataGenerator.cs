@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using AutoMapper;
+using Bogus;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -115,7 +116,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					Name = "Chess",
 					Key = "chess",
-					Created = DateTime.Now,
 					ImageUrl =
 						"https://images.chesscomfiles.com/uploads/v1/article/17623.87bb05cd.668x375o.47d81802f1eb@2x.jpeg",
 					DefaultTournamentImageOverlay = 0.7f,
@@ -128,7 +128,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					Name = "2048",
 					Key = "2048",
-					Created = DateTime.Now,
 					ImageUrl =
 						"https://upload.wikimedia.org/wikipedia/commons/6/64/2048_Screenshot.png",
 					DefaultTournamentImageOverlay = 0.7f,
@@ -141,7 +140,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					Name = "Dota 2",
 					Key = "dota2",
-					Created = DateTime.Now,
 					ImageUrl = "https://wallpapercave.com/wp/V8Ee1Bm.jpg",
 					DefaultTournamentImageOverlay = 0.2f,
 					DefaultTournamentImage = "https://wallpapercave.com/wp/V8Ee1Bm.jpg",
@@ -152,7 +150,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					Name = "Super Mario Bros.",
 					Key = "mario",
-					Created = DateTime.Now,
 					ImageUrl =
 						"https://cdn02.nintendo-europe.com/media/images/10_share_images/games_15/nintendo_ds_22/SI_NDS_NewSuperMarioBrosDS_image1600w.jpg",
 					DefaultTournamentImageOverlay = 0.6f,
@@ -165,7 +162,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					Name = "Sokoban",
 					Key = "masokoban",
-					Created = DateTime.Now,
 					ImageUrl =
 						"https://raw.githubusercontent.com/kefik/Sokoban4J/master/Sokoban4J/screenshot2.png",
 					DefaultTournamentImageOverlay = 0.6f,
@@ -182,7 +178,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					Name = "Chess ELO tournament",
 					Game = gameChess,
-					Created = DateTime.Now,
 					Format = TournamentFormat.Elo,
 					RankingStrategy = TournamentRankingStrategy.Maximum,
 					Scope = TournamentScope.Ongoing,
@@ -194,11 +189,22 @@ namespace OPCAIC.ApiService.Utils
 				{
 					Name = "Chess Table tournament",
 					Game = gameChess,
-					Created = DateTime.Now,
 					Format = TournamentFormat.Table,
 					RankingStrategy = TournamentRankingStrategy.Maximum,
 					Scope = TournamentScope.Deadline,
-					Deadline = DateTime.Now.AddDays(60),
+					Deadline = DateTime.Now.AddSeconds(10),
+					Availability = TournamentAvailability.Public,
+					State = TournamentState.Published,
+					Configuration = "{}"
+				};
+				var tournamentChessDe = new Tournament
+				{
+					Name = "Chess Double-elimination tournament",
+					Game = gameChess,
+					Format = TournamentFormat.DoubleElimination,
+					RankingStrategy = TournamentRankingStrategy.Maximum,
+					Scope = TournamentScope.Deadline,
+					Deadline = DateTime.Now.AddSeconds(40),
 					Availability = TournamentAvailability.Public,
 					State = TournamentState.Published,
 					Configuration = "{}"
@@ -207,7 +213,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					Name = "2048 single player",
 					Game = game2048,
-					Created = DateTime.Now,
 					Format = TournamentFormat.SinglePlayer,
 					RankingStrategy = TournamentRankingStrategy.Maximum,
 					Scope = TournamentScope.Ongoing,
@@ -219,7 +224,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					Name = "Summer Dota single elimination",
 					Game = gameDota,
-					Created = DateTime.Now,
 					Format = TournamentFormat.SingleElimination,
 					RankingStrategy = TournamentRankingStrategy.Maximum,
 					Scope = TournamentScope.Deadline,
@@ -232,7 +236,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					Name = "Winter Dota double elimination",
 					Game = gameDota,
-					Created = DateTime.Now,
 					Format = TournamentFormat.DoubleElimination,
 					RankingStrategy = TournamentRankingStrategy.Maximum,
 					Scope = TournamentScope.Deadline,
@@ -245,7 +248,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					Name = "Super Mario Bros.",
 					Game = gameMario,
-					Created = DateTime.Now,
 					Format = TournamentFormat.SinglePlayer,
 					RankingStrategy = TournamentRankingStrategy.Maximum,
 					Scope = TournamentScope.Deadline,
@@ -261,7 +263,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					Name = "Sokoban",
 					Game = gameSokoban,
-					Created = DateTime.Now,
 					Format = TournamentFormat.SinglePlayer,
 					RankingStrategy = TournamentRankingStrategy.Maximum,
 					Scope = TournamentScope.Deadline,
@@ -276,6 +277,7 @@ namespace OPCAIC.ApiService.Utils
 				context.Set<Tournament>().AddRange(
 					tournamentChessElo,
 					tournamentChessTable,
+					tournamentChessDe,
 					tournament2048,
 					tournamentDotaSe,
 					tournamentDotaDe,
@@ -288,7 +290,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					FirstName = "Admin",
 					LastName = "Opcaic",
-					Created = DateTime.Now,
 					UserName = "admin",
 					RoleId = (long)UserRole.Admin,
 					Email = "admin@opcaic.com",
@@ -300,7 +301,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					FirstName = "Organizer",
 					LastName = "Opcaic",
-					Created = DateTime.Now,
 					UserName = "organizer",
 					RoleId = (long)UserRole.Organizer,
 					Email = "organizer@opcaic.com",
@@ -312,7 +312,6 @@ namespace OPCAIC.ApiService.Utils
 				{
 					FirstName = "User",
 					LastName = "Opcaic",
-					Created = DateTime.Now,
 					UserName = "user",
 					RoleId = (long)UserRole.User,
 					Email = "user@opcaic.com",
@@ -326,6 +325,8 @@ namespace OPCAIC.ApiService.Utils
 				userOrganizer = context.Users.Find(userOrganizer.Id);
 				mgr.CreateAsync(user, "Password").Wait();
 				user = context.Users.Find(user.Id);
+
+				FakeUsers(mgr);
 
 				AddEmailTemplates(context);
 
@@ -378,7 +379,9 @@ namespace OPCAIC.ApiService.Utils
 				var submissionChessAdmin = CreateSubmission(userAdmin, tournamentChessElo);
 				var submissionChessOrganizer = CreateSubmission(userOrganizer, tournamentChessElo);
 				context.Submissions.AddRange(submissionChessAdmin, submissionChessOrganizer);
-
+				context.Submissions.AddRange(CreateSubmissions(context.Users.OrderBy(u => u.Id).Skip(3), tournamentChessElo));
+				context.Submissions.AddRange(CreateSubmissions(context.Users, tournamentChessTable));
+				context.Submissions.AddRange(CreateSubmissions(context.Users, tournamentChessDe));
 				context.SaveChanges();
 
 				var matchChessAdminOrganizerSuccess = CreateMatch(tournamentChessElo, 1,
@@ -415,6 +418,36 @@ namespace OPCAIC.ApiService.Utils
 				foreach (var execution in context.MatchExecutions)
 				{
 					EnsureMatchExecutionResultExists(storage, execution);
+				}
+			}
+		}
+
+		private static void FakeUsers(UserManager manager)
+		{
+			Randomizer.Seed = new Random(100);
+
+			var userFaker = new Faker<User>()
+				.RuleFor(u => u.FirstName, (f, u) => f.Name.FirstName())
+				.RuleFor(u => u.LastName, (f, u) => f.Name.LastName())
+				.RuleFor(u => u.UserName, (f, u) => f.Internet.UserName(u.FirstName, u.LastName))
+				.RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+				.RuleFor(u => u.EmailConfirmed, true)
+				.RuleFor(u => u.RoleId, (long) UserRole.User)
+				.RuleFor(u => u.LocalizationLanguage, f => f.PickRandomParam(null, "en", "cz"));
+
+			foreach (var user in userFaker.GenerateLazy(30))
+			{
+				manager.CreateAsync(user, "Password").GetAwaiter().GetResult();
+			}
+		}
+
+		private static IEnumerable<Submission> CreateSubmissions(IEnumerable<User> users, Tournament tournament)
+		{
+			foreach (var user in users)
+			{
+				if (Randomizer.Seed.NextDouble() > 0.5)
+				{
+					yield return CreateSubmission(user, tournament);
 				}
 			}
 		}
