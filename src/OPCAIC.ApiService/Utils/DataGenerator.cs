@@ -183,7 +183,7 @@ namespace OPCAIC.ApiService.Utils
 					Name = "Chess ELO tournament",
 					Game = gameChess,
 					Created = DateTime.Now,
-					Format = TournamentFormat.SinglePlayer,
+					Format = TournamentFormat.Elo,
 					RankingStrategy = TournamentRankingStrategy.Maximum,
 					Scope = TournamentScope.Ongoing,
 					Availability = TournamentAvailability.Private,
@@ -382,16 +382,16 @@ namespace OPCAIC.ApiService.Utils
 				context.SaveChanges();
 
 				var matchChessAdminOrganizerSuccess = CreateMatch(tournamentChessElo, 1,
-					submissionChessAdmin);
+					submissionChessAdmin, submissionChessOrganizer);
 				AddExecution(matchChessAdminOrganizerSuccess, EntryPointResult.Success,
 					DateTime.Now);
 
 				var matchChessAdminOrganizerQueued = CreateMatch(tournamentChessElo, 2,
-					submissionChessOrganizer);
+					submissionChessAdmin, submissionChessOrganizer);
 				AddExecution(matchChessAdminOrganizerQueued);
 
 				var matchChessAdminOrganizerError = CreateMatch(tournamentChessElo, 3,
-					submissionChessOrganizer);
+					submissionChessAdmin, submissionChessOrganizer);
 				AddExecution(matchChessAdminOrganizerError, EntryPointResult.PlatformError,
 					DateTime.Now.AddDays(-2));
 				AddExecution(matchChessAdminOrganizerError, EntryPointResult.UserError,
