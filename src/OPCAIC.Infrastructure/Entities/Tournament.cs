@@ -127,6 +127,11 @@ namespace OPCAIC.Infrastructure.Entities
 		///     Theme color of the tournament.
 		/// </summary>
 		public string ThemeColor { get; set; }
+
+		/// <summary>
+		///     JSON data with information about menu items.
+		/// </summary>
+		public string MenuData { get; set; }
 	}
 
 	public class TournamentManager

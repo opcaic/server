@@ -19,5 +19,7 @@ namespace OPCAIC.ApiService.Models.Tournaments
 		public TournamentScope Scope { get; set; }
 
 		public TournamentRankingStrategy RankingStrategy { get; set; }
+
+		public string MenuData { get; set; }
 	}
 }
