@@ -7,11 +7,13 @@ namespace OPCAIC.Services.Extensions
 		public static IServiceCollection AddMatchGenerators(this IServiceCollection services)
 		{
 			return services
-				.AddSingleton<IMatchGenerator, SinglePlayerMatchGenerator>()
-				.AddSingleton<IMatchGenerator, TableMatchGenerator>()
-				.AddTransient<IMatchGenerator, SingleEliminationMatchGenerator>()
-				.AddTransient<IMatchGenerator, DoubleEliminationMatchGenerator>()
-				.AddSingleton<IMatchTreeFactory, CachedMatchTreeFactory>();
+				.AddSingleton<IOngoingMatchGenerator, EloMatchGenerator>()
+				.AddSingleton<IDeadlineMatchGenerator, SinglePlayerMatchGenerator>()
+				.AddSingleton<IDeadlineMatchGenerator, TableMatchGenerator>()
+				.AddSingleton<IBracketsMatchGenerator, SingleEliminationMatchGenerator>()
+				.AddSingleton<IBracketsMatchGenerator, DoubleEliminationMatchGenerator>()
+				.AddSingleton<IMatchTreeFactory, CachedMatchTreeFactory>()
+				.AddSingleton<IMatchGenerator, MatchGeneratorRegistry>();
 		}
 	}
 }

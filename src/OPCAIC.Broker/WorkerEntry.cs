@@ -1,4 +1,5 @@
-﻿using OPCAIC.Messaging.Messages;
+﻿using System;
+using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.Broker
 {
@@ -26,5 +27,15 @@ namespace OPCAIC.Broker
 		///     Currently executing item on the worker.
 		/// </summary>
 		public WorkItem CurrentWorkItem { get; set; }
+
+		/// <summary>
+		///     Last returned worker stats.
+		/// </summary>
+		public WorkerStatsReport Stats { get; set; }
+
+		/// <summary>
+		///     Timestamp when last Stats were received.
+		/// </summary>
+		public DateTime StatsReceived { get; set; }
 	}
 }

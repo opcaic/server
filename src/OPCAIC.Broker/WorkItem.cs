@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.Broker
@@ -12,6 +13,11 @@ namespace OPCAIC.Broker
 		///     Timestamp when the workload was enqueued.
 		/// </summary>
 		public DateTime QueuedTime { get; set; }
+
+		/// <summary>
+		///     Timestamp when the work item will expire.
+		/// </summary>
+		public DateTime ExpirationTime { get; set; }
 
 		/// <summary>
 		///     Workload message to be sent to the worker.

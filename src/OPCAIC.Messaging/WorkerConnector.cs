@@ -145,13 +145,15 @@ namespace OPCAIC.Messaging
 
 				Logger.LogError(
 					$"[{Identity}] - Broker unreachable, retrying in {sleepInterval} ms");
+
+				// reset connection before going to sleep so the messages can queue
+				connected = false;
+				ResetConnection();
 				Thread.Sleep(sleepInterval);
 
 				// exponential back off
 				sleepInterval = Math.Min(2 * sleepInterval, HeartbeatConfig.ReconnectIntervalMax);
 
-				connected = false;
-				ResetConnection();
 				SendHeartbeat();
 				liveness = HeartbeatConfig.Liveness;
 			}

@@ -13,9 +13,11 @@ using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Security;
+using OPCAIC.ApiService.Services;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Emails;
+using OPCAIC.Infrastructure.Entities;
 using OPCAIC.TestUtils;
 using Xunit;
 using Xunit.Abstractions;
@@ -109,6 +111,20 @@ namespace OPCAIC.ApiService.Test
 		{
 			return AssertModelValidationException<ConflictException>(
 				StatusCodes.Status409Conflict, errorCode, field, testCode);
+		}
+
+		protected T NewTrackedEntity<T>() where T : class
+		{
+			var entity = Faker.Entity<T>();
+			DbContext.Set<T>().Add(entity);
+			return entity;
+		}
+
+		protected User NewUser()
+		{
+			var user = Faker.Entity<User>();
+			GetService<UserManager>().CreateAsync(user, "pass67S#@#$@").Wait();
+			return user;
 		}
 	}
 }

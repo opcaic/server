@@ -19,20 +19,6 @@ namespace OPCAIC.ApiService.Test.Security
 		{
 		}
 
-		protected T NewTrackedEntity<T>() where T : class
-		{
-			var entity = Faker.Entity<T>();
-			DbContext.Set<T>().Add(entity);
-			return entity;
-		}
-
-		protected User NewUser()
-		{
-			var user = Faker.Entity<User>();
-			GetService<UserManager>().CreateAsync(user, "pass67S#@#$@").Wait();
-			return user;
-		}
-
 		protected ClaimsPrincipal ClaimsPrincipal(User user)
 		{
 			return GetService<SignInManager>().CreateUserPrincipalAsync(user).Result;

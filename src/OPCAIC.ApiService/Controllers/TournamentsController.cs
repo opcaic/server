@@ -154,6 +154,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="archive">Archive containing the additional files.</param>
 		/// <param name="cancellationToken"></param>
 		/// <response code="200">Successfully uploaded.</response>
+		/// <response code="400">Invalid file uploaded.</response>
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this action.</response>
 		/// <response code="404">Tournament not found.</response>
@@ -179,6 +180,32 @@ namespace OPCAIC.ApiService.Controllers
 			{
 				await archive.CopyToAsync(stream, cancellationToken);
 			}
+		}
+
+		/// <summary>
+		///     Manually starts evaluation of a tournament.
+		/// </summary>
+		/// <param name="id">Id of the tournament.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		/// <response code="200">Successfully started.</response>
+		/// <response code="400">Tournament already started.</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to this action.</response>
+		/// <response code="404">Tournament not found.</response>
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpPost("{id}/start")]
+		public async Task StartTournamentEvaluationAsync(long id,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, id,
+				TournamentPermission.StartTournamentEvaluation);
+
+			await tournamentsService.StartTournamentEvaluation(id, cancellationToken);
 		}
 	}
 }

@@ -93,6 +93,7 @@ namespace OPCAIC.ApiService
 			services.Configure<EmailsConfiguration>(Configuration.GetSection("Emails"));
 			services.Configure<SecurityConfiguration>(Configuration.GetSection("Security"));
 			services.Configure<BrokerConnectorConfig>(Configuration.GetSection("Broker"));
+			services.Configure<BrokerOptions>(Configuration.GetSection("Broker"));
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)

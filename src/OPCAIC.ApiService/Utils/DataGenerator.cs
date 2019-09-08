@@ -179,6 +179,7 @@ namespace OPCAIC.ApiService.Utils
 					Name = "Chess ELO tournament",
 					Game = gameChess,
 					Format = TournamentFormat.Elo,
+					MatchesPerDay = 50,
 					RankingStrategy = TournamentRankingStrategy.Maximum,
 					Scope = TournamentScope.Ongoing,
 					Availability = TournamentAvailability.Private,
@@ -473,6 +474,8 @@ namespace OPCAIC.ApiService.Utils
 			var i = 0;
 			var matchExecution = new MatchExecution
 			{
+				JobId = Guid.NewGuid(),
+				State = WorkerJobState.Finished,
 				AdditionalData = "{ 'time': 10000 }",
 				BotResults = match.Participations.Select(s => new SubmissionMatchResult
 				{
@@ -500,6 +503,7 @@ namespace OPCAIC.ApiService.Utils
 				{
 					new SubmissionValidation
 					{
+						JobId = Guid.NewGuid(),
 						CheckerResult = EntryPointResult.Success,
 						CompilerResult = EntryPointResult.Success,
 						ValidatorResult = EntryPointResult.Success,

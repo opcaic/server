@@ -15,11 +15,16 @@
 		public const int UserPasswordChange = 302;
 		public const int UserEmailConfirm = 303;
 
+
 		public const int SubmissionCreate = 400;
 		public const int SubmissionUpdate = 401;
 		public const int SubmissionQueueValidation = 402;
 
 		public const int MatchQeueuExecution = 500;
+
+		public const int TournamentCreated = 600;
+		public const int TournamentStateChanged = 601;
+		public const int TournamentMatchesGeneration= 602;
 
 		public const int JwtRefreshTokenValidationFailed = 9000;
 

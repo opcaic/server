@@ -81,6 +81,8 @@ namespace OPCAIC.Worker.Services
 					}
 				}
 
+				// rewind to beginning so that the data can be read form the stream
+				stream.Seek(0, SeekOrigin.Begin);
 				var content = new MultipartFormDataContent
 				{
 					{new StreamContent(stream), "archive", "archive.zip"}

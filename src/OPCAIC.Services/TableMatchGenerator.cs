@@ -1,7 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Utils;
 
 namespace OPCAIC.Services
 {
@@ -9,34 +13,35 @@ namespace OPCAIC.Services
 	///     Generator for the matrix of matches (each pair of submission will compete against each other
 	///     in some match).
 	/// </summary>
-	public class TableMatchGenerator : IMatchGenerator
+	public class TableMatchGenerator : IDeadlineMatchGenerator
 	{
 		/// <inheritdoc />
 		public TournamentFormat Format => TournamentFormat.Table;
 
 		/// <inheritdoc />
-		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
+		public List<NewMatchDto> Generate(TournamentDeadlineGenerationDto tournament)
 		{
-			var submissions = tournament.GetActiveSubmissions().ToList();
+			Require.That<ArgumentException>(Format == tournament.Format, "Wrong tournament format");
+			var submissions = tournament.ActiveSubmissionIds;
 
-			IList<Match> matches = new List<Match>(submissions.Count * (submissions.Count - 1) / 2);
+			var matches = new List<NewMatchDto>(submissions.Count * (submissions.Count - 1) / 2);
 
 			for (var i = 0; i < submissions.Count; i++)
 			for (var j = i + 1; j < submissions.Count; j++)
 			{
-				matches.Add(new Match
+				matches.Add(new NewMatchDto
 				{
 					Index = matches.Count,
-					Tournament = tournament,
-					Participations = new[]
+					TournamentId = tournament.Id,
+					Submissions = new List<long>(2)
 					{
-						new SubmissionParticipation {Submission = submissions[i]},
-						new SubmissionParticipation {Submission = submissions[j]}
+						submissions[i],
+						submissions[j]
 					}
 				});
 			}
 
-			return (matches, true);
+			return matches;
 		}
 	}
 }

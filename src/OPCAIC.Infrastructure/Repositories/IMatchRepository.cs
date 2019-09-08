@@ -12,19 +12,7 @@ namespace OPCAIC.Infrastructure.Repositories
 			IFilterRepository<MatchFilterDto, MatchDetailDto>,
 			IAuthDataRepository<MatchAuthDto>
 	{
-		/// <summary>
-		///     Returns all matches from the tournament identified by given id.
-		/// </summary>
-		/// <param name="tournamentId">Id of the tournament.</param>
-		/// <returns></returns>
-		IEnumerable<Match> AllMatchesFromTournament(long tournamentId);
-
-		/// <summary>
-		///     Returns all matches from the tournament identified by given id as an asynchronous operation.
-		/// </summary>
-		/// <param name="tournamentId">Id of the tournament.</param>
-		/// <returns></returns>
-		Task<IEnumerable<Match>> AllMatchesFromTournamentAsync(long tournamentId,
-			CancellationToken cancellationToken = default);
+		Task CreateMatchesAsync(List<NewMatchDto> matches, CancellationToken cancellationToken);
+		Task<List<MatchDetailDto>> AllMatchesFromTournamentAsync(long tournamentId, CancellationToken cancellationToken);
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,6 +9,8 @@ using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models.Leaderboards;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
+using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
@@ -75,7 +78,7 @@ namespace OPCAIC.ApiService.Services
 			/// </summary>
 			/// <param name="matches">All matches in the tournament.</param>
 			/// <param name="model">Leaderboard model.</param>
-			public static void DetermineElo(IEnumerable<Match> matches, LeaderboardModel model)
+			public static void DetermineElo(IEnumerable<MatchDetailDto> matches, LeaderboardModel model)
 			{
 				// elo coefficient
 				int K = 25;
@@ -86,10 +89,10 @@ namespace OPCAIC.ApiService.Services
 					var match = currentMatch;
 					var playerA = model.Participations.Single(p
 						=> p.User.Id ==
-						match.Executions.Last().BotResults[0].Submission.AuthorId);
+						match.Executions.Last().BotResults[0].Submission.Author.Id);
 					var playerB = model.Participations.Single(p
 						=> p.User.Id ==
-						currentMatch.Executions.Last().BotResults[1].Submission.AuthorId);
+						currentMatch.Executions.Last().BotResults[1].Submission.Author.Id);
 					var ea = GetEloExpectedResult(playerA.Score, playerB.Score);
 					var eb = GetEloExpectedResult(playerB.Score, playerA.Score);
 					playerA.Score += K * (currentMatch.Executions.Last().BotResults[0].Score - ea);
@@ -131,9 +134,9 @@ namespace OPCAIC.ApiService.Services
 				foreach (var m in matches)
 				{
 					var myResult = m.Executions.Last().BotResults
-						.Single(smr => smr.Submission.AuthorId == player.Id);
+						.Single(smr => smr.Submission.Author.Id == player.Id);
 					var otherResult = m.Executions.Last().BotResults
-						.Single(smr => smr.Submission.AuthorId != player.Id);
+						.Single(smr => smr.Submission.Author.Id != player.Id);
 					if (myResult.Score > otherResult.Score) wonMatches++;
 					else if (myResult.Score == otherResult.Score) tiedMatches++;
 				}
@@ -162,7 +165,7 @@ namespace OPCAIC.ApiService.Services
 				foreach (var m in matches)
 				{
 					participation.Score += m.Executions.Last().BotResults
-						.Single(br => br.Submission.AuthorId == player.Id).Score;
+						.Single(br => br.Submission.Author.Id == player.Id).Score;
 				}
 
 				model.Participations.Add(participation);
@@ -253,14 +256,14 @@ namespace OPCAIC.ApiService.Services
 			#region Handle final separately
 
 			var finalMatch = matches.Single(m => m.Index == tree.Final.MatchIndex);
-			var playerA = finalMatch.Participations[0].Submission.Author;
-			var playerB = finalMatch.Participations[1].Submission.Author;
+			var playerA = finalMatch.Submissions[0].Author;
+			var playerB = finalMatch.Submissions[1].Author;
 			var participationA = model.Participations.Single(p => p.User.Id == playerA.Id);
 			var participationB = model.Participations.Single(p => p.User.Id == playerB.Id);
 			var firstPlayerWon = finalMatch.Executions.Last().BotResults
-					.Single(br => br.Submission.AuthorId == playerA.Id).Score >
+					.Single(br => br.Submission.Author.Id == playerA.Id).Score >
 				finalMatch.Executions.Last().BotResults
-					.Single(br => br.Submission.AuthorId != playerA.Id).Score;
+					.Single(br => br.Submission.Author.Id != playerA.Id).Score;
 
 			if (firstPlayerWon)
 			{
@@ -300,7 +303,7 @@ namespace OPCAIC.ApiService.Services
 		/// <param name="tournamentId"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns>Succesfully executed matches.</returns>
-		private async Task<IEnumerable<Match>> InitializeLeaderboardModel(
+		private async Task<IEnumerable<MatchDetailDto>> InitializeLeaderboardModel(
 			LeaderboardModel model, long tournamentId, CancellationToken cancellationToken)
 		{
 			var tournament =
@@ -316,10 +319,9 @@ namespace OPCAIC.ApiService.Services
 					=> m.Executions.Any() &&
 					m.Executions.Last().ExecutorResult == EntryPointResult.Success) &&
 				matches.Any();
-			matches = matches.Where(m
+			return matches.Where(m
 				=> m.Executions.Any() &&
 				m.Executions.Last().ExecutorResult == EntryPointResult.Success);
-			return matches;
 		}
 
 		/// <summary>
@@ -327,9 +329,9 @@ namespace OPCAIC.ApiService.Services
 		/// </summary>
 		/// <param name="matches"></param>
 		/// <returns></returns>
-		private static IEnumerable<User> GetUniquePlayers(IEnumerable<Match> matches)
+		private static IEnumerable<UserReferenceDto> GetUniquePlayers(IEnumerable<MatchDetailDto> matches)
 		{
-			return matches.SelectMany(m => m.Participations.Select(sp => sp.Submission.Author))
+			return matches.SelectMany(m => m.Submissions.Select(sp => sp.Author))
 				.Distinct();
 		}
 
@@ -353,20 +355,20 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		private BracketMatchModel DetermineSingleEliminationPlacement(
-			IEnumerable<Match> matches,
+			IEnumerable<MatchDetailDto> matches,
 			MatchTreeNode node, SingleEliminationTreeLeaderboardModel model, int playersAbove)
 		{
 			if (node == null) return null;
 
 			var currentMatch = matches.Single(m => m.Index == node.MatchIndex);
-			var playerA = currentMatch.Participations[0].Submission.Author;
-			var playerB = currentMatch.Participations[1].Submission.Author;
+			var playerA = currentMatch.Submissions[0].Author;
+			var playerB = currentMatch.Submissions[1].Author;
 			var participationA = model.Participations.Single(p => p.User.Id == playerA.Id);
 			var participationB = model.Participations.Single(p => p.User.Id == playerB.Id);
 			var firstPlayerWon = currentMatch.Executions.Last().BotResults
-					.Single(br => br.Submission.AuthorId == playerA.Id).Score >
+					.Single(br => br.Submission.Author.Id == playerA.Id).Score >
 				currentMatch.Executions.Last().BotResults
-					.Single(br => br.Submission.AuthorId != playerA.Id).Score;
+					.Single(br => br.Submission.Author.Id != playerA.Id).Score;
 
 			// whoever lost, gets placed at playersAbove + 1
 			// therefore, the final placement will look like this: 1-2-3 3-5 5 5 5...  
@@ -396,20 +398,20 @@ namespace OPCAIC.ApiService.Services
 			return current;
 		}
 
-		private BracketMatchModel DetermineDoubleEliminationPlacement(IEnumerable<Match> matches,
+		private BracketMatchModel DetermineDoubleEliminationPlacement(IEnumerable<MatchDetailDto> matches,
 			MatchTreeNode node, DoubleEliminationTreeLeaderboardModel model, int playersAbove)
 		{
 			if (node == null) return null;
 
 			var currentMatch = matches.Single(m => m.Index == node.MatchIndex);
-			var playerA = currentMatch.Participations[0].Submission.Author;
-			var playerB = currentMatch.Participations[1].Submission.Author;
+			var playerA = currentMatch.Submissions[0].Author;
+			var playerB = currentMatch.Submissions[1].Author;
 			var participationA = model.Participations.Single(p => p.User.Id == playerA.Id);
 			var participationB = model.Participations.Single(p => p.User.Id == playerB.Id);
 			var firstPlayerWon = currentMatch.Executions.Last().BotResults
-					.Single(br => br.Submission.AuthorId == playerA.Id).Score >
+					.Single(br => br.Submission.Author.Id == playerA.Id).Score >
 				currentMatch.Executions.Last().BotResults
-					.Single(br => br.Submission.AuthorId != playerA.Id).Score;
+					.Single(br => br.Submission.Author.Id != playerA.Id).Score;
 
 			// check whether we already processed that match (in a previously done winners bracket)
 			var current = model.BracketMatches.Single(bm => bm.MatchId == currentMatch.Id);

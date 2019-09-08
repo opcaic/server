@@ -44,6 +44,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 					return user.GetUserRole() == UserRole.Organizer;
 
 				case TournamentPermission.UploadAdditionalFiles:
+				case TournamentPermission.StartTournamentEvaluation:
 				case TournamentPermission.ManageInvites:
 				case TournamentPermission.EditDocument:
 				case TournamentPermission.Update:
@@ -71,9 +72,10 @@ namespace OPCAIC.ApiService.Security.Handlers
 
 						case TournamentAvailability.Private:
 							// only invited
+							// TODO: move participants data to auth dto to avoid blocking the thread
 							var participants =
 								participantRepository.GetParticipantsAsync(authData.Id, null)
-									.Result;
+									.GetAwaiter().GetResult();
 							return participants.List.Any(p => p.User.Id == userId);
 
 						default:

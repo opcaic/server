@@ -24,5 +24,7 @@ namespace OPCAIC.ApiService.Models.Tournaments
 		public TournamentScope Scope { get; set; }
 
 		public TournamentRankingStrategy RankingStrategy { get; set; }
+
+		public int? MatchesPerDay { get; set; }
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,17 +11,19 @@ using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
 
 namespace OPCAIC.ApiService.Services
 {
 	public class TournamentsService : ITournamentsService
 	{
+		private readonly IGameRepository gameRepository;
 		private readonly IMapper mapper;
 		private readonly ITournamentRepository tournamentRepository;
-		private readonly IGameRepository gameRepository;
 
-		public TournamentsService(ITournamentRepository tournamentRepository, IMapper mapper, IGameRepository gameRepository)
+		public TournamentsService(ITournamentRepository tournamentRepository, IMapper mapper,
+			IGameRepository gameRepository)
 		{
 			this.tournamentRepository = tournamentRepository;
 			this.mapper = mapper;
@@ -31,6 +34,23 @@ namespace OPCAIC.ApiService.Services
 		public Task<bool> ExistsByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return tournamentRepository.ExistsByIdAsync(id, cancellationToken);
+		}
+
+		public async Task StartTournamentEvaluation(long id, CancellationToken cancellationToken)
+		{
+			var detail = await tournamentRepository.FindByIdAsync(id, cancellationToken);
+			if (detail.State != TournamentState.Published)
+			{
+				throw new BadRequestException(
+					ValidationErrorCodes.TournamentEvaluationAlreadyStarted,
+					"Only tournaments in Published state can be started", null);
+			}
+
+			await tournamentRepository.UpdateTournamentState(id,
+				new TournamentStartedUpdateDto
+				{
+					State = TournamentState.Running, EvaluationStarted = DateTime.Now
+				}, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -45,7 +65,8 @@ namespace OPCAIC.ApiService.Services
 
 			if (!tournament.Configuration.IsValid(schema, out IList<string> messages))
 			{
-				throw new BadRequestException(ValidationErrorCodes.InvalidConfiguration, string.Join("\n", messages), nameof(tournament.Configuration));
+				throw new BadRequestException(ValidationErrorCodes.InvalidConfiguration,
+					string.Join("\n", messages), nameof(tournament.Configuration));
 			}
 
 			return await tournamentRepository.CreateAsync(dto, cancellationToken);
@@ -62,8 +83,7 @@ namespace OPCAIC.ApiService.Services
 
 			return new ListModel<TournamentPreviewModel>
 			{
-				Total = dto.Total,
-				List = dto.List.Select(mapper.Map<TournamentPreviewModel>)
+				Total = dto.Total, List = dto.List.Select(mapper.Map<TournamentPreviewModel>)
 			};
 		}
 

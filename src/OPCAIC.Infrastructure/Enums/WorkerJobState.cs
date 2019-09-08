@@ -6,16 +6,6 @@
 	public enum WorkerJobState
 	{
 		/// <summary>
-		///     Unknown state, should never occur.
-		/// </summary>
-		Unknown,
-
-		/// <summary>
-		///     Execution is blocked by manual action from the administrator.
-		/// </summary>
-		Blocked,
-
-		/// <summary>
 		///     Execution is waiting in a queue to be scheduled.
 		/// </summary>
 		Waiting,
@@ -33,6 +23,11 @@
 		/// <summary>
 		///     Execution of the job has finished.
 		/// </summary>
-		Finished
+		Finished,
+
+		/// <summary>
+		///     Execution is blocked by manual action from the administrator.
+		/// </summary>
+		Blocked
 	}
 }

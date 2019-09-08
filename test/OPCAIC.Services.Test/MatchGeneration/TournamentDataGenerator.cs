@@ -1,5 +1,8 @@
-﻿using System.Linq;
-using OPCAIC.Infrastructure.Entities;
+﻿using System.Collections.Generic;
+using System.Linq;
+using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
+using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Services.Test.MatchGeneration
 {
@@ -10,18 +13,15 @@ namespace OPCAIC.Services.Test.MatchGeneration
 		///     the Authors name is same as id.
 		/// </summary>
 		/// <param name="participants">Number of participants in the tournament.</param>
+		/// <param name="format">Format of the tournament.</param>
 		/// <returns></returns>
-		public static Tournament Generate(int participants)
+		public static TournamentDeadlineGenerationDto Generate(int participants, TournamentFormat format)
 		{
-			return new Tournament
+			return new TournamentDeadlineGenerationDto
 			{
 				Id = 1,
-				Submissions = Enumerable.Range(0, participants).Select(i => new Submission
-				{
-					Id = i,
-					Author = new User {Id = i, FirstName = i.ToString()},
-					IsActive = true
-				}).ToList()
+				Format = format,
+				ActiveSubmissionIds = Enumerable.Range(0, participants).Select(i => (long)i).ToList(),
 			};
 		}
 	}

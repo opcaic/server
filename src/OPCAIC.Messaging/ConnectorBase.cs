@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetMQ;
@@ -16,6 +18,8 @@ namespace OPCAIC.Messaging
 	/// <typeparam name="TItem">Base type of the sent messages.</typeparam>
 	public abstract class ConnectorBase<TSocket, TItem> : IDisposable where TSocket : NetMQSocket
 	{
+		private readonly Dictionary<TimedCallback, NetMQTimer> customTimers;
+
 		/// <summary>
 		///     Poller for workload tasks.
 		/// </summary>
@@ -48,6 +52,7 @@ namespace OPCAIC.Messaging
 
 			SocketPoller = new NetMQPoller();
 			ConsumerPoller = new NetMQPoller();
+			customTimers = new Dictionary<TimedCallback, NetMQTimer>();
 
 			// initiate the connection
 			ResetConnection();
@@ -174,9 +179,9 @@ namespace OPCAIC.Messaging
 		{
 			AssertSocketThread();
 			// avoid calling msg.ToString if debug is off
-			if (!msg.IsEmpty && !msg.Last.IsEmpty && Logger.IsEnabled(LogLevel.Debug))
+			if (!msg.IsEmpty && !msg.Last.IsEmpty && Logger.IsEnabled(LogLevel.Trace))
 			{
-				Logger.LogDebug($"[{Identity}] - Sending {msg}");
+				Logger.LogTrace($"[{Identity}] - Sending {msg}");
 			}
 
 			Socket.SendMultipartMessage(msg);
@@ -202,7 +207,6 @@ namespace OPCAIC.Messaging
 		///     Enqueues a new task to be done by the socket thread.
 		/// </summary>
 		/// <param name="task">The action to be performed in the task.</param>
-		/// <returns>Task which can be awaited for completion</returns>
 		protected void EnqueueSocketTask(Action task)
 		{
 			new Task(task).Start(SocketPoller);
@@ -212,16 +216,24 @@ namespace OPCAIC.Messaging
 		///     Enqueues a new task to be done by the consumer thread.
 		/// </summary>
 		/// <param name="task">The action to be performed in the task.</param>
-		/// <returns>Task which can be awaited for completion</returns>
-		protected void EnqueueConsumerTask(Action task)
+		protected void EnqueueConsumerTask(Func<Task> task)
 		{
-			new Task(task).Start(ConsumerPoller);
+			Task.Factory.StartNew(task, CancellationToken.None, TaskCreationOptions.None,
+				ConsumerPoller);
 		}
 
 		/// <summary>
 		///     Enqueues a new task to be done by the consumer thread.
 		/// </summary>
-		/// <param name="task">The task.</param>
+		/// <param name="task">The action to be performed in the task.</param>
+		protected void EnqueueConsumerTask(Action task)
+		{
+			EnqueueConsumerTask(new Task(task));
+		}
+
+		/// <summary>
+		///     Enqueues a new task to be done by the consumer thread.
+		/// </summary>
 		protected void EnqueueConsumerTask(Task task)
 		{
 			task.Start(ConsumerPoller);
@@ -247,9 +259,9 @@ namespace OPCAIC.Messaging
 		{
 			AssertSocketThread();
 			// avoid calling msg.ToString if debug is off
-			if (!msg.Last.IsEmpty && Logger.IsEnabled(LogLevel.Debug))
+			if (!msg.Last.IsEmpty && Logger.IsEnabled(LogLevel.Trace))
 			{
-				Logger.LogDebug($"[{Identity}] - Received {msg}");
+				Logger.LogTrace($"[{Identity}] - Received {msg}");
 			}
 
 			var item = ReceiveMessage(msg);
@@ -272,7 +284,7 @@ namespace OPCAIC.Messaging
 			else
 			{
 				// queue execution on worker thread
-				EnqueueConsumerTask(async () => await handler.Handler(item));
+				EnqueueConsumerTask(() => handler.Handler(item));
 			}
 
 			EnqueueConsumerTask(() => OnMessageReceived(item));
@@ -288,6 +300,41 @@ namespace OPCAIC.Messaging
 		{
 			AssertConsumerThread();
 			ReceivedMessage?.Invoke(this, message);
+		}
+
+		public void RegisterTimer(TimedCallback callback)
+		{
+			var timer = new NetMQTimer(callback.Period);
+			timer.Elapsed += (_, e) =>
+			{
+				callback.Callback();
+				e.Timer.EnableAndReset();
+			};
+			customTimers.Add(callback, timer);
+
+			if (callback.SocketThread)
+			{
+				SocketPoller.Add(timer);
+			}
+			else
+			{
+				ConsumerPoller.Add(timer);
+			}
+		}
+
+		public void UnregisterTimer(TimedCallback callback)
+		{
+			var timer = customTimers[callback];
+			customTimers.Remove(callback);
+
+			if (callback.SocketThread)
+			{
+				SocketPoller.Remove(timer);
+			}
+			else
+			{
+				ConsumerPoller.Remove(timer);
+			}
 		}
 
 		#region IDisposable Support

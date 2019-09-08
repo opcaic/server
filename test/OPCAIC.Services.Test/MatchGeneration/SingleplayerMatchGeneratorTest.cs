@@ -1,5 +1,8 @@
 ﻿using System.Linq;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Infrastructure.Enums;
+using Shouldly;
 using Xunit;
 
 namespace OPCAIC.Services.Test.MatchGeneration
@@ -8,22 +11,20 @@ namespace OPCAIC.Services.Test.MatchGeneration
 	{
 		private readonly SinglePlayerMatchGenerator generator = new SinglePlayerMatchGenerator();
 
-		private readonly Tournament tournament = TournamentDataGenerator.Generate(3);
+		private readonly TournamentDeadlineGenerationDto tournament = TournamentDataGenerator.Generate(3, TournamentFormat.SinglePlayer);
 
 		[Fact]
 		public void SimpleTest()
 		{
-			var (matches, done) = generator.Generate(tournament);
+			var matches = generator.Generate(tournament);
 
-			Assert.True(done); // always done
-			Assert.Equal(3, matches.Count());
+			matches.Count.ShouldBe(3);
 			foreach (var match in matches)
 			{
-				Assert.Equal(1, match.Participations.Count);
+				match.Submissions.Count.ShouldBe(1);
 			}
 
-			Assert.Equal(new[] {"0", "1", "2"},
-				matches.Select(m => m.Participations.Single().Submission.Author.FirstName));
+			matches.Select(m => m.Submissions.Single()).ShouldBe(new long[] {0,1,2});
 		}
 	}
 }

@@ -3,6 +3,7 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Services;
+using OPCAIC.Services.Extensions;
 
 namespace OPCAIC.ApiService.IoC
 {
@@ -11,7 +12,9 @@ namespace OPCAIC.ApiService.IoC
 		public static void AddServices(this IServiceCollection services)
 		{
 			services
+				.AddMatchGenerators()
 				.AddHostedService<BrokerReactor>()
+				.AddHostedService<TournamentProcessor>()
 				.AddScoped<IEmailService, EmailService>()
 				.AddScoped<IUserManager, UserManager>()
 				.AddScoped<IStorageService, StorageService>()

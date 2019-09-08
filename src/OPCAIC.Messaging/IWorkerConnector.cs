@@ -103,5 +103,17 @@ namespace OPCAIC.Messaging
 		///     <see cref="EnterConsumer" /> method.
 		/// </summary>
 		void StopConsumer();
+
+		/// <summary>
+		///     Registers a function to be periodically called on the socket thread.
+		/// </summary>
+		/// <param name="callback">The callback function.</param>
+		void RegisterTimer(TimedCallback callback);
+
+		/// <summary>
+		///     Unregisters a previously registered timed callback.
+		/// </summary>
+		/// <param name="callback">The callback function.</param>
+		void UnregisterTimer(TimedCallback callback);
 	}
 }

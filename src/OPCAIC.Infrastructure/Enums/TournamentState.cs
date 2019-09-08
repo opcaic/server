@@ -6,11 +6,6 @@
 	public enum TournamentState
 	{
 		/// <summary>
-		///     Unknown, should never occur.
-		/// </summary>
-		Unknown,
-
-		/// <summary>
 		///     Tournament was created.
 		/// </summary>
 		Created,
@@ -21,14 +16,19 @@
 		Published,
 
 		/// <summary>
-		///     Tournament is ready to run.
-		/// </summary>
-		ReadyToRun,
-
-		/// <summary>
 		///     Tournament is currently being evaluated.
 		/// </summary>
 		Running,
+
+		/// <summary>
+		///     Manually stopped by administrator, no matches are generated.
+		/// </summary>
+		Stopped,
+
+		/// <summary>
+		///     All matches have been scheduled, waiting for the last ones to execute.
+		/// </summary>
+		WaitingForFinish,
 
 		/// <summary>
 		///     Tournament's evaluation ended.

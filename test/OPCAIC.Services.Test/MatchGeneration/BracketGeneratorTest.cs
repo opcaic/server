@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Infrastructure.Dtos.Submissions;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
+using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.TestUtils;
+using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
-using Match = OPCAIC.Infrastructure.Entities.Match;
 
 namespace OPCAIC.Services.Test.MatchGeneration
 {
@@ -18,6 +21,12 @@ namespace OPCAIC.Services.Test.MatchGeneration
 		public SingleEliminationGeneratorTest(ITestOutputHelper output) : base(output)
 		{
 			generator = GetService<SingleEliminationMatchGenerator>();
+		}
+
+		/// <inheritdoc />
+		protected override TournamentFormat GetTournamentFormat()
+		{
+			return TournamentFormat.SingleElimination;
 		}
 	}
 
@@ -29,18 +38,24 @@ namespace OPCAIC.Services.Test.MatchGeneration
 			generator = GetService<DoubleEliminationMatchGenerator>();
 		}
 
+		/// <inheritdoc />
+		protected override TournamentFormat GetTournamentFormat()
+		{
+			return TournamentFormat.DoubleElimination;
+		}
+
 		[Fact]
 		public void GeneratesAdditionalMatchOnTie()
 		{
 			const int participants = 8;
 
 			var rand = new Random(42);
-			var tournament = TournamentDataGenerator.Generate(participants);
+			var extTournament = GenerateTournament(participants);
 			var tree = MatchTreeGenerator.GenerateDoubleElimination(participants);
 
 			// let the second one always win (and therefore the winner of winners bracket will lose in
 			// finals
-			var executions = Simulate(tournament, i => rand.Next(i), m => 1);
+			var executions = Simulate(extTournament, i => rand.Next(i), m => 1);
 
 			// all matches are executed (the extra tie breaker is not included in the generated tree)
 			Assert.Equal(tree.MatchNodesById.Count + 1, executions.Count);
@@ -55,14 +70,11 @@ namespace OPCAIC.Services.Test.MatchGeneration
 			Services.AddSingleton<IMatchTreeFactory>(new CachedMatchTreeFactory());
 
 			matchRepository = Services.Mock<IMatchRepository>();
-			mockMatches = new List<Match>();
-			matchRepository.Setup(r => r.AllMatchesFromTournament(It.IsAny<long>()))
-				.Returns(mockMatches);
+			new List<MatchDetailDto>();
 		}
 
-		protected IMatchGenerator generator;
+		protected IBracketsMatchGenerator generator;
 		private readonly Mock<IMatchRepository> matchRepository;
-		private readonly List<Match> mockMatches;
 
 
 		public static TheoryData<int, int> GetSeedsUpTo(int size)
@@ -76,47 +88,75 @@ namespace OPCAIC.Services.Test.MatchGeneration
 			return data;
 		}
 
+		protected TournamentBracketsGenerationDto GenerateTournament(int participants)
+		{
+			var tournament =
+				TournamentDataGenerator.Generate(participants, GetTournamentFormat());
+			var extTournament = new TournamentBracketsGenerationDto
+			{
+				Id = tournament.Id,
+				ActiveSubmissionIds = tournament.ActiveSubmissionIds,
+				Matches = new List<MatchDetailDto>(),
+				Format = tournament.Format
+			};
+			return extTournament;
+		}
+
+		protected abstract TournamentFormat GetTournamentFormat();
+
 		[Theory]
 		[InlineData(42, 42)]
 		[MemberData(nameof(GetSeedsUpTo), 3)]
 		public void SimpleSimulation(int seed, int participants)
 		{
 			var rand = new Random(seed);
-			var tournament = TournamentDataGenerator.Generate(participants);
+			var tournament = GenerateTournament(participants);
 
 			var executions = Simulate(tournament, i => rand.Next(i), m => rand.Next(2));
 
 			// all matches are executed
-			Assert.Equal(mockMatches.Count, executions.Count);
+			tournament.Matches.Count.ShouldBe(executions.Count);
 		}
 
-		protected List<MatchExecution> Simulate(Tournament tournament, Func<int, int> matchPicker,
-			Func<Match, int> resultPicker)
+		protected List<MatchExecutionDto> Simulate(TournamentBracketsGenerationDto tournament,
+			Func<int, int> matchPicker,
+			Func<MatchDetailDto, int> resultPicker)
 		{
-			var toExecute = new List<Match>();
-			var executions = new List<MatchExecution>();
-			var executionId = 0;
+			var toExecute = new List<MatchDetailDto>();
+			var executions = new List<MatchExecutionDto>();
+			var tournamentRef =
+				new TournamentReferenceDto {Id = tournament.Id, Name = "Mock Tournament"};
 
 			var (matches, done) = generator.Generate(tournament);
 			while (!done)
 			{
-				toExecute.AddRange(matches);
-				mockMatches.AddRange(matches);
+				var newMatches = matches.Select(m => new MatchDetailDto
+				{
+					Tournament = tournamentRef,
+					Submissions =
+						m.Submissions.ConvertAll(i => new SubmissionReferenceDto {Id = i}),
+					Index = m.Index,
+					Executions = new List<MatchExecutionDto>
+					{
+						new MatchExecutionDto {Created = DateTime.Now}
+					}
+				}).ToList();
 
-				// pick random match
+				toExecute.AddRange(newMatches);
+				tournament.Matches.AddRange(newMatches); // to be fetched next time
+
+				// pick some match
 				var matchIdx = matchPicker(toExecute.Count);
 				var match = toExecute[matchIdx];
 				toExecute.RemoveAt(matchIdx);
 
 				// basic checks
-				Assert.Equal(2, match.Participations.Count);
-				Assert.NotEqual(match.Participations[0], match.Participations[1]);
-				Assert.True(match.Participations.All(p => p?.Submission != null));
+				match.Submissions.Count.ShouldBe(2);
+				match.Submissions[0].ShouldNotBe(match.Submissions[1]);
 
 				// execute the match
-				var execution = ExecuteMatch(match, executionId++, resultPicker(match));
-				match.Executions = new List<MatchExecution> {execution};
-				executions.Add(execution);
+				ExecuteMatch(match.Executions[0], match.Submissions, resultPicker(match));
+				executions.Add(match.Executions[0]);
 
 				// invoke generation of next match
 				(matches, done) = generator.Generate(tournament);
@@ -125,58 +165,52 @@ namespace OPCAIC.Services.Test.MatchGeneration
 			return executions;
 		}
 
-		private MatchExecution ExecuteMatch(Match match, int id, int result)
+		private void ExecuteMatch(MatchExecutionDto execution,
+			IList<SubmissionReferenceDto> submissions, int result)
 		{
-			return new MatchExecution
-			{
-				Id = id,
-				MatchId = match.Id,
-				Created = DateTime.Today,
-				Updated = DateTime.Now,
-				Executed = DateTime.Now,
-				BotResults = Enumerable.Range(0, 2).Select(i =>
-					new SubmissionMatchResult
-					{
-						Submission = match.Participations[i].Submission,
-						ExecutionId = id,
-						Score = result == i ? 1 : 0
-					}).ToList()
-			};
+			execution.Executed = DateTime.Now;
+			execution.AdditionalData = "{}";
+			execution.ExecutorResult = EntryPointResult.Success;
+			execution.BotResults = Enumerable.Range(0, 2).Select(i =>
+				new SubmissionMatchResultDto
+				{
+					Submission = new SubmissionReferenceDto {Id = submissions[i].Id},
+					Score = result == i ? 1 : 0,
+					AdditionalData = "{}"
+				}).ToList();
 		}
 
 		[Fact]
 		public void SimpleStart()
 		{
-			var tournament = TournamentDataGenerator.Generate(4);
+			var tournament = GenerateTournament(4);
 
 			var (matches, done) = generator.Generate(tournament);
 
-			Assert.False(done); // always done
-			Assert.Equal(2, matches.Count()); // bottom matches
+			done.ShouldBe(false);
+			matches.Count.ShouldBe(2); // bottom matches
 
 			foreach (var match in matches)
 			{
-				Assert.Equal(2, match.Participations.Count);
-				Assert.Contains(string.Join("+", match.Participations.Select(p => p.Submission).Select(p => p.Author.FirstName)),
-					new[] {"0+3", "1+2"});
+				match.Submissions.Count.ShouldBe(2);
+				new[] {"0+3", "1+2"}.ShouldContain(string.Join("+", match.Submissions));
 			}
 		}
 
 		[Fact]
 		public void UnevenStart()
 		{
-			var tournament = TournamentDataGenerator.Generate(6);
+			var tournament = GenerateTournament(6);
 
 			var (matches, done) = generator.Generate(tournament);
 
-			Assert.False(done); // always done
-			Assert.Equal(2, matches.Count()); // bottom matches
+			done.ShouldBe(false);
+			matches.Count.ShouldBe(2); // bottom matches
 
 			foreach (var match in matches)
 			{
-				Assert.Equal(2, match.Participations.Count);
-				Assert.Contains(string.Join("+", match.Participations.Select(p => p.Submission).Select(p => p.Author.FirstName)),
-					new[] {"3+4", "2+5"});
+				match.Submissions.Count.ShouldBe(2);
+				new[] {"3+4", "2+5"}.ShouldContain(string.Join("+", match.Submissions));
 			}
 		}
 	}

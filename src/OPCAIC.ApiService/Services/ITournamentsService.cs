@@ -18,5 +18,6 @@ namespace OPCAIC.ApiService.Services
 		Task<TournamentDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken);
 
 		Task UpdateAsync(long id, UpdateTournamentModel model, CancellationToken cancellationToken);
+		Task StartTournamentEvaluation(long id, CancellationToken cancellationToken);
 	}
 }

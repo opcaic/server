@@ -21,12 +21,13 @@ namespace OPCAIC.ApiService.Health
 			services
 				.AddHealthChecks()
 				.AddDbContextCheck<DataContext>()
+				.AddMemoryHealthCheck("memory")
 				.AddCheck<BrokerHealthCheck>("broker");
 		}
 
 		private static Task ResponseWriter(HttpContext context, HealthReport report)
 		{
-			return context.Response.WriteAsync(JsonConvert.SerializeObject(report));
+			return context.Response.WriteAsync(JsonConvert.SerializeObject(report, Formatting.Indented));
 		}
 	}
 }

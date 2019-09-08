@@ -13,7 +13,8 @@
 		Join,
 		EditDocument,
 		DownloadAdditionalFiles,
-		UploadAdditionalFiles
+		UploadAdditionalFiles,
+		StartTournamentEvaluation,
 	}
 
 	public enum UserPermission

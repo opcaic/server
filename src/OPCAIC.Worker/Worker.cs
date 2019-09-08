@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +30,8 @@ namespace OPCAIC.Worker
 		private readonly Random rand = new Random();
 		private readonly IServiceProvider serviceProvider;
 		private Thread consumerThread;
+
+		private TimedCallback reportCallback;
 
 		private CancellationTokenSource currentTaskCts;
 
@@ -83,17 +86,39 @@ namespace OPCAIC.Worker
 				ServeRequest<MatchExecutionRequest, MatchExecutionResult>);
 			connector.RegisterAsyncHandler<SubmissionValidationRequest>(
 				ServeRequest<SubmissionValidationRequest, SubmissionValidationResult>);
-			connector.RegisterHandler<SetHeartbeatMessage>(SetHeartbeat);
+			connector.RegisterHandler<SetConfigMessage>(SetConfig);
 			connector.RegisterHandler<CancelTaskMessage>(CancelTask);
 		}
 
-		private void SetHeartbeat(SetHeartbeatMessage msg)
+		private void SetConfig(SetConfigMessage msg)
 		{
 			logger.LogInformation(LoggingEvents.WorkerConnection, "Resetting heartbeat config.");
 			connector.SetHeartbeatConfig(msg.HeartbeatConfig);
+
+			if (reportCallback != null)
+			{
+				connector.UnregisterTimer(reportCallback);
+			}
+
+			reportCallback = new TimedCallback(SendReport, msg.ReportPeriod, true);
+			connector.RegisterTimer(reportCallback);
 			
 			// resend worker capabilities, this makes sure the capabilities are not forgotten when reconnecting after timeout
 			SendCapabilities();
+		}
+
+		private void SendReport()
+		{
+			var driveInfo = new DriveInfo(System.AppContext.BaseDirectory);
+			connector.SendMessage(new WorkerStatsReport
+			{
+				AllocatedBytes = GC.GetTotalMemory(false),
+				Gen0Collections = GC.CollectionCount(0),
+				Gen1Collections = GC.CollectionCount(1),
+				Gen2Collections = GC.CollectionCount(2),
+				DiskSpace = driveInfo.TotalSize,
+				DiskSpaceLeft = driveInfo.AvailableFreeSpace,
+			});
 		}
 
 		private void CancelTask(CancelTaskMessage _)

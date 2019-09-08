@@ -28,6 +28,8 @@
 
 		public static string TournamentDeadlinePassed => "deadline-passed";
 
+		public static string TournamentEvaluationAlreadyStarted => "evaluation-already-started";
+
 		#endregion
 
 		#region Password

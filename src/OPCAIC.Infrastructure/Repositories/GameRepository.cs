@@ -17,6 +17,7 @@ namespace OPCAIC.Infrastructure.Repositories
 				UpdateGameDto>,
 			IGameRepository
 	{
+		// must be kept in sync with TournamentRepository.ActiveTournamentPredicate
 		public static readonly Expression<Func<Game, int>> ActiveTournamentsExpression
 			= g => g.Tournaments.Count(t
 				=> t.State == TournamentState.Published &&

@@ -18,6 +18,11 @@ namespace OPCAIC.Broker
 		Task<BrokerStats> GetStats();
 
 		/// <summary>
+		///     Event called when a message cannot be processed because no worker is capable.
+		/// </summary>
+		event EventHandler<WorkMessageBase> MessageExpired;
+
+		/// <summary>
 		///     Enqueues a work item to be dispatched on a worker.
 		/// </summary>
 		/// <param name="msg"></param>

@@ -168,7 +168,7 @@ namespace OPCAIC.Worker.Test
 		public void UpdatesHeartbeatConfig()
 		{
 			var config = new HeartbeatConfig();
-			connectorHelper.SetupSocketReceive(new SetHeartbeatMessage {HeartbeatConfig = config});
+			connectorHelper.SetupSocketReceive(new SetConfigMessage {HeartbeatConfig = config});
 
 			RunWorker();
 

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Infrastructure.Dtos.Submissions;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
@@ -16,14 +19,12 @@ namespace OPCAIC.Services
 	public abstract class BracketMatchGenerator
 	{
 		protected readonly ILogger Logger;
-		protected readonly IMatchRepository MatchRepository;
 		protected readonly IMatchTreeFactory matchTreeFactory;
 
 		/// <inheritdoc />
-		protected BracketMatchGenerator(ILogger logger, IMatchRepository matchRepository,
+		protected BracketMatchGenerator(ILogger logger,
 			IMatchTreeFactory matchTreeFactory)
 		{
-			MatchRepository = matchRepository;
 			this.matchTreeFactory = matchTreeFactory;
 			Logger = logger;
 		}
@@ -36,19 +37,25 @@ namespace OPCAIC.Services
 		/// <param name="matches">Matches executed so far, lookup by their index.</param>
 		/// <param name="submissions">All submissions participating in the match.</param>
 		/// <returns></returns>
-		private static Submission GetLinkedSubmission(MatchTreeLink link,
-			Dictionary<long, Match> matches,
-			List<Submission> submissions)
+		private static long? GetLinkedSubmission(MatchTreeLink link,
+			Dictionary<long, MatchDetailDto> matches,
+			List<long> submissions)
 		{
 			switch (link.Type)
 			{
 				case MatchTreeLinkType.Winner:
 				case MatchTreeLinkType.Looser:
-					var execution = matches.GetValueOrDefault(link.SourceNode.MatchIndex)
-						?.Executions?.OrderBy(e => e.Created).FirstOrDefault();
+					var execution = matches.GetValueOrDefault(link.SourceNode.MatchIndex)?
+						.Executions.OrderBy(e => e.Created).First();
+
+					if (execution?.ExecutorResult != EntryPointResult.Success)
+					{
+						return null; // either not executed or error
+					}
+
 					return link.Type == MatchTreeLinkType.Winner
-						? execution?.BotResults.ArgMaxOrDefault(r => r.Score).Submission
-						: execution?.BotResults.ArgMinOrDefault(r => r.Score).Submission;
+						? execution.BotResults.ArgMaxOrDefault(r => r.Score).Submission.Id
+						: execution.BotResults.ArgMinOrDefault(r => r.Score).Submission.Id;
 				case MatchTreeLinkType.Seed:
 					return submissions[link.SourceSeed];
 				default:
@@ -64,11 +71,12 @@ namespace OPCAIC.Services
 		/// <param name="matchTree">Generated match tree template for given tournament.</param>
 		/// <param name="queuedMatches">Matches already queued for execution.</param>
 		/// <returns></returns>
-		protected List<Match> GenerateInternal(Tournament tournament, MatchTreeBase matchTree,
-			Dictionary<long, Match> queuedMatches)
+		protected List<NewMatchDto> GenerateInternal(TournamentBracketsGenerationDto tournament, MatchTreeBase matchTree,
+			Dictionary<long, MatchDetailDto> queuedMatches)
 		{
-			var submissions = tournament.GetActiveSubmissions().OrderBy(s => s.Id).ToList();
-			var matches = new List<Match>(submissions.Count);
+			var submissions = tournament.ActiveSubmissionIds;
+			submissions.Sort();
+			var matches = new List<NewMatchDto>(submissions.Count);
 
 			foreach (var treeLevel in matchTree.Levels)
 			{
@@ -88,15 +96,14 @@ namespace OPCAIC.Services
 
 					if (firstPlayer != null && secondPlayer != null)
 					{
-						matches.Add(new Match
+						matches.Add(new NewMatchDto()
 						{
 							Index = matchNode.MatchIndex,
-							Tournament = tournament,
 							TournamentId = tournament.Id,
-							Participations = new[]
+							Submissions = new List<long>(2)
 							{
-								new SubmissionParticipation {Submission = firstPlayer},
-								new SubmissionParticipation {Submission = secondPlayer}
+								firstPlayer.Value,
+								secondPlayer.Value
 							}
 						});
 					}
@@ -113,14 +120,14 @@ namespace OPCAIC.Services
 		}
 
 		/// <summary>
-		///     Gets winner <see cref="Submission" /> of the match or null if the match has not been
+		///     Gets reference <see cref="SubmissionReferenceDto" /> to the winner of the match or null if the match has not been
 		///     executed yet.
 		/// </summary>
 		/// <param name="match">The match.</param>
 		/// <returns></returns>
-		protected static Submission GetMatchWinner(Match match)
+		protected static SubmissionReferenceDto GetMatchWinner(MatchDetailDto match)
 		{
-			Debug.Assert(match.Participations.Count == 2);
+			Debug.Assert(match.Submissions.Count == 2);
 
 			return match.Executions?.OrderBy(e => e.Created).FirstOrDefault()?.BotResults
 				.ArgMax(r => r.Score).Submission;
@@ -130,12 +137,10 @@ namespace OPCAIC.Services
 	/// <summary>
 	///     Match generator for the double-elimination bracket tournament format.
 	/// </summary>
-	public class DoubleEliminationMatchGenerator : BracketMatchGenerator, IMatchGenerator
+	public class DoubleEliminationMatchGenerator : BracketMatchGenerator, IBracketsMatchGenerator
 	{
 		/// <inheritdoc />
-		public DoubleEliminationMatchGenerator(ILogger<DoubleEliminationMatchGenerator> logger,
-			IMatchRepository matchRepository, IMatchTreeFactory matchTreeFactory) : base(logger,
-			matchRepository, matchTreeFactory)
+		public DoubleEliminationMatchGenerator(ILogger<DoubleEliminationMatchGenerator> logger, IMatchTreeFactory matchTreeFactory) : base(logger, matchTreeFactory)
 		{
 		}
 
@@ -143,43 +148,43 @@ namespace OPCAIC.Services
 		public TournamentFormat Format => TournamentFormat.DoubleElimination;
 
 		/// <inheritdoc />
-		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
+		public (List<NewMatchDto> matches, bool done) Generate(
+			TournamentBracketsGenerationDto tournament)
 		{
-			var tree = matchTreeFactory.GetDoubleEliminationTree(tournament.Submissions.Count);
-			var queued = MatchRepository.AllMatchesFromTournament(tournament.Id)
-				.ToDictionary(m => m.Index);
+			Require.That<ArgumentException>(Format == tournament.Format, "Wrong tournament format");
+			var tree = matchTreeFactory.GetDoubleEliminationTree(tournament.ActiveSubmissionIds.Count);
+			var queued = tournament.Matches.ToDictionary(m => m.Index);
 
 			if (tree.Final == null)
 			{
-				return (Enumerable.Empty<Match>(), true); // edge case
+				return (new List<NewMatchDto>(), true); // edge case
 			}
 
 			if (queued.TryGetValue(tree.Final.MatchIndex, out var match) &&
 				GetMatchWinner(match) != null)
 			{
 				// if final has been already finished, check if the additional match is needed
-				if (match.Participations[0].SubmissionId != GetMatchWinner(match).Id &&
+				if (match.Submissions[0].Id != GetMatchWinner(match).Id &&
 					queued.Count == tree.MatchNodesById.Count)
 				{
 					// winner comes from losers bracket, and needs to win twice in order for the tournament to be fair
 					// tie breaker already scheduled
-					var participations = match.Participations
+					var participations = match.Submissions
+						.Select(s => s.Id)
 						.Reverse() // switch the sides
-						.Select(p => new SubmissionParticipation {Submission = p.Submission})
 						.ToList();
 
-					var m = new Match
+					var m = new NewMatchDto
 					{
 						Index = tree.MatchNodesById.Count,
-						Tournament = tournament,
 						TournamentId = tournament.Id,
-						Participations = participations
+						Submissions = participations
 					};
 
-					return (Enumerable.Repeat(m, 1), false); // last match
+					return (new List<NewMatchDto> { m }, false); // last match
 				}
 
-				return (Enumerable.Empty<Match>(), true); // no more matches
+				return (new List<NewMatchDto>(), true); // no more matches
 			}
 
 			var matches = GenerateInternal(tournament, tree, queued);
@@ -190,12 +195,12 @@ namespace OPCAIC.Services
 	/// <summary>
 	///     Match generator for the single-elimination (single third place) bracket tournament format.
 	/// </summary>
-	internal class SingleEliminationMatchGenerator : BracketMatchGenerator, IMatchGenerator
+	internal class SingleEliminationMatchGenerator : BracketMatchGenerator, IBracketsMatchGenerator
 	{
 		/// <inheritdoc />
 		public SingleEliminationMatchGenerator(ILogger<SingleEliminationMatchGenerator> logger,
-			IMatchRepository matchRepository, IMatchTreeFactory matchTreeFactory) : base(logger,
-			matchRepository, matchTreeFactory)
+			IMatchTreeFactory matchTreeFactory) 
+			: base(logger, matchTreeFactory)
 		{
 		}
 
@@ -203,12 +208,13 @@ namespace OPCAIC.Services
 		public TournamentFormat Format => TournamentFormat.SingleElimination;
 
 		/// <inheritdoc />
-		public (IEnumerable<Match> matches, bool done) Generate(Tournament tournament)
+		public (List<NewMatchDto> matches, bool done) Generate(
+			TournamentBracketsGenerationDto tournament)
 		{
+			Require.That<ArgumentException>(Format == tournament.Format, "Wrong tournament format");
 			var tree =
-				matchTreeFactory.GetSingleEliminationTree(tournament.Submissions.Count, true);
-			var queued = MatchRepository.AllMatchesFromTournament(tournament.Id)
-				.ToDictionary(m => m.Index);
+				matchTreeFactory.GetSingleEliminationTree(tournament.ActiveSubmissionIds.Count, true);
+			var queued = tournament.Matches.ToDictionary(m => m.Index);
 			var matches = GenerateInternal(tournament, tree, queued);
 
 			return (matches, tree.MatchNodesById.Count == queued.Count + matches.Count);

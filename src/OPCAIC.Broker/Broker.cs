@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
@@ -19,33 +20,60 @@ namespace OPCAIC.Broker
 		private readonly Dictionary<string, WorkerEntry> workers;
 		private readonly ILogger logger;
 		private readonly SortedSet<WorkItem> taskQueue;
+		private readonly BrokerOptions options;
 		private Thread consumerThread;
 		private bool shuttingDown;
 
 		private Thread socketThread;
 
-		public Broker(IBrokerConnector connector, ILogger<Broker> logger)
+		public Broker(IBrokerConnector connector, ILogger<Broker> logger, IOptions<BrokerOptions> options)
 		{
 			shuttingDown = false;
+			this.options = options.Value;
 			this.connector = connector;
 			this.logger = logger;
 			workers = new Dictionary<string, WorkerEntry>();
 			taskQueue = new SortedSet<WorkItem>();
+			connector.RegisterTimer(new TimedCallback(CleanupQueue, TimeSpan.FromSeconds(1)));
 			RegisterHandlers();
 		}
 
 		/// <inheritdoc />
 		public Task<BrokerStats> GetStats()
 		{
-			return Schedule(() => new BrokerStats
+			return Schedule(() =>
 			{
-				Workers = workers.Values.Select(w => new WorkerInfo
+				return new BrokerStats
 				{
-					Identity = w.Identity,
-					CurrentJob = w.CurrentWorkItem?.Payload.JobId,
-					Games = w.Capabilities.SupportedGames
-				}).ToList()
+					Workers = workers.Values.Select(w => new WorkerInfo
+					{
+						Identity = w.Identity,
+						CurrentJob = w.CurrentWorkItem?.Payload.JobId,
+						Games = w.Capabilities?.SupportedGames,
+						Stats = w.Stats == null ? null : new WorkerStats
+						{
+							Timestamp =	w.StatsReceived,
+							AllocatedBytes = w.Stats.AllocatedBytes,
+							Gen0Collections = w.Stats.Gen0Collections,
+							Gen1Collections = w.Stats.Gen1Collections,
+							Gen2Collections = w.Stats.Gen2Collections,
+							DiskSpaceLeft = w.Stats.DiskSpaceLeft,
+							DiskSpace = w.Stats.DiskSpace
+						}
+					}).ToList(),
+					Games = GetGames(),
+					JobCount = taskQueue.Count
+				};
 			});
+		}
+
+		/// <inheritdoc />
+		public event EventHandler<WorkMessageBase> MessageExpired;
+
+		private ICollection<string> GetGames()
+		{
+			return workers.Where(w => w.Value.Capabilities != null)
+				.SelectMany(w => w.Value.Capabilities.SupportedGames).ToHashSet();
 		}
 
 		/// <inheritdoc />
@@ -168,25 +196,29 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		private Task EnqueueWork(WorkMessageBase msg, DateTime queueTime)
+		public Task EnqueueWork(WorkMessageBase msg, DateTime queueTime)
 		{
 			Require.ArgNotNull(msg, nameof(msg));
 
 			return Schedule(() =>
 			{
-				var capableWorkers = workers.Values.Where(w => CanWorkerExecute(w, msg)).ToArray();
-				if (capableWorkers.Length == 0)
+				var work = new WorkItem
 				{
-					logger.LogError($"No worker can execute game {msg.Game}");
-				}
+					Payload = msg,
+					QueuedTime = queueTime,
+					ExpirationTime = DateTime.Now.AddSeconds(options.TaskRetentionSeconds)
+				};
 
-				taskQueue.Add(new WorkItem {Payload = msg, QueuedTime = queueTime});
-
-				// enqueue to worker with shortest queue
-				var worker = capableWorkers.FirstOrDefault(w => w.CurrentWorkItem == null);
+				// dispatch if some worker is available
+				var worker = workers.Values.Where(w => CanWorkerExecute(w, msg)).FirstOrDefault(w => w.CurrentWorkItem == null);
 				if (worker != null)
 				{
-					DispatchWork(worker);
+					AssignWork(worker, work);
+				}
+				else
+				{
+					// will be dispatched later
+					taskQueue.Add(work);
 				}
 			});
 		}
@@ -246,18 +278,57 @@ namespace OPCAIC.Broker
 				return;
 			}
 
-			var work = taskQueue.FirstOrDefault(i => CanWorkerExecute(worker, i.Payload));
+			var work = SelectWork(worker);
 			if (work == null)
 			{
 				// nothing to be done
 				return;
 			}
 
-			taskQueue.Remove(work);
+			AssignWork(worker, work);
+		}
 
+		private void AssignWork(WorkerEntry worker, WorkItem work)
+		{
 			logger.LogInformation($"Dispatching work to {worker.Identity}");
 			worker.CurrentWorkItem = work;
 			Send(worker, work.Payload);
+		}
+
+		private WorkItem SelectWork(WorkerEntry worker)
+		{
+			var work = taskQueue.FirstOrDefault(i => CanWorkerExecute(worker, i.Payload));
+			taskQueue.Remove(work);
+			return work;
+		}
+
+		private void CleanupQueue()
+		{
+			var now = DateTime.Now;
+
+			var games = GetGames();
+			var newExpire = now.AddSeconds(options.TaskRetentionSeconds);
+			var removed = new List<WorkMessageBase>();
+
+			taskQueue.RemoveWhere(w =>
+			{
+				if (games.Contains(w.Payload.Game))
+				{
+					w.ExpirationTime = newExpire;
+				}
+				else if ((now - w.QueuedTime).TotalSeconds > options.TaskRetentionSeconds)
+				{
+					removed.Add(w.Payload);
+					return true;
+				}
+
+				return false;
+			});
+
+			foreach (var msg in removed)
+			{
+				MessageExpired?.Invoke(this, msg);
+			}
 		}
 
 		private void RegisterHandlers()
@@ -269,6 +340,12 @@ namespace OPCAIC.Broker
 
 			// message handlers
 			RegisterInternalHandler<WorkerConnectMessage>(OnWorkerConnected);
+			RegisterInternalHandler<WorkerStatsReport>(OnWorkerStatsReport);
+		}
+
+		private void OnWorkerStatsReport(WorkerEntry worker, WorkerStatsReport stats)
+		{
+			worker.Stats = stats;
 		}
 
 		private void OnMessageReceived(string sender, object message)
@@ -276,6 +353,7 @@ namespace OPCAIC.Broker
 			switch (message)
 			{
 				case WorkerConnectMessage _:
+				case WorkerStatsReport _:
 				case ReplyMessageBase msg when msg.JobStatus == JobStatus.Canceled:
 					return; // no more reaction needed
 			}
@@ -349,7 +427,11 @@ namespace OPCAIC.Broker
 		{
 			logger.LogInformation($"Sending heartbeat config to {worker.Identity}");
 			CancelWork(worker);
-			Send(worker, new SetHeartbeatMessage {HeartbeatConfig = connector.HeartbeatConfig});
+			Send(worker, new SetConfigMessage
+			{
+				HeartbeatConfig = connector.HeartbeatConfig,
+				ReportPeriod = TimeSpan.FromSeconds(10)
+			});
 		}
 
 		private static bool CanWorkerExecute(WorkerEntry worker, WorkMessageBase msg)

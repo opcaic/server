@@ -1,82 +1,121 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Broker;
+using OPCAIC.Infrastructure.Dtos;
+using OPCAIC.Infrastructure.Dtos.MatchExecutions;
+using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
+using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService.Services
 {
-	public class BrokerReactor : IHostedService
+	public class BrokerReactor : HostedJob
 	{
-		private readonly IServiceProvider serviceProvider;
-		private readonly ILogger<BrokerReactor> logger;
+		private readonly IBroker broker;
+		private const int maxBrokerItems = 50;
 
 		public BrokerReactor(IBroker broker, IServiceProvider serviceProvider, ILogger<BrokerReactor> logger)
+			: base(serviceProvider, logger, TimeSpan.FromSeconds(1))
 		{
-			this.serviceProvider = serviceProvider;
-			this.logger = logger;
-
+			this.broker = broker;
 			broker.RegisterHandler<MatchExecutionResult>(
-				msg => Task.Run(() => ScopeExecute(sp => OnMatchExecuted(sp, msg))));
+				msg => Task.Run(() => ScopeExecute((sp, ct) => OnMatchExecuted(sp, msg, ct))));
 			broker.RegisterHandler<SubmissionValidationResult>(
-				msg => Task.Run(() => ScopeExecute(sp => OnSubmissionValidated(sp, msg))));
-		}
-
-
-		/// <inheritdoc />
-		public Task StartAsync(CancellationToken cancellationToken)
-		{
-			return Task.CompletedTask;
+				msg => Task.Run(() => ScopeExecute((sp, ct) => OnSubmissionValidated(sp, msg, ct))));
+			
+			broker.MessageExpired += (_,msg) => Task.Run(() => ScopeExecute((sp, ct) => OnTaskExpired(sp, msg, ct)));
 		}
 
 		/// <inheritdoc />
-		public Task StopAsync(CancellationToken cancellationToken)
+		protected override async Task ExecuteJob(IServiceProvider scopedProvider, CancellationToken cancellationToken)
 		{
-			return Task.CompletedTask;
-		}
-
-		private async Task ScopeExecute(Func<IServiceProvider, Task> action)
-		{
-			var scope = serviceProvider.CreateScope();
-			try
+			// TODO: filter the queues by available games
+			var toQueue = maxBrokerItems - await broker.GetUnfinishedTasksCount();
+			if (toQueue <= 0)
 			{
-				await action(scope.ServiceProvider);
+				return;
 			}
-			catch (Exception e) when (Log(e))
-			{ 
-				// already logged in Log(e)
-			}
-			finally
+			var stats = await broker.GetStats();
+			var requests = new List<JobDtoBase>(2 * toQueue);
+
+			var validationService = scopedProvider.GetRequiredService<ISubmissionValidationService>();
+			var validationRepository = scopedProvider.GetRequiredService<ISubmissionValidationRepository>();
+			var executionService = scopedProvider.GetRequiredService<IMatchExecutionService>();
+			var executionRepository = scopedProvider.GetRequiredService<IMatchExecutionRepository>();
+
+			requests.AddRange(await validationRepository.GetRequestsForSchedulingAsync(toQueue, WorkerJobState.Waiting, stats.Games, cancellationToken));
+			requests.AddRange(await executionRepository.GetRequestsForSchedulingAsync(toQueue, WorkerJobState.Waiting, stats.Games, cancellationToken));
+
+			requests.Sort((l, r) => l.Created.CompareTo(r.Created));
+
+			foreach (var job in requests.Take(toQueue))
 			{
-				scope.Dispose();
+				switch (job)
+				{
+					case SubmissionValidationRequestDataDto dto:
+						await broker.EnqueueWork(validationService.CreateRequest(dto));
+						await validationRepository.UpdateJobStateAsync(dto.JobId,
+							new JobStateUpdateDto {State = WorkerJobState.Scheduled},
+							cancellationToken);
+						break;
+
+					case MatchExecutionRequestDataDto dto:
+						await broker.EnqueueWork(executionService.CreateRequest(dto));
+						await executionRepository.UpdateJobStateAsync(dto.JobId,
+							new JobStateUpdateDto {State = WorkerJobState.Scheduled},
+							cancellationToken);
+						break;
+
+					default:
+						throw new InvalidOperationException("Should never get here");
+				}
 			}
 		}
 
-		private bool Log(Exception e)
+		private async Task OnMatchExecuted(IServiceProvider services, MatchExecutionResult result, CancellationToken cancellationToken)
 		{
-			logger.LogCritical(e, e.Message);
-			return true;
-		}
-
-		private async Task OnMatchExecuted(IServiceProvider services, MatchExecutionResult result)
-		{
-			using (logger.BeginScope((LoggingTags.JobId, result.JobId)))
+			using (Logger.BeginScope((LoggingTags.JobId, result.JobId)))
 			{
 				var executionService = services.GetRequiredService<IMatchExecutionService>();
 				await executionService.UpdateFromMessage(result);
 			}
 		}
 
-		private async Task OnSubmissionValidated(IServiceProvider services, SubmissionValidationResult result)
+		private async Task OnSubmissionValidated(IServiceProvider services, SubmissionValidationResult result, CancellationToken cancellationToken)
 		{
-			using (logger.BeginScope((LoggingTags.JobId, result.JobId)))
+			using (Logger.BeginScope((LoggingTags.JobId, result.JobId)))
 			{
 				var validationService = services.GetRequiredService<ISubmissionValidationService>();
 				await validationService.UpdateFromMessage(result);
+			}
+		}
+
+		private async Task OnTaskExpired(IServiceProvider services, WorkMessageBase msg, CancellationToken cancellationToken)
+		{
+			Logger.LogWarning($"Execution of job {{{LoggingTags.JobId}}} expired, because there is no worker which could process it", msg.JobId);
+			switch (msg)
+			{
+				case SubmissionValidationRequest req:
+					var validationService = services.GetRequiredService<ISubmissionValidationService>();
+					await validationService.OnValidationRequestExpired(req.JobId);
+					return;
+
+				case MatchExecutionRequest req:
+					var executionService = services.GetRequiredService<IMatchExecutionService>();
+					await executionService.OnExecutionRequestExpired(req.JobId);
+					return;
+
+				default:
+					throw new ArgumentOutOfRangeException(nameof(msg), msg, "Unknown message type");
 			}
 		}
 	}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,15 +16,18 @@ namespace OPCAIC.TestUtils
 	public abstract class ServiceTestBase : IDisposable
 	{
 		private readonly TestDirectoryManager directoryManager;
-		protected readonly ITestOutputHelper Output;
 		protected readonly ILoggerFactory LoggerFactory;
+		protected readonly ITestOutputHelper Output;
 		private ServiceProvider provider;
 		private MockingServiceCollection services;
+
+		private readonly IList<IDisposable> toDispose;
 
 		protected ServiceTestBase(ITestOutputHelper output)
 		{
 			Output = output;
 			directoryManager = new TestDirectoryManager();
+			toDispose = new List<IDisposable>();
 
 			services = new MockingServiceCollection(output);
 			services
@@ -33,19 +37,6 @@ namespace OPCAIC.TestUtils
 			LoggerFactory = new LoggerFactory();
 			LoggerFactory.AddProvider(new XUnitLoggerProvider(output));
 			services.AddSingleton(LoggerFactory);
-		}
-
-		protected void UseDatabase()
-		{
-			// random new name so tests can run in parallel
-			var dbName = Guid.NewGuid().ToString();
-
-			Services.AddDbContext<DataContext>(options =>
-			{
-				options.UseInMemoryDatabase(dbName);
-				options.EnableSensitiveDataLogging();
-				options.EnableDetailedErrors();
-			});
 		}
 
 		protected MockingServiceCollection Services
@@ -62,6 +53,24 @@ namespace OPCAIC.TestUtils
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
+		}
+
+		protected void RegisterDispose(IDisposable item)
+		{
+			toDispose.Add(item);
+		}
+
+		protected void UseDatabase()
+		{
+			// random new name so tests can run in parallel
+			var dbName = Guid.NewGuid().ToString();
+
+			Services.AddDbContext<DataContext>(options =>
+			{
+				options.UseInMemoryDatabase(dbName);
+				options.EnableSensitiveDataLogging();
+				options.EnableDetailedErrors();
+			});
 		}
 
 		private ServiceProvider BuildServiceProvider()
@@ -127,6 +136,10 @@ namespace OPCAIC.TestUtils
 		{
 			if (disposing)
 			{
+				foreach (var disposable in toDispose)
+				{
+					disposable.Dispose();
+				}
 				provider?.Dispose();
 				directoryManager.Dispose();
 			}

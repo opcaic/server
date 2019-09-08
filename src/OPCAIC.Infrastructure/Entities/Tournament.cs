@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Entities
@@ -64,6 +63,11 @@ namespace OPCAIC.Infrastructure.Entities
 		public virtual IList<Submission> Submissions { get; set; }
 
 		/// <summary>
+		///     All matches in this tournament.
+		/// </summary>
+		public virtual IList<Match> Matches { get; set; }
+
+		/// <summary>
 		///     The format of this tournament.
 		/// </summary>
 		public TournamentFormat Format { get; set; }
@@ -104,7 +108,7 @@ namespace OPCAIC.Infrastructure.Entities
 		public DateTime? EvaluationFinished { get; set; }
 
 		/// <summary>
-		///     When is the deadline of the tournament.
+		///     Last moment when submissions can be added to the tournament.
 		/// </summary>
 		public DateTime? Deadline { get; set; }
 
@@ -132,21 +136,10 @@ namespace OPCAIC.Infrastructure.Entities
 		///     JSON data with information about menu items.
 		/// </summary>
 		public string MenuData { get; set; }
-	}
 
-	public class TournamentManager
-	{
-		public long UserId { get; set; }
-
-		public virtual User User { get; set; }
-		public long TournamentId { get; set; }
-
-		public virtual Tournament Tournament { get; set; }
-
-		internal static void OnModelCreating(EntityTypeBuilder<TournamentManager> builder)
-		{
-			// mapping table, make sure the same mapping does not exist twice
-			builder.HasKey(nameof(UserId), nameof(TournamentId));
-		}
+		/// <summary>
+		///     How many matches to generate per day. Valid only for <see cref="TournamentScope.Ongoing" /> tournaments.
+		/// </summary>
+		public int? MatchesPerDay { get; set; }
 	}
 }

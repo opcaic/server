@@ -31,6 +31,10 @@
 		public const string ValidationId = "ValidationId";
 		public const string TournamentId = "TournamentId";
 
+		public const string TournamentState = "TournamentState";
+
+		public const string GeneratedMatchCount = "MatchCount";
+
 		public const string Game = "Game";
 		public const string GameModuleEntryPoint = "EntryPoint";
 		public const string ConnectorIdentity = "Identity";
