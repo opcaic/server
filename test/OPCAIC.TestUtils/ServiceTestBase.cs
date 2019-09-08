@@ -48,6 +48,11 @@ namespace OPCAIC.TestUtils
 		protected IServiceProvider ServiceProvider
 			=> provider ?? (provider = BuildServiceProvider());
 
+		protected Lazy<T> GetLazyService<T>() where T : class
+		{
+			return new Lazy<T>(GetService<T>);
+		}
+
 		/// <inheritdoc />
 		public void Dispose()
 		{

@@ -277,6 +277,10 @@ namespace OPCAIC.ApiService
 				.ForMember(v => v.TournamentConfiguration,
 					opt => opt.MapFrom(v => v.Submission.Tournament.Configuration))
 				.ForMember(v => v.GameKey, opt => opt.MapFrom(v => v.Submission.Tournament.Game.Key));
+
+			exp.CreateMap<SubmissionValidation, SubmissionValidationAuthDto>(MemberList.Destination)
+				.ForMember(v => v.TournamentOwnerId, opt => opt.MapFrom(v => v.Submission.Tournament.OwnerId))
+				.ForMember(v => v.TournamentManagersIds, opt => opt.MapFrom(v => v.Submission.Tournament.Managers.Select(m => m.UserId)));
 		}
 
 		private static void AddEmailMapping(this IMapperConfigurationExpression exp)

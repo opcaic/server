@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +34,8 @@ namespace OPCAIC.ApiService.Test
 				.Build();
 			CancellationTokenSource = new CancellationTokenSource();
 
-			lazyDbContext = new Lazy<DataContext>(GetService<DataContext>);
+			lazyDbContext = GetLazyService<DataContext>();
+			lazyMapper = GetLazyService<IMapper>();
 		}
 
 		protected void ApiConfigureServices()
@@ -58,6 +60,9 @@ namespace OPCAIC.ApiService.Test
 
 		private readonly Lazy<DataContext> lazyDbContext;
 		protected DataContext DbContext => lazyDbContext.Value;
+
+		private readonly Lazy<IMapper> lazyMapper;
+		protected IMapper Mapper => lazyMapper.Value;
 		protected void TurnOffAuthorization()
 		{
 			var mock = Services.Mock<IAuthorizationService>();

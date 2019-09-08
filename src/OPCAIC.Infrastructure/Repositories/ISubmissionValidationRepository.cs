@@ -10,7 +10,8 @@ using OPCAIC.Infrastructure.Enums;
 namespace OPCAIC.Infrastructure.Repositories
 {
 	public interface ISubmissionValidationRepository
-		: ICreateRepository<NewSubmissionValidationDto>
+		: ICreateRepository<NewSubmissionValidationDto>,
+			IAuthDataRepository<SubmissionValidationAuthDto>
 	{
 		Task<SubmissionValidationStorageDto> FindStorageAsync(long id, CancellationToken cancellationToken);
 

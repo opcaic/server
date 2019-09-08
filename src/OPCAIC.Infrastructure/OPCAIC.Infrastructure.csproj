@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <Folder Include="Dtos\MatchExecutions\" />
-    <Folder Include="Dtos\SubmissionValidations\" />
   </ItemGroup>
 
 </Project>

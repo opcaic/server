@@ -13,10 +13,7 @@ namespace OPCAIC.ApiService.Test.Security
 		/// <inheritdoc />
 		public TournamentAuthorizationTest(ITestOutputHelper output) : base(output)
 		{
-			ApiConfigureServices();
 		}
-
-		private IAuthorizationService AuthorizationService => GetService<IAuthorizationService>();
 
 		[Fact]
 		public void AllowTournamentManagersUpdate()
@@ -39,7 +36,7 @@ namespace OPCAIC.ApiService.Test.Security
 
 			DbContext.SaveChanges();
 
-			AuthorizationService.CheckPermissions(ClaimsPrincipal(manager), tournament.Id,
+			AuthorizationService.CheckPermissions(GetClaimsPrincipal(manager), tournament.Id,
 				TournamentPermission.Update);
 		}
 	}
