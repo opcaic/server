@@ -33,8 +33,7 @@ namespace OPCAIC.ApiService.IoC
 				.AddScoped<IMatchExecutionService, MatchExecutionService>()
 				.AddScoped<IWorkerService, WorkerService>()
 				.AddScoped<IBrokerService, BrokerService>()
-				.AddScoped<ILeaderboardService, LeaderboardService>()
-				.AddScoped<IMatchTreeFactory, CachedMatchTreeFactory>();
+				.AddScoped<ILeaderboardService, LeaderboardService>();
 		}
 	}
 }
