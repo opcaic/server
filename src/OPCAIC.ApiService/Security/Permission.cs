@@ -7,6 +7,7 @@
 		Update,
 		Delete,
 		Search,
+		ViewLeaderboard,
 		Submit,
 		ManageInvites,
 		Join,

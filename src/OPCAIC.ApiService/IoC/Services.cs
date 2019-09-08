@@ -29,7 +29,9 @@ namespace OPCAIC.ApiService.IoC
 				.AddScoped<ISubmissionValidationService, SubmissionValidationService>()
 				.AddScoped<IMatchExecutionService, MatchExecutionService>()
 				.AddScoped<IWorkerService, WorkerService>()
-				.AddScoped<IBrokerService, BrokerService>();
+				.AddScoped<IBrokerService, BrokerService>()
+				.AddScoped<ILeaderboardService, LeaderboardService>()
+				.AddScoped<IMatchTreeFactory, CachedMatchTreeFactory>();
 		}
 	}
 }

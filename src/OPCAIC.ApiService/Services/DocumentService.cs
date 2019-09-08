@@ -79,7 +79,7 @@ namespace OPCAIC.ApiService.Services
 
 			if (!await documentRepository.UpdateAsync(id, dto, cancellationToken))
 			{
-				throw new NotFoundException(nameof(Tournament), id);
+				throw new NotFoundException(nameof(Document), id);
 			}
 		}
 
@@ -88,7 +88,7 @@ namespace OPCAIC.ApiService.Services
 		{
 			if (!await documentRepository.DeleteAsync(id, cancellationToken))
 			{
-				throw new NotFoundException(nameof(Tournament), id);
+				throw new NotFoundException(nameof(Document), id);
 			}
 		}
 	}

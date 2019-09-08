@@ -62,6 +62,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 
 				case TournamentPermission.Submit:
 				case TournamentPermission.Join:
+				case TournamentPermission.ViewLeaderboard:
 					switch (authData.Availability)
 					{
 						case TournamentAvailability.Public:
@@ -72,13 +73,12 @@ namespace OPCAIC.ApiService.Security.Handlers
 							// only invited
 							var participants =
 								participantRepository.GetParticipantsAsync(authData.Id, null)
-                .Result;
+									.Result;
 							return participants.List.Any(p => p.User.Id == userId);
 
 						default:
 							throw new ArgumentOutOfRangeException();
 					}
-
 				case TournamentPermission.DownloadAdditionalFiles:
 					return
 						user.HasClaim(WorkerClaimTypes.TournamentId, authData.Id.ToString()) ||

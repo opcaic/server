@@ -64,7 +64,8 @@ namespace OPCAIC.ApiService
 		{
 			exp.CreateMap(typeof(ListDto<>), typeof(ListModel<>), MemberList.Destination);
 
-			exp.CreateMap<Dictionary<string, object>, string>().ConvertUsing(d => JsonConvert.SerializeObject(d));
+			exp.CreateMap<Dictionary<string, object>, string>()
+				.ConvertUsing(d => JsonConvert.SerializeObject(d));
 			exp.CreateMap<JObject, string>().ConvertUsing(j => JsonConvert.SerializeObject(j));
 			exp.CreateMap<string, JObject>().ConvertUsing(j => JObject.Parse(j));
 			exp.CreateMap<SubTaskResult, EntryPointResult>()
@@ -146,6 +147,8 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<UserProfileModel, UserProfileDto, User>(MemberList.Source);
 			exp.CreateMap<UserFilterModel, UserFilterDto>(MemberList.Source);
 
+			exp.CreateMap<User, UserLeaderboardViewModel>(MemberList.Destination);
+
 			exp.CreateMap<User, UserReferenceDto, UserReferenceModel>(MemberList.Destination);
 		}
 
@@ -185,7 +188,7 @@ namespace OPCAIC.ApiService
 				.Destination);
 
 			exp.CreateMap<Tournament, TournamentPreviewDto>(MemberList
-				.Destination)
+					.Destination)
 				.ForMember(d => d.PlayersCount,
 					opt => opt.MapFrom(s
 						=> s.Submissions.Select(x => x.Author.Id).Distinct().Count()))
@@ -213,6 +216,7 @@ namespace OPCAIC.ApiService
 				.Destination);
 			exp.CreateMap<TournamentParticipantFilter, TournamentParticipantFilterDto>(MemberList
 				.Destination);
+			exp.CreateMap<TournamentDetailDto, TournamentReferenceModel>(MemberList.Destination);
 		}
 
 		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)
