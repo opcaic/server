@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Schema;
 using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.ModelValidationHandling;
@@ -21,13 +23,15 @@ namespace OPCAIC.ApiService.Services
 		private readonly IGameRepository gameRepository;
 		private readonly IMapper mapper;
 		private readonly ITournamentRepository tournamentRepository;
+		private readonly ILogger<TournamentsService> logger;
 
 		public TournamentsService(ITournamentRepository tournamentRepository, IMapper mapper,
-			IGameRepository gameRepository)
+			IGameRepository gameRepository, ILogger<TournamentsService> logger)
 		{
 			this.tournamentRepository = tournamentRepository;
 			this.mapper = mapper;
 			this.gameRepository = gameRepository;
+			this.logger = logger;
 		}
 
 		/// <inheritdoc />
@@ -46,6 +50,7 @@ namespace OPCAIC.ApiService.Services
 					"Only tournaments in Published state can be started", null);
 			}
 
+			logger.TournamentStateChanged(id, TournamentState.Running);
 			await tournamentRepository.UpdateTournamentState(id,
 				new TournamentStartedUpdateDto
 				{
@@ -81,10 +86,7 @@ namespace OPCAIC.ApiService.Services
 
 			var dto = await tournamentRepository.GetByFilterAsync(filterDto, cancellationToken);
 
-			return new ListModel<TournamentPreviewModel>
-			{
-				Total = dto.Total, List = dto.List.Select(mapper.Map<TournamentPreviewModel>)
-			};
+			return mapper.Map<ListModel<TournamentPreviewModel>>(dto);
 		}
 
 		/// <inheritdoc />

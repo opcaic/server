@@ -11,9 +11,11 @@ namespace OPCAIC.Infrastructure.Repositories
 {
 	public interface ISubmissionValidationRepository
 		: ICreateRepository<NewSubmissionValidationDto>,
-			IAuthDataRepository<SubmissionValidationAuthDto>
+			IAuthDataRepository<SubmissionValidationAuthDto>,
+			ILookupRepository<SubmissionValidationDto>
 	{
-		Task<SubmissionValidationStorageDto> FindStorageAsync(long id, CancellationToken cancellationToken);
+		Task<SubmissionValidationStorageDto> FindStorageAsync(long id,
+			CancellationToken cancellationToken);
 
 		Task<bool> UpdateFromJobAsync(Guid jobId, UpdateSubmissionValidationDto dto,
 			CancellationToken cancellationToken);

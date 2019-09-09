@@ -23,17 +23,17 @@ namespace OPCAIC.ApiService.Utils
 	{
 		private static readonly Mapper mapper = new Mapper(MapperConfigurationFactory.Create());
 		private static readonly Random random = new Random(0);
+		private static readonly Faker faker = new Faker();
 
-		public static void WriteRandomZipArchive(Stream archive)
+		private static void WriteEntry(ZipArchive archive, string entryName, string content)
 		{
-			using (var archive1 = new ZipArchive(archive, ZipArchiveMode.Create, true))
-			using (var writer = new StreamWriter(archive1.CreateEntry("a.txt").Open()))
+			using (var stream = new StreamWriter(archive.CreateEntry(entryName).Open()))
 			{
-				writer.WriteLine("Random content");
+				stream.Write(content);
 			}
 		}
 
-		public static void EnsureSubmissionArchiveExists(IStorageService storage, Submission sub)
+		private static void EnsureSubmissionArchiveExists(IStorageService storage, Submission sub)
 		{
 			var storageDto = mapper.Map<SubmissionStorageDto>(sub);
 
@@ -45,9 +45,9 @@ namespace OPCAIC.ApiService.Utils
 			}
 
 			// write something so that we have at least some file
-			using (archive = storage.WriteSubmissionArchive(storageDto))
+			using (var zip = new ZipArchive(storage.WriteSubmissionArchive(storageDto), ZipArchiveMode.Create))
 			{
-				WriteRandomZipArchive(archive);
+				WriteEntry(zip, "input.txt", faker.Lorem.Paragraphs());
 			}
 		}
 
@@ -63,10 +63,20 @@ namespace OPCAIC.ApiService.Utils
 				return; // already exists
 			}
 
-			// write something so that we have at least some file
-			using (archive = storage.WriteSubmissionValidationResultArchive(storageDto))
+			using (var zip = new ZipArchive(storage.WriteSubmissionValidationResultArchive(storageDto), ZipArchiveMode.Create))
 			{
-				WriteRandomZipArchive(archive);
+				if (sub.CheckerResult != EntryPointResult.NotExecuted)
+				{
+					WriteEntry(zip, "check.0.stdout", faker.Lorem.Paragraph());
+				}
+				if (sub.CompilerResult != EntryPointResult.NotExecuted)
+				{
+					WriteEntry(zip, "compile.0.stdout", faker.Lorem.Paragraph());
+				}
+				if (sub.ValidatorResult != EntryPointResult.NotExecuted)
+				{
+					WriteEntry(zip, "validate.0.stdout", faker.Lorem.Paragraph());
+				}
 			}
 		}
 
@@ -82,10 +92,20 @@ namespace OPCAIC.ApiService.Utils
 				return; // already exists
 			}
 
-			// write something so that we have at least some file
-			using (archive = storage.WriteMatchResultArchive(storageDto))
+			using (var zip = new ZipArchive(storage.WriteMatchResultArchive(storageDto), ZipArchiveMode.Create))
 			{
-				WriteRandomZipArchive(archive);
+				for (int i = 0; i < execution.BotResults.Count; i++)
+				{
+					if (execution.BotResults[i].CompilerResult != EntryPointResult.NotExecuted)
+					{
+						WriteEntry(zip, $"compile.{i}.stdout", faker.Lorem.Paragraph());
+					}
+				}
+
+				if (execution.ExecutorResult!= EntryPointResult.NotExecuted)
+				{
+					WriteEntry(zip, "execute.stdout", faker.Lorem.Paragraphs());
+				}
 			}
 		}
 
@@ -183,7 +203,8 @@ namespace OPCAIC.ApiService.Utils
 					RankingStrategy = TournamentRankingStrategy.Maximum,
 					Scope = TournamentScope.Ongoing,
 					Availability = TournamentAvailability.Private,
-					State = TournamentState.Published,
+					EvaluationStarted = DateTime.Now.AddHours(-20),
+					State = TournamentState.Running,
 					Configuration = "{}"
 				};
 				var tournamentChessTable = new Tournament

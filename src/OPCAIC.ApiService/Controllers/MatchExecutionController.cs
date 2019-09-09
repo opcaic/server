@@ -7,31 +7,34 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Infrastructure.Dtos.Matches;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Services;
 
 namespace OPCAIC.ApiService.Controllers
 {
-	// TODO: Authorization for both users and workers
 	[Authorize]
 	[Route("api/match-execution")]
 	public class MatchExecutionController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;
 		private readonly IMatchExecutionRepository repository;
+		private readonly IMatchExecutionService executionService;
 		private readonly IStorageService storage;
 
 		public MatchExecutionController(IStorageService storage,
-			IMatchExecutionRepository repository, IAuthorizationService authorizationService)
+			IMatchExecutionRepository repository, IAuthorizationService authorizationService, IMatchExecutionService executionService)
 		{
 			this.storage = storage;
 			this.repository = repository;
 			this.authorizationService = authorizationService;
+			this.executionService = executionService;
 		}
 
 		/// <summary>
@@ -64,13 +67,34 @@ namespace OPCAIC.ApiService.Controllers
 			}
 		}
 
+
+		/// <summary>
+		///     Gets detailed information about the given match execution.
+		/// </summary>
+		/// <param name="id">Id of the match execution.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		[HttpGet("{id}")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<MatchExecutionDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, id,
+				MatchExecutionPermission.ReadDetail);
+
+			return await executionService.GetByIdAsync(id, cancellationToken);
+		}
+
 		/// <summary>
 		///     Downloads match execution results as a zip archive.
 		/// </summary>
 		/// <param name="id">Id of the match execution.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		[HttpGet("{id}")]
+		[HttpGet("{id}/download")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]

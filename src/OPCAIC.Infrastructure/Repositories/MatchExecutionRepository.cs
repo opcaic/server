@@ -73,5 +73,11 @@ namespace OPCAIC.Infrastructure.Repositories
 		{
 			return GetDtoByIdAsync<MatchExecutionAuthDto>(id, cancellationToken);
 		}
+
+		/// <inheritdoc />
+		public Task<MatchExecutionDto> FindByIdAsync(long id, CancellationToken cancellationToken)
+		{
+			return GetDtoByIdAsync<MatchExecutionDto>(id, cancellationToken);
+		}
 	}
 }

@@ -8,6 +8,8 @@ namespace OPCAIC.Infrastructure.Dtos.Users
 
 		public string Username { get; set; }
 
+		public string Organization { get; set; }
+
 		/// <inheritdoc />
 		public bool Equals(UserReferenceDto other)
 		{

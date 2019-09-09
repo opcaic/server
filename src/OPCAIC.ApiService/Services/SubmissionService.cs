@@ -10,6 +10,7 @@ using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Submissions;
+using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
@@ -71,7 +72,48 @@ namespace OPCAIC.ApiService.Services
 
 			var list = await repository.GetByFilterAsync(filterDto, cancellationToken);
 
-			return mapper.Map<ListModel<SubmissionPreviewModel>>(list);
+			var mapped = mapper.Map<ListModel<SubmissionPreviewModel>>(list);
+
+			for (var i = 0; i < list.List.Count; i++)
+			{
+				mapped.List[i].ValidationState = GetValidationState(list.List[i].LastValidation);
+			}
+
+			return mapped;
+		}
+
+		private static SubmissionValidationState GetValidationState(SubmissionValidationDto validation)
+		{
+			SubmissionValidationState target;
+			if (!validation.Executed.HasValue)
+			{
+				target = SubmissionValidationState.Queued;
+			}
+
+			else
+			{
+				switch (validation.ValidatorResult)
+				{
+					case EntryPointResult.Success:
+						target = SubmissionValidationState.Valid;
+						break;
+
+					case EntryPointResult.UserError:
+						target = SubmissionValidationState.Invalid;
+						break;
+
+					case EntryPointResult.NotExecuted: // validation ended in earlier stage
+					case EntryPointResult.Cancelled:
+					case EntryPointResult.ModuleError:
+					case EntryPointResult.PlatformError:
+						target = SubmissionValidationState.Error;
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
+				}
+			}
+
+			return target;
 		}
 
 		public async Task<SubmissionDetailModel> GetByIdAsync(long id,
@@ -84,7 +126,9 @@ namespace OPCAIC.ApiService.Services
 				throw new NotFoundException(nameof(Submission), id);
 			}
 
-			return mapper.Map<SubmissionDetailModel>(dto);
+			var mapped = mapper.Map<SubmissionDetailModel>(dto);
+			mapped.ValidationState = GetValidationState(dto.LastValidation);
+			return mapped;
 		}
 
 		public async Task<Stream> GetSubmissionArchiveAsync(long id, CancellationToken cancellationToken)

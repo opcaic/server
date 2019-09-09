@@ -71,11 +71,7 @@ namespace OPCAIC.ApiService.Services
 
 			var dtoArray = await tournamentParticipantRepository.GetParticipantsAsync(tournamentId, filterDto, cancellationToken);
 
-			return new ListModel<TournamentParticipantPreviewModel>
-			{
-				List = dtoArray.List.Select(dto => mapper.Map<TournamentParticipantPreviewModel>(dto)),
-				Total = dtoArray.Total
-			};
+			return mapper.Map<ListModel<TournamentParticipantPreviewModel>>(dtoArray);
 		}
 	}
 }

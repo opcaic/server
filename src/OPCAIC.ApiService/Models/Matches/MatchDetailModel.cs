@@ -12,6 +12,6 @@ namespace OPCAIC.ApiService.Models.Matches
 		public MatchState State { get; set; }
 		public TournamentReferenceModel Tournament { get; set; }
 		public IList<SubmissionReferenceModel> Submissions { get; set; }
-		public IList<MatchExecutionModel> Executions { get; set; }
+		public IList<MatchExecutionPreviewModel> Executions { get; set; }
 	}
 }

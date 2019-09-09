@@ -68,6 +68,12 @@ namespace OPCAIC.Infrastructure.Repositories
 		}
 
 		/// <inheritdoc />
+		public Task<SubmissionValidationDto> FindByIdAsync(long id, CancellationToken cancellationToken)
+		{
+			return GetDtoByIdAsync<SubmissionValidationDto>(id, cancellationToken);
+		}
+
+		/// <inheritdoc />
 		public Task<SubmissionValidationAuthDto> GetAuthorizationData(long id, CancellationToken cancellationToken = default)
 		{
 			return GetDtoByIdAsync<SubmissionValidationAuthDto>(id, cancellationToken);

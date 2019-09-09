@@ -48,8 +48,8 @@ namespace OPCAIC.ApiService.Services
 			private readonly IMatchRepository matchRepository;
 			private readonly ITournamentRepository tournamentRepository;
 
-			private DateTime lastRun;
-			private DateTime now;
+			private readonly DateTime lastRun;
+			private readonly DateTime now;
 
 			/// <inheritdoc />
 			public Job(ILogger logger, ITournamentRepository tournamentRepository, IMatchRepository matchRepository,

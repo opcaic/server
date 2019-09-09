@@ -1,5 +1,8 @@
-﻿using OPCAIC.Infrastructure.Dtos.Tournaments;
+﻿using System;
+using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
+using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Dtos.Submissions
 {
@@ -9,5 +12,7 @@ namespace OPCAIC.Infrastructure.Dtos.Submissions
 		public UserReferenceDto Author { get; set; }
 		public TournamentReferenceDto Tournament { get; set; }
 		public bool IsActive { get; set; }
+		public DateTime Created { get; set; }
+		public SubmissionValidationDto LastValidation { get; set; }
 	}
 }

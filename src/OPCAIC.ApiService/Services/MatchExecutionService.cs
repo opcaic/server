@@ -6,11 +6,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.Models.Matches;
+using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.MatchExecutions;
 using OPCAIC.Infrastructure.Dtos.Submissions;
+using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Messaging.Messages;
@@ -20,54 +25,29 @@ namespace OPCAIC.ApiService.Services
 {
 	internal class MatchExecutionService : IMatchExecutionService
 	{
-		private readonly IBroker broker;
 		private readonly ILogger<MatchExecutionService> logger;
 		private readonly IMapper mapper;
-		private readonly IMatchRepository matchRepository;
 		private readonly IMatchExecutionRepository repository;
-		private readonly ITournamentRepository tournamentRepository;
 		private readonly IWorkerService workerService;
+		private readonly ILogStorageService logStorage;
 
 		public MatchExecutionService(IBroker broker, ILogger<MatchExecutionService> logger,
 			IMatchExecutionRepository repository, IMatchRepository matchRepository,
-			IWorkerService workerService, ITournamentRepository tournamentRepository, IMapper mapper)
+			IWorkerService workerService, ITournamentRepository tournamentRepository, IMapper mapper, ILogStorageService logStorage)
 		{
-			this.broker = broker;
 			this.logger = logger;
 			this.repository = repository;
-			this.matchRepository = matchRepository;
 			this.workerService = workerService;
-			this.tournamentRepository = tournamentRepository;
 			this.mapper = mapper;
+			this.logStorage = logStorage;
 		}
 
 		/// <inheritdoc />
 		public async Task EnqueueExecutionAsync(long matchId, CancellationToken cancellationToken)
 		{
-//			var match = await matchRepository.FindByIdAsync(matchId, cancellationToken);
-//			var tournament =
-//				await tournamentRepository.FindByIdAsync(match.Tournament.Id, cancellationToken);
-//
 			var execution = new NewMatchExecutionDto {MatchId = matchId, JobId = Guid.NewGuid()};
-			var executionId = await repository.CreateAsync(execution, cancellationToken);
-
-//			var message = new MatchExecutionRequest
-//			{
-//				JobId = execution.JobId,
-//				ExecutionId = executionId,
-//				Bots =
-//					match.Submissions.Select(s => new BotInfo {SubmissionId = s.Id}).ToList(),
-//				Configuration = tournament.Configuration,
-//				Game = tournament.Game.key,
-//				AdditionalFilesUri = workerService.GetAdditionalFilesUrl(tournament.Id),
-//				AccessToken = CreateAccessToken(match.Submissions, tournament.Id, executionId)
-//			};
-
-//			logger.LogInformation(LoggingEvents.MatchQeueuExecution,
-//				$"Queueing execution of match {{{LoggingTags.MatchId}}} in tournament {{{LoggingTags.TournamentId}}} and game {{{LoggingTags.Game}}} as job {{{LoggingTags.JobId}}}.",
-//				matchId, tournament.Id, tournament.Game.key, message.JobId);
-
-//			await broker.EnqueueWork(message);
+			logger.MatchExecutionQueued(matchId, execution.JobId);
+			await repository.CreateAsync(execution, cancellationToken);
 		}
 
 		public async Task<MatchExecutionRequest> CreateValidationRequestAsync(
@@ -75,6 +55,35 @@ namespace OPCAIC.ApiService.Services
 		{
 			var data = await repository.GetRequestDataAsync(id, cancellationToken);
 			return CreateRequest(data);
+		}
+
+		/// <inheritdoc />
+		public async Task<MatchExecutionDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken)
+		{
+			var dto = await repository.FindByIdAsync(id, cancellationToken);
+			if (dto == null)
+			{
+				throw new NotFoundException(nameof(MatchExecution), id);
+			}
+
+			var logs =
+				logStorage.GetMatchExecutionLogs(
+					mapper.Map<MatchExecutionStorageDto>(dto));
+			var model = mapper.Map<MatchExecutionDetailModel>(dto);
+
+			for (var i = 0; i < model.BotResults.Count; i++)
+			{
+				var detail = mapper.Map<SubmissionMatchResultDetailModel>(model.BotResults[i]);
+
+				// the log collection may be "too short"
+				if (i < logs.CompilerLogs.Count)
+				{
+					detail.CompilerLog = logs.CompilerLogs[i];
+				}
+			}
+
+			model.ExecutorLog = logs.ExecutorLog;
+			return model;
 		}
 
 		public MatchExecutionRequest CreateRequest(MatchExecutionRequestDataDto data)

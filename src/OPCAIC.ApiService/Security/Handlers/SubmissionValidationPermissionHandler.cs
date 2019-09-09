@@ -36,6 +36,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 					return user.HasClaim(WorkerClaimTypes.ValidationId, authData.Id.ToString());
 
 				case SubmissionValidationPermission.DownloadResult:
+				case SubmissionValidationPermission.ReadDetail:
 					var userId = user.TryGetId();
 					// submission owners and tournament organizers
 					return userId == authData.SubmissionAuthorId ||

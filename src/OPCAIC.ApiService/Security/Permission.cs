@@ -60,6 +60,7 @@
 	{
 		UploadResult,
 		DownloadResult,
+		ReadDetail,
 	}
 
 	public enum MatchPermission
@@ -72,6 +73,7 @@
 	public enum MatchExecutionPermission
 	{
 		UploadResult,
-		DownloadResults
+		DownloadResults,
+		ReadDetail
 	}
 }

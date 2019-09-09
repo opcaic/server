@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Infrastructure.Dtos.MatchExecutions;
 using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Enums;
@@ -176,7 +177,8 @@ namespace OPCAIC.Services.Test.MatchGeneration
 				{
 					Submission = new SubmissionReferenceDto {Id = submissions[i].Id},
 					Score = result == i ? 1 : 0,
-					AdditionalData = "{}"
+					AdditionalData = "{}",
+					CompilerResult = EntryPointResult.Success
 				}).ToList();
 		}
 

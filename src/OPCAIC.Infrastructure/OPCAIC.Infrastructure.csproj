@@ -19,8 +19,4 @@
     <ProjectReference Include="..\OPCAIC.Utils\OPCAIC.Utils.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Dtos\MatchExecutions\" />
-  </ItemGroup>
-
 </Project>

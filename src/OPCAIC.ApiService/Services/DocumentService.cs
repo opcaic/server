@@ -50,11 +50,7 @@ namespace OPCAIC.ApiService.Services
 
 			var dto = await documentRepository.GetByFilterAsync(filterDto, cancellationToken);
 
-			return new ListModel<DocumentDetailModel>
-			{
-				Total = dto.Total,
-				List = dto.List.Select(doc => mapper.Map<DocumentDetailModel>(doc))
-			};
+			return mapper.Map<ListModel<DocumentDetailModel>>(dto);
 		}
 
 		/// <inheritdoc />

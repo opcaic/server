@@ -2,11 +2,15 @@
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Bogus;
 
 namespace GameModuleMock
 {
 	public static class EntryPoints
 	{
+		private static Random rand = new Random();
+		private static Faker faker = new Faker();
+
 		public const string TestStdoutLog = @"This is a test stdout
 log, which should be printed by the external game
 module.
@@ -35,6 +39,36 @@ than the stdout one.";
 		public static int SleepFor(int ms, string inDir, string a, string b)
 		{
 			return SleepFor(ms);
+		}
+
+		public static int RandomResult(int probability, string inDir, string a)
+		{
+			Console.WriteLine($"Success probability: {probability}");
+
+			Console.WriteLine(faker.Lorem.Paragraph());
+
+			Console.WriteLine("Tossing a die for return value");
+			if (rand.Next(100) < probability)
+			{
+				return 0;
+			}
+
+			if (rand.Next(10) < 9)
+			{
+				return 200; // negative result exit code
+			}
+
+			return 1; // general error
+		}
+
+		public static int RandomResult(int probability, string inDir, string a, string b)
+		{
+			return RandomResult(probability, inDir, a);
+		}
+
+		public static int RandomResult(int probability, string inDir, string a, string b, string c)
+		{
+			return RandomResult(probability, inDir, a, b);
 		}
 
 		public static int ExitWithCode(int code)
@@ -94,16 +128,21 @@ than the stdout one.";
 			Console.WriteLine("Output:");
 			Console.WriteLine(outDir);
 
-			var contents = @"{ 
-	""results"": [
-		{
-			""Score"" : 1
-		},
-		{
-			""Score"" : 0
-		}
+			Console.WriteLine("Flipping a fair coin for winner");
+			int flip = rand.Next(2);
+
+			Console.WriteLine($"Coin flipped {flip}");
+
+			var contents = $@"{{ 
+	'results': [
+		{{
+			'Score' : {flip}
+		}},
+		{{
+			'Score' : {1 - flip}
+		}}
 	]
-}";
+}}";
 			Console.WriteLine(contents);
 			File.WriteAllText(Path.Combine(outDir, "match-result.json"), contents);
 			return 0;

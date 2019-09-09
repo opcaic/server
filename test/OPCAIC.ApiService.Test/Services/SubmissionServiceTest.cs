@@ -11,6 +11,7 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Submissions;
+using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
@@ -124,7 +125,8 @@ namespace OPCAIC.ApiService.Test.Services
 						new SubmissionPreviewDto
 						{
 							Tournament = new TournamentReferenceDto {Id = TournamentId},
-							Author = new UserReferenceDto {Id = UserId}
+							Author = new UserReferenceDto {Id = UserId},
+							LastValidation = new SubmissionValidationDto()
 						}
 					}
 				});

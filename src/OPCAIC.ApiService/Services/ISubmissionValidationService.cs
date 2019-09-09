@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Messaging.Messages;
 
@@ -12,9 +13,9 @@ namespace OPCAIC.ApiService.Services
 		Task UpdateFromMessage(SubmissionValidationResult result);
 		Task OnValidationRequestExpired(Guid jobId);
 
-		Task<SubmissionValidationRequest> CreateValidationRequestAsync(
-			long id, CancellationToken cancellationToken);
-
 		SubmissionValidationRequest CreateRequest(SubmissionValidationRequestDataDto data);
+
+		Task<SubmissionValidationDetailModel> GetByIdAsync(long id,
+			CancellationToken cancellationToken);
 	}
 }

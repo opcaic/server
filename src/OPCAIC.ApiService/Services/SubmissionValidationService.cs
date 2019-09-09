@@ -4,14 +4,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.Security;
-using OPCAIC.Broker;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Messaging.Messages;
-using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService.Services
 {
@@ -19,58 +21,27 @@ namespace OPCAIC.ApiService.Services
 	{
 		private readonly IMapper mapper;
 		private readonly ISubmissionValidationRepository repository;
-		private readonly ISubmissionRepository submissionRepository;
-		private readonly ITournamentRepository tournamentRepository;
 		private readonly IWorkerService workerService;
+		private readonly ILogger<SubmissionValidationService> logger;
+		private readonly ILogStorageService logStorage;
 
-		public SubmissionValidationService(ISubmissionValidationRepository repository,
-			IBroker broker, ISubmissionRepository submissionRepository,
-			ITournamentRepository tournamentRepository, IWorkerService workerService,
-			ILogger<SubmissionValidationService> logger, IMapper mapper)
+		public SubmissionValidationService(ISubmissionValidationRepository repository, IWorkerService workerService,
+			ILogger<SubmissionValidationService> logger, IMapper mapper, ILogStorageService logStorage)
 		{
 			this.repository = repository;
-			this.submissionRepository = submissionRepository;
-			this.tournamentRepository = tournamentRepository;
 			this.workerService = workerService;
+			this.logger = logger;
 			this.mapper = mapper;
+			this.logStorage = logStorage;
 		}
 
 		/// <inheritdoc />
 		public async Task EnqueueValidationAsync(long submissionId,
 			CancellationToken cancellationToken)
 		{
-//			var submission =
-//				await submissionRepository.FindByIdAsync(submissionId, cancellationToken);
-//			var tournament =
-//				await tournamentRepository.FindByIdAsync(submission.Tournament.Id,
-//					cancellationToken);
-//
 			var validation = new NewSubmissionValidationDto { SubmissionId = submissionId, JobId = Guid.NewGuid() };
-			var validationId = await repository.CreateAsync(validation, cancellationToken);
-
-//			var m = new SubmissionValidationRequest
-//			{
-//				JobId = validation.JobId,
-//				SubmissionId = submissionId,
-//				ValidationId = validationId,
-//				Configuration = tournament.Configuration,
-//				Game = tournament.Game.key,
-//				AdditionalFilesUri = workerService.GetAdditionalFilesUrl(tournament.Id),
-//				AccessToken = CreateAccessToken(submissionId, validationId, tournament.Id)
-//			};
-
-//			logger.LogInformation(LoggingEvents.SubmissionQueueValidation,
-//				$"Queueing validation of submission {{{LoggingTags.SubmissionId}}} in tournament {{{LoggingTags.TournamentId}}} and game {{{LoggingTags.Game}}} as job {{{LoggingTags.JobId}}}.",
-//				m.SubmissionId, tournament.Id, tournament.Game.key, m.JobId);
-
-//			await broker.EnqueueWork(m);
-		}
-
-		public async Task<SubmissionValidationRequest> CreateValidationRequestAsync(
-			long id, CancellationToken cancellationToken)
-		{
-			var data = await repository.GetRequestDataAsync(id, cancellationToken);
-			return CreateRequest(data);
+			logger.SubmissionValidationQueued(submissionId, validation.JobId);
+			await repository.CreateAsync(validation, cancellationToken);
 		}
 
 		public SubmissionValidationRequest CreateRequest(SubmissionValidationRequestDataDto data)
@@ -99,6 +70,24 @@ namespace OPCAIC.ApiService.Services
 		{
 			return repository.UpdateJobStateAsync(jobId,
 				new JobStateUpdateDto {State = WorkerJobState.Waiting}, CancellationToken.None);
+		}
+
+		/// <inheritdoc />
+		public async Task<SubmissionValidationDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken)
+		{
+			var dto = await repository.FindByIdAsync(id, cancellationToken);
+			if (dto == null)
+			{
+				throw new NotFoundException(nameof(SubmissionValidation), id);
+			}
+
+			var logs =
+				logStorage.GetSubmissionValidationLogs(
+					mapper.Map<SubmissionValidationStorageDto>(dto));
+
+			var model = mapper.Map<SubmissionValidationDetailModel>(dto);
+			mapper.Map(logs, model);
+			return model;
 		}
 
 		private string CreateAccessToken(long submissionId, long validationId, long tournamentId)

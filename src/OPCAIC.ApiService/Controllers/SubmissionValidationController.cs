@@ -6,9 +6,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 using OPCAIC.ApiService.Security;
+using OPCAIC.ApiService.Services;
+using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Services;
 
@@ -21,14 +24,16 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly IAuthorizationService authorizationService;
 		private readonly IStorageService storage;
 		private readonly ISubmissionValidationRepository repository;
+		private readonly ISubmissionValidationService validationService;
 
 		/// <inheritdoc />
 		public ValidationController(IAuthorizationService authorizationService,
-			ISubmissionValidationRepository repository, IStorageService storage)
+			ISubmissionValidationRepository repository, IStorageService storage, ISubmissionValidationService validationService)
 		{
 			this.authorizationService = authorizationService;
 			this.repository = repository;
 			this.storage = storage;
+			this.validationService = validationService;
 		}
 
 		/// <summary>
@@ -61,6 +66,26 @@ namespace OPCAIC.ApiService.Controllers
 			{
 				await archive.CopyToAsync(stream, cancellationToken);
 			}
+		}
+
+		/// <summary>
+		///     Gets detailed information about the given submission validation.
+		/// </summary>
+		/// <param name="id">Id of the submission validation.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		[HttpGet("{id}")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<SubmissionValidationDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, id,
+				SubmissionValidationPermission.ReadDetail);
+
+			return await validationService.GetByIdAsync(id, cancellationToken);
 		}
 
 		/// <summary>

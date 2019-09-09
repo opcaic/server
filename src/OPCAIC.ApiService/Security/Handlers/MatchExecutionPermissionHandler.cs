@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Dtos.MatchExecutions;
 using OPCAIC.Infrastructure.Repositories;
@@ -35,8 +37,12 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case MatchExecutionPermission.UploadResult:
 					return user.HasClaim(WorkerClaimTypes.ExecutionId, authData.Id.ToString());
 
+				case MatchExecutionPermission.ReadDetail:
 				case MatchExecutionPermission.DownloadResults:
-					return false; // TODO:
+					var userId = user.TryGetId();
+					return authData.TournamentOwnerId == userId ||
+						authData.MatchParticipantsUserIds.Contains(userId) ||
+						authData.TournamentManagersIds.Contains(userId);
 
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
