@@ -36,10 +36,19 @@
 		public const string GeneratedMatchCount = "MatchCount";
 
 		public const string Game = "Game";
+		public const string GameId = "GameId";
 		public const string GameModuleEntryPoint = "EntryPoint";
 		public const string ConnectorIdentity = "Identity";
 
 		public const string GameModuleProcessExitCode = "GameModuleProcessExitCode";
 		public const string GameModuleProcessId = "GameModulePID";
+
+		public const string UpdateData = "UpdatePayload";
+
+		public const string DocumentId = "DocumentId";
+
+		public const string MatchExecutionId = "MatchExecutionId";
+
+		public const string SubmissionValidationId = "SubmissionValidationId";
 	}
 }

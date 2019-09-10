@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models.SubmissionValidations;
@@ -25,15 +26,17 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly IStorageService storage;
 		private readonly ISubmissionValidationRepository repository;
 		private readonly ISubmissionValidationService validationService;
+		private readonly ILogger<ValidationController> logger;
 
 		/// <inheritdoc />
 		public ValidationController(IAuthorizationService authorizationService,
-			ISubmissionValidationRepository repository, IStorageService storage, ISubmissionValidationService validationService)
+			ISubmissionValidationRepository repository, IStorageService storage, ISubmissionValidationService validationService, ILogger<ValidationController> logger)
 		{
 			this.authorizationService = authorizationService;
 			this.repository = repository;
 			this.storage = storage;
 			this.validationService = validationService;
+			this.logger = logger;
 		}
 
 		/// <summary>
@@ -66,6 +69,8 @@ namespace OPCAIC.ApiService.Controllers
 			{
 				await archive.CopyToAsync(stream, cancellationToken);
 			}
+
+			logger.SubmissionValidationResultUploaded(id);
 		}
 
 		/// <summary>

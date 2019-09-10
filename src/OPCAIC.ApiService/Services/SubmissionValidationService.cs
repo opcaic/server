@@ -40,8 +40,8 @@ namespace OPCAIC.ApiService.Services
 			CancellationToken cancellationToken)
 		{
 			var validation = new NewSubmissionValidationDto { SubmissionId = submissionId, JobId = Guid.NewGuid() };
-			logger.SubmissionValidationQueued(submissionId, validation.JobId);
-			await repository.CreateAsync(validation, cancellationToken);
+			var id = await repository.CreateAsync(validation, cancellationToken);
+			logger.SubmissionValidationQueued(id, submissionId, validation.JobId);
 		}
 
 		public SubmissionValidationRequest CreateRequest(SubmissionValidationRequestDataDto data)
@@ -62,12 +62,14 @@ namespace OPCAIC.ApiService.Services
 		{
 			var dto = mapper.Map<UpdateSubmissionValidationDto>(result);
 			dto.Executed = DateTime.Now;
+			logger.SubmissionValidationUpdated(result.JobId, dto);
 			return repository.UpdateFromJobAsync(result.JobId, dto, CancellationToken.None);
 		}
 
 		/// <inheritdoc />
 		public Task OnValidationRequestExpired(Guid jobId)
 		{
+			logger.SubmissionValidationExpired(jobId);
 			return repository.UpdateJobStateAsync(jobId,
 				new JobStateUpdateDto {State = WorkerJobState.Waiting}, CancellationToken.None);
 		}

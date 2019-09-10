@@ -95,9 +95,6 @@ namespace OPCAIC.Worker.Services
 		private async Task<SubTaskResult> PrepareSubmission(MessageBotInfo botInfo)
 		{
 			var sub = await DownloadSubmission(botInfo.SubmissionId);
-
-			Logger.LogInformation("Compiling submission {sub}.", botInfo.SubmissionId);
-
 			var status = await Compile(sub);
 
 			Response.BotResults[sub.BotInfo.Index].CompilerResult = status;

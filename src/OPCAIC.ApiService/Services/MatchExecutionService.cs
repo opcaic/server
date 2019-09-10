@@ -46,15 +46,8 @@ namespace OPCAIC.ApiService.Services
 		public async Task EnqueueExecutionAsync(long matchId, CancellationToken cancellationToken)
 		{
 			var execution = new NewMatchExecutionDto {MatchId = matchId, JobId = Guid.NewGuid()};
-			logger.MatchExecutionQueued(matchId, execution.JobId);
-			await repository.CreateAsync(execution, cancellationToken);
-		}
-
-		public async Task<MatchExecutionRequest> CreateValidationRequestAsync(
-			long id, CancellationToken cancellationToken)
-		{
-			var data = await repository.GetRequestDataAsync(id, cancellationToken);
-			return CreateRequest(data);
+			var id = await repository.CreateAsync(execution, cancellationToken);
+			logger.MatchExecutionQueued(id, matchId, execution.JobId);
 		}
 
 		/// <inheritdoc />
@@ -105,12 +98,14 @@ namespace OPCAIC.ApiService.Services
 		{
 			var dto = mapper.Map<UpdateMatchExecutionDto>(result);
 			dto.Executed = DateTime.Now;
+			logger.MatchExecutionUpdated(result.JobId, dto);
 			return repository.UpdateFromJobAsync(result.JobId, dto, CancellationToken.None);
 		}
 
 		/// <inheritdoc />
 		public Task OnExecutionRequestExpired(Guid jobId)
 		{
+			logger.MatchExecutionExpired(jobId);
 			return repository.UpdateJobStateAsync(jobId,
 				new JobStateUpdateDto {State = WorkerJobState.Waiting}, CancellationToken.None);
 		}

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models.Matches;
@@ -27,14 +28,16 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly IMatchExecutionRepository repository;
 		private readonly IMatchExecutionService executionService;
 		private readonly IStorageService storage;
+		private readonly ILogger<MatchExecutionController> logger;
 
 		public MatchExecutionController(IStorageService storage,
-			IMatchExecutionRepository repository, IAuthorizationService authorizationService, IMatchExecutionService executionService)
+			IMatchExecutionRepository repository, IAuthorizationService authorizationService, IMatchExecutionService executionService, ILogger<MatchExecutionController> logger)
 		{
 			this.storage = storage;
 			this.repository = repository;
 			this.authorizationService = authorizationService;
 			this.executionService = executionService;
+			this.logger = logger;
 		}
 
 		/// <summary>
@@ -65,6 +68,8 @@ namespace OPCAIC.ApiService.Controllers
 			{
 				await archive.CopyToAsync(stream, cancellationToken);
 			}
+
+			logger.MatchExecutionResultUploaded(id);
 		}
 
 

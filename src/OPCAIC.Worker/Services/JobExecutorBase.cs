@@ -183,7 +183,7 @@ namespace OPCAIC.Worker.Services
 
 		protected async Task<SubmissionData> DownloadSubmission(long submissionId)
 		{
-			Logger.LogInformation($"Downloading submission {{{LoggingTags.SubmissionId}}}",
+			Logger.LogDebug($"Downloading submission {{{LoggingTags.SubmissionId}}}",
 				submissionId);
 			var index = Submissions.Count;
 			var data = new SubmissionData

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -21,9 +20,9 @@ namespace OPCAIC.ApiService.Services
 	public class TournamentsService : ITournamentsService
 	{
 		private readonly IGameRepository gameRepository;
+		private readonly ILogger<TournamentsService> logger;
 		private readonly IMapper mapper;
 		private readonly ITournamentRepository tournamentRepository;
-		private readonly ILogger<TournamentsService> logger;
 
 		public TournamentsService(ITournamentRepository tournamentRepository, IMapper mapper,
 			IGameRepository gameRepository, ILogger<TournamentsService> logger)
@@ -74,7 +73,9 @@ namespace OPCAIC.ApiService.Services
 					string.Join("\n", messages), nameof(tournament.Configuration));
 			}
 
-			return await tournamentRepository.CreateAsync(dto, cancellationToken);
+			var id = await tournamentRepository.CreateAsync(dto, cancellationToken);
+			logger.TournamentCreated(id, dto);
+			return id;
 		}
 
 		/// <inheritdoc />
@@ -113,6 +114,8 @@ namespace OPCAIC.ApiService.Services
 			{
 				throw new NotFoundException(nameof(Tournament), id);
 			}
+
+			logger.TournamentUpdated(id, dto);
 		}
 	}
 }

@@ -3,7 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.Infrastructure.Dtos.Documents;
@@ -17,13 +19,15 @@ namespace OPCAIC.ApiService.Services
 		private readonly IDocumentRepository documentRepository;
 		private readonly IMapper mapper;
 		private readonly ITournamentRepository tournamentRepository;
+		private readonly ILogger<DocumentService> logger;
 
 		public DocumentService(IDocumentRepository documentRepository,
-			ITournamentRepository tournamentRepository, IMapper mapper)
+			ITournamentRepository tournamentRepository, IMapper mapper, ILogger<DocumentService> logger)
 		{
 			this.documentRepository = documentRepository;
 			this.tournamentRepository = tournamentRepository;
 			this.mapper = mapper;
+			this.logger = logger;
 		}
 
 		/// <inheritdoc />
@@ -38,7 +42,9 @@ namespace OPCAIC.ApiService.Services
 
 			var dto = mapper.Map<NewDocumentDto>(document);
 
-			return await documentRepository.CreateAsync(dto, cancellationToken);
+			var id = await documentRepository.CreateAsync(dto, cancellationToken);
+			logger.DocumentCreated(id, dto);
+			return id;
 		}
 
 		/// <inheritdoc />
@@ -77,6 +83,8 @@ namespace OPCAIC.ApiService.Services
 			{
 				throw new NotFoundException(nameof(Document), id);
 			}
+
+			logger.DocumentUpdated(id, dto);
 		}
 
 		/// <inheritdoc />

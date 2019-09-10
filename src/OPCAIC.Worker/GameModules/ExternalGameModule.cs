@@ -143,7 +143,7 @@ namespace OPCAIC.Worker.GameModules
 
 			if (entryPointRes.EntryPointResult == GameModuleEntryPointResult.Success)
 			{
-				logger.LogInformation("Reading results file");
+				logger.LogDebug("Reading results file");
 				entryPointRes.MatchResult = ReadMatchResult(
 					Path.Combine(outputDir.FullName, Constants.FileNames.ExecutorResult),
 					binDirs.Count);
@@ -168,7 +168,7 @@ namespace OPCAIC.Worker.GameModules
 			if (File.Exists(configPath))
 			{
 				logger.LogWarning(
-					$"file {configPath} already exists. Contents will be overwritten.");
+					"file {} already exists. Contents will be overwritten.", configPath);
 			}
 
 			try
@@ -263,7 +263,7 @@ namespace OPCAIC.Worker.GameModules
 							$"Invalid {nameof(GameModuleEntryPointResult)}: {exitCode}.");
 				}
 
-				logger.LogInformation("Entry point finished with '{}'", exitCode);
+				logger.LogDebug("Entry point finished with '{}'", exitCode);
 
 				return result;
 			}
@@ -299,8 +299,8 @@ namespace OPCAIC.Worker.GameModules
 					process.StartInfo.ArgumentList.Add(arg);
 				}
 
-				logger.LogInformation(
-					$"Invoking {args.EntryPoint.Executable} with args '{string.Join("', '", process.StartInfo.ArgumentList)}'");
+				logger.LogDebug(
+					$"Starting {args.EntryPoint.Executable} with args '{string.Join("', '", process.StartInfo.ArgumentList)}'");
 
 				if (!process.Start())
 				{
@@ -308,20 +308,18 @@ namespace OPCAIC.Worker.GameModules
 						"Unable to start game module process.");
 				}
 
-				logger.LogInformation(
+				logger.LogDebug(
 					$"Process started, PID: {{{LoggingTags.GameModuleProcessId}}}", process.Id);
 
 				process.OutputDataReceived += (_, e) =>
 				{
 					args.StandardOutput.WriteLine(e.Data);
-					logger.LogInformation("[stdout]: {}", e.Data);
 				};
 				process.BeginOutputReadLine();
 
 				process.ErrorDataReceived += (_, e) =>
 				{
 					args.StandardError.WriteLine(e.Data);
-					logger.LogInformation("[stderr]: {}", e.Data);
 				};
 				process.BeginErrorReadLine();
 

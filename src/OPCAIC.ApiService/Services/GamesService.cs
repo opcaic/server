@@ -3,11 +3,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
 using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.ModelValidationHandling;
@@ -22,11 +24,13 @@ namespace OPCAIC.ApiService.Services
 	{
 		private readonly IGameRepository gameRepository;
 		private readonly IMapper mapper;
+		private readonly ILogger<GamesService> logger;
 
-		public GamesService(IGameRepository gameRepository, IMapper mapper)
+		public GamesService(IGameRepository gameRepository, IMapper mapper, ILogger<GamesService> logger)
 		{
 			this.gameRepository = gameRepository;
 			this.mapper = mapper;
+			this.logger = logger;
 		}
 
 		/// <inheritdoc />
@@ -46,7 +50,9 @@ namespace OPCAIC.ApiService.Services
 
 			var dto = mapper.Map<NewGameDto>(game);
 
-			return await gameRepository.CreateAsync(dto, cancellationToken);
+			var id = await gameRepository.CreateAsync(dto, cancellationToken);
+			logger.GameCreated(id, dto);
+			return id;
 		}
 
 		/// <inheritdoc />
@@ -92,6 +98,8 @@ namespace OPCAIC.ApiService.Services
 			{
 				throw new NotFoundException(nameof(Game), id);
 			}
+
+			logger.GameUpdated(id, dto);
 		}
 	}
 }

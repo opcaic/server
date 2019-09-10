@@ -15,16 +15,26 @@
 		public const int UserPasswordChange = 302;
 		public const int UserEmailConfirm = 303;
 
-
 		public const int SubmissionCreate = 400;
 		public const int SubmissionUpdate = 401;
-		public const int SubmissionQueueValidation = 402;
+		public const int SubmissionValidationQueued = 402;
+		public const int SubmissionValidationUpdated = 403;
+		public const int SubmissionValidationUploadResults = 404;
 
-		public const int MatchQeueuExecution = 500;
+		public const int MatchExecutionQueued = 500;
+		public const int MatchExecutionUpdated = 501;
+		public const int MatchExecutionUploadResults = 503;
 
 		public const int TournamentCreated = 600;
-		public const int TournamentStateChanged = 601;
-		public const int TournamentMatchesGeneration= 602;
+		public const int TournamentUpdated = 601;
+		public const int TournamentStateChanged = 602;
+		public const int TournamentMatchesGeneration= 603;
+
+		public const int GameCreated = 700;
+		public const int GameUpdated = 701;
+
+		public const int DocumentCreated = 801;
+		public const int DocumentUpdated = 802;
 
 		public const int JwtRefreshTokenValidationFailed = 9000;
 
@@ -37,6 +47,5 @@
 
 		public const int MailSentSuccess = 8000;
 		public const int MailSentFailed = 8001;
-
 	}
 }
