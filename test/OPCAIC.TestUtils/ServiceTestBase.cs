@@ -73,8 +73,8 @@ namespace OPCAIC.TestUtils
 			Services.AddDbContext<DataContext>(options =>
 			{
 				options.UseInMemoryDatabase(dbName);
-				options.EnableSensitiveDataLogging();
-				options.EnableDetailedErrors();
+//				options.EnableSensitiveDataLogging();
+//				options.EnableDetailedErrors();
 			});
 		}
 

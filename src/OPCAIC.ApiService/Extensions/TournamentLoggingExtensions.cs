@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Enums;
@@ -37,7 +38,7 @@ namespace OPCAIC.ApiService.Extensions
 		{
 			logger.LogInformation(LoggingEvents.TournamentUpdated,
 				$"Tournament {{{LoggingTags.TournamentId}}} was updated: {{{LoggingTags.UpdateData}}}",
-				tournamentId, JObject.FromObject(dto));
+				tournamentId, JsonConvert.SerializeObject(dto));
 		}
 	}
 }

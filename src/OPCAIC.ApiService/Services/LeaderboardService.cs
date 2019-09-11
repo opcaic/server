@@ -10,6 +10,7 @@ using OPCAIC.ApiService.Models.Leaderboards;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
@@ -40,32 +41,31 @@ namespace OPCAIC.ApiService.Services
 		public async Task<LeaderboardModel> GetTournamentLeaderboard(long tournamentId,
 			CancellationToken cancellationToken)
 		{
-			if (!await tournamentRepository.ExistsByIdAsync(tournamentId, cancellationToken))
+			var tournament =
+				await tournamentRepository.FindByIdAsync(tournamentId, cancellationToken);
+
+			if (tournament == null)
 			{
 				throw new NotFoundException(nameof(Tournament), tournamentId);
 			}
 
-			var tournament =
-				await tournamentRepository.FindByIdAsync(tournamentId, cancellationToken);
 			switch (tournament.Format)
 			{
 				case TournamentFormat.Elo:
-					return await GenerateEloTournamentLeaderboard(tournamentId, cancellationToken);
+					return await GenerateEloTournamentLeaderboard(tournament, cancellationToken);
 				case TournamentFormat.DoubleElimination:
-					return await GenerateDoubleEliminationTournamentLeaderboard(tournamentId,
+					return await GenerateDoubleEliminationTournamentLeaderboard(tournament,
 						cancellationToken);
 				case TournamentFormat.SingleElimination:
-					return await GenerateSingleEliminationTournamentLeaderboard(tournamentId,
+					return await GenerateSingleEliminationTournamentLeaderboard(tournament,
 						cancellationToken);
 				case TournamentFormat.SinglePlayer:
-					return await GenerateSinglePlayerTournamentLeaderboard(tournamentId,
-						cancellationToken);
 				case TournamentFormat.Table:
-					return await GenerateTableTournamentLeaderboard(tournamentId,
+					return await GenerateMatchScoreSumLeaderboard(tournament,
 						cancellationToken);
+				case TournamentFormat.Unknown:
 				default:
-					return await GenerateTableTournamentLeaderboard(tournamentId,
-						cancellationToken);
+					throw new ArgumentOutOfRangeException();
 			}
 		}
 
@@ -116,72 +116,41 @@ namespace OPCAIC.ApiService.Services
 
 		#region Generating leaderboards
 
-		private async Task<LeaderboardModel> GenerateTableTournamentLeaderboard(
-			long tournamentId, CancellationToken cancellationToken)
+		private async Task<LeaderboardModel> GenerateMatchScoreSumLeaderboard(
+			TournamentDetailDto tournament, CancellationToken cancellationToken)
 		{
-			var model = new LeaderboardModel();
-			var matches = await InitializeLeaderboardModel(model, tournamentId, cancellationToken);
-			foreach (var player in GetUniquePlayers(matches))
-			{
-				var participation =
-					new LeaderboardParticipationModel
-					{
-						User = mapper.Map<UserLeaderboardViewModel>(player)
-					};
-				int wonMatches = 0;
-				int lostMatches = 0;
-				int tiedMatches = 0;
-				foreach (var m in matches)
-				{
-					var myResult = m.Executions.Last().BotResults
-						.Single(smr => smr.Submission.Author.Id == player.Id);
-					var otherResult = m.Executions.Last().BotResults
-						.Single(smr => smr.Submission.Author.Id != player.Id);
-					if (myResult.Score > otherResult.Score) wonMatches++;
-					else if (myResult.Score == otherResult.Score) tiedMatches++;
-				}
+			var model = CreateModel<LeaderboardModel>(tournament);
+			var matches = await GetMatches(tournament.Id, cancellationToken);
 
-				// won game is worth 3 points, a tie 1.5 points, loss 0 points
-				participation.Score =
-					3 * wonMatches + 1.5 * (matches.Count() - lostMatches - wonMatches);
-				model.Participations.Add(participation);
+			var players = GetUniquePlayers(matches.Values).ToDictionary(p => p.Id,
+				p => new LeaderboardParticipationModel
+				{
+					User = mapper.Map<UserLeaderboardViewModel>(p)
+				});
+
+			foreach (var match in matches.Values)
+			{
+				var results = match.Executions[match.Executions.Count - 1].BotResults;
+				foreach (var result in results)
+				{
+					players[result.Submission.Author.Id].Score += results[0].Score;
+				}
 			}
 
-			DeterminePlacementFromScore(model);
-			return model;
-		}
-
-		private async Task<LeaderboardModel> GenerateSinglePlayerTournamentLeaderboard(
-			long tournamentId, CancellationToken cancellationToken)
-		{
-			var model = new LeaderboardModel();
-			var matches = await InitializeLeaderboardModel(model, tournamentId, cancellationToken);
-			foreach (var player in GetUniquePlayers(matches))
-			{
-				var participation = new LeaderboardParticipationModel
-				{
-					User = mapper.Map<UserLeaderboardViewModel>(player), Score = 0
-				};
-				foreach (var m in matches)
-				{
-					participation.Score += m.Executions.Last().BotResults
-						.Single(br => br.Submission.Author.Id == player.Id).Score;
-				}
-
-				model.Participations.Add(participation);
-			}
+			model.Participations = players.Values.ToList();
 
 			DeterminePlacementFromScore(model);
 			return model;
 		}
 
 		private async Task<LeaderboardModel> GenerateEloTournamentLeaderboard(
-			long tournamentId,
+			TournamentDetailDto tournament,
 			CancellationToken cancellationToken)
 		{
-			var model = new LeaderboardModel();
-			var matches = await InitializeLeaderboardModel(model, tournamentId, cancellationToken);
-			foreach (var player in GetUniquePlayers(matches))
+			var model = CreateModel<LeaderboardModel>(tournament);
+			var matches = await GetMatches(tournament.Id, cancellationToken);
+
+			foreach (var player in GetUniquePlayers(matches.Values))
 			{
 				var participation = new LeaderboardParticipationModel
 				{
@@ -190,25 +159,23 @@ namespace OPCAIC.ApiService.Services
 				model.Participations.Add(participation);
 			}
 
-			EloComputing.DetermineElo(matches, model);
+			EloComputing.DetermineElo(matches.Values, model);
 			DeterminePlacementFromScore(model);
 			return model;
 		}
 
 		private async Task<SingleEliminationTreeLeaderboardModel>
-			GenerateSingleEliminationTournamentLeaderboard(long tournamentId,
+			GenerateSingleEliminationTournamentLeaderboard(TournamentDetailDto tournament,
 				CancellationToken cancellationToken)
 		{
-			var model = new SingleEliminationTreeLeaderboardModel();
-			var matches = await InitializeLeaderboardModel(model, tournamentId, cancellationToken);
+			var model = CreateModel<SingleEliminationTreeLeaderboardModel>(tournament);
+			var matches = await GetMatches(tournament.Id, cancellationToken);
 
 			// placement makes no sense for unfinished bracket tournaments
 			if (!model.Finished) return model;
 
-			var tournament =
-				await tournamentRepository.FindByIdAsync(tournamentId, cancellationToken);
 			var tree = matchFactory.GetSingleEliminationTree(tournament.PlayersCount, false);
-			foreach (var player in GetUniquePlayers(matches))
+			foreach (var player in GetUniquePlayers(matches.Values))
 			{
 				var participation = new LeaderboardParticipationModel
 				{
@@ -224,20 +191,19 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		private async Task<DoubleEliminationTreeLeaderboardModel>
-			GenerateDoubleEliminationTournamentLeaderboard(long tournamentId,
+			GenerateDoubleEliminationTournamentLeaderboard(TournamentDetailDto tournament,
 				CancellationToken cancellationToken)
 		{
-			var model = new DoubleEliminationTreeLeaderboardModel();
-			var matches = await InitializeLeaderboardModel(model, tournamentId, cancellationToken);
+			var model = CreateModel<DoubleEliminationTreeLeaderboardModel>(tournament);
+			var matches = await GetMatches(tournament.Id, cancellationToken);
+
 			model.BracketMatches = new List<BracketMatchModel>();
 
 			// placement makes no sense for unfinished bracket tournaments
 			if (!model.Finished) return model;
 
-			var tournament =
-				await tournamentRepository.FindByIdAsync(tournamentId, cancellationToken);
-			var tree = matchFactory.GetDoubleEliminationTree(tournament.PlayersCount);
-			foreach (var player in GetUniquePlayers(matches))
+			var tree = matchFactory.GetDoubleEliminationTree(tournament.ActiveSubmissionsCount);
+			foreach (var player in GetUniquePlayers(matches.Values))
 			{
 				var participation = new LeaderboardParticipationModel
 				{
@@ -255,7 +221,7 @@ namespace OPCAIC.ApiService.Services
 
 			#region Handle final separately
 
-			var finalMatch = matches.Single(m => m.Index == tree.Final.MatchIndex);
+			var finalMatch = matches[tree.Final.MatchIndex];
 			var playerA = finalMatch.Submissions[0].Author;
 			var playerB = finalMatch.Submissions[1].Author;
 			var participationA = model.Participations.Single(p => p.User.Id == playerA.Id);
@@ -297,31 +263,37 @@ namespace OPCAIC.ApiService.Services
 		#region Auxiliary methods
 
 		/// <summary>
-		///     Initializes basic leaderboard model, also filters the matches that only those successfully executed are displayed.
+		///     Creates a leaderboard model and initializes it with data from given tournament.
 		/// </summary>
-		/// <param name="model"></param>
-		/// <param name="tournamentId"></param>
-		/// <param name="cancellationToken"></param>
+		/// <param name="tournament"></param>
 		/// <returns>Succesfully executed matches.</returns>
-		private async Task<IEnumerable<MatchDetailDto>> InitializeLeaderboardModel(
-			LeaderboardModel model, long tournamentId, CancellationToken cancellationToken)
+		private TLeaderboards CreateModel<TLeaderboards>(
+			TournamentDetailDto tournament)
+			where TLeaderboards : LeaderboardModel, new()
 		{
-			var tournament =
-				await tournamentRepository.FindByIdAsync(tournamentId, cancellationToken);
-			model.Tournament = mapper.Map<TournamentReferenceModel>(tournament);
-			model.TournamentFormat = tournament.Format;
-			model.TournamentRankingStrategy = tournament.RankingStrategy;
-			model.Participations = new List<LeaderboardParticipationModel>();
+			return new TLeaderboards
+			{
+				Tournament = mapper.Map<TournamentReferenceModel>(tournament),
+				TournamentFormat = tournament.Format,
+				TournamentRankingStrategy = tournament.RankingStrategy,
+				Participations = new List<LeaderboardParticipationModel>(),
+				Finished = tournament.State == TournamentState.Finished
+			};
+		}
+
+		/// <summary>
+		///     Gets finished matches from tournament with given id and creates a lookup table by match index inside the tournament;
+		/// </summary>
+		/// <param name="tournamentId">Id of the tournament</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		private async Task<Dictionary<long, MatchDetailDto>> GetMatches(long tournamentId, CancellationToken cancellationToken)
+		{
 			var matches =
 				await matchRepository.AllMatchesFromTournamentAsync(tournamentId,
 					cancellationToken);
-			model.Finished = matches.All(m
-					=> m.Executions.Any() &&
-					m.Executions.Last().ExecutorResult == EntryPointResult.Success) &&
-				matches.Any();
-			return matches.Where(m
-				=> m.Executions.Any() &&
-				m.Executions.Last().ExecutorResult == EntryPointResult.Success);
+
+			return matches.Where(m => m.State == MatchState.Executed).ToDictionary(m => m.Index);
 		}
 
 		/// <summary>
@@ -341,6 +313,7 @@ namespace OPCAIC.ApiService.Services
 		/// <param name="model"></param>
 		private void DeterminePlacementFromScore(LeaderboardModel model)
 		{
+			// TODO: optimize this O(n^2) monstrosity
 			foreach (var participation in model.Participations)
 			{
 				if (model.TournamentRankingStrategy == TournamentRankingStrategy.Minimum)
@@ -355,12 +328,12 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		private BracketMatchModel DetermineSingleEliminationPlacement(
-			IEnumerable<MatchDetailDto> matches,
+			Dictionary<long, MatchDetailDto> matches,
 			MatchTreeNode node, SingleEliminationTreeLeaderboardModel model, int playersAbove)
 		{
 			if (node == null) return null;
 
-			var currentMatch = matches.Single(m => m.Index == node.MatchIndex);
+			var currentMatch = matches[node.MatchIndex];
 			var playerA = currentMatch.Submissions[0].Author;
 			var playerB = currentMatch.Submissions[1].Author;
 			var participationA = model.Participations.Single(p => p.User.Id == playerA.Id);
@@ -398,12 +371,12 @@ namespace OPCAIC.ApiService.Services
 			return current;
 		}
 
-		private BracketMatchModel DetermineDoubleEliminationPlacement(IEnumerable<MatchDetailDto> matches,
+		private BracketMatchModel DetermineDoubleEliminationPlacement(Dictionary<long, MatchDetailDto> matches,
 			MatchTreeNode node, DoubleEliminationTreeLeaderboardModel model, int playersAbove)
 		{
 			if (node == null) return null;
 
-			var currentMatch = matches.Single(m => m.Index == node.MatchIndex);
+			var currentMatch = matches[node.MatchIndex];
 			var playerA = currentMatch.Submissions[0].Author;
 			var playerB = currentMatch.Submissions[1].Author;
 			var participationA = model.Participations.Single(p => p.User.Id == playerA.Id);
@@ -414,7 +387,7 @@ namespace OPCAIC.ApiService.Services
 					.Single(br => br.Submission.Author.Id != playerA.Id).Score;
 
 			// check whether we already processed that match (in a previously done winners bracket)
-			var current = model.BracketMatches.Single(bm => bm.MatchId == currentMatch.Id);
+			var current = model.BracketMatches.SingleOrDefault(bm => bm.MatchId == currentMatch.Id);
 
 			if (current == null)
 			{

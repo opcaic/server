@@ -24,6 +24,14 @@ namespace OPCAIC.ApiService.Test.Security
 					new Claim(RolePolicy.UserRoleClaim, UserRole.User.ToString())
 				}
 			));
+
+			// configure entities for test purposes
+			Faker.Configure<MatchExecution>()
+				.RuleFor(e => e.Match, Faker.Entity<Match>);
+			Faker.Configure<Match>()
+				.RuleFor(m => m.Tournament, Faker.Entity<Tournament>);
+			Faker.Configure<Submission>()
+				.RuleFor(m => m.Tournament, Faker.Entity<Tournament>);
 		}
 
 
@@ -78,11 +86,6 @@ namespace OPCAIC.ApiService.Test.Security
 		[Fact]
 		public Task MatchExecutionPermission()
 		{
-			Faker.Configure<MatchExecution>()
-				.RuleFor(e => e.Match, Faker.Entity<Match>);
-			Faker.Configure<Match>()
-				.RuleFor(m => m.Tournament, Faker.Entity<Tournament>);
-
 			return DoCheckPermission<MatchExecutionPermission, MatchExecution>();
 		}
 

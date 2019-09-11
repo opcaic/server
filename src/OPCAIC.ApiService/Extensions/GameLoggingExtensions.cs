@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using OPCAIC.Infrastructure.Dtos.Games;
 using OPCAIC.Utils;
 
@@ -17,7 +17,7 @@ namespace OPCAIC.ApiService.Extensions
 		{
 			logger.LogInformation(LoggingEvents.GameUpdated,
 				$"Game {{{LoggingTags.GameId}}} was updated: {{{LoggingTags.UpdateData}}}", id,
-				JObject.FromObject(dto));
+				JsonConvert.SerializeObject(dto));
 		}
 	}
 }

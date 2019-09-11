@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using AutoMapper;
 using Newtonsoft.Json;
@@ -190,6 +189,8 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<Tournament, TournamentPreviewDto>(MemberList
 					.Destination)
+				.ForMember(d => d.ActiveSubmissionsCount,
+					opt => opt.MapFrom(s => s.Submissions.Count(e => e.IsActive)))
 				.ForMember(d => d.PlayersCount,
 					opt => opt.MapFrom(s
 						=> s.Submissions.Select(x => x.Author.Id).Distinct().Count()))
@@ -222,7 +223,8 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<Tournament, TournamentGenerationDtoBase>(MemberList.Destination)
 				.ForMember(d => d.ActiveSubmissionIds,
-					opt => opt.MapFrom(f => f.Submissions.Where(s => s.IsActive).Select(s => s.Id)));
+					opt => opt.MapFrom(f
+						=> f.Submissions.Where(s => s.IsActive).Select(s => s.Id)));
 
 			exp.CreateMap<Tournament, TournamentBracketsGenerationDto>(MemberList.Destination)
 				.IncludeBase<Tournament, TournamentGenerationDtoBase>();
@@ -290,7 +292,8 @@ namespace OPCAIC.ApiService
 				.ForMember(v => v.TournamentId, opt => opt.MapFrom(v => v.Submission.Tournament.Id))
 				.ForMember(v => v.TournamentConfiguration,
 					opt => opt.MapFrom(v => v.Submission.Tournament.Configuration))
-				.ForMember(v => v.GameKey, opt => opt.MapFrom(v => v.Submission.Tournament.Game.Key));
+				.ForMember(v => v.GameKey,
+					opt => opt.MapFrom(v => v.Submission.Tournament.Game.Key));
 
 			exp.CreateMap<SubmissionValidation, SubmissionValidationDto>(MemberList
 				.Destination);
@@ -298,16 +301,20 @@ namespace OPCAIC.ApiService
 				MemberList.Destination);
 
 			exp.CreateMap<SubmissionValidationDto, SubmissionValidationDetailModel>(
-				MemberList.Destination)
+					MemberList.Destination)
 				.ForMember(d => d.CheckerLog, opt => opt.Ignore())
 				.ForMember(d => d.CompilerLog, opt => opt.Ignore())
 				.ForMember(d => d.ValidatorLog, opt => opt.Ignore());
 
-			exp.CreateMap<SubmissionValidationLogsDto, SubmissionValidationDetailModel>(MemberList.Source);
+			exp.CreateMap<SubmissionValidationLogsDto, SubmissionValidationDetailModel>(MemberList
+				.Source);
 
 			exp.CreateMap<SubmissionValidation, SubmissionValidationAuthDto>(MemberList.Destination)
-				.ForMember(v => v.TournamentOwnerId, opt => opt.MapFrom(v => v.Submission.Tournament.OwnerId))
-				.ForMember(v => v.TournamentManagersIds, opt => opt.MapFrom(v => v.Submission.Tournament.Managers.Select(m => m.UserId)));
+				.ForMember(v => v.TournamentOwnerId,
+					opt => opt.MapFrom(v => v.Submission.Tournament.OwnerId))
+				.ForMember(v => v.TournamentManagersIds,
+					opt => opt.MapFrom(v
+						=> v.Submission.Tournament.Managers.Select(m => m.UserId)));
 		}
 
 		private static void AddEmailMapping(this IMapperConfigurationExpression exp)
@@ -325,7 +332,7 @@ namespace OPCAIC.ApiService
 		{
 			exp.CreateMap<NewMatchDto, Match>(MemberList.Source)
 				.ForSourceMember(m => m.Submissions,
-					opt => opt.DoNotValidate()); 
+					opt => opt.DoNotValidate());
 
 			exp.CreateMap<MatchFilterModel, MatchFilterDto>(MemberList.Source);
 
@@ -358,7 +365,8 @@ namespace OPCAIC.ApiService
 				.ForMember(e => e.ExecutorLog, opt => opt.Ignore());
 			exp.CreateMap<SubmissionMatchResult, SubmissionMatchResultDto,
 				SubmissionMatchResultPreviewModel>(MemberList.Destination);
-			exp.CreateMap<SubmissionMatchResultPreviewModel, SubmissionMatchResultDetailModel>(MemberList.Source);
+			exp.CreateMap<SubmissionMatchResultPreviewModel, SubmissionMatchResultDetailModel>(
+				MemberList.Source);
 
 			exp.CreateMap<MatchExecutionResult, UpdateMatchExecutionDto>()
 				.ForMember(d => d.State, opt => opt.MapFrom(r => r.JobStatus))
@@ -371,7 +379,9 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<MatchExecution, MatchExecutionRequestDataDto>(MemberList
 					.Destination)
 				.ForMember(e => e.SubmissionIds,
-					opt => opt.MapFrom(e => e.Match.Participations.OrderBy(s => s.Order).Select(s => s.SubmissionId)))
+					opt => opt.MapFrom(e
+						=> e.Match.Participations.OrderBy(s => s.Order)
+							.Select(s => s.SubmissionId)))
 				.ForMember(e => e.TournamentId, opt => opt.MapFrom(e => e.Match.Tournament.Id))
 				.ForMember(e => e.TournamentConfiguration,
 					opt => opt.MapFrom(e => e.Match.Tournament.Configuration))

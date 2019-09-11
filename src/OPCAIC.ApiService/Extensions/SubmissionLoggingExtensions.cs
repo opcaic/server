@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.Utils;
 
@@ -14,8 +14,8 @@ namespace OPCAIC.ApiService.Extensions
 
 		public static void SubmissionUpdated(this ILogger logger, long submissionId, UpdateSubmissionModel model)
 		{
-			// TODO: separate event for submission activation/deactivation
-			logger.LogInformation(LoggingEvents.SubmissionUpdate, $"Updated submission {{{LoggingTags.SubmissionId}}}: {{{LoggingTags.UpdateData}}}", submissionId, JObject.FromObject(model));
+			// TODO: separate event for submission activation/deactivation?
+			logger.LogInformation(LoggingEvents.SubmissionUpdate, $"Updated submission {{{LoggingTags.SubmissionId}}}: {{{LoggingTags.UpdateData}}}", submissionId, JsonConvert.SerializeObject(model));
 		}
 	}
 }

@@ -26,6 +26,8 @@ namespace OPCAIC.Infrastructure.Dtos.Tournaments
 
 		public int SubmissionsCount { get; set; }
 
+		public int ActiveSubmissionsCount { get; set; }
+
 		public string ImageUrl { get; set; }
 
 		public double? ImageOverlay { get; set; }

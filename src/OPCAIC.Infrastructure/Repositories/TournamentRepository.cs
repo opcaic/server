@@ -98,7 +98,7 @@ namespace OPCAIC.Infrastructure.Repositories
 				.Where(t => t.Format == TournamentFormat.DoubleElimination || t.Format == TournamentFormat.SingleElimination)
 				.Where(t => !t.Matches.Any() || // only those, which have changed
 					t.Matches.Any(m
-						=> m.Executions.Any(e => e.Executed.HasValue && e.Executed > lastUpdated)))
+						=> m.Executions.Any(e => e.Executed.HasValue && e.Executed >= lastUpdated)))
 				.ProjectTo<TournamentBracketsGenerationDto>(Mapper.ConfigurationProvider)
 				.ToListAsync(cancellationToken);
 		}

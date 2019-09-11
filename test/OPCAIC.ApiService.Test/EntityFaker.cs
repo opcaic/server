@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using AutoMapper;
 using Bogus;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
+using static OPCAIC.ApiService.Test.Services.TestMapper;
 
 namespace OPCAIC.ApiService.Test
 {
 	public class EntityFaker
 	{
 		private readonly Dictionary<Type, object> fakers = new Dictionary<Type, object>();
-		private static readonly IMapper mapper = new Mapper(MapperConfigurationFactory.Create());
 		private readonly int seed;
 
 		public EntityFaker(int seed = 10)
@@ -34,11 +33,11 @@ namespace OPCAIC.ApiService.Test
 				.RuleFor(g => g.Name, f => f.Random.String(10))
 				.RuleFor(g => g.Description, f => f.Lorem.Paragraph())
 				.RuleFor(g => g.Availability, TournamentAvailability.Public)
-				.RuleFor(t => t.Deadline, DateTime.Now + TimeSpan.FromHours(1));
+				.RuleFor(t => t.Deadline, DateTime.Now + TimeSpan.FromHours(1))
+				.RuleFor(g => g.Matches, f => new List<Match>());
 
 			Configure<Submission>()
 				.RuleFor(s => s.Author, f => Entity<User>())
-				.RuleFor(s => s.Tournament, f => Entity<Tournament>())
 				.RuleFor(s => s.IsActive, true);
 
 			Configure<SubmissionValidation>()
@@ -53,7 +52,6 @@ namespace OPCAIC.ApiService.Test
 				.RuleFor(d => d.Tournament, f => Entity<Tournament>());
 
 			Configure<Match>()
-				.RuleFor(m => m.Tournament, f => Entity<Tournament>())
 				.RuleFor(m => m.Executions, f => new List<MatchExecution>
 				{
 					new MatchExecution
@@ -85,7 +83,7 @@ namespace OPCAIC.ApiService.Test
 
 		public TDto Dto<TEntity, TDto>(Action<TDto> additionalSetup) where TEntity : class
 		{
-			var dto = mapper.Map<TDto>(Configure<TEntity>().Generate());
+			var dto = Mapper.Map<TDto>(Configure<TEntity>().Generate());
 			additionalSetup(dto);
 			return dto;
 		}

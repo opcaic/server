@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Utils;
 
@@ -21,7 +21,7 @@ namespace OPCAIC.ApiService.Extensions
 		{
 			logger.LogInformation(LoggingEvents.SubmissionValidationUpdated,
 				$"Submission validation job {{{LoggingTags.JobId}}} updated: {{{LoggingTags.UpdateData}}}",
-				jobId, JObject.FromObject(dto));
+				jobId, JsonConvert.SerializeObject(dto));
 		}
 
 		public static void SubmissionValidationExpired(this ILogger logger, Guid jobId)

@@ -37,7 +37,7 @@ namespace OPCAIC.ApiService.Services
 				scopedProvider.GetRequiredService<ITournamentRepository>(),
 				scopedProvider.GetRequiredService<IMatchRepository>(),
 				scopedProvider.GetRequiredService<IMatchGenerator>(),
-				lastUpdated,
+				lastRun,
 				now).ExecuteAsync(cancellationToken);
 		}
 

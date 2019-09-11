@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Moq;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Infrastructure.Dtos.Matches;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
@@ -14,6 +17,7 @@ using OPCAIC.Services.Extensions;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
+using Match = OPCAIC.Infrastructure.Entities.Match;
 
 namespace OPCAIC.ApiService.Test.Services
 {
@@ -31,21 +35,24 @@ namespace OPCAIC.ApiService.Test.Services
 			Now = DateTime.Now;
 		}
 
-		private DateTime LastUpdated { get; }
-		private DateTime Now { get; }
+		private DateTime LastUpdated { get; set; }
+		private DateTime Now { get; set; }
 
 		private TournamentProcessor.Job Processor
 		{
 			get
 			{
 				var services = ServiceProvider;
+				Now = Now == LastUpdated ? Now.AddMinutes(1) : Now;
+				var lastRun = LastUpdated;
+				LastUpdated = Now;
 
 				return new TournamentProcessor.Job(
 					services.GetRequiredService<ILogger<TournamentProcessor>>(),
 					services.GetRequiredService<ITournamentRepository>(),
 					services.GetRequiredService<IMatchRepository>(),
 					services.GetRequiredService<IMatchGenerator>(),
-					LastUpdated,
+					lastRun,
 					Now);
 			}
 		}
@@ -209,5 +216,44 @@ namespace OPCAIC.ApiService.Test.Services
 
 			tournament.State.ShouldBe(TournamentState.Finished);
 		}
+
+		[Fact]
+		public async Task BracketsGeneration_GeneratesEntireTree()
+		{
+			var participants = 12;
+			var matchRepositoryMock = Services.Mock<IMatchRepository>(MockBehavior.Strict);
+			var tournament = SetupTournament(participants);
+			tournament.Matches = new List<Match>();
+			tournament.Scope = TournamentScope.Deadline;
+			tournament.Format = TournamentFormat.SingleElimination;
+			await DbContext.SaveChangesAsync();
+
+			await SimulateTournament(matchRepositoryMock, tournament);
+		}
+
+		private async Task SimulateTournament(Mock<IMatchRepository> matchRepositoryMock, Tournament tournament)
+		{
+			// auto execute matches
+			matchRepositoryMock.Setup(s
+					=> s.CreateMatchesAsync(It.IsNotNull<List<NewMatchDto>>(), CancellationToken))
+				.Returns((List<NewMatchDto> matches, CancellationToken token)
+					=>
+				{
+					TestTournamentHelper.ExecuteMatches(tournament, matches, Now);
+					return DbContext.SaveChangesAsync(token);
+				});
+
+			int matchCount;
+
+			do
+			{
+				matchCount = tournament.Matches.Count;
+				await Processor.ExecuteAsync(CancellationToken);
+			} while (matchCount != tournament.Matches.Count);
+
+			tournament.State.ShouldBe(TournamentState.Finished,
+				"Tournament match generation got stuck.");
+		}
+
 	}
 }
