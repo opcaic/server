@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
-using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using System.Threading;
@@ -65,7 +64,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// Removes participant from tournament
 		/// </summary>
 		/// <param name="tournamentId">ID of tournament</param>
-		/// <param name="email">Email of removed user</param>
+		/// <param name="model">Email of removed user</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[Authorize(RolePolicy.Organizer)]
@@ -75,10 +74,10 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task DeleteParticipantAsync(long tournamentId, [ApiEmailAddress] string email, CancellationToken cancellationToken)
+		public async Task DeleteParticipantAsync(long tournamentId, DeleteTournamentParticipantModel model, CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageInvites);
-			await tournamentParticipantsService.DeleteAsync(tournamentId, email, cancellationToken);
+			await tournamentParticipantsService.DeleteAsync(tournamentId, model.Email, cancellationToken);
 		}
 	}
 }

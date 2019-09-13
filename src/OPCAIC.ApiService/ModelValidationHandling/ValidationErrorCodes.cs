@@ -80,5 +80,8 @@
 
 		public static string InvalidSchema => "invalid-schema";
 		public static string InvalidConfiguration => "invalid-configuration";
+		public static string InvalidContentType => "invalid-content-type";
+		
+		public static string InvalidZipSize => "invalid-archive-size";
 	}
 }

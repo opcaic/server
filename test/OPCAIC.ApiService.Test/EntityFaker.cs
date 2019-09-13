@@ -27,6 +27,7 @@ namespace OPCAIC.ApiService.Test
 				.RuleFor(g => g.Name, f => f.Random.String(10))
 				.RuleFor(g => g.Description, f => f.Lorem.Paragraph())
 				.RuleFor(g => g.GameType, f => f.PickRandom<GameType>())
+				.RuleFor(g => g.MaxAdditionalFilesSize, 1024 * 1024)
 				.RuleFor(g => g.ConfigurationSchema, "{}");
 
 			Configure<Tournament>()
@@ -34,6 +35,7 @@ namespace OPCAIC.ApiService.Test
 				.RuleFor(g => g.Description, f => f.Lorem.Paragraph())
 				.RuleFor(g => g.Availability, TournamentAvailability.Public)
 				.RuleFor(t => t.Deadline, DateTime.Now + TimeSpan.FromHours(1))
+				.RuleFor(g => g.MaxSubmissionSize, 1024 * 1024)
 				.RuleFor(g => g.Matches, f => new List<Match>());
 
 			Configure<Submission>()

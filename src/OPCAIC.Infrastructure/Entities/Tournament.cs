@@ -141,5 +141,10 @@ namespace OPCAIC.Infrastructure.Entities
 		///     How many matches to generate per day. Valid only for <see cref="TournamentScope.Ongoing" /> tournaments.
 		/// </summary>
 		public int? MatchesPerDay { get; set; }
+
+		/// <summary>
+		///     Maximum size in bytes on the submission archive contents.
+		/// </summary>
+		public long MaxSubmissionSize { get; set; }
 	}
 }

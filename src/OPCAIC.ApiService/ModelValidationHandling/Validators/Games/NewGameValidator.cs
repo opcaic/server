@@ -11,6 +11,7 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Validators.Games
 			RuleFor(m => m.Name).Required().MaxLength(StringLengths.GameName);
 			RuleFor(m => m.Key).Required().MaxLength(StringLengths.GameKey);
 			RuleFor(m => m.ConfigurationSchema).Required().ValidSchema();
+			RuleFor(m => m.MaxAdditionalFilesSize).MinValue(1);
 		}
 	}
 }

@@ -19,5 +19,7 @@ namespace OPCAIC.ApiService.Models.Tournaments
 		public string MenuData { get; set; }
 
 		public int? MatchesPerDay { get; set; }
+
+		public long MaxSubmissionSize { get; set; }
 	}
 }

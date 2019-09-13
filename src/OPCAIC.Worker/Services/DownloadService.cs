@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Utils;
@@ -86,9 +87,12 @@ namespace OPCAIC.Worker.Services
 
 				// rewind to beginning so that the data can be read form the stream
 				stream.Seek(0, SeekOrigin.Begin);
+				var streamContent = new StreamContent(stream);
+				streamContent.Headers.ContentType =
+					new MediaTypeHeaderValue(MediaTypeNames.Application.Zip);
 				var content = new MultipartFormDataContent
 				{
-					{new StreamContent(stream), "archive", "archive.zip"}
+					{streamContent, "archive", "archive.zip"}
 				};
 
 				await PostAsync(url, content, cancellationToken);

@@ -20,5 +20,7 @@ namespace OPCAIC.ApiService.Models.Tournaments
 		public TournamentRankingStrategy RankingStrategy { get; set; }
 
 		public int? MatchesPerDay { get; set; }
+
+		public long MaxSubmissionSize { get; set; }
 	}
 }

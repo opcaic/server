@@ -19,5 +19,7 @@ namespace OPCAIC.Infrastructure.Dtos.Tournaments
 		public TournamentRankingStrategy RankingStrategy { get; set; }
 
 		public int? MatchesPerDay { get; set; }
+
+		public long MaxSubmissionSize { get; set; }
 	}
 }

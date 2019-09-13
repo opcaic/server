@@ -1,18 +1,15 @@
-﻿using System.IO;
+﻿using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.SubmissionValidations;
-using OPCAIC.ApiService.ModelValidationHandling;
-using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Services;
 
@@ -43,7 +40,7 @@ namespace OPCAIC.ApiService.Controllers
 		///     Uploads zip archived results of a submission validation.
 		/// </summary>
 		/// <param name="id">Id of the submission validation.</param>
-		/// <param name="archive">Zip archive with the results.</param>
+		/// <param name="model">Zip archive with the results.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[HttpPost("{id}/result")]
@@ -52,22 +49,16 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task UploadResult(long id, [ApiRequired] IFormFile archive,
+		public async Task UploadResult(long id, ResultArchiveModel model, 
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id,
 				SubmissionValidationPermission.UploadResult);
 
-			if (Path.GetExtension(archive.FileName) != ".zip")
-			{
-				throw new BadRequestException(ValidationErrorCodes.UploadNotZip, null,
-					nameof(archive));
-			}
-
 			var storageDto = await repository.FindStorageAsync(id, cancellationToken);
 			using (var stream = storage.WriteSubmissionValidationResultArchive(storageDto))
 			{
-				await archive.CopyToAsync(stream, cancellationToken);
+				await model.Archive.CopyToAsync(stream, cancellationToken);
 			}
 
 			logger.SubmissionValidationResultUploaded(id);
@@ -120,7 +111,7 @@ namespace OPCAIC.ApiService.Controllers
 				return NotFound();
 			}
 
-			return File(stream, Constants.GzipMimeType);
+			return File(stream, MediaTypeNames.Application.Zip);
 		}
 	}
 }

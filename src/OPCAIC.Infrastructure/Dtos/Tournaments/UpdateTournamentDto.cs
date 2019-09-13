@@ -5,8 +5,6 @@ namespace OPCAIC.Infrastructure.Dtos.Tournaments
 {
 	public class UpdateTournamentDto
 	{
-		[Required]
-		[MinLength(1)]
 		public string Name { get; set; }
 
 		public string Description { get; set; }
@@ -22,5 +20,7 @@ namespace OPCAIC.Infrastructure.Dtos.Tournaments
 		public string MenuData { get; set; }
 
 		public int? MatchesPerDay { get; set; }
+
+		public long MaxSubmissionSize { get; set; }
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Net.Mime;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -121,7 +122,7 @@ namespace OPCAIC.ApiService.Controllers
 		{
 			await authorizationService.CheckPermissions(User, id, SubmissionPermission.Download);
 			return File(await submissionService.GetSubmissionArchiveAsync(id, cancellationToken),
-				Constants.GzipMimeType);
+				MediaTypeNames.Application.Zip);
 		}
 
 		/// <summary>

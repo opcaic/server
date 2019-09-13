@@ -64,6 +64,11 @@ namespace OPCAIC.Infrastructure.Entities
 		/// </summary>
 		public string DefaultTournamentThemeColor { get; set; }
 
+		/// <summary>
+		///     Maximum size of additional files for evaluating matches in this game.
+		/// </summary>
+		public long MaxAdditionalFilesSize { get; set; }
+
 		internal static void OnModelCreating(EntityTypeBuilder<Game> builder)
 		{
 			builder.HasIndex(g => g.Name).IsUnique();

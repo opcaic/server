@@ -1,20 +1,15 @@
-﻿using System.IO;
-using System.Net;
+﻿using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Matches;
-using OPCAIC.ApiService.ModelValidationHandling;
-using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
-using OPCAIC.Infrastructure.Dtos.Matches;
-using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Services;
 
@@ -44,7 +39,7 @@ namespace OPCAIC.ApiService.Controllers
 		///     Uploads zip archived results of a given match execution.
 		/// </summary>
 		/// <param name="id">Id of the match execution.</param>
-		/// <param name="archive">Zip archive with the results.</param>
+		/// <param name="model">Zip model with the results.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[HttpPost("{id}/result")]
@@ -53,20 +48,15 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task UploadResult(long id, [ApiRequired] IFormFile archive,
+		public async Task UploadResult(long id, [FromForm] ResultArchiveModel model,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id, MatchExecutionPermission.UploadResult);
 
-			if (Path.GetExtension(archive.FileName) != ".zip")
-			{
-				throw new BadRequestException(ValidationErrorCodes.UploadNotZip, null, nameof(archive));
-			}
-
 			var storageDto = await repository.FindExecutionForStorageAsync(id, cancellationToken);
 			using (var stream = storage.WriteMatchResultArchive(storageDto))
 			{
-				await archive.CopyToAsync(stream, cancellationToken);
+				await model.Archive.CopyToAsync(stream, cancellationToken);
 			}
 
 			logger.MatchExecutionResultUploaded(id);
@@ -94,7 +84,7 @@ namespace OPCAIC.ApiService.Controllers
 		}
 
 		/// <summary>
-		///     Downloads match execution results as a zip archive.
+		///     Downloads match execution results as a zip model.
 		/// </summary>
 		/// <param name="id">Id of the match execution.</param>
 		/// <param name="cancellationToken"></param>
@@ -117,7 +107,7 @@ namespace OPCAIC.ApiService.Controllers
 				return NotFound();
 			}
 
-			return File(stream, Constants.GzipMimeType);
+			return File(stream, MediaTypeNames.Application.Zip);
 		}
 	}
 }

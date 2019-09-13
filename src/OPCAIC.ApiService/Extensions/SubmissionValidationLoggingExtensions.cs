@@ -12,7 +12,7 @@ namespace OPCAIC.ApiService.Extensions
 			long submissionId, Guid jobId)
 		{
 			logger.LogInformation(LoggingEvents.SubmissionValidationQueued,
-				$"Queuing validation for submission {{{LoggingTags.SubmissionId}}} as job {{{LoggingTags.JobId}}} with id {{{LoggingTags.SubmissionValidationId}",
+				$"Queuing validation for submission {{{LoggingTags.SubmissionId}}} as job {{{LoggingTags.JobId}}} with id {{{LoggingTags.SubmissionValidationId}}}",
 				submissionId, jobId, id);
 		}
 

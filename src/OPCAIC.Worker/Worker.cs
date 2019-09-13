@@ -27,7 +27,6 @@ namespace OPCAIC.Worker
 		private readonly ExecutionConfig executionConfig;
 		private readonly ILogger logger;
 
-		private readonly Random rand = new Random();
 		private readonly IServiceProvider serviceProvider;
 		private Thread consumerThread;
 

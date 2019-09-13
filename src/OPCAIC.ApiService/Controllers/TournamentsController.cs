@@ -1,15 +1,12 @@
-﻿using System.IO;
+﻿using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
-using OPCAIC.ApiService.ModelValidationHandling;
-using OPCAIC.ApiService.ModelValidationHandling.Attributes;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Services;
@@ -121,7 +118,6 @@ namespace OPCAIC.ApiService.Controllers
 		///     Downloads additional files needed for match execution and submission validation.
 		/// </summary>
 		/// <param name="id">Id of the tournament.</param>
-		/// <param name="cancellationToken"></param>
 		/// <response code="200">Additional files found.</response>
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this action.</response>
@@ -132,8 +128,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> DownloadAdditionalFiles(long id,
-			CancellationToken cancellationToken)
+		public async Task<IActionResult> DownloadAdditionalFiles(long id)
 		{
 			await authorizationService.CheckPermissions(User, id,
 				TournamentPermission.DownloadAdditionalFiles);
@@ -144,14 +139,13 @@ namespace OPCAIC.ApiService.Controllers
 				return NoContent();
 			}
 
-			return File(archive, Constants.GzipMimeType, "tournamentFiles.zip");
+			return File(archive, MediaTypeNames.Application.Zip, "tournamentFiles.zip");
 		}
 
 		/// <summary>
 		///     Uploads additional files needed for match execution and submission validation.
 		/// </summary>
-		/// <param name="id">Id of the tournament.</param>
-		/// <param name="archive">Archive containing the additional files.</param>
+		/// <param name="model">Archive containing the additional files.</param>
 		/// <param name="cancellationToken"></param>
 		/// <response code="200">Successfully uploaded.</response>
 		/// <response code="400">Invalid file uploaded.</response>
@@ -164,21 +158,15 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task UploadAdditionalFiles(long id, [ApiRequired] IFormFile archive,
+		public async Task UploadAdditionalFiles(AdditionalTournamentFilesModel model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermissions(User, model.TournamentId,
 				TournamentPermission.UploadAdditionalFiles);
 
-			if (Path.GetExtension(archive.FileName) != ".zip")
+			using (var stream = storage.WriteTournamentAdditionalFiles(model.TournamentId, true))
 			{
-				throw new BadRequestException(ValidationErrorCodes.UploadNotZip, null,
-					nameof(archive));
-			}
-
-			using (var stream = storage.WriteTournamentAdditionalFiles(id, true))
-			{
-				await archive.CopyToAsync(stream, cancellationToken);
+				await model.Archive.CopyToAsync(stream, cancellationToken);
 			}
 		}
 

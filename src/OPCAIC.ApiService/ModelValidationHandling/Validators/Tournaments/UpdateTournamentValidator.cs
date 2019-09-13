@@ -24,6 +24,8 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Validators.Tournaments
 			RuleFor(m => m.MatchesPerDay)
 				.Null().When(m => m.Scope == TournamentScope.Deadline)
 				.NotNull().When(m => m.Scope == TournamentScope.Ongoing);
+
+			RuleFor(m => m.MaxSubmissionSize).MinValue(1);
 		}
 	}
 }

@@ -142,6 +142,7 @@ namespace OPCAIC.ApiService.Utils
 					DefaultTournamentImage =
 						"https://images.chesscomfiles.com/uploads/v1/article/17623.87bb05cd.668x375o.47d81802f1eb@2x.jpeg",
 					DefaultTournamentThemeColor = "#491e01",
+					MaxAdditionalFilesSize = 1024 * 1024,
 					ConfigurationSchema = "{}"
 				};
 				var game2048 = new Game
@@ -154,6 +155,7 @@ namespace OPCAIC.ApiService.Utils
 					DefaultTournamentImage =
 						"https://upload.wikimedia.org/wikipedia/commons/6/64/2048_Screenshot.png",
 					DefaultTournamentThemeColor = "#f67c5f",
+					MaxAdditionalFilesSize = 1024 * 1024,
 					ConfigurationSchema = "{}"
 				};
 				var gameDota = new Game
@@ -164,6 +166,7 @@ namespace OPCAIC.ApiService.Utils
 					DefaultTournamentImageOverlay = 0.2f,
 					DefaultTournamentImage = "https://wallpapercave.com/wp/V8Ee1Bm.jpg",
 					DefaultTournamentThemeColor = "#2d0f0a",
+					MaxAdditionalFilesSize = 1024 * 1024,
 					ConfigurationSchema = "{}"
 				};
 				var gameMario = new Game
@@ -176,6 +179,7 @@ namespace OPCAIC.ApiService.Utils
 					DefaultTournamentImage =
 						"https://cdn02.nintendo-europe.com/media/images/10_share_images/games_15/nintendo_ds_22/SI_NDS_NewSuperMarioBrosDS_image1600w.jpg",
 					DefaultTournamentThemeColor = "#db0522",
+					MaxAdditionalFilesSize = 1024 * 1024,
 					ConfigurationSchema = "{}"
 				};
 				var gameSokoban = new Game
@@ -188,6 +192,7 @@ namespace OPCAIC.ApiService.Utils
 					DefaultTournamentImage =
 						"https://raw.githubusercontent.com/kefik/Sokoban4J/master/Sokoban4J/screenshot2.png",
 					DefaultTournamentThemeColor = "#97714a",
+					MaxAdditionalFilesSize = 1024 * 1024,
 					ConfigurationSchema = "{}"
 				};
 
@@ -205,7 +210,8 @@ namespace OPCAIC.ApiService.Utils
 					Availability = TournamentAvailability.Private,
 					EvaluationStarted = DateTime.Now.AddHours(-20),
 					State = TournamentState.Running,
-					Configuration = "{}"
+					Configuration = "{}",
+					MaxSubmissionSize = 100 * 1024
 				};
 				var tournamentChessTable = new Tournament
 				{
@@ -217,7 +223,8 @@ namespace OPCAIC.ApiService.Utils
 					Deadline = DateTime.Now.AddSeconds(10),
 					Availability = TournamentAvailability.Public,
 					State = TournamentState.Published,
-					Configuration = "{}"
+					Configuration = "{}",
+					MaxSubmissionSize = 100 * 1024
 				};
 				var tournamentChessDe = new Tournament
 				{
@@ -229,7 +236,8 @@ namespace OPCAIC.ApiService.Utils
 					Deadline = DateTime.Now.AddSeconds(40),
 					Availability = TournamentAvailability.Public,
 					State = TournamentState.Published,
-					Configuration = "{}"
+					Configuration = "{}",
+					MaxSubmissionSize = 100 * 1024
 				};
 				var tournament2048 = new Tournament
 				{
@@ -240,7 +248,8 @@ namespace OPCAIC.ApiService.Utils
 					Scope = TournamentScope.Ongoing,
 					Availability = TournamentAvailability.Private,
 					State = TournamentState.Published,
-					Configuration = "{}"
+					Configuration = "{}",
+					MaxSubmissionSize = 100 * 1024
 				};
 				var tournamentDotaSe = new Tournament
 				{
@@ -252,7 +261,8 @@ namespace OPCAIC.ApiService.Utils
 					Deadline = DateTime.Now.AddDays(6),
 					Availability = TournamentAvailability.Public,
 					State = TournamentState.Published,
-					Configuration = "{}"
+					Configuration = "{}",
+					MaxSubmissionSize = 100 * 1024
 				};
 				var tournamentDotaDe = new Tournament
 				{
@@ -264,7 +274,8 @@ namespace OPCAIC.ApiService.Utils
 					Deadline = DateTime.Now.AddDays(30),
 					Availability = TournamentAvailability.Public,
 					State = TournamentState.Published,
-					Configuration = "{}"
+					Configuration = "{}",
+					MaxSubmissionSize = 100 * 1024
 				};
 				var tournamentMario = new Tournament
 				{
@@ -277,6 +288,7 @@ namespace OPCAIC.ApiService.Utils
 					Availability = TournamentAvailability.Public,
 					State = TournamentState.Published,
 					Configuration = "{}",
+					MaxSubmissionSize = 100 * 1024,
 					Description =
 						"You can download our Java implementation of this game from the Git repository [MarioAI](https://github.com/medovina/MarioAI). If you need help importing it into Eclipse, see the excellent slides that Jakub Gemrot wrote explaining how to do this.\r\n\r\nThe game generates each level randomly, so your agent might succeed on some randomly generated levels and fail on others. I will evaluate your agent on a series of levels generated in several configurations:\r\n\r\n- LEVEL\\_0\\_FLAT: flat, empty terrain\r\n- LEVEL\\_1\\_JUMPING: terrain with hills, but no enemies\r\n- LEVEL\\_2\\_GOOMBAS: like LEVEL\\_1, but also with Goombas (a kind of monster)\r\n- LEVEL\\_3\\_TUBES: like LEVEL\\_2, but also with pipes with dangerous plants\r\n\r\nYour agent **succeeds** if it makes it to the end of each level, and fails otherwise. Its **success rate** is the fraction of randomly generated levels on which it succeeds.\r\n\r\nThis assignment is worth a total of 10 points. You can earn them as follows:\r\n- 2 points: 100% success rate on LEVEL_0_FLAT\r\n- 2 points: 95% success rate on LEVEL_1_JUMPING\r\n- 4 points: 75% success rate on LEVEL_2_GOOMBAS\r\n- 2 points: 75% success rate on LEVEL_3_TUBES\r\n\r\nDo not forget that Mario can both jump and shoot! :)\r\n\r\nFor the **tournament** for this assignment we will use LEVEL\\_4\\_SPIKIES, which has hills, Goombas, pipes and Spikies. The winner will be the agent with the highest success rate. I will break ties by choosing the agent with the fastest time to finish all levels.",
 					MenuData = "[{\"type\":2,\"text\":\"Github\",\"externalLink\":\"https://github.com/medovina/MarioAI\"}]"
@@ -292,6 +304,7 @@ namespace OPCAIC.ApiService.Utils
 					Availability = TournamentAvailability.Public,
 					State = TournamentState.Published,
 					Configuration = "{}",
+					MaxSubmissionSize = 100 * 1024,
 					Description = "Sokoban is a type of puzzle video game, in which the player pushes crates or boxes around in a warehouse, trying to get them to storage locations. Sokoban was created in 1981 by Hiroyuki Imabayashi, and published in December 1982 by Thinking Rabbit, a software house based in Takarazuka, Japan.",
 					MenuData = "[{\"type\":1,\"additionalData\":\"\",\"documentId\":4},{\"type\":1,\"additionalData\":\"\",\"documentId\":5},{\"type\":1,\"additionalData\":\"\",\"documentId\":6},{\"type\":2,\"text\":\"Github\",\"externalLink\":\"https://github.com/medovina/Sokoban4J\"}]"
 				};
