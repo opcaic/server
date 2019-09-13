@@ -10,18 +10,17 @@ namespace OPCAIC.Worker.Services
 	internal class DownloadServiceFactory
 		: IDownloadServiceFactory
 	{
-		private readonly FileServerConfig config;
+		private readonly HttpClient httpClient;
 
 		public DownloadServiceFactory(IOptions<FileServerConfig> config)
 		{
-			this.config = config.Value;
+			httpClient = new HttpClient {BaseAddress = new Uri(config.Value.ServerAddress)};
 		}
 
 		public IDownloadService Create(string accessToken)
 		{
-			var httpClient = new HttpClient {BaseAddress = new Uri(config.ServerAddress)};
-			httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-			return new DownloadService(httpClient);
+			var header = new AuthenticationHeaderValue("Bearer", accessToken);
+			return new DownloadService(httpClient, header);
 		}
 	}
 }

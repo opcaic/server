@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Utils;
@@ -14,10 +15,12 @@ namespace OPCAIC.Worker.Services
 	internal class DownloadService : IDownloadService, IDisposable
 	{
 		private readonly HttpClient httpClient;
+		private readonly AuthenticationHeaderValue authHeader;
 
-		public DownloadService(HttpClient httpClient)
+		public DownloadService(HttpClient httpClient, AuthenticationHeaderValue authHeader)
 		{
 			this.httpClient = httpClient;
+			this.authHeader = authHeader;
 		}
 
 		public void Dispose()
@@ -88,18 +91,37 @@ namespace OPCAIC.Worker.Services
 					{new StreamContent(stream), "archive", "archive.zip"}
 				};
 
-				var response = await httpClient.PostAsync(url, content, cancellationToken);
-				response.EnsureSuccessStatusCode();
+				await PostAsync(url, content, cancellationToken);
 			}
 		}
 
 		private async Task DownloadAndUnzip(string url, string path, CancellationToken cancellationToken)
 		{
-			var stream = await httpClient.GetStreamAsync(url);
+			var stream = await GetStreamAsync(url, cancellationToken);
 			using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
 			{
 				archive.ExtractToDirectory(path);
 			}
+		}
+
+		private async Task<Stream> GetStreamAsync(string url, CancellationToken cancellationToken)
+		{
+			var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+			httpRequestMessage.Headers.Authorization = authHeader;
+			var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+			response.EnsureSuccessStatusCode();
+			var stream = response.Content != null
+				? await response.Content.ReadAsStreamAsync()
+				: Stream.Null;
+			return stream;
+		}
+
+		private async Task PostAsync(string url, HttpContent content, CancellationToken cancellationToken)
+		{
+			var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) {Content = content};
+			httpRequestMessage.Headers.Authorization = authHeader;
+			var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+			response.EnsureSuccessStatusCode();
 		}
 	}
 }
