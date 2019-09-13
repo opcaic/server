@@ -263,6 +263,12 @@ namespace OPCAIC.Infrastructure.Repositories
 					=> row.Participations.Any(p => p.Submission.AuthorId == filter.UserId));
 			}
 
+			if (filter.SubmissionId != null)
+			{
+				query = query.Where(row =>
+					row.Participations.Any(p => p.SubmissionId == filter.SubmissionId));
+			}
+
 			switch (filter.State)
 			{
 				// a match should always have at least one execution

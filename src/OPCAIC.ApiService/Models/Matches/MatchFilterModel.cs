@@ -6,6 +6,8 @@ namespace OPCAIC.ApiService.Models.Matches
 	{
 		public long? TournamentId { get; set; }
 		public long? UserId { get; set; }
+
+		public long? SubmissionId { get; set; }
 		public MatchState? State { get; set; }
 	}
 }
