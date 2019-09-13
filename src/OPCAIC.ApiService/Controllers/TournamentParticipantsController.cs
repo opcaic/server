@@ -55,7 +55,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task PostParticipantsAsync([ApiMinValue(1)] long tournamentId, [FromBody] NewTournamentParticipants model, CancellationToken cancellationToken)
+		public async Task PostParticipantsAsync(long tournamentId, [FromBody] NewTournamentParticipantsModel model, CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageInvites);
 			await tournamentParticipantsService.CreateAsync(tournamentId, model.Emails, cancellationToken);
@@ -75,7 +75,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task DeleteParticipantAsync([ApiMinValue(1)] long tournamentId, [ApiEmailAddress] string email, CancellationToken cancellationToken)
+		public async Task DeleteParticipantAsync(long tournamentId, [ApiEmailAddress] string email, CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageInvites);
 			await tournamentParticipantsService.DeleteAsync(tournamentId, email, cancellationToken);

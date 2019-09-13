@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using OPCAIC.ApiService.Exceptions;
@@ -15,18 +16,23 @@ namespace OPCAIC.ApiService.Extensions
 			Require.ArgNotNull(result, nameof(result));
 			if (result.Succeeded != true)
 			{
-				throw new ModelValidationException(statusCode, result.Errors.Select(
-					e =>
-					{
-						if (e is AppIdentityError aie)
-						{
-							return aie.ValidationError;
-						}
-
-						return new AppIdentityErrorDescriber.IdentityValidationError(
-							ValidationErrorCodes.GenericError, null) {Message = e.Description};
-					}));
+				throw new ModelValidationException(statusCode, result.GetValidationErrors());
 			}
+		}
+
+		public static IEnumerable<AppIdentityErrorDescriber.IdentityValidationError> GetValidationErrors(this IdentityResult result)
+		{
+			return result.Errors.Select(
+				e =>
+				{
+					if (e is AppIdentityError aie)
+					{
+						return aie.ValidationError;
+					}
+
+					return new AppIdentityErrorDescriber.IdentityValidationError(
+						ValidationErrorCodes.GenericError, null) {Message = e.Description};
+				});
 		}
 	}
 }

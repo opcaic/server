@@ -1,31 +1,19 @@
-﻿using System;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Health;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Middlewares;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
-using OPCAIC.ApiService.Security.Handlers;
-using OPCAIC.ApiService.Services;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Emails;
-using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Messaging.Config;
 using OPCAIC.Services;
 
@@ -46,7 +34,8 @@ namespace OPCAIC.ApiService
 
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+			services.AddMvc()
+				.SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
 				.ConfigureApiBehaviorOptions(options =>
 				{
 					options.SuppressInferBindingSourcesForParameters = true;
@@ -57,6 +46,9 @@ namespace OPCAIC.ApiService
 						var problems = new CustomBadRequest(context, apiErrorService);
 						return new BadRequestObjectResult(problems);
 					};
+				}).AddFluentValidation(options =>
+				{
+					options.RegisterValidatorsFromAssemblyContaining<Startup>();
 				});
 
 			services.AddCors(options =>
@@ -74,6 +66,7 @@ namespace OPCAIC.ApiService
 			// TODO: replace with real database
 			services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("Dummy"));
 
+			services.AddTransient<IValidatorInterceptor, ValidationInterceptor>();
 			services.AddServices();
 			services.AddBroker();
 			services.AddRepositories();
@@ -88,7 +81,8 @@ namespace OPCAIC.ApiService
 		public void ConfigureOptions(IServiceCollection services)
 		{
 			services.Configure<UrlGeneratorConfiguration>(Configuration);
-			services.Configure<SecurityConfiguration>(Configuration.GetSection(ConfigNames.Security));
+			services.Configure<SecurityConfiguration>(
+				Configuration.GetSection(ConfigNames.Security));
 			services.Configure<StorageConfiguration>(Configuration.GetSection("Storage"));
 			services.Configure<EmailsConfiguration>(Configuration.GetSection("Emails"));
 			services.Configure<SecurityConfiguration>(Configuration.GetSection("Security"));
@@ -121,6 +115,5 @@ namespace OPCAIC.ApiService
 
 			app.UseMvc();
 		}
-
 	}
 }

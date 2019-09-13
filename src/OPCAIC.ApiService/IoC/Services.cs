@@ -28,7 +28,7 @@ namespace OPCAIC.ApiService.IoC
 				.AddScoped<ISubmissionService, SubmissionService>()
 				.AddScoped<IFrontendUrlGenerator, UrlGenerator>()
 				.AddScoped<IWorkerUrlGenerator, UrlGenerator>()
-				.AddSingleton<IModelValidationService, ModelValidationService>()
+				.AddScoped<IModelValidationService, ModelValidationService>()
 				.AddScoped<IMatchService, MatchService>()
 				.AddScoped<ISubmissionValidationService, SubmissionValidationService>()
 				.AddScoped<IMatchExecutionService, MatchExecutionService>()

@@ -5,6 +5,6 @@ namespace OPCAIC.ApiService.Security
 {
 	public class AppIdentityError : IdentityError
 	{
-		public ValidationErrorBase ValidationError { get; set; }
+		public AppIdentityErrorDescriber.IdentityValidationError ValidationError { get; set; }
 	}
 }

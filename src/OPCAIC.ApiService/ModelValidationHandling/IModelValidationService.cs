@@ -8,9 +8,9 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 		/// <summary>
 		///     Tries to get a validation error with a given id.
 		/// </summary>
-		/// <param name="id"></param>
+		/// <param name="guid"></param>
 		/// <returns>Validation error or null</returns>
-		ValidationErrorBase GetValidationError(string id);
+		ValidationErrorBase GetValidationError(string guid);
 
 		/// <summary>
 		///     Processes a given validation error and adds it to a collection of errors with a generated id.

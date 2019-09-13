@@ -6,17 +6,12 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 {
 	public class ModelValidationService : IModelValidationService
 	{
-		private readonly Dictionary<Guid, ValidationErrorBase> errors =
-			new Dictionary<Guid, ValidationErrorBase>();
+		private readonly Dictionary<string, ValidationErrorBase> errors =
+			new Dictionary<string, ValidationErrorBase>();
 
 		/// <inheritdoc />
-		public ValidationErrorBase GetValidationError(string id)
+		public ValidationErrorBase GetValidationError(string guid)
 		{
-			if (!Guid.TryParse(id, out var guid))
-			{
-				return null;
-			}
-
 			if (errors.TryGetValue(guid, out var error))
 			{
 				return error;
@@ -29,11 +24,11 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 		public ValidationResult ProcessValidationError(IEnumerable<string> memberNames,
 			ValidationErrorBase error)
 		{
-			var guid = Guid.NewGuid();
+			var guid = Guid.NewGuid().ToString();
 
 			errors.Add(guid, error);
 
-			return new ValidationResult(guid.ToString(), memberNames);
+			return new ValidationResult(guid, memberNames);
 		}
 	}
 }

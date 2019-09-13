@@ -1,13 +1,9 @@
-﻿using OPCAIC.ApiService.ModelValidationHandling.Attributes;
-using OPCAIC.Infrastructure;
-using OPCAIC.Infrastructure.Enums;
+﻿using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.ApiService.Models.Tournaments
 {
 	public class UpdateTournamentModel
 	{
-		[ApiRequired]
-		[ApiMaxLength(StringLengths.TournamentName)]
 		public string Name { get; set; }
 
 		public string Description { get; set; }
@@ -21,5 +17,7 @@ namespace OPCAIC.ApiService.Models.Tournaments
 		public TournamentRankingStrategy RankingStrategy { get; set; }
 
 		public string MenuData { get; set; }
+
+		public int? MatchesPerDay { get; set; }
 	}
 }

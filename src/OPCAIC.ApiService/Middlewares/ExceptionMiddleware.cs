@@ -51,17 +51,14 @@ namespace OPCAIC.ApiService.Middlewares
 			{
 				await WriteResponseAsync(context, ex);
 			}
-			catch (Exception ex)
+			catch (Exception ex) when (env.IsDevelopment())
 			{
-				if (env.IsDevelopment())
-				{
-					await WriteResponseAsync(context, new ApiException(500, ex.Message, null));
-				}
-				else
-				{
-					await WriteResponseAsync(context,
-						new ApiException(500, "Internal server error", null));
-				}
+				await WriteResponseAsync(context, 500, ex);
+			}
+			catch
+			{
+				await WriteResponseAsync(context,
+					new ApiException(500, "Internal server error", null));
 			}
 		}
 
@@ -79,17 +76,13 @@ namespace OPCAIC.ApiService.Middlewares
 				error.Field = error.Field.FirstLetterToLower();
 			}
 
-			var model = new
+			await WriteResponseAsync(context, modelValidationException.StatusCode, new ValidationErrorModel
 			{
 				Errors = modelValidationException.ValidationErrors.ToList(),
-				Title = "Invalid arguments to the API", // TODO: do not duplicate code
-				Detail = "The inputs supplied to the API are invalid" // TODO: do not duplicate code
-			};
-
-			await WriteResponseAsync(context, modelValidationException.StatusCode, model);
+			});
 		}
 
-		private static Task WriteResponseAsync(HttpContext context, int statusCode, object model)
+		public static Task WriteResponseAsync(HttpContext context, int statusCode, object model)
 		{
 			context.Response.StatusCode = statusCode;
 			var json = JsonConvert.SerializeObject(model, jsonSerializerSettings);

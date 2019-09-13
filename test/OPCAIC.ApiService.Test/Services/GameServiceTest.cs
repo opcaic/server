@@ -51,22 +51,6 @@ namespace OPCAIC.ApiService.Test.Services
 }";
 
 		[Fact]
-		public async Task Create_InvalidSchema()
-		{
-			gameRepository.Setup(r => r.ExistsByNameAsync(GameName, CancellationToken))
-				.ReturnsAsync(false);
-
-			await AssertBadRequest(ValidationErrorCodes.InvalidSchema,
-				nameof(NewGameModel.ConfigurationSchema), () => GetService<GamesService>()
-					.CreateAsync(
-						new NewGameModel
-						{
-							Name = GameName,
-							ConfigurationSchema = JObject.Parse("{ 'some': 'object'}")
-						}, CancellationToken));
-		}
-
-		[Fact]
 		public async Task Create_NameConflict()
 		{
 			gameRepository.Setup(r => r.ExistsByNameAsync(GameName, CancellationToken))
@@ -104,7 +88,7 @@ namespace OPCAIC.ApiService.Test.Services
 			gameRepository.Setup(r => r.GetByFilterAsync(It.IsAny<GameFilterDto>(), CancellationToken))
 				.ReturnsAsync(new ListDto<GamePreviewDto> {Total = 1, List = new[]
 				{
-					new GamePreviewDto()
+					new GamePreviewDto
 					{
 						Id=1,
 						Name = "Name"

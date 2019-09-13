@@ -1,5 +1,4 @@
-﻿using OPCAIC.ApiService.ModelValidationHandling.Attributes;
-
+﻿
 namespace OPCAIC.ApiService.Models.Users
 {
 	/// <summary>
@@ -7,10 +6,8 @@ namespace OPCAIC.ApiService.Models.Users
 	/// </summary>
 	public class EmailVerificationModel
 	{
-		[ApiRequired]
 		public string Email { get; set; }
 
-		[ApiRequired]
 		public string Token { get; set; }
 	}
 }

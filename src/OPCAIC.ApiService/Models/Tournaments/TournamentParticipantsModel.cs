@@ -1,10 +1,8 @@
-﻿using OPCAIC.ApiService.ModelValidationHandling.Attributes;
-
-namespace OPCAIC.ApiService.Models.Tournaments
+﻿namespace OPCAIC.ApiService.Models.Tournaments
 {
-	public class NewTournamentParticipants
+	public class NewTournamentParticipantsModel
 	{			
-		[ApiEmailAddresses]
+		public long TournamentId { get; set; }
 		public string[] Emails { get; set; }
 	}
 }

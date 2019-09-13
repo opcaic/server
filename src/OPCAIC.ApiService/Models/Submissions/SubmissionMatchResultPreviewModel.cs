@@ -11,9 +11,4 @@ namespace OPCAIC.ApiService.Models.Submissions
 		public EntryPointResult CompilerResult { get; set; }
 		public JObject AdditionalData { get; set; }
 	}
-
-	public class SubmissionMatchResultDetailModel : SubmissionMatchResultPreviewModel
-	{
-		public string CompilerLog { get; set; }
-	}
 }

@@ -36,11 +36,6 @@ namespace OPCAIC.ApiService.Services
 		/// <inheritdoc />
 		public async Task<long> CreateAsync(NewGameModel game, CancellationToken cancellationToken)
 		{
-			if (!game.ConfigurationSchema.IsValid(JsonSchemaDefinition.Version7, out IList<string> messages))
-			{
-				throw new BadRequestException(ValidationErrorCodes.InvalidSchema, string.Join("\n", messages), nameof(NewGameModel.ConfigurationSchema));
-			}
-
 			if (await gameRepository.ExistsByNameAsync(game.Name, cancellationToken))
 			{
 				throw new ConflictException(

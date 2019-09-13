@@ -20,5 +20,7 @@ namespace OPCAIC.Infrastructure.Dtos.Tournaments
 		public TournamentRankingStrategy RankingStrategy { get; set; }
 
 		public string MenuData { get; set; }
+
+		public int? MatchesPerDay { get; set; }
 	}
 }

@@ -7,7 +7,7 @@ namespace OPCAIC.ApiService.Security
 {
 	public class AppIdentityErrorDescriber : IdentityErrorDescriber
 	{
-		private AppIdentityError Map(IdentityError baseError, ValidationErrorBase validationError)
+		private AppIdentityError Map(IdentityError baseError, IdentityValidationError validationError)
 		{
 			validationError.Message = baseError.Description;
 			return new AppIdentityError
