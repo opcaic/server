@@ -25,9 +25,11 @@ namespace OPCAIC.ApiService.Services
 		private readonly IMatchTreeFactory matchFactory;
 		private readonly IMatchRepository matchRepository;
 		private readonly ITournamentRepository tournamentRepository;
+		private readonly ISubmissionRepository submissionRepository;
 
 		public LeaderboardService(IMatchRepository matchRepository,
 			ITournamentRepository tournamentRepository,
+			ISubmissionRepository submissionRepository,
 			IMatchTreeFactory matchFactory,
 			IMapper mapper)
 		{
@@ -35,6 +37,7 @@ namespace OPCAIC.ApiService.Services
 			this.mapper = mapper;
 			this.tournamentRepository = tournamentRepository;
 			this.matchFactory = matchFactory;
+			this.submissionRepository = submissionRepository;
 		}
 
 		/// <inheritdoc />
@@ -51,8 +54,6 @@ namespace OPCAIC.ApiService.Services
 
 			switch (tournament.Format)
 			{
-				case TournamentFormat.Elo:
-					return await GenerateEloTournamentLeaderboard(tournament, cancellationToken);
 				case TournamentFormat.DoubleElimination:
 					return await GenerateDoubleEliminationTournamentLeaderboard(tournament,
 						cancellationToken);
@@ -61,7 +62,8 @@ namespace OPCAIC.ApiService.Services
 						cancellationToken);
 				case TournamentFormat.SinglePlayer:
 				case TournamentFormat.Table:
-					return await GenerateMatchScoreSumLeaderboard(tournament,
+				case TournamentFormat.Elo:
+					return await GenerateSubmissionScoreLeaderboard(tournament,
 						cancellationToken);
 				case TournamentFormat.Unknown:
 				default:
@@ -116,50 +118,16 @@ namespace OPCAIC.ApiService.Services
 
 		#region Generating leaderboards
 
-		private async Task<LeaderboardModel> GenerateMatchScoreSumLeaderboard(
+		private async Task<LeaderboardModel> GenerateSubmissionScoreLeaderboard(
 			TournamentDetailDto tournament, CancellationToken cancellationToken)
 		{
 			var model = CreateModel<LeaderboardModel>(tournament);
 			var matches = await GetMatches(tournament.Id, cancellationToken);
 
-			var players = GetUniquePlayers(matches.Values).ToDictionary(p => p.Id,
-				p => new LeaderboardParticipationModel
-				{
-					User = mapper.Map<UserLeaderboardViewModel>(p)
-				});
-
-			foreach (var match in matches.Values)
+			foreach (var submission in await submissionRepository.AllSubmissionsFromTournament(tournament.Id, cancellationToken))
 			{
-				var results = match.Executions[match.Executions.Count - 1].BotResults;
-				foreach (var result in results)
-				{
-					players[result.Submission.Author.Id].Score += results[0].Score;
-				}
+				model.Participations.Add(mapper.Map<LeaderboardParticipationModel>(submission));
 			}
-
-			model.Participations = players.Values.ToList();
-
-			DeterminePlacementFromScore(model);
-			return model;
-		}
-
-		private async Task<LeaderboardModel> GenerateEloTournamentLeaderboard(
-			TournamentDetailDto tournament,
-			CancellationToken cancellationToken)
-		{
-			var model = CreateModel<LeaderboardModel>(tournament);
-			var matches = await GetMatches(tournament.Id, cancellationToken);
-
-			foreach (var player in GetUniquePlayers(matches.Values))
-			{
-				var participation = new LeaderboardParticipationModel
-				{
-					User = mapper.Map<UserLeaderboardViewModel>(player), Score = 1500
-				};
-				model.Participations.Add(participation);
-			}
-
-			EloComputing.DetermineElo(matches.Values, model);
 			DeterminePlacementFromScore(model);
 			return model;
 		}
@@ -175,13 +143,9 @@ namespace OPCAIC.ApiService.Services
 			if (!model.Finished) return model;
 
 			var tree = matchFactory.GetSingleEliminationTree(tournament.PlayersCount, false);
-			foreach (var player in GetUniquePlayers(matches.Values))
+			foreach (var submission in await submissionRepository.AllSubmissionsFromTournament(tournament.Id, cancellationToken))
 			{
-				var participation = new LeaderboardParticipationModel
-				{
-					User = mapper.Map<UserLeaderboardViewModel>(player)
-				};
-				model.Participations.Add(participation);
+				model.Participations.Add(mapper.Map<LeaderboardParticipationModel>(submission)); ;
 			}
 
 			var final = DetermineSingleEliminationPlacement(matches, tree.Final, model, 1);
@@ -203,13 +167,9 @@ namespace OPCAIC.ApiService.Services
 			if (!model.Finished) return model;
 
 			var tree = matchFactory.GetDoubleEliminationTree(tournament.ActiveSubmissionsCount);
-			foreach (var player in GetUniquePlayers(matches.Values))
+			foreach (var submission in await submissionRepository.AllSubmissionsFromTournament(tournament.Id, cancellationToken))
 			{
-				var participation = new LeaderboardParticipationModel
-				{
-					User = mapper.Map<UserLeaderboardViewModel>(player)
-				};
-				model.Participations.Add(participation);
+				model.Participations.Add(mapper.Map<LeaderboardParticipationModel>(submission));
 			}
 
 			var finalA =
@@ -297,34 +257,28 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <summary>
-		///     Get unique players that played given matches.
-		/// </summary>
-		/// <param name="matches"></param>
-		/// <returns></returns>
-		private static IEnumerable<UserReferenceDto> GetUniquePlayers(IEnumerable<MatchDetailDto> matches)
-		{
-			return matches.SelectMany(m => m.Submissions.Select(sp => sp.Author))
-				.Distinct();
-		}
-
-		/// <summary>
 		///     Determines placement in the tournament directly from the score (used in ELO, table, single player).
 		/// </summary>
 		/// <param name="model"></param>
 		private void DeterminePlacementFromScore(LeaderboardModel model)
 		{
-			// TODO: optimize this O(n^2) monstrosity
-			foreach (var participation in model.Participations)
+			// TODO: optimized..?
+			if (model.TournamentRankingStrategy == TournamentRankingStrategy.Maximum)
 			{
-				if (model.TournamentRankingStrategy == TournamentRankingStrategy.Minimum)
-					participation.Place =
-						model.Participations.Count(p => p.Score < participation.Score) + 1;
-				else // default is maximum
-					participation.Place =
-						model.Participations.Count(p => p.Score > participation.Score) + 1;
+				model.Participations.Sort((p1, p2) => -p1.Score.CompareTo(p2.Score));
+			}
+			else
+			{
+				model.Participations.Sort((p1, p2) => p1.Score.CompareTo(p2.Score));
 			}
 
-			model.Participations.Sort((p1, p2) => p1.Place.CompareTo(p2.Place));
+			for (int i = 0; i < model.Participations.Count; i++)
+			{
+				model.Participations[i].Place =
+					(i > 0 && model.Participations[i - 1].Score == model.Participations[i].Score)
+						? model.Participations[i - 1].Place
+						: i + 1;
+			}
 		}
 
 		private BracketMatchModel DetermineSingleEliminationPlacement(

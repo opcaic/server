@@ -1,18 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OPCAIC.ApiService.IoC;
+using OPCAIC.ApiService.Models.Leaderboards;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Services;
 using OPCAIC.Services.Extensions;
+using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 using Match = OPCAIC.Infrastructure.Entities.Match;
@@ -21,9 +22,10 @@ namespace OPCAIC.ApiService.Test.Services
 {
 	public class LeaderboardServiceTest : ApiServiceTestBase
 	{
-		private readonly Mock<IMatchRepository> matchRepository;
-		private readonly Mock<ITournamentRepository> tournamentRepository;
 		private const int tournamentId = 23;
+		private readonly Mock<IMatchRepository> matchRepository;
+		private readonly Mock<ISubmissionRepository> submissionRepository;
+		private readonly Mock<ITournamentRepository> tournamentRepository;
 
 		/// <inheritdoc />
 		public LeaderboardServiceTest(ITestOutputHelper output) : base(output)
@@ -31,6 +33,7 @@ namespace OPCAIC.ApiService.Test.Services
 			// setup services
 			matchRepository = Services.Mock<IMatchRepository>(MockBehavior.Strict);
 			tournamentRepository = Services.Mock<ITournamentRepository>(MockBehavior.Strict);
+			submissionRepository = Services.Mock<ISubmissionRepository>(MockBehavior.Strict);
 			UseDatabase();
 			Services.AddMapper();
 			Services.AddMatchGenerators();
@@ -41,7 +44,8 @@ namespace OPCAIC.ApiService.Test.Services
 
 		private LeaderboardService LeaderboardService => GetService<LeaderboardService>();
 
-		private void SetupTournament(TournamentScope scope, TournamentFormat format, int submissionCount, int seed = 100)
+		private void SetupTournament(TournamentScope scope, TournamentFormat format,
+			int submissionCount, int seed = 100)
 		{
 			var tournament = Faker.Entity<Tournament>();
 			tournament.Id = tournamentId;
@@ -68,13 +72,17 @@ namespace OPCAIC.ApiService.Test.Services
 					=> r.AllMatchesFromTournamentAsync(tournamentId, CancellationToken))
 				.ReturnsAsync(() => Mapper.Map<List<MatchDetailDto>>(tournament.Matches));
 
+			submissionRepository.Setup(r
+					=> r.AllSubmissionsFromTournament(tournamentId, CancellationToken))
+				.ReturnsAsync(() => Mapper.Map<List<SubmissionDetailDto>>(tournament.Submissions));
+
 			DbContext.SaveChanges();
 		}
 
 		private void ConfigureEntities()
 		{
 			// configure id too because we do not want to use EF to keep tests fast
-			Faker.Configure<Infrastructure.Entities.Match>()
+			Faker.Configure<Match>()
 				.RuleFor(m => m.Id, f => f.IndexFaker);
 
 			Faker.Configure<MatchExecution>()
@@ -96,17 +104,70 @@ namespace OPCAIC.ApiService.Test.Services
 				.RuleFor(m => m.Id, f => f.IndexFaker);
 		}
 
-		[Theory]
-		[InlineData(TournamentScope.Deadline, TournamentFormat.SinglePlayer, 10)]
-		[InlineData(TournamentScope.Deadline, TournamentFormat.DoubleElimination, 10)]
-		[InlineData(TournamentScope.Deadline, TournamentFormat.SingleElimination, 10)]
-		[InlineData(TournamentScope.Deadline, TournamentFormat.Table, 10)]
-		[InlineData(TournamentScope.Ongoing, TournamentFormat.Elo, 10)]
-		public Task SimpleGenerationTest(TournamentScope scope, TournamentFormat format, int submissions)
+		[Fact]
+		public async Task Generate_SinglePlayer()
 		{
-			// TODO: separate tests into individual facts and test more thoroughly
-			SetupTournament(scope, format, submissions);
-			return LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
+			SetupTournament(TournamentScope.Deadline, TournamentFormat.SinglePlayer, 10, 100);
+			var leaderboards =
+				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
+			leaderboards.Participations.Count.ShouldBe(10);
+			leaderboards.Finished.ShouldBe(true);
+			leaderboards.Participations[0].Place.ShouldBe(1);
+		}
+
+
+		[Fact]
+		public async Task Generate_Table()
+		{
+			SetupTournament(TournamentScope.Deadline, TournamentFormat.Table, 10, 100);
+			var leaderboards =
+				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
+			leaderboards.Participations.Count.ShouldBe(10);
+			leaderboards.Finished.ShouldBe(true);
+			leaderboards.Participations[0].Place.ShouldBe(1);
+		}
+
+		[Fact]
+		public async Task Generate_Elo()
+		{
+			SetupTournament(TournamentScope.Ongoing, TournamentFormat.Elo, 10, 100);
+			var leaderboards =
+				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
+			leaderboards.Participations.Count.ShouldBe(10);
+			leaderboards.Finished.ShouldBe(true);
+			leaderboards.Participations[0].Place.ShouldBe(1);
+		}
+
+		[Fact]
+		public async Task Generate_SingleElimination()
+		{
+			SetupTournament(TournamentScope.Deadline, TournamentFormat.SingleElimination, 4, 100);
+			var leaderboards =
+				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
+			var tree = (SingleEliminationTreeLeaderboardModel)leaderboards;
+			leaderboards.Participations.Count.ShouldBe(4);
+			leaderboards.Finished.ShouldBe(true);
+			leaderboards.Participations[0].Place.ShouldBe(1);
+			tree.Final.FirstPlayerOriginMatch.ShouldNotBeNull();
+			tree.Final.SecondPlayerOriginMatch.ShouldNotBeNull();
+		}
+
+		[Fact]
+		public async Task Generate_DoubleElimination()
+		{
+			SetupTournament(TournamentScope.Deadline, TournamentFormat.DoubleElimination, 4, 100);
+			var leaderboards =
+				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
+			var tree = (DoubleEliminationTreeLeaderboardModel)leaderboards;
+			leaderboards.Participations.Count.ShouldBe(4);
+			leaderboards.Finished.ShouldBe(true);
+			leaderboards.Participations[0].Place.ShouldBe(1);
+			tree.Final.FirstPlayerOriginMatch.MatchId.ShouldBe(tree.WinnersBracketFinal.MatchId);
+			tree.Final.SecondPlayerOriginMatch.MatchId.ShouldBe(tree.LosersBracketFinal.MatchId);
+			tree.WinnersBracketFinal.FirstPlayerOriginMatch.ShouldNotBeNull();
+			tree.LosersBracketFinal.FirstPlayerOriginMatch.ShouldNotBeNull();
+			tree.WinnersBracketFinal.SecondPlayerOriginMatch.ShouldNotBeNull();
+			tree.LosersBracketFinal.SecondPlayerOriginMatch.ShouldNotBeNull();
 		}
 	}
 }

@@ -8,6 +8,7 @@ namespace OPCAIC.ApiService.Models.Submissions
 	public class SubmissionPreviewModel
 	{
 		public long Id { get; set; }
+		public double Score { get; set; }
 		public UserReferenceModel Author { get; set; }
 		public TournamentReferenceModel Tournament { get; set; }
 		public bool IsActive { get; set; }

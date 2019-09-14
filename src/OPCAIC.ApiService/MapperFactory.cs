@@ -8,6 +8,7 @@ using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Broker;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Models.Games;
+using OPCAIC.ApiService.Models.Leaderboards;
 using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.SubmissionValidations;
@@ -271,6 +272,9 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<SubmissionFilterModel, SubmissionFilterDto>(MemberList.Destination);
 
 			exp.CreateMap<Submission, SubmissionStorageDto>(MemberList.Destination);
+			exp.CreateMap<Submission, UpdateSubmissionScoreDto>(MemberList.Destination);
+			exp.CreateMap<SubmissionDetailDto, LeaderboardParticipationModel>(MemberList.None)
+				.ForMember(s => s.User, opt => opt.MapFrom(s => s.Author));
 		}
 
 		private static void AddSubmissionValidationMapping(this IMapperConfigurationExpression exp)

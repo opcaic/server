@@ -18,6 +18,11 @@ namespace OPCAIC.Infrastructure.Entities
 		public virtual User Author { get; set; }
 
 		/// <summary>
+		///     Total score obtained by submission in a tournament. The meaning of this value is dependent on tournament format.
+		/// </summary>
+		public double Score { get; set; }
+
+		/// <summary>
 		///     Whether this submission is active and should participate in tournament matches.
 		/// </summary>
 		public bool IsActive { get; set; }

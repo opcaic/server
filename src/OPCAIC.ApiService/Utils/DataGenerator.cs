@@ -45,7 +45,8 @@ namespace OPCAIC.ApiService.Utils
 			}
 
 			// write something so that we have at least some file
-			using (var zip = new ZipArchive(storage.WriteSubmissionArchive(storageDto), ZipArchiveMode.Create))
+			using (var zip = new ZipArchive(storage.WriteSubmissionArchive(storageDto),
+				ZipArchiveMode.Create))
 			{
 				WriteEntry(zip, "input.txt", faker.Lorem.Paragraphs());
 			}
@@ -63,16 +64,20 @@ namespace OPCAIC.ApiService.Utils
 				return; // already exists
 			}
 
-			using (var zip = new ZipArchive(storage.WriteSubmissionValidationResultArchive(storageDto), ZipArchiveMode.Create))
+			using (var zip =
+				new ZipArchive(storage.WriteSubmissionValidationResultArchive(storageDto),
+					ZipArchiveMode.Create))
 			{
 				if (sub.CheckerResult != EntryPointResult.NotExecuted)
 				{
 					WriteEntry(zip, "check.0.stdout", faker.Lorem.Paragraph());
 				}
+
 				if (sub.CompilerResult != EntryPointResult.NotExecuted)
 				{
 					WriteEntry(zip, "compile.0.stdout", faker.Lorem.Paragraph());
 				}
+
 				if (sub.ValidatorResult != EntryPointResult.NotExecuted)
 				{
 					WriteEntry(zip, "validate.0.stdout", faker.Lorem.Paragraph());
@@ -92,7 +97,8 @@ namespace OPCAIC.ApiService.Utils
 				return; // already exists
 			}
 
-			using (var zip = new ZipArchive(storage.WriteMatchResultArchive(storageDto), ZipArchiveMode.Create))
+			using (var zip = new ZipArchive(storage.WriteMatchResultArchive(storageDto),
+				ZipArchiveMode.Create))
 			{
 				for (int i = 0; i < execution.BotResults.Count; i++)
 				{
@@ -102,7 +108,7 @@ namespace OPCAIC.ApiService.Utils
 					}
 				}
 
-				if (execution.ExecutorResult!= EntryPointResult.NotExecuted)
+				if (execution.ExecutorResult != EntryPointResult.NotExecuted)
 				{
 					WriteEntry(zip, "execute.stdout", faker.Lorem.Paragraphs());
 				}
@@ -291,7 +297,8 @@ namespace OPCAIC.ApiService.Utils
 					MaxSubmissionSize = 100 * 1024,
 					Description =
 						"You can download our Java implementation of this game from the Git repository [MarioAI](https://github.com/medovina/MarioAI). If you need help importing it into Eclipse, see the excellent slides that Jakub Gemrot wrote explaining how to do this.\r\n\r\nThe game generates each level randomly, so your agent might succeed on some randomly generated levels and fail on others. I will evaluate your agent on a series of levels generated in several configurations:\r\n\r\n- LEVEL\\_0\\_FLAT: flat, empty terrain\r\n- LEVEL\\_1\\_JUMPING: terrain with hills, but no enemies\r\n- LEVEL\\_2\\_GOOMBAS: like LEVEL\\_1, but also with Goombas (a kind of monster)\r\n- LEVEL\\_3\\_TUBES: like LEVEL\\_2, but also with pipes with dangerous plants\r\n\r\nYour agent **succeeds** if it makes it to the end of each level, and fails otherwise. Its **success rate** is the fraction of randomly generated levels on which it succeeds.\r\n\r\nThis assignment is worth a total of 10 points. You can earn them as follows:\r\n- 2 points: 100% success rate on LEVEL_0_FLAT\r\n- 2 points: 95% success rate on LEVEL_1_JUMPING\r\n- 4 points: 75% success rate on LEVEL_2_GOOMBAS\r\n- 2 points: 75% success rate on LEVEL_3_TUBES\r\n\r\nDo not forget that Mario can both jump and shoot! :)\r\n\r\nFor the **tournament** for this assignment we will use LEVEL\\_4\\_SPIKIES, which has hills, Goombas, pipes and Spikies. The winner will be the agent with the highest success rate. I will break ties by choosing the agent with the fastest time to finish all levels.",
-					MenuData = "[{\"type\":2,\"text\":\"Github\",\"externalLink\":\"https://github.com/medovina/MarioAI\"}]"
+					MenuData =
+						"[{\"type\":2,\"text\":\"Github\",\"externalLink\":\"https://github.com/medovina/MarioAI\"}]"
 				};
 				var tournamentSokoban = new Tournament
 				{
@@ -354,6 +361,17 @@ namespace OPCAIC.ApiService.Utils
 					LocalizationLanguage = "cs"
 				};
 
+				var userB = new User
+				{
+					FirstName = "User B",
+					LastName = "Opcaic",
+					UserName = "userB",
+					RoleId = (long)UserRole.User,
+					Email = "userB@opcaic.com",
+					EmailConfirmed = true,
+					LocalizationLanguage = "cs"
+				};
+
 				mgr.CreateAsync(userAdmin, "Password").Wait();
 				userAdmin = context.Users.Find(userAdmin.Id);
 				mgr.CreateAsync(userOrganizer, "Password").Wait();
@@ -411,11 +429,16 @@ namespace OPCAIC.ApiService.Utils
 					});
 
 
-				var submissionChessAdmin = CreateSubmission(userAdmin, tournamentChessElo);
-				var submissionChessOrganizer = CreateSubmission(userOrganizer, tournamentChessElo);
+				var submissionChessAdmin = CreateSubmission(userAdmin, tournamentChessElo,
+					Randomizer.Seed.NextDouble() * 1500);
+				var submissionChessOrganizer = CreateSubmission(userOrganizer, tournamentChessElo,
+					Randomizer.Seed.NextDouble() * 1500);
 				context.Submissions.AddRange(submissionChessAdmin, submissionChessOrganizer);
-				context.Submissions.AddRange(CreateSubmissions(context.Users.OrderBy(u => u.Id).Skip(3), tournamentChessElo));
-				context.Submissions.AddRange(CreateSubmissions(context.Users, tournamentChessTable));
+				context.Submissions.AddRange(
+					CreateSubmissions(context.Users.OrderBy(u => u.Id).Skip(3),
+						tournamentChessElo));
+				context.Submissions.AddRange(CreateSubmissions(context.Users,
+					tournamentChessTable));
 				context.Submissions.AddRange(CreateSubmissions(context.Users, tournamentChessDe));
 				context.SaveChanges();
 
@@ -437,6 +460,27 @@ namespace OPCAIC.ApiService.Utils
 
 				context.Set<Match>().AddRange(matchChessAdminOrganizerSuccess,
 					matchChessAdminOrganizerQueued, matchChessAdminOrganizerError);
+				context.SaveChanges();
+
+				var submissionDotaAdmin = CreateSubmission(userAdmin, tournamentDotaSe, 0);
+				var submissionDotaOrganizer = CreateSubmission(userOrganizer, tournamentDotaSe, 0);
+				var submissionDotaUser = CreateSubmission(user, tournamentDotaSe, 0);
+				var submissionDotaUserB = CreateSubmission(userB, tournamentDotaSe, 0);
+				context.Submissions.AddRange(submissionDotaAdmin, submissionDotaUser,
+					submissionDotaOrganizer, submissionDotaUserB);
+				context.SaveChanges();
+
+				var tree = MatchTreeGenerator.GenerateSingleElimination(4, false);
+				var matchAdminOrganizer = CreateMatch(tournamentDotaSe, 0, submissionDotaAdmin,
+					submissionDotaOrganizer);
+				AddExecution(matchAdminOrganizer, EntryPointResult.Success);
+				var matchUsers = CreateMatch(tournamentDotaSe, 1, submissionDotaUser,
+					submissionDotaUserB);
+				AddExecution(matchUsers, EntryPointResult.Success);
+				var final = CreateMatch(tournamentDotaSe, 2, submissionDotaOrganizer,
+					submissionDotaUserB);
+				AddExecution(final, EntryPointResult.Success);
+				context.Matches.AddRange(matchAdminOrganizer, matchUsers, final);
 				context.SaveChanges();
 
 				// add necessary files
@@ -467,7 +511,7 @@ namespace OPCAIC.ApiService.Utils
 				.RuleFor(u => u.UserName, (f, u) => f.Internet.UserName(u.FirstName, u.LastName))
 				.RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
 				.RuleFor(u => u.EmailConfirmed, true)
-				.RuleFor(u => u.RoleId, (long) UserRole.User)
+				.RuleFor(u => u.RoleId, (long)UserRole.User)
 				.RuleFor(u => u.LocalizationLanguage, f => f.PickRandomParam(null, "en", "cz"));
 
 			foreach (var user in userFaker.GenerateLazy(30))
@@ -476,13 +520,17 @@ namespace OPCAIC.ApiService.Utils
 			}
 		}
 
-		private static IEnumerable<Submission> CreateSubmissions(IEnumerable<User> users, Tournament tournament)
+		private static IEnumerable<Submission> CreateSubmissions(IEnumerable<User> users,
+			Tournament tournament)
 		{
 			foreach (var user in users)
 			{
 				if (Randomizer.Seed.NextDouble() > 0.5)
 				{
-					yield return CreateSubmission(user, tournament);
+					// TO DO - submission score?
+					// score?? lets say it's elo
+					yield return CreateSubmission(user, tournament,
+						Randomizer.Seed.NextDouble() * 1500);
 				}
 			}
 		}
@@ -526,13 +574,14 @@ namespace OPCAIC.ApiService.Utils
 			return matchExecution;
 		}
 
-		private static Submission CreateSubmission(User author, Tournament tournament)
+		private static Submission CreateSubmission(User author, Tournament tournament, double score)
 		{
 			return new Submission
 			{
 				Author = author,
 				Tournament = tournament,
 				IsActive = true,
+				Score = score,
 				Validations = new List<SubmissionValidation>
 				{
 					new SubmissionValidation

@@ -30,14 +30,18 @@ namespace OPCAIC.ApiService.Services
 		private readonly IMatchExecutionRepository repository;
 		private readonly IWorkerService workerService;
 		private readonly ILogStorageService logStorage;
+		private readonly ISubmissionScoreService scoreService;
 
-		public MatchExecutionService(IBroker broker, ILogger<MatchExecutionService> logger,
-			IMatchExecutionRepository repository, IMatchRepository matchRepository,
-			IWorkerService workerService, ITournamentRepository tournamentRepository, IMapper mapper, ILogStorageService logStorage)
+		public MatchExecutionService(ILogger<MatchExecutionService> logger,
+			IMatchExecutionRepository repository,
+			IWorkerService workerService, 
+			ISubmissionScoreService scoreService,
+			IMapper mapper, ILogStorageService logStorage)
 		{
 			this.logger = logger;
 			this.repository = repository;
 			this.workerService = workerService;
+			this.scoreService = scoreService;
 			this.mapper = mapper;
 			this.logStorage = logStorage;
 		}
@@ -98,6 +102,7 @@ namespace OPCAIC.ApiService.Services
 		{
 			var dto = mapper.Map<UpdateMatchExecutionDto>(result);
 			dto.Executed = DateTime.Now;
+			scoreService.UpdateSubmissionsScore(result, new CancellationToken());
 			logger.MatchExecutionUpdated(result.JobId, dto);
 			return repository.UpdateFromJobAsync(result.JobId, dto, CancellationToken.None);
 		}
