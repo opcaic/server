@@ -194,7 +194,7 @@ namespace OPCAIC.Services
 	/// <summary>
 	///     Match generator for the single-elimination (single third place) bracket tournament format.
 	/// </summary>
-	internal class SingleEliminationMatchGenerator : BracketMatchGenerator, IBracketsMatchGenerator
+	public class SingleEliminationMatchGenerator : BracketMatchGenerator, IBracketsMatchGenerator
 	{
 		/// <inheritdoc />
 		public SingleEliminationMatchGenerator(ILogger<SingleEliminationMatchGenerator> logger,
