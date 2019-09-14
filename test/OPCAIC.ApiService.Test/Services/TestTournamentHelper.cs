@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Infrastructure.Dtos.Matches;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
-using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Services;
 using Shouldly;
 

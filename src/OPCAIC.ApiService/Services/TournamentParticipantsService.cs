@@ -5,13 +5,13 @@ using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Emails;
-using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Infrastructure.Dtos.EmailTemplates;
 
 namespace OPCAIC.ApiService.Services

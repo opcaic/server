@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Enums
+﻿namespace OPCAIC.Domain.Enums
 {
 	/// <summary>
 	///     Simplified match state for frontend.

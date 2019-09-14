@@ -13,8 +13,8 @@ using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.ModelValidationHandling;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Infrastructure.Dtos.Games;
-using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
 using ValidationError = OPCAIC.ApiService.ModelValidationHandling.ValidationError;
 

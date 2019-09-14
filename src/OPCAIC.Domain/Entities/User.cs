@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 
-namespace OPCAIC.Infrastructure.Entities
+namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     Represents a user in the platform.

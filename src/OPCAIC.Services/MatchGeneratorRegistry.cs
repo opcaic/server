@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Infrastructure.Dtos.Matches;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
-using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Services
 {

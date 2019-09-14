@@ -1,5 +1,5 @@
 ﻿
-namespace OPCAIC.Infrastructure.Entities
+namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     Join entity for matching submissions to matches in which they participate (many-to-many relationship.

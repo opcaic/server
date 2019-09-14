@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OPCAIC.Infrastructure.Entities
+namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     Provides properties tracking timestamps of creation and modification

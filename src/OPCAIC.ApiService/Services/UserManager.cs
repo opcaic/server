@@ -15,8 +15,8 @@ using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Infrastructure.Dtos.Users;
-using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
 
 namespace OPCAIC.ApiService.Services

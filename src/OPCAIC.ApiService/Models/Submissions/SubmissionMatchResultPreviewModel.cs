@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using OPCAIC.ApiService.Models.Matches;
-using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Models.Submissions
 {

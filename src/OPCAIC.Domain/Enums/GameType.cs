@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Enums
+﻿namespace OPCAIC.Domain.Enums
 {
 	/// <summary>
 	///     Represents types of games based on the number of their players.

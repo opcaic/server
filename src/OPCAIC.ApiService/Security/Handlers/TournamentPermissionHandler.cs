@@ -4,8 +4,8 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
-using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
 
 namespace OPCAIC.ApiService.Security.Handlers

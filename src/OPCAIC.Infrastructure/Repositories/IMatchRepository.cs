@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Matches;
-using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.Infrastructure.Repositories
 {

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Security;
-using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Domain.Entities;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
-using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Models.Submissions
 {

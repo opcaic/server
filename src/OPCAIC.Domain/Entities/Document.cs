@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Entities
+﻿namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     Represents a markdown document, used for description of a tournament.

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
-using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.ApiService.Services
 {

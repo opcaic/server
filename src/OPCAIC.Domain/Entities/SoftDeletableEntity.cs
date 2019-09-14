@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Entities
+﻿namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     Base class for entities which should be soft-deletable, meaning that it is never

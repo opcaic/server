@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using OPCAIC.ApiService.Models.Submissions;
-using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Models.Matches
 {

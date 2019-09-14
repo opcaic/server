@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Enums
+﻿namespace OPCAIC.Domain.Enums
 {
 	/// <summary>
 	///     State of a match.

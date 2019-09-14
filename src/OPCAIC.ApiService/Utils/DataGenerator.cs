@@ -9,12 +9,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Dtos.MatchExecutions;
 using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
-using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Services;
 
 namespace OPCAIC.ApiService.Utils

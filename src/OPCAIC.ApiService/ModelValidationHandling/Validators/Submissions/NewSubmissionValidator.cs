@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.ApiService.Models.Submissions;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Infrastructure.DbContexts;
-using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.ApiService.ModelValidationHandling.Validators.Submissions
 {

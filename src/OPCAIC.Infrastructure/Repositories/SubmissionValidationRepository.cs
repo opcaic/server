@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
-using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Repositories
 {

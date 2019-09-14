@@ -2,7 +2,6 @@
 using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Dtos.Users;
-using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Dtos.Submissions
 {

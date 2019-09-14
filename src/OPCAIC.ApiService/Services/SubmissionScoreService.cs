@@ -3,10 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using OPCAIC.ApiService.Exceptions;
+using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
-using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Messaging.Messages;
 

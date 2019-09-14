@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Security;
-using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Domain.Entities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -80,7 +80,7 @@ namespace OPCAIC.ApiService.Test.Security
 		[Fact]
 		public Task MatchPermission()
 		{
-			return DoCheckPermission<MatchPermission, Infrastructure.Entities.Match>();
+			return DoCheckPermission<MatchPermission, Match>();
 		}
 
 		[Fact]

@@ -10,9 +10,9 @@ using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.ModelValidationHandling;
+using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
-using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
 
 namespace OPCAIC.ApiService.Services

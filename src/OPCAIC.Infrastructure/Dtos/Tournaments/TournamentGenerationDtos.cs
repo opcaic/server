@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Infrastructure.Dtos.Matches;
-using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Dtos.Tournaments
 {

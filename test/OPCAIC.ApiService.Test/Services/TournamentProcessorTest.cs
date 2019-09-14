@@ -9,16 +9,16 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Infrastructure.Dtos.Matches;
-using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Services;
 using OPCAIC.Services.Extensions;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
-using Match = OPCAIC.Infrastructure.Entities.Match;
+using Match = OPCAIC.Domain.Entities.Match;
 
 namespace OPCAIC.ApiService.Test.Services
 {

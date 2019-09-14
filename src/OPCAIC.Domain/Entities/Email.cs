@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OPCAIC.Infrastructure.Entities
+namespace OPCAIC.Domain.Entities
 {
 	public class Email : Entity
 	{

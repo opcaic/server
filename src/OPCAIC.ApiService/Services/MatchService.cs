@@ -7,8 +7,8 @@ using AutoMapper;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Matches;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Infrastructure.Dtos.Matches;
-using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Repositories;
 
 namespace OPCAIC.ApiService.Services

@@ -1,7 +1,7 @@
 ﻿using System;
-using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Infrastructure.Entities
+namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     Defines fields needed in order to manage the job execution.

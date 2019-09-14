@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Entities
+﻿namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     Base class for entities identifiable by a single unique Id.

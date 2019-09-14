@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Entities
+﻿namespace OPCAIC.Domain.Entities
 {
 	public class EmailTemplate : EntityBase
 	{

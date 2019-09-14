@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using OPCAIC.ApiService.Models.Documents;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Infrastructure;
-using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.ApiService.ModelValidationHandling.Validators.Documents
 {

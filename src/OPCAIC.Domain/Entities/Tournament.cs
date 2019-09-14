@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Infrastructure.Entities
+namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     A tournament between AI bots.

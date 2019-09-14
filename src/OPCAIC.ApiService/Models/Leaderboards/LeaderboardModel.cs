@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using OPCAIC.ApiService.Models.Tournaments;
-using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Models.Leaderboards
 {

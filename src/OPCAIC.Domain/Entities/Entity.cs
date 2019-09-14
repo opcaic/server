@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OPCAIC.Infrastructure.Entities
+namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     Base class for entities with timestamp tracking

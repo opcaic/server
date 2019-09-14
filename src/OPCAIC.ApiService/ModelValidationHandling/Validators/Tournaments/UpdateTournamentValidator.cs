@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using OPCAIC.ApiService.Models.Tournaments;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Infrastructure;
-using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.ApiService.ModelValidationHandling.Validators.Tournaments
 {

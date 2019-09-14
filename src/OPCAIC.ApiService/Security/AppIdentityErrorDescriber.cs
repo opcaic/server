@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.ModelValidationHandling;
-using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.ApiService.Security
 {

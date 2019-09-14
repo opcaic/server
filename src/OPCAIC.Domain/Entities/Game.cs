@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Infrastructure.Entities
+namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     Basic information about a game in the platform.

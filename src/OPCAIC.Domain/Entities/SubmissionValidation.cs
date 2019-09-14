@@ -1,7 +1,7 @@
 ﻿using System;
-using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Infrastructure.Entities
+namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     Result of a validation process of a submission.

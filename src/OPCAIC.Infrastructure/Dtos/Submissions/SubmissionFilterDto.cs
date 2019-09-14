@@ -1,4 +1,4 @@
-﻿using OPCAIC.Infrastructure.Enums;
+﻿using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Infrastructure.Dtos.Submissions
 {

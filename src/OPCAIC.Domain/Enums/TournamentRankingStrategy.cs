@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Enums
+﻿namespace OPCAIC.Domain.Enums
 {
 	/// <summary>
 	///     Strategy how to determine the best submission in a tournament.

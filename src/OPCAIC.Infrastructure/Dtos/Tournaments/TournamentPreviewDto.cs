@@ -1,6 +1,6 @@
 ﻿using System;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Infrastructure.Dtos.Games;
-using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Dtos.Tournaments
 {

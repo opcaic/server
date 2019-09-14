@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using OPCAIC.Infrastructure.Entities;
 
 namespace OPCAIC.ApiService.Models.Submissions
 {

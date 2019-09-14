@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Domain.Entities;
 using Org.BouncyCastle.Asn1.X509.Qualified;
 
 namespace OPCAIC.Infrastructure.DbContexts

@@ -1,6 +1,6 @@
-﻿using OPCAIC.Infrastructure.Enums;
+﻿using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Infrastructure.Entities
+namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     Aggregates how the submission did in the match.

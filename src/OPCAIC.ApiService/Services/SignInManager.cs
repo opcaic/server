@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.ApiService.Services
 {

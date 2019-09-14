@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using OPCAIC.Infrastructure.Entities;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Infrastructure.Configurations
 {

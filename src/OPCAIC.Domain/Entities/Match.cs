@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OPCAIC.Infrastructure.Entities
+namespace OPCAIC.Domain.Entities
 {
 	/// <summary>
 	///     Represents a single match in a tournament.

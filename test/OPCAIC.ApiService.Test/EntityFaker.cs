@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Bogus;
-using OPCAIC.Infrastructure.Entities;
-using OPCAIC.Infrastructure.Enums;
+using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 using static OPCAIC.ApiService.Test.Services.TestMapper;
 
 namespace OPCAIC.ApiService.Test
