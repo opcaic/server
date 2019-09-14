@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OPCAIC.Common\OPCAIC.Common.csproj" />
+    <ProjectReference Include="..\OPCAIC.Domain\OPCAIC.Domain.csproj" />
     <ProjectReference Include="..\OPCAIC.Utils\OPCAIC.Utils.csproj" />
   </ItemGroup>
 
