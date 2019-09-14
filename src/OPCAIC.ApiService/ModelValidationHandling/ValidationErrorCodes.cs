@@ -28,6 +28,8 @@
 
 		public static string TournamentDeadlinePassed => "deadline-passed";
 
+		public static string TournamentDoesNotAcceptSubmission => "tournament-not-active";
+
 		public static string TournamentEvaluationAlreadyStarted => "evaluation-already-started";
 
 		#endregion

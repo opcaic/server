@@ -11,6 +11,7 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Infrastructure.Dtos;
 using OPCAIC.Infrastructure.Dtos.Submissions;
 using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
+using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Entities;
 using OPCAIC.Infrastructure.Enums;
 using OPCAIC.Infrastructure.Repositories;
@@ -40,11 +41,14 @@ namespace OPCAIC.ApiService.Services
 			var tournament =
 				await tournamentRepository.FindByIdAsync(model.TournamentId, cancellationToken);
 
-			if (tournament.Deadline.HasValue &&
-				tournament.Deadline.Value < DateTime.Now ||
-				tournament.State != TournamentState.Published)
+			if (!CanTournamentAcceptSubmissions(tournament))
 			{
-				throw new BadRequestException(ValidationErrorCodes.TournamentDeadlinePassed, "Deadline for tournament registration has passed", null);
+				if (tournament.Deadline.HasValue && tournament.Deadline < DateTime.Now)
+				{
+					throw new BadRequestException(ValidationErrorCodes.TournamentDeadlinePassed, "Deadline for tournament registration has passed.", null);
+				}
+
+				throw new BadRequestException(ValidationErrorCodes.TournamentDoesNotAcceptSubmission, "This tournament does not accept submissions anymore.", null);
 			}
 
 			// save db entity
@@ -152,6 +156,14 @@ namespace OPCAIC.ApiService.Services
 			{
 				throw new NotFoundException(nameof(Submission), id);
 			}
+		}
+
+		public static bool CanTournamentAcceptSubmissions(TournamentDetailDto tournament)
+		{
+			return tournament.State == TournamentState.Published &&
+				(tournament.Deadline == null || tournament.Deadline > DateTime.Now) ||
+				tournament.State == TournamentState.Running &&
+				tournament.Scope == TournamentScope.Ongoing;
 		}
 
 		/// <inheritdoc />

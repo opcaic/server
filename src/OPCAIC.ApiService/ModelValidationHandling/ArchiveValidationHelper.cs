@@ -17,12 +17,6 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 
 		public static void ValidateArchive(IFormFile archive, CustomContext context, long maxSize)
 		{
-			if (archive?.ContentType != MediaTypeNames.Application.Zip)
-			{
-				context.AddFailure(nameof(archive), "File does not have valid content type.", ValidationErrorCodes.InvalidContentType);
-				return;
-			}
-
 			try
 			{
 				long size;
