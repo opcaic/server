@@ -213,6 +213,11 @@ namespace OPCAIC.Infrastructure.Repositories
 				query = query.Where(row => row.AuthorId == filter.AuthorId);
 			}
 
+			if (filter.Author != null)
+			{
+				query = query.Where(row => row.Author.UserName.Contains(filter.Author));
+			}
+
 			if (filter.IsActive != null)
 			{
 				query = query.Where(row => row.IsActive == filter.IsActive);
@@ -229,6 +234,32 @@ namespace OPCAIC.Infrastructure.Repositories
 					=> row.Participations.Any(m => m.MatchId == filter.MatchId));
 			}
 
+			if (filter.ValidationState != null)
+			{
+				// there should always be at least one validation
+				switch (filter.ValidationState.Value)
+				{
+					case SubmissionValidationState.Queued:
+						query = query.Where(row
+							=> row.Validations.Last().State <= WorkerJobState.Waiting);
+						break;
+					case SubmissionValidationState.Valid:
+						query = query.Where(row
+							=> row.Validations.Last().ValidatorResult == EntryPointResult.Success);
+						break;
+					case SubmissionValidationState.Invalid:
+						query = query.Where(row
+							=> row.Validations.Last().ValidatorResult == EntryPointResult.UserError);
+						break;
+					case SubmissionValidationState.Error:
+						query = query.Where(row
+							=> row.Validations.Last().ValidatorResult >= EntryPointResult.ModuleError);
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
+				}
+			}
+
 			return query.SortBy(filter.SortBy, filter.Asc);
 		}
 
@@ -238,6 +269,8 @@ namespace OPCAIC.Infrastructure.Repositories
 		{
 			switch (sortBy)
 			{
+				case SubmissionFilterDto.SortByAuthor:
+					return query.Sort(row => row.Author.UserName, asc);
 				case SubmissionFilterDto.SortByCreated:
 					return query.Sort(row => row.Created, asc);
 				default:
@@ -290,6 +323,13 @@ namespace OPCAIC.Infrastructure.Repositories
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
+			}
+
+			if (filter.Username != null)
+			{
+				query = query.Where(row =>
+					row.Participations.Any(s
+						=> s.Submission.Author.UserName.Contains(filter.Username)));
 			}
 
 			return query.SortBy(filter.SortBy, filter.Asc);
