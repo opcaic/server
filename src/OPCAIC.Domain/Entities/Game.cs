@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Entities
@@ -13,15 +11,11 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Human readable name of the game.
 		/// </summary>
-		[Required]
-		[MaxLength(StringLengths.GameName)]
 		public string Name { get; set; }
 
 		/// <summary>
 		///     Key name of the game which will be used to dispatch work items to workers.
 		/// </summary>
-		[Required]
-		[MaxLength(StringLengths.GameKey)]
 		public string Key { get; set; }
 
 		/// <summary>
@@ -68,10 +62,5 @@ namespace OPCAIC.Infrastructure.Entities
 		///     Maximum size of additional files for evaluating matches in this game.
 		/// </summary>
 		public long MaxAdditionalFilesSize { get; set; }
-
-		internal static void OnModelCreating(EntityTypeBuilder<Game> builder)
-		{
-			builder.HasIndex(g => g.Name).IsUnique();
-		}
 	}
 }

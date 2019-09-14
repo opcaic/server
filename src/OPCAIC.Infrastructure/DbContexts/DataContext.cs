@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OPCAIC.Infrastructure.Entities;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 
 namespace OPCAIC.Infrastructure.DbContexts
 {
@@ -40,40 +41,22 @@ namespace OPCAIC.Infrastructure.DbContexts
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(DataContext).Assembly);
 			RegisterSoftDeleteQueryFilters(modelBuilder);
 			ConfigureEntities(modelBuilder);
 		}
 
 		private static void ConfigureEntities(ModelBuilder modelBuilder)
 		{
-			var method = typeof(ModelBuilder)
-				.GetMethods(BindingFlags.Instance | BindingFlags.Public)
-				.Single(m =>
-					m.Name == nameof(modelBuilder.Entity) &&
-					m.ContainsGenericParameters &&
-					m.GetParameters().Length == 1);
-
-			// call modelBuilder.Entity<TEntity>(TEntity.OnModelCreating) for all types which have this method.
 			foreach (var type in modelBuilder.Model.GetEntityTypes())
 			{
 				var clrType = type.ClrType;
-				var configureMethod = clrType.GetMethod(nameof(OnModelCreating),
-					BindingFlags.Static | BindingFlags.DeclaredOnly | BindingFlags.NonPublic);
 
-				if (configureMethod == null)
+				if (typeof(Entity).IsAssignableFrom(clrType))
 				{
-					// no special configuration for this type
-					continue;
+					modelBuilder.Entity(clrType).Property<DateTime>(nameof(Entity.Updated))
+						.IsConcurrencyToken();
 				}
-
-				// Construct Action<EntityModelBuilder<TEntity>> argument type for the Entity call
-				var delegateType = typeof(Action<>).MakeGenericType(
-					typeof(EntityTypeBuilder<>).MakeGenericType(clrType));
-
-				// actual method call
-				method.MakeGenericMethod(clrType).Invoke(
-					modelBuilder,
-					new object[] {configureMethod.CreateDelegate(delegateType)});
 			}
 		}
 

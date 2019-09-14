@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace OPCAIC.Infrastructure.Entities
 {
@@ -12,7 +11,6 @@ namespace OPCAIC.Infrastructure.Entities
 		public DateTime Created { get; set; }
 
 		/// <inheritdoc />
-		[ConcurrencyCheck]
 		public DateTime Updated { get; set; }
 	}
 }

@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace OPCAIC.Infrastructure.Entities
+﻿namespace OPCAIC.Infrastructure.Entities
 {
 	/// <summary>
 	///     Represents a markdown document, used for description of a tournament.
@@ -11,8 +8,6 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Name of the document.
 		/// </summary>
-		[Required]
-		[MaxLength(StringLengths.DocumentName)]
 		public string Name { get; set; }
 
 		/// <summary>
@@ -29,10 +24,5 @@ namespace OPCAIC.Infrastructure.Entities
 		///     The tournament this document belongs to.
 		/// </summary>
 		public virtual Tournament Tournament { get; set; }
-
-		internal static void OnModelCreating(EntityTypeBuilder<Document> builder)
-		{
-			builder.HasIndex(d => d.Name).IsUnique();
-		}
 	}
 }

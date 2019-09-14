@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using OPCAIC.Infrastructure.Enums;
 
 namespace OPCAIC.Infrastructure.Entities
@@ -28,8 +27,6 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Name of the tournament.
 		/// </summary>
-		[Required]
-		[MaxLength(StringLengths.TournamentName)]
 		public string Name { get; set; }
 
 		/// <summary>

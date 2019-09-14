@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
+﻿
 namespace OPCAIC.Infrastructure.Entities
 {
 	/// <summary>
@@ -31,11 +30,5 @@ namespace OPCAIC.Infrastructure.Entities
 		///     Order of the submission in the match. This makes sure the submissions are always in the same order.
 		/// </summary>
 		public int Order { get; set; }
-
-		internal static void OnModelCreating(EntityTypeBuilder<SubmissionParticipation> builder)
-		{
-			// since this is just a mapping table, no need for dedicated id.
-			builder.HasKey(nameof(MatchId), nameof(SubmissionId), nameof(Order));
-		}
 	}
 }

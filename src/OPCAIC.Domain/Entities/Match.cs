@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace OPCAIC.Infrastructure.Entities
 {
@@ -21,7 +20,6 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     Tournament this match belongs to.
 		/// </summary>
-		[Required]
 		public virtual Tournament Tournament { get; set; }
 
 		/// <summary>

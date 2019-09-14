@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace OPCAIC.Infrastructure.Entities
 {
@@ -14,13 +12,11 @@ namespace OPCAIC.Infrastructure.Entities
 		/// <summary>
 		///     First name of the user.
 		/// </summary>
-		[MaxLength(StringLengths.UserFirstName)]
 		public string FirstName { get; set; }
 
 		/// <summary>
 		///     Last name of the user.
 		/// </summary>
-		[MaxLength(StringLengths.UserLastName)]
 		public string LastName { get; set; }
 
 		/// <summary>
@@ -66,14 +62,5 @@ namespace OPCAIC.Infrastructure.Entities
 
 		/// <inheritdoc />
 		public bool IsDeleted { get; set; }
-
-		internal static void OnModelCreating(EntityTypeBuilder<User> builder)
-		{
-			// set lengths for base class properties
-			builder.Property(u => u.UserName).HasMaxLength(StringLengths.UserName).IsRequired();
-			builder.Property(u => u.Email).HasMaxLength(StringLengths.UserEmail).IsRequired();
-			builder.Property(u => u.PasswordHash).HasMaxLength(StringLengths.PasswordHash)
-				.IsRequired();
-		}
 	}
 }

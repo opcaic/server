@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace OPCAIC.Infrastructure.Entities
 {
@@ -8,9 +7,5 @@ namespace OPCAIC.Infrastructure.Entities
 	/// </summary>
 	public class Role : IdentityRole<long>
 	{
-		internal static void OnModelCreating(EntityTypeBuilder<Role> builder)
-		{
-			builder.Property(r => r.Name).HasMaxLength(StringLengths.UserRoleName);
-		}
 	}
 }
