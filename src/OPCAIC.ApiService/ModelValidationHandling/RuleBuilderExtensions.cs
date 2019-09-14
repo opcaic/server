@@ -83,7 +83,7 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 		{
 			return rule.Custom((s, context) =>
 			{
-				if (!s.IsValid(JsonSchemaDefinition.Version7,
+				if (s != null && !s.IsValid(JsonSchemaDefinition.Version7,
 					out IList<string> errors))
 				{
 					context.AddFailure(

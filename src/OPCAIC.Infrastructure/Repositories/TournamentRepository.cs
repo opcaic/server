@@ -22,7 +22,9 @@ namespace OPCAIC.Infrastructure.Repositories
 		// must be kept in sync with GameRepository.ActiveTournamentsExpression
 		public static readonly Expression<Func<Tournament, bool>> ActiveTournamentPredicate =
 			t => t.State == TournamentState.Published &&
-				(t.Deadline == null || t.Deadline > DateTime.Now);
+				(t.Deadline == null || t.Deadline > DateTime.Now) ||
+				t.State == TournamentState.Running &&
+				t.Scope == TournamentScope.Ongoing;
 
 		/// <inheritdoc />
 		public TournamentRepository(DataContext context, IMapper mapper)

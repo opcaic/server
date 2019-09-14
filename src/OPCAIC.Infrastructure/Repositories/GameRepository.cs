@@ -21,7 +21,9 @@ namespace OPCAIC.Infrastructure.Repositories
 		public static readonly Expression<Func<Game, int>> ActiveTournamentsExpression
 			= g => g.Tournaments.Count(t
 				=> t.State == TournamentState.Published &&
-				(t.Deadline == null || t.Deadline > DateTime.Now));
+				(t.Deadline == null || t.Deadline > DateTime.Now) ||
+				t.State == TournamentState.Running &&
+				t.Scope == TournamentScope.Ongoing);
 
 		/// <inheritdoc />
 		public GameRepository(DataContext context, IMapper mapper)
