@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Models.Leaderboards;
 
-namespace OPCAIC.ApiService.Services
+namespace OPCAIC.ApiService.Interfaces
 {
 	public interface ILeaderboardService
 	{

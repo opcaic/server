@@ -5,7 +5,7 @@ using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Messaging.Messages;
 
-namespace OPCAIC.ApiService.Services
+namespace OPCAIC.ApiService.Interfaces
 {
 	public interface IMatchExecutionService
 	{

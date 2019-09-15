@@ -10,6 +10,7 @@ using OPCAIC.ApiService.Notifications.Events;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Utils;

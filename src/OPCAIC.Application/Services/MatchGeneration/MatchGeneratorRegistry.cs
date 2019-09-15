@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Tournaments;
-using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Application.Services
+namespace OPCAIC.Application.Services.MatchGeneration
 {
 	public class MatchGeneratorRegistry : IMatchGenerator
 	{

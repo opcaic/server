@@ -1,6 +1,6 @@
 ﻿using OPCAIC.Application.Services;
 
-namespace OPCAIC.Application.Interfaces
+namespace OPCAIC.Application.Interfaces.MatchGeneration
 {
 	/// <summary>
 	///     Defines methods for creating

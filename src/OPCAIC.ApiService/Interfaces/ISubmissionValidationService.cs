@@ -5,7 +5,7 @@ using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Messaging.Messages;
 
-namespace OPCAIC.ApiService.Services
+namespace OPCAIC.ApiService.Interfaces
 {
 	public interface ISubmissionValidationService
 	{

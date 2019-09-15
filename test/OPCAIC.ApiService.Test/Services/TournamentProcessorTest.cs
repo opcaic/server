@@ -12,6 +12,7 @@ using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;

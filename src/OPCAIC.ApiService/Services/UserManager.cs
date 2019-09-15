@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;

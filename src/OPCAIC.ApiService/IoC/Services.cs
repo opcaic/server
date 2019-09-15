@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Emails;

@@ -6,7 +6,7 @@ using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.Domain.Entities;
 
-namespace OPCAIC.ApiService.Services
+namespace OPCAIC.ApiService.Interfaces
 {
 	public interface IUserManager
 	{

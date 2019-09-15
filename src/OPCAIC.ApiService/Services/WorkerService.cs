@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Configs;
+using OPCAIC.ApiService.Interfaces;
 using OPCAIC.Application.Interfaces;
 
 namespace OPCAIC.ApiService.Services

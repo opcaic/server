@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Security;
 
 namespace OPCAIC.ApiService.Services

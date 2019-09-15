@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos;

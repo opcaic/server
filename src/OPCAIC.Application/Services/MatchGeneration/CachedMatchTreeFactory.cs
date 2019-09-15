@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
-using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.MatchGeneration;
 
-namespace OPCAIC.Application.Services
+namespace OPCAIC.Application.Services.MatchGeneration
 {
 	/// <summary>
 	///     Simple cached factory for match trees.

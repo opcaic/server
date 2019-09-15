@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Services;
+using OPCAIC.Application.Services.MatchGeneration;
 using OPCAIC.Domain.Enums;
 using Shouldly;
 using Xunit;

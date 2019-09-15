@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Configs;
+using OPCAIC.ApiService.Interfaces;
 using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Utils;

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Submissions;
 
-namespace OPCAIC.ApiService.Services
+namespace OPCAIC.ApiService.Interfaces
 {
 	public interface ISubmissionService
 	{

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.ModelValidationHandling;

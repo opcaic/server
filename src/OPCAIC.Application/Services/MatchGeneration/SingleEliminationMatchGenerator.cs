@@ -6,11 +6,11 @@ using Microsoft.Extensions.Logging;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
-using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Utils;
 
-namespace OPCAIC.Application.Services
+namespace OPCAIC.Application.Services.MatchGeneration
 {
 	/// <summary>
 	///     Base class for match generators for brackets tournament format.

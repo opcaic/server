@@ -8,6 +8,7 @@ using OPCAIC.ApiService.Services;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.Interfaces;
 
 namespace OPCAIC.ApiService.Controllers
 {

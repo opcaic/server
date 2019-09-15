@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Broker;
 
-namespace OPCAIC.ApiService.Services
+namespace OPCAIC.ApiService.Interfaces
 {
 	public interface IBrokerService
 	{

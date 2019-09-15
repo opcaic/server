@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.ApiService.Interfaces;
 using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Emails;

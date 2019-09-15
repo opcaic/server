@@ -8,6 +8,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Security;

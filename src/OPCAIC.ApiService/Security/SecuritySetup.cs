@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
+using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Security.Handlers;
 using OPCAIC.ApiService.Services;
 

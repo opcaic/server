@@ -2,7 +2,7 @@
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Tournaments;
 
-namespace OPCAIC.Application.Interfaces
+namespace OPCAIC.Application.Interfaces.MatchGeneration
 {
 	/// <summary>
 	///     Defines methods for generating matches for individual categories of tournaments.

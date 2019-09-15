@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using OPCAIC.Application.Services;
+using OPCAIC.Application.Services.MatchGeneration;
 using OPCAIC.TestUtils;
 using Xunit;
 

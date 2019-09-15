@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
 
-namespace OPCAIC.ApiService.Services
+namespace OPCAIC.ApiService.Interfaces
 {
 	public interface IDocumentService
 	{

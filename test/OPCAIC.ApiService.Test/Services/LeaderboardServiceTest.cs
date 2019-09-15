@@ -10,6 +10,7 @@ using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;

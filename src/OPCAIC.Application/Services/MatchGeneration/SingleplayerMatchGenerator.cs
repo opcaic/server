@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Tournaments;
-using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Utils;
 
-namespace OPCAIC.Application.Services
+namespace OPCAIC.Application.Services.MatchGeneration
 {
 	/// <summary>
 	///     Match generator for the single player games (generates a "match" per submission).

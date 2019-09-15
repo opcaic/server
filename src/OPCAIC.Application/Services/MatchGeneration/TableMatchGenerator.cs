@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Tournaments;
-using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Utils;
 
-namespace OPCAIC.Application.Services
+namespace OPCAIC.Application.Services.MatchGeneration
 {
 	/// <summary>
 	///     Generator for the matrix of matches (each pair of submission will compete against each other

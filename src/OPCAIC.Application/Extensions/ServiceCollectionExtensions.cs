@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Services;
+using OPCAIC.Application.Services.MatchGeneration;
 
 namespace OPCAIC.Application.Extensions
 {

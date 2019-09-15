@@ -3,7 +3,7 @@ using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Application.Interfaces
+namespace OPCAIC.Application.Interfaces.MatchGeneration
 {
 	/// <summary>
 	///     Provides methods for generating matches for deadline scoped tournaments.

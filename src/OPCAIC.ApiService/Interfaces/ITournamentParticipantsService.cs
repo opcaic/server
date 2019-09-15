@@ -1,10 +1,10 @@
-﻿using OPCAIC.ApiService.Models;
-using OPCAIC.ApiService.Models.Tournaments;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.ApiService.Models;
+using OPCAIC.ApiService.Models.Tournaments;
 
-namespace OPCAIC.ApiService.Services
+namespace OPCAIC.ApiService.Interfaces
 {
 	public interface ITournamentParticipantsService
 	{

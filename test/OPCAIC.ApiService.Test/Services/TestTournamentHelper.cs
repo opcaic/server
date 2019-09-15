@@ -4,6 +4,7 @@ using System.Linq;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using Shouldly;

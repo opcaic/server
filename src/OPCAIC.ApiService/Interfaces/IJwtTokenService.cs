@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Claims;
 
-namespace OPCAIC.ApiService.Services
+namespace OPCAIC.ApiService.Interfaces
 {
 	public interface IJwtTokenService
 	{
