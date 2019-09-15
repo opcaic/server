@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -34,6 +36,17 @@ namespace OPCAIC.Infrastructure.Repositories
 			return Query(row => row.Email == email)
 				.ProjectTo<EmailRecipientDto>(Mapper.ConfigurationProvider)
 				.SingleOrDefaultAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<List<UserReferenceDto>> GetSubscriberesByTournamentAsync(long tournamentId,
+			CancellationToken cancellationToken)
+		{
+			return Query(row
+					=> row.WantsEmailNotifications &&
+					row.Submissions.Any(s => s.TournamentId == tournamentId))
+				.ProjectTo<UserReferenceDto>(Mapper.ConfigurationProvider)
+				.ToListAsync(cancellationToken);
 		}
 	}
 }

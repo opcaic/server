@@ -1,4 +1,5 @@
 ﻿using FluentValidation.AspNetCore;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -50,6 +51,7 @@ namespace OPCAIC.ApiService
 				{
 					options.RegisterValidatorsFromAssemblyContaining<Startup>();
 				});
+			services.AddTransient<IValidatorInterceptor, ValidationInterceptor>();
 
 			services.AddCors(options =>
 			{
@@ -66,7 +68,7 @@ namespace OPCAIC.ApiService
 			// TODO: replace with real database
 			services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("Dummy"));
 
-			services.AddTransient<IValidatorInterceptor, ValidationInterceptor>();
+			services.AddMediatR(typeof(Startup).Assembly);
 			services.AddServices();
 			services.AddBroker();
 			services.AddRepositories();

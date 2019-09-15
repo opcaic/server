@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Infrastructure.Dtos.Users;
 
@@ -12,6 +13,9 @@ namespace OPCAIC.Infrastructure.Repositories
 		Task<EmailRecipientDto> FindRecipientAsync(long id, CancellationToken cancellationToken);
 
 		Task<EmailRecipientDto> FindRecipientAsync(string email,
+			CancellationToken cancellationToken);
+
+		Task<List<UserReferenceDto>> GetSubscriberesByTournamentAsync(long tournamentId,
 			CancellationToken cancellationToken);
 	}
 }

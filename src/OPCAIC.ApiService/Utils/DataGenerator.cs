@@ -511,8 +511,8 @@ namespace OPCAIC.ApiService.Utils
 				.RuleFor(u => u.UserName, (f, u) => f.Internet.UserName(u.FirstName, u.LastName))
 				.RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
 				.RuleFor(u => u.EmailConfirmed, true)
-				.RuleFor(u => u.RoleId, (long)UserRole.User)
-				.RuleFor(u => u.LocalizationLanguage, f => f.PickRandomParam(null, "en", "cz"));
+				.RuleFor(u => u.RoleId, (long) UserRole.User)
+				.RuleFor(u => u.LocalizationLanguage, f => f.PickRandomParam(null, "en", "cs"));
 
 			foreach (var user in userFaker.GenerateLazy(30))
 			{
@@ -647,6 +647,22 @@ namespace OPCAIC.ApiService.Utils
 					SubjectTemplate = "Tournament invitation",
 					BodyTemplate =
 						"<html><body>You were invited to following tournament: {{TournamentUrl}}.</body></html>"
+				},
+				new EmailTemplate
+				{
+					LanguageCode = "cs",
+					Name = "tournamentFinishedEmail",
+					SubjectTemplate = "Vyhodnocení turnaje '{{TournamentName}}' skončilo",
+					BodyTemplate =
+						"<html><body>Turnaj {{TournamentName}} byl ukončen. Výsledky jsou k dispozici na odkazu {{TournamentUrl}}.</body></html>"
+				},
+				new EmailTemplate
+				{
+					LanguageCode = "en",
+					Name = "tournamentFinishedEmail",
+					SubjectTemplate = "Tournament '{{TournamentName}}' has finished",
+					BodyTemplate =
+						"<html><body>Tournament {{TournamentName}} has finished. Results are available at {{TournamentUrl}}.</body></html>"
 				});
 		}
 	}

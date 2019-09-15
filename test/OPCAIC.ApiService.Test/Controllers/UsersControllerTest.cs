@@ -9,6 +9,7 @@ using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Infrastructure.Dtos.EmailTemplates;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Infrastructure.Entities;
 using Xunit;
@@ -186,8 +187,8 @@ namespace OPCAIC.ApiService.Test.Controllers
 					.IsAssignableFrom<CreatedAtRouteResult>(result).Value);
 
 			EmailServiceMock.Verify(
-				s => s.SendEmailVerificationEmailAsync(
-					idModel.Id, It.IsAny<string>(), CancellationToken));
+				s => s.EnqueueEmailAsync(
+					It.IsAny<UserVerificationEmailDto>(), userModel.Email, CancellationToken));
 
 			var detail = await Controller.GetUserByIdAsync(idModel.Id, CancellationToken);
 			Assert.Equal(userModel.Email, detail.Email);

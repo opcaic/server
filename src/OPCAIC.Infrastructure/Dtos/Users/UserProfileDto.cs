@@ -5,5 +5,7 @@
 		public string LocalizationLanguage { get; set; }
 
 		public string Organization { get; set; }
+
+		public bool WantsEmailNotifications { get; set; }
 	}
 }

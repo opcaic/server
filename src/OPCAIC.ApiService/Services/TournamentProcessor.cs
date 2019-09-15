@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.Notifications.Events;
 using OPCAIC.Infrastructure.Dtos.Matches;
 using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Enums;
@@ -34,6 +36,7 @@ namespace OPCAIC.ApiService.Services
 			lastUpdated = now;
 			return new Job(
 				Logger,
+				scopedProvider.GetRequiredService<IMediator>(),
 				scopedProvider.GetRequiredService<ITournamentRepository>(),
 				scopedProvider.GetRequiredService<IMatchRepository>(),
 				scopedProvider.GetRequiredService<IMatchGenerator>(),
@@ -44,6 +47,7 @@ namespace OPCAIC.ApiService.Services
 		internal class Job
 		{
 			private readonly ILogger logger;
+			private readonly IMediator mediator;
 			private readonly IMatchGenerator matchGenerator;
 			private readonly IMatchRepository matchRepository;
 			private readonly ITournamentRepository tournamentRepository;
@@ -52,8 +56,8 @@ namespace OPCAIC.ApiService.Services
 			private readonly DateTime now;
 
 			/// <inheritdoc />
-			public Job(ILogger logger, ITournamentRepository tournamentRepository, IMatchRepository matchRepository,
-				IMatchGenerator matchGenerator, DateTime lastRun, DateTime now)
+			public Job(ILogger logger, IMediator mediator, ITournamentRepository tournamentRepository,
+				IMatchRepository matchRepository, IMatchGenerator matchGenerator, DateTime lastRun, DateTime now)
 			{
 				this.logger = logger;
 				this.tournamentRepository = tournamentRepository;
@@ -61,6 +65,7 @@ namespace OPCAIC.ApiService.Services
 				this.matchGenerator = matchGenerator;
 				this.lastRun = lastRun;
 				this.now = now;
+				this.mediator = mediator;
 			}
 
 			public async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -183,6 +188,8 @@ namespace OPCAIC.ApiService.Services
 
 				foreach (var tournament in tournaments)
 				{
+					await mediator.Publish(new TournamentFinished(tournament.Id, tournament.Name), cancellationToken);
+
 					await tournamentRepository.UpdateTournamentState(tournament.Id, updateDto,
 						cancellationToken);
 

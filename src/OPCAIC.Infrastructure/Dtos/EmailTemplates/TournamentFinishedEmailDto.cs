@@ -1,8 +1,9 @@
 ﻿namespace OPCAIC.Infrastructure.Dtos.EmailTemplates
 {
-	public class TournamentInvitationEmailDto : EmailDtoBase
+	public class TournamentFinishedEmailDto : EmailDtoBase
 	{
-		public override string TemplateName => "tournamentInvitationEmail";
+		/// <inheritdoc />
+		public override string TemplateName => "tournamentFinishedEmail";
 
 		public string TournamentUrl { get; set; }
 

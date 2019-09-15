@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using HandlebarsDotNet;
 using OPCAIC.Infrastructure.Dtos.Emails;
@@ -24,45 +25,13 @@ namespace OPCAIC.Infrastructure.Emails
 			this.userRepository = userRepository;
 		}
 
-		public async Task SendEmailVerificationEmailAsync(long recipientId, string verificationUrl,
-			CancellationToken cancellationToken)
-		{
-			var user = await userRepository.FindRecipientAsync(recipientId, cancellationToken);
-
-			var emailDto = new UserVerificationEmailDto {VerificationUrl = verificationUrl};
-
-			await EnqueueEmailAsync(emailDto, user.Email, user.LocalizationLanguage,
-				cancellationToken);
-		}
-
-		public async Task SendPasswordResetEmailAsync(string recipientEmail, string resetUrl,
-			CancellationToken cancellationToken)
+		public async Task EnqueueEmailAsync(EmailDtoBase dto, string recipientEmail, CancellationToken cancellationToken)
 		{
 			var user = await userRepository.FindRecipientAsync(recipientEmail, cancellationToken);
 
-			var emailDto = new PasswordResetEmailDto {ResetUrl = resetUrl};
-
-			await EnqueueEmailAsync(emailDto, user.Email, user.LocalizationLanguage,
-				cancellationToken);
-		}
-
-		public async Task SendTournamentInvitationEmailAsync(string recipientEmail,
-			string tournamentUrl, CancellationToken cancellationToken)
-		{
-			var user = await userRepository.FindRecipientAsync(recipientEmail, cancellationToken);
-
-			var emailDto = new TournamentInvitationEmailDto {TournamentUrl = tournamentUrl};
-
-			if (user == null)
 #warning Default language code needs to be placed somewhere to configuration or to constant
-			{
-				await EnqueueEmailAsync(emailDto, recipientEmail, "en", cancellationToken);
-			}
-			else
-			{
-				await EnqueueEmailAsync(emailDto, user.Email, user.LocalizationLanguage,
-					cancellationToken);
-			}
+			await EnqueueEmailAsync(dto, recipientEmail, user.LocalizationLanguage ?? "en",
+				cancellationToken);
 		}
 
 		private async Task EnqueueEmailAsync(EmailDtoBase dto, string recipientEmail,
@@ -75,7 +44,7 @@ namespace OPCAIC.Infrastructure.Emails
 			var body = handlebars.Compile(template.BodyTemplate)(dto);
 			var subject = handlebars.Compile(template.SubjectTemplate)(dto);
 
-			var emaildto = new NewEmailDto
+			var email = new NewEmailDto
 			{
 				Body = body,
 				Subject = subject,
@@ -83,7 +52,7 @@ namespace OPCAIC.Infrastructure.Emails
 				TemplateName = dto.TemplateName
 			};
 
-			await emailRepository.EnqueueEmailAsync(emaildto, cancellationToken);
+			await emailRepository.EnqueueEmailAsync(email, cancellationToken);
 		}
 	}
 }

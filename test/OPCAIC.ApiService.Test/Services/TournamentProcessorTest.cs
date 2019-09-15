@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -27,6 +28,7 @@ namespace OPCAIC.ApiService.Test.Services
 		public TournamentProcessorTest(ITestOutputHelper output) : base(output)
 		{
 			UseDatabase();
+			Services.Mock<IMediator>(); // no events
 			Services.AddMatchGenerators();
 			Services.AddMapper();
 			Services.AddRepositories();
@@ -49,6 +51,7 @@ namespace OPCAIC.ApiService.Test.Services
 
 				return new TournamentProcessor.Job(
 					services.GetRequiredService<ILogger<TournamentProcessor>>(),
+					services.GetRequiredService<IMediator>(),
 					services.GetRequiredService<ITournamentRepository>(),
 					services.GetRequiredService<IMatchRepository>(),
 					services.GetRequiredService<IMatchGenerator>(),

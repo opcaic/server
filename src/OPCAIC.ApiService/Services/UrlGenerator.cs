@@ -26,7 +26,7 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
-		public string TournamentInviteUrl(long tournamentId)
+		public string TournamentPageLink(long tournamentId)
 		{
 			return $"{config.FrontendUrl}/tournament/{tournamentId}";
 		}

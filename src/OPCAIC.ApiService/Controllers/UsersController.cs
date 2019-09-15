@@ -1,6 +1,4 @@
-﻿using System;
-using System.Net;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -14,6 +12,7 @@ using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Infrastructure.Dtos.EmailTemplates;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Infrastructure.Entities;
 
@@ -26,14 +25,15 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly IAuthorizationService authorizationService;
 		private readonly IEmailService emailService;
 		private readonly ILogger<UsersController> logger;
+		private readonly IMapper mapper;
 		private readonly SignInManager signInManager;
 		private readonly IFrontendUrlGenerator urlGenerator;
 		private readonly IUserManager userManager;
-		private readonly IMapper mapper;
 
 		public UsersController(ILogger<UsersController> logger, IEmailService emailService,
 			SignInManager signInManager, IUserManager userManager,
-			IFrontendUrlGenerator urlGenerator, IAuthorizationService authorizationService, IMapper mapper)
+			IFrontendUrlGenerator urlGenerator, IAuthorizationService authorizationService,
+			IMapper mapper)
 		{
 			this.logger = logger;
 			this.emailService = emailService;
@@ -101,7 +101,8 @@ namespace OPCAIC.ApiService.Controllers
 				if (result.IsNotAllowed)
 				{
 					logger.LoginNotAllowed(user);
-					throw new UnauthorizedException(null, ValidationErrorCodes.LoginEmailNotConfirmed);
+					throw new UnauthorizedException(null,
+						ValidationErrorCodes.LoginEmailNotConfirmed);
 				}
 
 				if (result.IsLockedOut)
@@ -173,11 +174,13 @@ namespace OPCAIC.ApiService.Controllers
 			var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 			var url = urlGenerator.EmailConfirmLink(user.Email, token);
 
-			await emailService.SendEmailVerificationEmailAsync(user.Id, url,
+			await emailService.EnqueueEmailAsync(
+				new UserVerificationEmailDto {VerificationUrl = url}, user.Email,
 				cancellationToken);
 
 			logger.UserCreated(user);
-			return CreatedAtRoute(nameof(GetUserByIdAsync), new { id = user.Id }, new IdModel {Id = user.Id});
+			return CreatedAtRoute(nameof(GetUserByIdAsync), new {id = user.Id},
+				new IdModel {Id = user.Id});
 		}
 
 		/// <summary>
@@ -247,7 +250,8 @@ namespace OPCAIC.ApiService.Controllers
 			var token = await userManager.GeneratePasswordResetTokenAsync(user);
 			var url = urlGenerator.PasswordResetLink(user.Email, token);
 
-			await emailService.SendPasswordResetEmailAsync(model.Email, url, cancellationToken);
+			await emailService.EnqueueEmailAsync(new PasswordResetEmailDto {ResetUrl = url},
+				model.Email, cancellationToken);
 		}
 
 		/// <summary>
@@ -314,7 +318,8 @@ namespace OPCAIC.ApiService.Controllers
 		[AllowAnonymous]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> GetEmailVerificationAsync([FromBody] EmailVerificationModel model,
+		public async Task<IActionResult> GetEmailVerificationAsync(
+			[FromBody] EmailVerificationModel model,
 			CancellationToken cancellationToken)
 		{
 			var user = await userManager.FindByEmailAsync(model.Email);

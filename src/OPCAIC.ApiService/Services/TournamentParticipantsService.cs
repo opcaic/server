@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Infrastructure.Dtos.EmailTemplates;
 
 namespace OPCAIC.ApiService.Services
 {
@@ -35,8 +36,11 @@ namespace OPCAIC.ApiService.Services
 
 		public async Task CreateAsync(long tournamentId, IEnumerable<string> emails, CancellationToken cancellationToken)
 		{
-			if (!await tournamentRepository.ExistsByIdAsync(tournamentId, cancellationToken))
+			var tournament = await tournamentRepository.FindByIdAsync(tournamentId, cancellationToken);
+			if (tournament == null)
+			{
 				throw new NotFoundException(nameof(Tournament), tournamentId);
+			}
 
 			var participantsDto = await tournamentParticipantRepository.GetParticipantsAsync(tournamentId, null, cancellationToken);
 
@@ -45,11 +49,16 @@ namespace OPCAIC.ApiService.Services
 
 			await tournamentParticipantRepository.CreateAsync(tournamentId, emails, cancellationToken);
 
-			string tournamentUrl = urlGenerator.TournamentInviteUrl(tournamentId);
-			
+			string tournamentUrl = urlGenerator.TournamentPageLink(tournamentId);
+
+			var mailDto = new TournamentInvitationEmailDto
+			{
+				TournamentUrl = tournamentUrl, TournamentName = tournament.Name
+			};
+
 			foreach (string email in emails)
 			{
-				await emailService.SendTournamentInvitationEmailAsync(email, tournamentUrl, cancellationToken);
+				await emailService.EnqueueEmailAsync(mailDto, email, cancellationToken);
 			}
 		}
 

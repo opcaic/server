@@ -1,17 +1,11 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Infrastructure.Dtos.EmailTemplates;
 
 namespace OPCAIC.Infrastructure.Emails
 {
 	public interface IEmailService
 	{
-		Task SendEmailVerificationEmailAsync(long recipientId, string verificationUrl,
-			CancellationToken cancellationToken);
-
-		Task SendPasswordResetEmailAsync(string recipientEmail, string resetUrl,
-			CancellationToken cancellationToken);
-
-		Task SendTournamentInvitationEmailAsync(string recipientEmail, string tournamentUrl,
-			CancellationToken cancellationToken);
+		Task EnqueueEmailAsync(EmailDtoBase dto, string recipientEmail, CancellationToken cancellationToken);
 	}
 }

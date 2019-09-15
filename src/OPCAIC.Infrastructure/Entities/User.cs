@@ -44,6 +44,11 @@ namespace OPCAIC.Infrastructure.Entities
 		public string Organization { get; set; }
 
 		/// <summary>
+		///     Flags whether the user wishes to receive email notifications.
+		/// </summary>
+		public bool WantsEmailNotifications { get; set; }
+
+		/// <summary>
 		///     All submissions from this user.
 		/// </summary>
 		public virtual IList<Submission> Submissions { get; set; }

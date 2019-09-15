@@ -19,10 +19,10 @@
 		string EmailConfirmLink(string email, string token);
 
 		/// <summary>
-		///     Generates url to send users as invitation to the tournament.
+		///     Generates url for the tournament main page.
 		/// </summary>
 		/// <param name="tournamentId">Id of the tournament.</param>
 		/// <returns></returns>
-		string TournamentInviteUrl(long tournamentId);
+		string TournamentPageLink(long tournamentId);
 	}
 }

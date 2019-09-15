@@ -13,5 +13,7 @@
 		public string PasswordHash { get; set; }
 
 		public int RoleId { get; set; }
+
+		public bool WantsEmailNotifications { get; set; }
 	}
 }
