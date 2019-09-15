@@ -1,51 +1,59 @@
-﻿namespace OPCAIC.Common
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
+
+namespace OPCAIC.Common
 {
 	public static class LoggingEvents
 	{
-		public const int LoginSuccess = 100;
-		public const int LoginInvalidPassword = 101;
-		public const int LoginInvalidEmail = 102;
-		public const int LoginNotAllowed = 103;
-		public const int LoginLockout = 104;
+		private static EventId CreateEvent(int id, [CallerMemberName] string name = null)
+		{
+			return new EventId(id, name);
+		}
 
-		public const int UserCreate = 200;
+		public static readonly EventId LoginSuccess = CreateEvent(100);
+		public static readonly EventId LoginInvalidPassword = CreateEvent(101);
+		public static readonly EventId LoginInvalidEmail = CreateEvent(102);
+		public static readonly EventId LoginNotAllowed = CreateEvent(103);
+		public static readonly EventId LoginLockout = CreateEvent(104);
 
-		public const int UserForgotPassword = 300;
-		public const int UserPasswordReset = 301;
-		public const int UserPasswordChange = 302;
-		public const int UserEmailConfirm = 303;
+		public static readonly EventId UserCreate = CreateEvent(200);
 
-		public const int SubmissionCreate = 400;
-		public const int SubmissionUpdate = 401;
-		public const int SubmissionValidationQueued = 402;
-		public const int SubmissionValidationUpdated = 403;
-		public const int SubmissionValidationUploadResults = 404;
+		public static readonly EventId UserForgotPassword = CreateEvent(300);
+		public static readonly EventId UserPasswordReset = CreateEvent(301);
+		public static readonly EventId UserPasswordChange = CreateEvent(302);
+		public static readonly EventId UserEmailConfirm = CreateEvent(303);
 
-		public const int MatchExecutionQueued = 500;
-		public const int MatchExecutionUpdated = 501;
-		public const int MatchExecutionUploadResults = 503;
+		public static readonly EventId SubmissionCreate = CreateEvent(400);
+		public static readonly EventId SubmissionUpdate = CreateEvent(401);
+		public static readonly EventId SubmissionValidationQueued = CreateEvent(402);
+		public static readonly EventId SubmissionValidationUpdated = CreateEvent(403);
+		public static readonly EventId SubmissionValidationUploadResults = CreateEvent(404);
 
-		public const int TournamentCreated = 600;
-		public const int TournamentUpdated = 601;
-		public const int TournamentStateChanged = 602;
-		public const int TournamentMatchesGeneration= 603;
+		public static readonly EventId MatchExecutionQueued = CreateEvent(500);
+		public static readonly EventId MatchExecutionUpdated = CreateEvent(501);
+		public static readonly EventId MatchExecutionUploadResults = CreateEvent(503);
 
-		public const int GameCreated = 700;
-		public const int GameUpdated = 701;
+		public static readonly EventId TournamentCreated = CreateEvent(600);
+		public static readonly EventId TournamentUpdated = CreateEvent(601);
+		public static readonly EventId TournamentStateChanged = CreateEvent(602);
+		public static readonly EventId TournamentMatchesGeneration= 603;
 
-		public const int DocumentCreated = 801;
-		public const int DocumentUpdated = 802;
+		public static readonly EventId GameCreated = CreateEvent(700);
+		public static readonly EventId GameUpdated = CreateEvent(701);
 
-		public const int JwtRefreshTokenValidationFailed = 9000;
+		public static readonly EventId DocumentCreated = CreateEvent(801);
+		public static readonly EventId DocumentUpdated = CreateEvent(802);
 
-		public const int Startup = 1000;
-		public const int WorkerConnection = 2000;
+		public static readonly EventId JwtRefreshTokenValidationFailed = CreateEvent(9000);
 
-		public const int JobExecutionFailure = 4000;
-		public const int GameModuleFailure = 4001;
-		public const int JobAborted = 3001;
+		public static readonly EventId Startup = CreateEvent(1000);
+		public static readonly EventId WorkerConnection = CreateEvent(2000);
 
-		public const int MailSentSuccess = 8000;
-		public const int MailSentFailed = 8001;
+		public static readonly EventId JobExecutionFailure = CreateEvent(4000);
+		public static readonly EventId GameModuleFailure = CreateEvent(4001);
+		public static readonly EventId JobAborted = CreateEvent(3001);
+
+		public static readonly EventId MailSentSuccess = CreateEvent(8000);
+		public static readonly EventId MailSentFailed = CreateEvent(8001);
 	}
 }
