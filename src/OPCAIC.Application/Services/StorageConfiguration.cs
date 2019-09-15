@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Services
+﻿namespace OPCAIC.Application.Services
 {
 	/// <summary>
 	///     Configuration of the file storage.

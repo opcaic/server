@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using AutoMapper;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Broker;
+using OPCAIC.Application.Dtos.Broker;
 using OPCAIC.Broker;
-using OPCAIC.Infrastructure.Dtos.Broker;
 
 namespace OPCAIC.ApiService.Services
 {

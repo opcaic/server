@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace OPCAIC.Infrastructure.Dtos.MatchExecutions
+namespace OPCAIC.Application.Dtos.MatchExecutions
 {
 	public class MatchExecutionRequestDataDto : JobDtoBase
 	{

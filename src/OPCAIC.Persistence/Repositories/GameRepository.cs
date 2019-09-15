@@ -5,12 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using OPCAIC.Application.Dtos.Games;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.DbContexts;
-using OPCAIC.Infrastructure.Dtos.Games;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Persistence.Repositories
 {
 	public class GameRepository
 		: GenericRepository<Game, GameFilterDto, GamePreviewDto, GameDetailDto, NewGameDto,

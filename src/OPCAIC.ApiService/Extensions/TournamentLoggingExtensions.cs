@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Common;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService.Extensions

@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Emails
+﻿namespace OPCAIC.Application.Emails
 {
 	public class EmailsConfiguration
 	{

@@ -2,10 +2,11 @@
 using System.Threading.Tasks;
 using MediatR;
 using OPCAIC.ApiService.Services;
-using OPCAIC.Infrastructure.Dtos.EmailTemplates;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
+using OPCAIC.Application.Dtos.EmailTemplates;
+using OPCAIC.Application.Emails;
+using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Infrastructure.Emails;
-using OPCAIC.Infrastructure.Repositories;
 
 namespace OPCAIC.ApiService.Notifications.Events
 {

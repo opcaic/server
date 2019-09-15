@@ -1,7 +1,6 @@
 ﻿using System;
-using OPCAIC.Infrastructure.Dtos.Submissions;
 
-namespace OPCAIC.Infrastructure.Dtos.MatchExecutions
+namespace OPCAIC.Application.Dtos.MatchExecutions
 {
 	public class NewMatchExecutionDto
 	{

@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Dtos.Matches;
+using OPCAIC.Application.Dtos.Matches;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IMatchRepository
 		: ILookupRepository<MatchDetailDto>,

@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.EmailTemplates
+﻿namespace OPCAIC.Application.Dtos.EmailTemplates
 {
 	public abstract class EmailDtoBase
 	{

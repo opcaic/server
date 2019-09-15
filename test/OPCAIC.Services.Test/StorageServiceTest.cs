@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using OPCAIC.Infrastructure.Dtos.Submissions;
+using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Services;
 using OPCAIC.TestUtils;
 using Xunit;
 using Xunit.Abstractions;

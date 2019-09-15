@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Dtos;
+using OPCAIC.Application.Dtos;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IFilterRepository<in TFilterDto, TPreviewDto>
 		where TPreviewDto : class

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos.Matches;
 
-namespace OPCAIC.Infrastructure.Dtos.Tournaments
+namespace OPCAIC.Application.Dtos.Tournaments
 {
 	public abstract class TournamentGenerationDtoBase
 	{

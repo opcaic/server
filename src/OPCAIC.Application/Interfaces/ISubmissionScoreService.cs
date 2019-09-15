@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using OPCAIC.Messaging.Messages;
 
-namespace OPCAIC.ApiService.Services
+namespace OPCAIC.Application.Interfaces
 {
 	public interface ISubmissionScoreService
 	{

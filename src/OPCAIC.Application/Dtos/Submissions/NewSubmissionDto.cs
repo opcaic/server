@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.Submissions
+﻿namespace OPCAIC.Application.Dtos.Submissions
 {
 	public class NewSubmissionDto
 	{

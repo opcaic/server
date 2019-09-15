@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.MatchExecutions
+﻿namespace OPCAIC.Application.Dtos.MatchExecutions
 {
 	public class MatchExecutionAuthDto
 	{

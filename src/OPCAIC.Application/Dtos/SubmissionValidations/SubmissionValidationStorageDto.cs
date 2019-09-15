@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.SubmissionValidations
+﻿namespace OPCAIC.Application.Dtos.SubmissionValidations
 {
 	public class SubmissionValidationStorageDto
 	{

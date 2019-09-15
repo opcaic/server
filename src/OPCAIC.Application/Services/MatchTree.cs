@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OPCAIC.Services
+namespace OPCAIC.Application.Services
 {
 	public abstract class MatchTreeBase
 	{

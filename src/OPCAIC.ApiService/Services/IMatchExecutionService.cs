@@ -2,8 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Models.Matches;
-using OPCAIC.Infrastructure.Dtos.MatchExecutions;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.ApiService.Services

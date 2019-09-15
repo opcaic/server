@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Emails;
+using OPCAIC.Application.Extensions;
+using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Services;
 using OPCAIC.Infrastructure.Emails;
-using OPCAIC.Services;
-using OPCAIC.Services.Extensions;
 
 namespace OPCAIC.ApiService.IoC
 {

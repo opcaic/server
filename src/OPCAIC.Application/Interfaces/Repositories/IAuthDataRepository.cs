@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IAuthDataRepository<TAuthDto>
 	{

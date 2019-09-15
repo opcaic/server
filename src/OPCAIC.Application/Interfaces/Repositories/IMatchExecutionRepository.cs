@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Dtos.MatchExecutions;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IMatchExecutionRepository
 		: ICreateRepository<NewMatchExecutionDto>, IAuthDataRepository<MatchExecutionAuthDto>, ILookupRepository<MatchExecutionDto>

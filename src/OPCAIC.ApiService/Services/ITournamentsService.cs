@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
 
 namespace OPCAIC.ApiService.Services
 {

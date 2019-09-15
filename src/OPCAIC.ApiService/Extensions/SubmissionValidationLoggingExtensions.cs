@@ -1,7 +1,8 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Common;
 using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService.Extensions

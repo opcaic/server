@@ -4,18 +4,20 @@ using System.Linq;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using OPCAIC.Application.Dtos.Matches;
+using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Services;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos.Matches;
-using OPCAIC.Infrastructure.Dtos.MatchExecutions;
-using OPCAIC.Infrastructure.Dtos.Submissions;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
-using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.TestUtils;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace OPCAIC.Services.Test.MatchGeneration
+namespace OPCAIC.Application.Test.MatchGeneration
 {
 	public class SingleEliminationGeneratorTest : BracketGeneratorTest
 	{

@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.Tournaments
+﻿namespace OPCAIC.Application.Dtos.Tournaments
 {
 	public class TournamentParticipantFilterDto : FilterDtoBase
 	{

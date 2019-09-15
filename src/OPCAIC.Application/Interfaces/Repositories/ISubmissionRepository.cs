@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Dtos.Submissions;
+using OPCAIC.Application.Dtos.Submissions;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface ISubmissionRepository
 		: IGenericRepository<SubmissionFilterDto, SubmissionPreviewDto, SubmissionDetailDto,

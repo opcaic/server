@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Application.Dtos.Matches;
+using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Interfaces;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos.Matches;
-using OPCAIC.Infrastructure.Dtos.Submissions;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Utils;
 
-namespace OPCAIC.Services
+namespace OPCAIC.Application.Services
 {
 	/// <summary>
 	///     Base class for match generators for brackets tournament format.

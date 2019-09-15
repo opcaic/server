@@ -1,9 +1,9 @@
 ﻿using System;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
-using OPCAIC.Infrastructure.Dtos.Users;
+using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Dtos.Users;
 
-namespace OPCAIC.Infrastructure.Dtos.Submissions
+namespace OPCAIC.Application.Dtos.Submissions
 {
 	public class SubmissionPreviewDto
 	{

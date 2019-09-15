@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Persistence;
 using Xunit.Abstractions;
 
 namespace OPCAIC.TestUtils

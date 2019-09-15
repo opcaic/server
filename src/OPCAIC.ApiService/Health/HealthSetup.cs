@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Newtonsoft.Json;
-using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Persistence;
 
 namespace OPCAIC.ApiService.Health
 {

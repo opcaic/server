@@ -1,8 +1,7 @@
-﻿using System.Linq;
-using OPCAIC.Infrastructure.Dtos.MatchExecutions;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
+﻿using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Dtos.SubmissionValidations;
 
-namespace OPCAIC.ApiService.Services
+namespace OPCAIC.Application.Interfaces
 {
 	public interface ILogStorageService
 	{

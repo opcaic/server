@@ -1,7 +1,7 @@
 ﻿using System;
 using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Infrastructure.Dtos.Tournaments
+namespace OPCAIC.Application.Dtos.Tournaments
 {
 	public class TournamentStateInfoDto
 	{

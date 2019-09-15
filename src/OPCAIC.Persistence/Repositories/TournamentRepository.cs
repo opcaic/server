@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.DbContexts;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Persistence.Repositories
 {
 	public class TournamentRepository
 		: GenericRepository<Tournament, TournamentFilterDto, TournamentPreviewDto,

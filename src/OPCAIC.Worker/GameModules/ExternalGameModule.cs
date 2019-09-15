@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using OPCAIC.Common;
 using OPCAIC.GameModules.Interface;
 using OPCAIC.Utils;
 using OPCAIC.Worker.Services;

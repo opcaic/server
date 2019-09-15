@@ -3,10 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.DbContexts;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Persistence.Repositories
 {
 	public class UserTournamentRepository
 		: RepositoryBase<UserTournament>, IUserTournamentRepository

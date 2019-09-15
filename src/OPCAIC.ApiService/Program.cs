@@ -7,7 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Utils;
-using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Common;
+using OPCAIC.Persistence;
 using OPCAIC.Utils;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("OPCAIC.ApiService.Test")]

@@ -1,6 +1,6 @@
 ﻿using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Infrastructure.Dtos.MatchExecutions
+namespace OPCAIC.Application.Dtos.MatchExecutions
 {
 	public class NewSubmissionMatchResultDto
 	{

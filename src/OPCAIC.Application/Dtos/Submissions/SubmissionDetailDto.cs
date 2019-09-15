@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
+﻿using System.Collections.Generic;
+using OPCAIC.Application.Dtos.SubmissionValidations;
 
-namespace OPCAIC.Infrastructure.Dtos.Submissions
+namespace OPCAIC.Application.Dtos.Submissions
 {
 	public class SubmissionDetailDto : SubmissionPreviewDto
 	{

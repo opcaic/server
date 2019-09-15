@@ -3,7 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using Moq;
 using OPCAIC.ApiService.Services;
-using OPCAIC.Services;
+using OPCAIC.Application.Interfaces;
 using OPCAIC.TestUtils;
 using Shouldly;
 using Xunit;

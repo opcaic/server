@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace OPCAIC.Infrastructure.Dtos.Documents
+﻿namespace OPCAIC.Application.Dtos.Documents
 {
 	public class UpdateDocumentDto
 	{

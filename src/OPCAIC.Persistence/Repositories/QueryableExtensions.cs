@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using OPCAIC.Application.Dtos.Documents;
+using OPCAIC.Application.Dtos.Games;
+using OPCAIC.Application.Dtos.Matches;
+using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos.Documents;
-using OPCAIC.Infrastructure.Dtos.Games;
-using OPCAIC.Infrastructure.Dtos.Matches;
-using OPCAIC.Infrastructure.Dtos.Submissions;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
-using OPCAIC.Infrastructure.Dtos.Users;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Persistence.Repositories
 {
 	public static class QueryableExtensions
 	{

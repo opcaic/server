@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Models.SubmissionValidations;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.ApiService.Services

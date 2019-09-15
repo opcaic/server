@@ -5,10 +5,10 @@ using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Dtos.Games;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Dtos.Games;
-using OPCAIC.Infrastructure.Repositories;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -1,6 +1,6 @@
-﻿using OPCAIC.Infrastructure.Dtos.Users;
+﻿using OPCAIC.Application.Dtos.Users;
 
-namespace OPCAIC.Infrastructure.Dtos.Submissions
+namespace OPCAIC.Application.Dtos.Submissions
 {
 	public class SubmissionReferenceDto
 	{

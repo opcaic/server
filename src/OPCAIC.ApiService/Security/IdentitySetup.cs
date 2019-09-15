@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Persistence;
 
 namespace OPCAIC.ApiService.Security
 {

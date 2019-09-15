@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
+using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Dtos.Tournaments;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface ITournamentParticipantRepository
 	{

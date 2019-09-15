@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace OPCAIC.Services
+namespace OPCAIC.Application.Services
 {
 	/// <summary>
 	///     Class representing a node in a match tree

@@ -1,6 +1,6 @@
 ﻿using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Infrastructure.Dtos.Matches
+namespace OPCAIC.Application.Dtos.Matches
 {
 	public class MatchFilterDto : FilterDtoBase
 	{

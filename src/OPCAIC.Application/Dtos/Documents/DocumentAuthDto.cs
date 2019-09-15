@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.Documents
+﻿namespace OPCAIC.Application.Dtos.Documents
 {
 	public class DocumentAuthDto
 	{

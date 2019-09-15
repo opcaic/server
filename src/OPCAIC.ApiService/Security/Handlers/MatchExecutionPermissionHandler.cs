@@ -5,8 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Services;
-using OPCAIC.Infrastructure.Dtos.MatchExecutions;
-using OPCAIC.Infrastructure.Repositories;
+using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Interfaces.Repositories;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {

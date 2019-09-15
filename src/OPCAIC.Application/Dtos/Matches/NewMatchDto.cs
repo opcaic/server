@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using OPCAIC.Infrastructure.Dtos.Submissions;
 
-namespace OPCAIC.Infrastructure.Dtos.Matches
+namespace OPCAIC.Application.Dtos.Matches
 {
 	public class NewMatchDto
 	{

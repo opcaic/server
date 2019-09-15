@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Dtos.EmailTemplates;
+using OPCAIC.Application.Dtos.EmailTemplates;
 
-namespace OPCAIC.Infrastructure.Emails
+namespace OPCAIC.Application.Emails
 {
 	public interface IEmailService
 	{

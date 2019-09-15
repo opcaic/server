@@ -1,6 +1,6 @@
 ﻿using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Infrastructure.Dtos.Submissions
+namespace OPCAIC.Application.Dtos.Submissions
 {
 	public class SubmissionFilterDto : FilterDtoBase
 	{

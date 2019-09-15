@@ -3,16 +3,18 @@ using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.ModelValidationHandling;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
 using OPCAIC.Infrastructure.Emails;
-using OPCAIC.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Application.Dtos.EmailTemplates;
+using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Emails;
+using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.Dtos.EmailTemplates;
 
 namespace OPCAIC.ApiService.Services
 {

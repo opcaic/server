@@ -8,9 +8,9 @@ using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
+using OPCAIC.Application.Dtos.Documents;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.Dtos.Documents;
-using OPCAIC.Infrastructure.Repositories;
 
 namespace OPCAIC.ApiService.Services
 {

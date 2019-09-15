@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Services
+﻿namespace OPCAIC.Application.Services
 {
 	/// <summary>
 	///     Type of the link inside a match tree.

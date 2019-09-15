@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace OPCAIC.Services
+namespace OPCAIC.Application.Services
 {
 	/// <summary>
 	///     Link between matches in a match tree.

@@ -7,11 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Notifications.Events;
+using OPCAIC.Application.Dtos.Matches;
+using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos.Matches;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
-using OPCAIC.Infrastructure.Repositories;
-using OPCAIC.Services;
 using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService.Services

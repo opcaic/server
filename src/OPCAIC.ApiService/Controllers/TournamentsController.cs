@@ -9,7 +9,7 @@ using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
-using OPCAIC.Services;
+using OPCAIC.Application.Interfaces;
 
 namespace OPCAIC.ApiService.Controllers
 {

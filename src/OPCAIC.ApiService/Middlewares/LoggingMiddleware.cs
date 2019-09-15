@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Common;
 using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService.Middlewares

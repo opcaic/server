@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Common;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 

@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Security;
-using OPCAIC.Infrastructure.Dtos.Emails;
-using OPCAIC.Infrastructure.Repositories.Emails;
+using OPCAIC.Application.Dtos.Emails;
+using OPCAIC.Application.Interfaces.Repositories;
 
 namespace OPCAIC.ApiService.Controllers
 {

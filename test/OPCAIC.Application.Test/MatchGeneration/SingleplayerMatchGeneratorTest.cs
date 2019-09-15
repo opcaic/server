@@ -1,10 +1,11 @@
 ﻿using System.Linq;
+using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Services;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
 using Shouldly;
 using Xunit;
 
-namespace OPCAIC.Services.Test.MatchGeneration
+namespace OPCAIC.Application.Test.MatchGeneration
 {
 	public class SingleplayerMatchGeneratorTest
 	{

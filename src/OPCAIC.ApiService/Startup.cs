@@ -12,11 +12,12 @@ using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Middlewares;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Application.Emails;
+using OPCAIC.Application.Services;
 using OPCAIC.Broker;
-using OPCAIC.Infrastructure.DbContexts;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Messaging.Config;
-using OPCAIC.Services;
+using OPCAIC.Persistence;
 
 [assembly: ApiController]
 

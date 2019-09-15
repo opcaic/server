@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Persistence;
 
 namespace OPCAIC.ApiService.Middlewares
 {

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using OPCAIC.ApiService.Models.Documents;
+using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Infrastructure;
 

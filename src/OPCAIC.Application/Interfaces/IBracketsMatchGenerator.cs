@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using OPCAIC.Application.Dtos.Matches;
+using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos.Matches;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
 
-namespace OPCAIC.Services
+namespace OPCAIC.Application.Interfaces
 {
 	/// <summary>
 	///     Contains methods for generating matches for brackets tournaments (single and double elimination).

@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure
+﻿namespace OPCAIC.Common
 {
 	public static class StringLengths
 	{

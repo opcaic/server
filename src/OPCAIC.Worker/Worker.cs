@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using OPCAIC.Common;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;

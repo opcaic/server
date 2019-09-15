@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using OPCAIC.Infrastructure.Dtos.Users;
+using OPCAIC.Application.Dtos.Users;
 
 namespace OPCAIC.ApiService.Models.Tournaments
 {

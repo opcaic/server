@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OPCAIC.Infrastructure.Dtos.Users
+﻿namespace OPCAIC.Application.Dtos.Users
 {
 	public class UserDetailDto : UserPreviewDto
 	{

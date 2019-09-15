@@ -7,12 +7,13 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Broker;
+using OPCAIC.Common;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Dtos.MatchExecutions;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
-using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Configs;
+using OPCAIC.Application.Interfaces;
 
 namespace OPCAIC.ApiService.Services
 {

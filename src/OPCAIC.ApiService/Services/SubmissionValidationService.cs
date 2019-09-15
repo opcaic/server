@@ -8,11 +8,12 @@ using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
-using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Messaging.Messages;
 
 namespace OPCAIC.ApiService.Services

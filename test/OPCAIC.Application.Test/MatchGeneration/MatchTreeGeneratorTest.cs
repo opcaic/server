@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using OPCAIC.Application.Services;
 using OPCAIC.TestUtils;
 using Xunit;
 
-namespace OPCAIC.Services.Test.MatchGeneration
+namespace OPCAIC.Application.Test.MatchGeneration
 {
 	public class MatchTreeGeneratorTest
 	{

@@ -3,11 +3,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using OPCAIC.Application.Dtos.Documents;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.DbContexts;
-using OPCAIC.Infrastructure.Dtos.Documents;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Persistence.Repositories
 {
 	public class DocumentRepository
 		: GenericRepository<Document, DocumentFilterDto, DocumentDetailDto, DocumentDetailDto,

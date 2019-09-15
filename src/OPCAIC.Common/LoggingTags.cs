@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Utils
+﻿namespace OPCAIC.Common
 {
 	public static class LoggingTags
 	{

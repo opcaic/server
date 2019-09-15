@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.Broker
+﻿namespace OPCAIC.Application.Dtos.Broker
 {
 	public class BotInfoDto
 	{

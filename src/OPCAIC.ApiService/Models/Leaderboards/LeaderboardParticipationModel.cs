@@ -1,5 +1,4 @@
 ﻿using OPCAIC.ApiService.Models.Users;
-using OPCAIC.Infrastructure.Dtos.Users;
 
 namespace OPCAIC.ApiService.Models.Leaderboards
 {

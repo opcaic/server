@@ -10,8 +10,8 @@ using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
-using OPCAIC.Infrastructure.Repositories;
-using OPCAIC.Services;
+using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.Repositories;
 
 namespace OPCAIC.ApiService.Controllers
 {

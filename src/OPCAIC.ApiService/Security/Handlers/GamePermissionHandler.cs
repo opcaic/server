@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Repositories;
+using OPCAIC.Application.Interfaces.Repositories;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {

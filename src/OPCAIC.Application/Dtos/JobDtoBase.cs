@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OPCAIC.Infrastructure.Dtos
+namespace OPCAIC.Application.Dtos
 {
 	public class JobDtoBase
 	{

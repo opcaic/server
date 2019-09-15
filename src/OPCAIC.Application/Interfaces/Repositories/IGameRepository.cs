@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Dtos.Games;
+using OPCAIC.Application.Dtos.Games;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IGameRepository
 		: IGenericRepository<GameFilterDto, GamePreviewDto, GameDetailDto, NewGameDto, UpdateGameDto

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OPCAIC.Infrastructure.Dtos
+namespace OPCAIC.Application.Dtos
 {
 	public class ListDto<T> where T : class
 	{

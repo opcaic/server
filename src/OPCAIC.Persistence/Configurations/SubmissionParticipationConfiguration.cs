@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OPCAIC.Domain.Entities;
 
-namespace OPCAIC.Infrastructure.Configurations
+namespace OPCAIC.Persistence.Configurations
 {
 	public class SubmissionParticipationConfiguration : IEntityTypeConfiguration<SubmissionParticipation>
 	{

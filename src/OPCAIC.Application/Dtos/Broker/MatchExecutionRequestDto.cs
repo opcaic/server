@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OPCAIC.Infrastructure.Dtos.Broker
+namespace OPCAIC.Application.Dtos.Broker
 {
 	public class MatchExecutionRequestDto : WorkMessageBaseDto
 	{

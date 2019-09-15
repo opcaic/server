@@ -5,8 +5,10 @@ using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using OPCAIC.Infrastructure.Dtos.Emails;
-using OPCAIC.Infrastructure.Repositories.Emails;
+using OPCAIC.Application.Dtos.Emails;
+using OPCAIC.Application.Emails;
+using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Common;
 using OPCAIC.Utils;
 
 namespace OPCAIC.Infrastructure.Emails

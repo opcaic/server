@@ -12,9 +12,6 @@ using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Security.Handlers;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.DbContexts;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
-using OPCAIC.Infrastructure.Repositories;
 using Xunit.Abstractions;
 
 namespace OPCAIC.ApiService.Test.Security

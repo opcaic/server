@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 
-namespace OPCAIC.Infrastructure.Configurations
+namespace OPCAIC.Persistence.Configurations
 {
 	public class GameConfiguration : IEntityTypeConfiguration<Game>
 	{

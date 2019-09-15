@@ -2,13 +2,13 @@
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Extensions.Options;
-using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Dtos.MatchExecutions;
-using OPCAIC.Infrastructure.Dtos.Submissions;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Interfaces;
 using OPCAIC.Utils;
 
-namespace OPCAIC.Services
+namespace OPCAIC.Application.Services
 {
 	public class StorageService : IStorageService
 	{

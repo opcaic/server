@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.ApiService.Services
+﻿namespace OPCAIC.Application.Interfaces
 {
 	public interface IFrontendUrlGenerator
 	{

@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Services;
-using OPCAIC.Infrastructure.DbContexts;
+using OPCAIC.Persistence;
 
 namespace OPCAIC.ApiService.ModelValidationHandling
 {

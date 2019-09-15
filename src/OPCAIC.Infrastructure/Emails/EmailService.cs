@@ -2,10 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using HandlebarsDotNet;
-using OPCAIC.Infrastructure.Dtos.Emails;
-using OPCAIC.Infrastructure.Dtos.EmailTemplates;
-using OPCAIC.Infrastructure.Repositories;
-using OPCAIC.Infrastructure.Repositories.Emails;
+using OPCAIC.Application.Dtos.Emails;
+using OPCAIC.Application.Dtos.EmailTemplates;
+using OPCAIC.Application.Emails;
+using OPCAIC.Application.Interfaces.Repositories;
 
 namespace OPCAIC.Infrastructure.Emails
 {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using OPCAIC.Infrastructure.Dtos.Games;
+using OPCAIC.Application.Dtos.Games;
+using OPCAIC.Common;
 using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService.Extensions

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface ITournamentRepository
 		: IGenericRepository<TournamentFilterDto, TournamentPreviewDto, TournamentDetailDto,

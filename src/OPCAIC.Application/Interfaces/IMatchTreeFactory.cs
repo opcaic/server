@@ -1,4 +1,6 @@
-﻿namespace OPCAIC.Services
+﻿using OPCAIC.Application.Services;
+
+namespace OPCAIC.Application.Interfaces
 {
 	/// <summary>
 	///     Defines methods for creating

@@ -4,11 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using OPCAIC.Application.Dtos;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.DbContexts;
-using OPCAIC.Infrastructure.Dtos;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Persistence.Repositories
 {
 	public abstract class GenericRepository<TEntity, TFilterDto, TPreviewDto, TDetailDto, TNewDto,
 			TUpdateDto>

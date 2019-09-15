@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos.MatchExecutions;
-using OPCAIC.Infrastructure.Dtos.Submissions;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
 
-namespace OPCAIC.Infrastructure.Dtos.Matches
+namespace OPCAIC.Application.Dtos.Matches
 {
 	public class MatchDetailDto
 	{

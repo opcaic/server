@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.ApiService.Services;
-using OPCAIC.Infrastructure.Repositories;
-using OPCAIC.Infrastructure.Repositories.Emails;
+using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Persistence.Repositories;
+using OPCAIC.Persistence.Repositories.Emails;
 
 namespace OPCAIC.ApiService.IoC
 {

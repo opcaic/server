@@ -1,7 +1,8 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using OPCAIC.Infrastructure.Dtos.MatchExecutions;
+using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Common;
 using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService.Extensions

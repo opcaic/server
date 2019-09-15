@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using OPCAIC.Application.Dtos.Emails;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.DbContexts;
-using OPCAIC.Infrastructure.Dtos.Emails;
 
-namespace OPCAIC.Infrastructure.Repositories.Emails
+namespace OPCAIC.Persistence.Repositories.Emails
 {
 	public class EmailRepository : RepositoryBase<Email>, IEmailRepository
 	{

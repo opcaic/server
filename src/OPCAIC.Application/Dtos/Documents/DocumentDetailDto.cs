@@ -1,7 +1,7 @@
 ﻿using System;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
+using OPCAIC.Application.Dtos.Tournaments;
 
-namespace OPCAIC.Infrastructure.Dtos.Documents
+namespace OPCAIC.Application.Dtos.Documents
 {
 	public class DocumentDetailDto
 	{

@@ -7,9 +7,8 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.DbContexts;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Persistence.Repositories
 {
 	/// <summary>
 	///     Base class for repository of <see cref="TEntity" /> instances.

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
-using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Dtos.MatchExecutions;
-using OPCAIC.Infrastructure.Dtos.Submissions;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Dtos.SubmissionValidations;
 
-namespace OPCAIC.Services
+namespace OPCAIC.Application.Interfaces
 {
 	/// <summary>
 	///     Provides methods for reading various user files stored on the server.

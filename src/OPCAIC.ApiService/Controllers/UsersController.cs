@@ -12,8 +12,10 @@ using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Dtos.EmailTemplates;
+using OPCAIC.Application.Emails;
+using OPCAIC.Application.Interfaces;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.Dtos.EmailTemplates;
 using OPCAIC.Infrastructure.Emails;
 
 namespace OPCAIC.ApiService.Controllers

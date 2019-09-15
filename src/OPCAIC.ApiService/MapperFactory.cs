@@ -14,23 +14,23 @@ using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
+using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Dtos.Broker;
+using OPCAIC.Application.Dtos.Documents;
+using OPCAIC.Application.Dtos.Emails;
+using OPCAIC.Application.Dtos.EmailTemplates;
+using OPCAIC.Application.Dtos.Games;
+using OPCAIC.Application.Dtos.Matches;
+using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Dtos.Broker;
-using OPCAIC.Infrastructure.Dtos.Documents;
-using OPCAIC.Infrastructure.Dtos.Emails;
-using OPCAIC.Infrastructure.Dtos.EmailTemplates;
-using OPCAIC.Infrastructure.Dtos.Games;
-using OPCAIC.Infrastructure.Dtos.Matches;
-using OPCAIC.Infrastructure.Dtos.MatchExecutions;
-using OPCAIC.Infrastructure.Dtos.Submissions;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
-using OPCAIC.Infrastructure.Dtos.Users;
-using OPCAIC.Infrastructure.Repositories;
 using OPCAIC.Messaging.Messages;
+using OPCAIC.Persistence.Repositories;
 
 namespace OPCAIC.ApiService
 {

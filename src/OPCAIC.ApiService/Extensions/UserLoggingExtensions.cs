@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Utils;
 

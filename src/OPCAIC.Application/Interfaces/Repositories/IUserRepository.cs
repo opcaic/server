@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Dtos.Users;
+using OPCAIC.Application.Dtos.Users;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IUserRepository
 		: IFilterRepository<UserFilterDto, UserPreviewDto>,

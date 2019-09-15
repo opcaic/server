@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OPCAIC.Infrastructure.Dtos.Games
+namespace OPCAIC.Application.Dtos.Games
 {
 	public class GamePreviewDto
 	{

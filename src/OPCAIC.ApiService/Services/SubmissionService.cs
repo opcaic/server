@@ -8,14 +8,13 @@ using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.ModelValidationHandling;
+using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos;
-using OPCAIC.Infrastructure.Dtos.Submissions;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
-using OPCAIC.Infrastructure.Repositories;
-using OPCAIC.Services;
 
 namespace OPCAIC.ApiService.Services
 {

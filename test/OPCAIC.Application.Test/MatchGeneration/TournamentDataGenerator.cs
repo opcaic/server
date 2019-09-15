@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Dtos.Matches;
-using OPCAIC.Infrastructure.Dtos.Tournaments;
 
-namespace OPCAIC.Services.Test.MatchGeneration
+namespace OPCAIC.Application.Test.MatchGeneration
 {
 	public static class TournamentDataGenerator
 	{

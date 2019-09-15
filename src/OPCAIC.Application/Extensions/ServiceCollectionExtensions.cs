@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Services;
 
-namespace OPCAIC.Services.Extensions
+namespace OPCAIC.Application.Extensions
 {
 	public static class ServiceCollectionExtensions
 	{

@@ -1,6 +1,6 @@
-﻿using OPCAIC.Infrastructure.Dtos.Users;
+﻿using OPCAIC.Application.Dtos.Users;
 
-namespace OPCAIC.Infrastructure.Dtos.Tournaments
+namespace OPCAIC.Application.Dtos.Tournaments
 {
 	public class TournamentParticipantDto
 	{

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OPCAIC.Common;
 using OPCAIC.GameModules.Interface;
 using OPCAIC.Utils;
 using OPCAIC.Worker.Config;

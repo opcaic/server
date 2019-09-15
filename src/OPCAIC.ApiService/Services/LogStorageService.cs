@@ -2,9 +2,9 @@
 using System.IO;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
-using OPCAIC.Infrastructure.Dtos.MatchExecutions;
-using OPCAIC.Infrastructure.Dtos.SubmissionValidations;
-using OPCAIC.Services;
+using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Interfaces;
 
 namespace OPCAIC.ApiService.Services
 {

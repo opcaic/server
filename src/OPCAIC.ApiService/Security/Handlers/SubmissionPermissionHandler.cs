@@ -4,8 +4,8 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Extensions;
-using OPCAIC.Infrastructure.Dtos.Submissions;
-using OPCAIC.Infrastructure.Repositories;
+using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Interfaces.Repositories;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {

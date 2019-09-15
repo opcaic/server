@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace OPCAIC.ApiService.Services
+namespace OPCAIC.Application.Interfaces
 {
 	public interface IWorkerService
 	{

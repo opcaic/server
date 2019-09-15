@@ -1,6 +1,6 @@
 ﻿using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Infrastructure.Dtos
+namespace OPCAIC.Application.Dtos
 {
 	public class JobStateUpdateDto
 	{

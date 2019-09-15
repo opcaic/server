@@ -1,6 +1,6 @@
-﻿using OPCAIC.Infrastructure.Dtos.Documents;
+﻿using OPCAIC.Application.Dtos.Documents;
 
-namespace OPCAIC.Infrastructure.Repositories
+namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IDocumentRepository
 		: IGenericRepository<DocumentFilterDto, DocumentDetailDto, DocumentDetailDto, NewDocumentDto

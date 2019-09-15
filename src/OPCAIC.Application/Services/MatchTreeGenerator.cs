@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using OPCAIC.Utils;
 
-namespace OPCAIC.Services
+namespace OPCAIC.Application.Services
 {
 	public static class MatchTreeGenerator
 	{

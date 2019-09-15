@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Repositories
+﻿namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IGenericRepository<in TFilterDto, TPreviewDto, TDetailDto, in TNewDto,
 			in TUpdateDto>

@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Infrastructure.Dtos.Emails
+﻿namespace OPCAIC.Application.Dtos.Emails
 {
 	public class NewEmailDto
 	{

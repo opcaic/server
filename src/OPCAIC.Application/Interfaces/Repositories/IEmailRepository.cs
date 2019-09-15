@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Infrastructure.Dtos.Emails;
+using OPCAIC.Application.Dtos.Emails;
 
-namespace OPCAIC.Infrastructure.Repositories.Emails
+namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IEmailRepository
 	{
