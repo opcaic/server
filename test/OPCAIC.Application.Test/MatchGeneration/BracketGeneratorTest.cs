@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OPCAIC.Domain.Enums;
@@ -68,7 +69,7 @@ namespace OPCAIC.Services.Test.MatchGeneration
 		/// <inheritdoc />
 		public BracketGeneratorTest(ITestOutputHelper output) : base(output)
 		{
-			Services.AddSingleton<IMatchTreeFactory>(new CachedMatchTreeFactory());
+			Services.AddSingleton<IMatchTreeFactory>(new CachedMatchTreeFactory(new MemoryCache(new MemoryCacheOptions())));
 
 			matchRepository = Services.Mock<IMatchRepository>();
 			new List<MatchDetailDto>();

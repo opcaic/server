@@ -8,11 +8,11 @@ namespace OPCAIC.Services
 	public class CachedMatchTreeFactory
 		: IMatchTreeFactory
 	{
-		private readonly MemoryCache cache;
+		private readonly IMemoryCache cache;
 
-		public CachedMatchTreeFactory(MemoryCache cache = null)
+		public CachedMatchTreeFactory(IMemoryCache cache)
 		{
-			this.cache = cache ?? new MemoryCache(new MemoryCacheOptions());
+			this.cache = cache;
 		}
 
 		/// <inheritdoc />
