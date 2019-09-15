@@ -273,6 +273,8 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<Submission, SubmissionStorageDto>(MemberList.Destination);
 			exp.CreateMap<Submission, UpdateSubmissionScoreDto>(MemberList.Destination);
+			exp.CreateMap<UpdateSubmissionScoreDto, Submission>(MemberList.Source);
+
 			exp.CreateMap<SubmissionDetailDto, LeaderboardParticipationModel>(MemberList.None)
 				.ForMember(s => s.User, opt => opt.MapFrom(s => s.Author));
 		}

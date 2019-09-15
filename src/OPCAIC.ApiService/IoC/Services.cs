@@ -34,6 +34,7 @@ namespace OPCAIC.ApiService.IoC
 				.AddScoped<IMatchExecutionService, MatchExecutionService>()
 				.AddScoped<IWorkerService, WorkerService>()
 				.AddScoped<IBrokerService, BrokerService>()
+				.AddScoped<ISubmissionScoreService, SubmissionScoreService>()
 				.AddScoped<ILeaderboardService, LeaderboardService>();
 		}
 	}
