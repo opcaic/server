@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using OPCAIC.ApiService.Controllers;
@@ -13,7 +12,6 @@ using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Emails;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.Emails;
 using Xunit;
 using Xunit.Abstractions;
 

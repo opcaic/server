@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using OPCAIC.Common;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Domain.Entities
@@ -36,7 +37,7 @@ namespace OPCAIC.Domain.Entities
 		/// <summary>
 		///     Type of the game.
 		/// </summary>
-		public GameType GameType { get; set; }
+		public GameType Type { get; set; }
 
 		/// <summary>
 		///     Image url that is used in game list.
@@ -46,7 +47,7 @@ namespace OPCAIC.Domain.Entities
 		/// <summary>
 		///     Default image URL that is used both in tournament list and tournament detail.
 		/// </summary>
-		public string DefaultTournamentImage { get; set; }
+		public string DefaultTournamentImageUrl { get; set; }
 
 		/// <summary>
 		///     Default opacity of a black layer that is used over tournament's image in the detail.

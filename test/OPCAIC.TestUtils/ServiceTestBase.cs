@@ -69,7 +69,6 @@ namespace OPCAIC.TestUtils
 		{
 			// random new name so tests can run in parallel
 			var dbName = Guid.NewGuid().ToString();
-
 			Services.AddDbContext<DataContext>(options =>
 			{
 				options.UseInMemoryDatabase(dbName);

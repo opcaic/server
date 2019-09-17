@@ -58,6 +58,7 @@ namespace OPCAIC.ApiService.Services
 
 			// save db entity
 			var dto = mapper.Map<NewSubmissionDto>(model);
+			dto.Score = tournament.Format == TournamentFormat.Elo ? 1200 : 0;
 			dto.AuthorId = userId;
 			var id = await repository.CreateAsync(dto, cancellationToken);
 

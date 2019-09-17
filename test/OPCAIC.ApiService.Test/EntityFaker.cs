@@ -26,7 +26,7 @@ namespace OPCAIC.ApiService.Test
 			Configure<Game>()
 				.RuleFor(g => g.Name, f => f.Random.String(10))
 				.RuleFor(g => g.Description, f => f.Lorem.Paragraph())
-				.RuleFor(g => g.GameType, f => f.PickRandom<GameType>())
+				.RuleFor(g => g.Type, f => f.PickRandom<GameType>())
 				.RuleFor(g => g.MaxAdditionalFilesSize, 1024 * 1024)
 				.RuleFor(g => g.ConfigurationSchema, "{}");
 

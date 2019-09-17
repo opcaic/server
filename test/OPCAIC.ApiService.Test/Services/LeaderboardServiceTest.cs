@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -10,7 +11,6 @@ using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Extensions;
-using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
@@ -24,11 +24,6 @@ namespace OPCAIC.ApiService.Test.Services
 {
 	public class LeaderboardServiceTest : ApiServiceTestBase
 	{
-		private const int tournamentId = 23;
-		private readonly Mock<IMatchRepository> matchRepository;
-		private readonly Mock<ISubmissionRepository> submissionRepository;
-		private readonly Mock<ITournamentRepository> tournamentRepository;
-
 		/// <inheritdoc />
 		public LeaderboardServiceTest(ITestOutputHelper output) : base(output)
 		{
@@ -43,6 +38,11 @@ namespace OPCAIC.ApiService.Test.Services
 
 			//ConfigureEntities();
 		}
+
+		private const int tournamentId = 23;
+		private readonly Mock<IMatchRepository> matchRepository;
+		private readonly Mock<ISubmissionRepository> submissionRepository;
+		private readonly Mock<ITournamentRepository> tournamentRepository;
 
 		private LeaderboardService LeaderboardService => GetService<LeaderboardService>();
 
@@ -116,57 +116,9 @@ namespace OPCAIC.ApiService.Test.Services
 		}
 
 		[Fact]
-		public async Task Generate_SinglePlayer()
-		{
-			SetupTournament(TournamentScope.Deadline, TournamentFormat.SinglePlayer, 10, 100);
-			var leaderboards =
-				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
-			leaderboards.Participations.Count.ShouldBe(10);
-			leaderboards.Finished.ShouldBe(true);
-			leaderboards.Participations[0].Place.ShouldBe(1);
-		}
-
-
-		[Fact]
-		public async Task Generate_Table()
-		{
-			SetupTournament(TournamentScope.Deadline, TournamentFormat.Table, 10, 100);
-			var leaderboards =
-				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
-			leaderboards.Participations.Count.ShouldBe(10);
-			leaderboards.Finished.ShouldBe(true);
-			leaderboards.Participations[0].Place.ShouldBe(1);
-		}
-
-		[Fact]
-		public async Task Generate_Elo()
-		{
-			SetupTournament(TournamentScope.Ongoing, TournamentFormat.Elo, 10, 100);
-			var leaderboards =
-				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
-			leaderboards.Participations.Count.ShouldBe(10);
-			leaderboards.Finished.ShouldBe(true);
-			leaderboards.Participations[0].Place.ShouldBe(1);
-		}
-
-		[Fact]
-		public async Task Generate_SingleElimination()
-		{
-			SetupTournament(TournamentScope.Deadline, TournamentFormat.SingleElimination, 4, 100);
-			var leaderboards =
-				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
-			var tree = (SingleEliminationTreeLeaderboardModel)leaderboards;
-			leaderboards.Participations.Count.ShouldBe(4);
-			leaderboards.Finished.ShouldBe(true);
-			leaderboards.Participations[0].Place.ShouldBe(1);
-			tree.Final.FirstPlayerOriginMatch.ShouldNotBeNull();
-			tree.Final.SecondPlayerOriginMatch.ShouldNotBeNull();
-		}
-
-		[Fact]
 		public async Task Generate_DoubleElimination()
 		{
-			SetupTournament(TournamentScope.Deadline, TournamentFormat.DoubleElimination, 4, 100);
+			SetupTournament(TournamentScope.Deadline, TournamentFormat.DoubleElimination, 4);
 			var leaderboards =
 				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
 			var tree = (DoubleEliminationTreeLeaderboardModel)leaderboards;
@@ -179,6 +131,58 @@ namespace OPCAIC.ApiService.Test.Services
 			tree.LosersBracketFinal.FirstPlayerOriginMatch.ShouldNotBeNull();
 			tree.WinnersBracketFinal.SecondPlayerOriginMatch.ShouldNotBeNull();
 			tree.LosersBracketFinal.SecondPlayerOriginMatch.ShouldNotBeNull();
+		}
+
+		[Fact]
+		public async Task Generate_Elo()
+		{
+			submissionRepository
+				.Setup(r => r.UpdateAsync(It.IsAny<long>(),
+					It.IsAny<UpdateSubmissionScoreDto>(), It.IsAny<CancellationToken>()))
+				.ReturnsAsync(true);
+			SetupTournament(TournamentScope.Ongoing, TournamentFormat.Elo, 10);
+			var leaderboards =
+				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
+			leaderboards.Participations.Count.ShouldBe(10);
+			leaderboards.Finished.ShouldBe(true);
+			leaderboards.Participations[0].Place.ShouldBe(1);
+		}
+
+		[Fact]
+		public async Task Generate_SingleElimination()
+		{
+			SetupTournament(TournamentScope.Deadline, TournamentFormat.SingleElimination, 4);
+			var leaderboards =
+				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
+			var tree = (SingleEliminationTreeLeaderboardModel)leaderboards;
+			leaderboards.Participations.Count.ShouldBe(4);
+			leaderboards.Finished.ShouldBe(true);
+			leaderboards.Participations[0].Place.ShouldBe(1);
+			tree.Final.FirstPlayerOriginMatch.ShouldNotBeNull();
+			tree.Final.SecondPlayerOriginMatch.ShouldNotBeNull();
+		}
+
+		[Fact]
+		public async Task Generate_SinglePlayer()
+		{
+			SetupTournament(TournamentScope.Deadline, TournamentFormat.SinglePlayer, 10);
+			var leaderboards =
+				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
+			leaderboards.Participations.Count.ShouldBe(10);
+			leaderboards.Finished.ShouldBe(true);
+			leaderboards.Participations[0].Place.ShouldBe(1);
+		}
+
+
+		[Fact]
+		public async Task Generate_Table()
+		{
+			SetupTournament(TournamentScope.Deadline, TournamentFormat.Table, 10);
+			var leaderboards =
+				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
+			leaderboards.Participations.Count.ShouldBe(10);
+			leaderboards.Finished.ShouldBe(true);
+			leaderboards.Participations[0].Place.ShouldBe(1);
 		}
 	}
 }

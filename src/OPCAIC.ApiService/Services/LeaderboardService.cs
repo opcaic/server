@@ -73,59 +73,12 @@ namespace OPCAIC.ApiService.Services
 			}
 		}
 
-		#region Elo
-
-		public class EloComputing
-		{
-			/// <summary>
-			///     Computes elo score for all players from all matches.
-			/// </summary>
-			/// <param name="matches">All matches in the tournament.</param>
-			/// <param name="model">Leaderboard model.</param>
-			public static void DetermineElo(IEnumerable<MatchDetailDto> matches, LeaderboardModel model)
-			{
-				// elo coefficient
-				int K = 25;
-				var matchesList = matches.ToList();
-				matchesList.Sort((m1, m2) => m1.Index.CompareTo(m2.Index));
-				foreach (var currentMatch in matchesList)
-				{
-					var match = currentMatch;
-					var playerA = model.Participations.Single(p
-						=> p.User.Id ==
-						match.Executions.Last().BotResults[0].Submission.Author.Id);
-					var playerB = model.Participations.Single(p
-						=> p.User.Id ==
-						currentMatch.Executions.Last().BotResults[1].Submission.Author.Id);
-					var ea = GetEloExpectedResult(playerA.Score, playerB.Score);
-					var eb = GetEloExpectedResult(playerB.Score, playerA.Score);
-					playerA.Score += K * (currentMatch.Executions.Last().BotResults[0].Score - ea);
-					playerB.Score += K * (currentMatch.Executions.Last().BotResults[1].Score - eb);
-				}
-			}
-
-			/// <summary>
-			///     Get expectation of player A winning.
-			/// </summary>
-			/// <param name="Ra">Elo of player A.</param>
-			/// <param name="Rb">Elo of player B.</param>
-			/// <returns></returns>
-			public static double GetEloExpectedResult(double Ra, double Rb)
-			{
-				return 1.0 / (1 + Math.Pow(1.0, (Ra - Rb) / 400));
-			}
-		}
-
-		#endregion
-
 		#region Generating leaderboards
 
 		private async Task<LeaderboardModel> GenerateSubmissionScoreLeaderboard(
 			TournamentDetailDto tournament, CancellationToken cancellationToken)
 		{
 			var model = CreateModel<LeaderboardModel>(tournament);
-			var matches = await GetMatches(tournament.Id, cancellationToken);
-
 			foreach (var submission in await submissionRepository.AllSubmissionsFromTournament(tournament.Id, cancellationToken))
 			{
 				model.Participations.Add(mapper.Map<LeaderboardParticipationModel>(submission));

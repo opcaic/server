@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
@@ -15,14 +14,12 @@ namespace OPCAIC.ApiService.Services
 {
 	public class SubmissionScoreService : ISubmissionScoreService
 	{
-		private readonly IMapper mapper;
 		private readonly ISubmissionRepository submissionRepository;
 		private readonly ITournamentRepository tournamentRepository;
 
-		public SubmissionScoreService(IMapper mapper, ISubmissionRepository submissionRepository,
+		public SubmissionScoreService(ISubmissionRepository submissionRepository,
 			ITournamentRepository tournamentRepository)
 		{
-			this.mapper = mapper;
 			this.submissionRepository = submissionRepository;
 			this.tournamentRepository = tournamentRepository;
 		}
@@ -38,15 +35,15 @@ namespace OPCAIC.ApiService.Services
 					await UpdateSinglePlayerScore(tournament, result, cancellationToken);
 					break;
 				case TournamentFormat.Table:
-					await UpdateTableScore(tournament, result, cancellationToken);
+					await UpdateTableScore(result, cancellationToken);
 					break;
 				case TournamentFormat.Elo:
-					await UpdateEloScore(tournament, result, cancellationToken);
+					await UpdateEloScore(result, cancellationToken);
 					break;
 			}
 		}
 
-		private async Task UpdateEloScore(TournamentDetailDto tournament, MatchExecutionResult result,
+		private async Task UpdateEloScore(MatchExecutionResult result,
 			CancellationToken cancellationToken)
 		{
 			var sub1Id = result.BotResults[0].SubmissionId;
@@ -71,7 +68,7 @@ namespace OPCAIC.ApiService.Services
 				cancellationToken);
 		}
 
-		private async Task UpdateTableScore(TournamentDetailDto tournament, MatchExecutionResult result,
+		private async Task UpdateTableScore(MatchExecutionResult result,
 			CancellationToken cancellationToken)
 		{
 			var sub1Id = result.BotResults[0].SubmissionId;

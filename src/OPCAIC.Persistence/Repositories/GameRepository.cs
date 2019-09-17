@@ -32,9 +32,9 @@ namespace OPCAIC.Persistence.Repositories
 		}
 
 		/// <inheritdoc />
-		public Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken)
+		public Task<bool> ExistsOtherByNameAsync(string name, long? currentGameId, CancellationToken cancellationToken)
 		{
-			return ExistsByQueryAsync(g => g.Name == name, cancellationToken);
+			return ExistsByQueryAsync(g => g.Name == name && (currentGameId == null || currentGameId.Value != g.Id), cancellationToken);
 		}
 
 		/// <inheritdoc />

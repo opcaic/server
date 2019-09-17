@@ -62,7 +62,6 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> PostAsync([FromBody] NewGameModel model,
 			CancellationToken cancellationToken)
 		{
-			var schema = JSchema.Load(new JTokenReader(model.ConfigurationSchema));
 			var id = await gamesService.CreateAsync(model, cancellationToken);
 			return CreatedAtRoute(nameof(GetGameByIdAsync), new { id }, new IdModel {Id = id});
 		}
