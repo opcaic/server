@@ -2,15 +2,13 @@
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Games;
+using OPCAIC.Application.Games.Queries;
 
 namespace OPCAIC.ApiService.Interfaces
 {
 	public interface IGamesService
 	{
 		Task<long> CreateAsync(NewGameModel game, CancellationToken cancellationToken);
-
-		Task<ListModel<GamePreviewModel>> GetByFilterAsync(GameFilterModel filter,
-			CancellationToken cancellationToken);
 
 		Task<GameDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken);
 

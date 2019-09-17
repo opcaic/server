@@ -90,27 +90,6 @@ namespace OPCAIC.ApiService.Test.Services
 		}
 
 		[Fact]
-		public async Task GetByFilter_Success()
-		{
-			gameRepository.Setup(r => r.GetByFilterAsync(It.IsAny<GameFilterDto>(), CancellationToken))
-				.ReturnsAsync(new ListDto<GamePreviewDto>
-				{
-					Total = 1,
-					List = new[]
-				{
-					new GamePreviewDto
-					{
-						Id=1,
-						Name = "Name"
-					}
-				}
-				});
-
-			var filter = new GameFilterModel { Count = 1 };
-			await GetService<GamesService>().GetByFilterAsync(filter, CancellationToken);
-		}
-
-		[Fact]
 		public async Task GetById_Success()
 		{
 			gameRepository.Setup(r => r.FindByIdAsync(GameId, CancellationToken))

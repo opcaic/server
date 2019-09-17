@@ -54,7 +54,6 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 
 				// check whether this is last validation of the submission
 				var spec = ProjectingSpecification<SubmissionValidation>.Create(
-					v => v.JobId == notification.JobId,
 					v => new
 					{
 						v.Submission.TournamentId,
@@ -67,6 +66,8 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 							.OrderByDescending(vv => vv.Created)
 							.First().Id
 					});
+
+				spec.AddCriteria(v => v.JobId == notification.JobId);
 
 				var data = await repository.FindAsync(spec, cancellationToken);
 

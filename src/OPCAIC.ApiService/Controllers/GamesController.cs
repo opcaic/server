@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,8 @@ using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Games.Queries;
+using OPCAIC.Application.Specifications;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -22,11 +25,13 @@ namespace OPCAIC.ApiService.Controllers
 	{
 		private readonly IGamesService gamesService;
 		private readonly IAuthorizationService authorizationService;
+		private readonly IMediator mediator;
 
-		public GamesController(IGamesService gamesService, IAuthorizationService authorizationService)
+		public GamesController(IGamesService gamesService, IAuthorizationService authorizationService, IMediator mediator)
 		{
 			this.gamesService = gamesService;
 			this.authorizationService = authorizationService;
+			this.mediator = mediator;
 		}
 
 		/// <summary>
@@ -39,10 +44,10 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[RequiresPermission(GamePermission.Search)]
-		public Task<ListModel<GamePreviewModel>> GetGamesAsync([FromQuery] GameFilterModel filter,
+		public Task<PagedResult<GamePreviewModel>> GetGamesAsync([FromQuery] GetFilteredGames filter,
 			CancellationToken cancellationToken)
 		{
-			return gamesService.GetByFilterAsync(filter, cancellationToken);
+			return mediator.Send(filter, cancellationToken);
 		}
 
 		/// <summary>

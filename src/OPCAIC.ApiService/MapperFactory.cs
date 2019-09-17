@@ -27,6 +27,7 @@ using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Dtos.TournamentParticipations;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
+using OPCAIC.Application.Games.Queries;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.SubmissionValidations.Events;
 using OPCAIC.Broker;
@@ -163,15 +164,13 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<NewGameModel, NewGameDto, Game>(MemberList.Source);
 
 			exp.CreateMap<Game, GameDetailDto>(MemberList.Destination)
-				.IncludeBase<Game, GamePreviewDto>();
+				.IncludeBase<Game, GamePreviewModel>();
 
 			exp.CreateMap<GameDetailDto, GameDetailModel>(MemberList.Destination);
 
-			exp.CreateMap<Game, GamePreviewDto>(MemberList.Destination)
+			exp.CreateMap<Game, GamePreviewModel>(MemberList.Destination)
 				.ForMember(d => d.ActiveTournamentsCount,
 					opt => opt.MapFrom(GameRepository.ActiveTournamentsExpression));
-
-			exp.CreateMap<GamePreviewDto, GamePreviewModel>(MemberList.Destination);
 
 			exp.CreateMap<Game, GameReferenceDto, GameReferenceModel>(MemberList.Destination);
 			exp.CreateMap<UpdateGameModel, UpdateGameDto, Game>(MemberList.Source);
