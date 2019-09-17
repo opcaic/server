@@ -6,9 +6,9 @@ using OPCAIC.ApiService.Models.Tournaments;
 
 namespace OPCAIC.ApiService.Interfaces
 {
-	public interface ITournamentParticipantsService
+	public interface ITournamentInvitationsService
 	{
-		Task<ListModel<TournamentParticipantPreviewModel>> GetParticipantsAsync(long tournamentId, TournamentParticipantFilter filter, CancellationToken cancellationToken);
+		Task<ListModel<TournamentInvitationPreviewModel>> GetInvitationsAsync(long tournamentId, TournamentInvitationFilter filter, CancellationToken cancellationToken);
 		Task CreateAsync(long tournamentId, IEnumerable<string> emails, CancellationToken cancellationToken);
 		Task DeleteAsync(long tounamentId, string email, CancellationToken cancellationToken);
 	}

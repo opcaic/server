@@ -39,8 +39,7 @@ namespace OPCAIC.ApiService.Test
 				.RuleFor(g => g.Matches, f => new List<Match>());
 
 			Configure<Submission>()
-				.RuleFor(s => s.Author, f => Entity<User>())
-				.RuleFor(s => s.IsActive, true);
+				.RuleFor(s => s.Author, f => Entity<User>());
 
 			Configure<SubmissionValidation>()
 				.RuleFor(v => v.Submission, i => Entity<Submission>());

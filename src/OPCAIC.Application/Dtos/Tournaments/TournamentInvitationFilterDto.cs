@@ -1,6 +1,6 @@
 ﻿namespace OPCAIC.Application.Dtos.Tournaments
 {
-	public class TournamentParticipantFilterDto : FilterDtoBase
+	public class TournamentInvitationFilterDto : FilterDtoBase
 	{
 		public const string SortByEmail = "email";
 	}

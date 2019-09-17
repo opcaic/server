@@ -13,14 +13,11 @@ namespace OPCAIC.ApiService.Security.Handlers
 	public class TournamentPermissionHandler
 		: ResourcePermissionAuthorizationHandler<TournamentPermission, TournamentAuthDto>
 	{
-		private readonly ITournamentParticipantRepository participantRepository;
 		private readonly ITournamentRepository tournamentRepository;
 
-		public TournamentPermissionHandler(ITournamentRepository tournamentRepository,
-			ITournamentParticipantRepository participantRepository)
+		public TournamentPermissionHandler(ITournamentRepository tournamentRepository)
 		{
 			this.tournamentRepository = tournamentRepository;
-			this.participantRepository = participantRepository;
 		}
 
 		/// <inheritdoc />
@@ -49,8 +46,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case TournamentPermission.EditDocument:
 				case TournamentPermission.Update:
 					// only owner and managers
-					return userId == authData.OwnerId ||
-						authData.ManagerIds.Contains(userId);
+					return IsOwnerOrManager(userId, authData);
 
 				case TournamentPermission.Delete:
 					// only owner
@@ -71,12 +67,9 @@ namespace OPCAIC.ApiService.Security.Handlers
 							return true;
 
 						case TournamentAvailability.Private:
-							// only invited
-							// TODO: move participants data to auth dto to avoid blocking the thread
-							var participants =
-								participantRepository.GetParticipantsAsync(authData.Id, null)
-									.GetAwaiter().GetResult();
-							return participants.List.Any(p => p.User.Id == userId);
+							// only invited people and managers
+							return authData.ParticipantIds.Contains(userId) ||
+								IsOwnerOrManager(userId, authData);
 
 						default:
 							throw new ArgumentOutOfRangeException();
@@ -84,12 +77,16 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case TournamentPermission.DownloadAdditionalFiles:
 					return
 						user.HasClaim(WorkerClaimTypes.TournamentId, authData.Id.ToString()) ||
-						userId == authData.OwnerId ||
-						authData.ManagerIds.Contains(userId);
+						IsOwnerOrManager(userId, authData);
 
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
 			}
+		}
+
+		private bool IsOwnerOrManager(long userId, TournamentAuthDto authData)
+		{
+			return userId == authData.OwnerId || authData.ManagerIds.Contains(userId);
 		}
 	}
 }

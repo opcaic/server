@@ -1,13 +1,12 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.SubmissionValidations.Events;
 using OPCAIC.Common;
-using OPCAIC.Utils;
 
-namespace OPCAIC.ApiService.Extensions
+namespace OPCAIC.Application.Logging
 {
-	internal static class SubmissionValidationLoggingExtensions
+	public static class SubmissionValidationLoggingExtensions
 	{
 		public static void SubmissionValidationQueued(this ILogger logger, long id,
 			long submissionId, Guid jobId)
@@ -17,12 +16,12 @@ namespace OPCAIC.ApiService.Extensions
 				submissionId, jobId, id);
 		}
 
-		public static void SubmissionValidationUpdated(this ILogger logger, Guid jobId,
-			UpdateSubmissionValidationDto dto)
+		public static void SubmissionValidationUpdated(this ILogger logger, 
+			SubmissionValidationFinished dto)
 		{
 			logger.LogInformation(LoggingEvents.SubmissionValidationUpdated,
 				$"Submission validation job {{{LoggingTags.JobId}}} updated: {{{LoggingTags.UpdateData}}}",
-				jobId, JsonConvert.SerializeObject(dto));
+				dto.JobId, JsonConvert.SerializeObject(dto));
 		}
 
 		public static void SubmissionValidationExpired(this ILogger logger, Guid jobId)

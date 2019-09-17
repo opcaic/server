@@ -1,28 +1,26 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using OPCAIC.ApiService.Models.Submissions;
+using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Common;
-using OPCAIC.Utils;
 
-namespace OPCAIC.ApiService.Extensions
+namespace OPCAIC.Application.Logging
 {
-	internal static class SubmissionLoggingExtensions
+	public static class SubmissionLoggingExtensions
 	{
 		public static void SubmissionCreated(this ILogger logger, long submissionId,
-			NewSubmissionModel model)
+			NewSubmissionDto dto)
 		{
 			logger.LogInformation(LoggingEvents.SubmissionCreate,
 				$"Created new submission {{{LoggingTags.SubmissionId}}} to tournament {{{LoggingTags.TournamentId}}}",
-				submissionId, model.TournamentId);
+				submissionId, dto.TournamentId);
 		}
 
 		public static void SubmissionUpdated(this ILogger logger, long submissionId,
-			UpdateSubmissionModel model)
+			UpdateSubmissionScoreDto dto)
 		{
-			// TODO: separate event for submission activation/deactivation
 			logger.LogInformation(LoggingEvents.SubmissionUpdate,
 				$"Updated submission {{{LoggingTags.SubmissionId}}}: {{{LoggingTags.UpdateData}}}",
-				submissionId, JsonConvert.SerializeObject(model));
+				submissionId, JsonConvert.SerializeObject(dto));
 		}
 	}
 }

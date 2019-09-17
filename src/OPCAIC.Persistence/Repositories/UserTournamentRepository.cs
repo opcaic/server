@@ -9,7 +9,7 @@ using OPCAIC.Domain.Entities;
 namespace OPCAIC.Persistence.Repositories
 {
 	public class UserTournamentRepository
-		: RepositoryBase<UserTournament>, IUserTournamentRepository
+		: EntityRepository<UserTournament>, IUserTournamentRepository
 	{
 		public UserTournamentRepository(DataContext context, IMapper mapper)
 			: base(context, mapper)

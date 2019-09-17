@@ -2,11 +2,10 @@
 using Newtonsoft.Json;
 using OPCAIC.Application.Dtos.Games;
 using OPCAIC.Common;
-using OPCAIC.Utils;
 
-namespace OPCAIC.ApiService.Extensions
+namespace OPCAIC.Application.Logging
 {
-	internal static class GameLoggingExtensions
+	public static class GameLoggingExtensions
 	{
 		public static void GameCreated(this ILogger logger, long id, NewGameDto dto)
 		{

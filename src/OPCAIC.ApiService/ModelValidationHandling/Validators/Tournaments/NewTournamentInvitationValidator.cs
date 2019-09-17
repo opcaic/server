@@ -4,10 +4,10 @@ using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.ApiService.ModelValidationHandling.Validators.Tournaments
 {
-	public class NewTournamentParticipantsValidator
-		: AbstractValidator<NewTournamentParticipantsModel>
+	public class NewTournamentInvitationValidator
+		: AbstractValidator<NewTournamentInvitationsModel>
 	{
-		public NewTournamentParticipantsValidator()
+		public NewTournamentInvitationValidator()
 		{
 			RuleFor(m => m.TournamentId).EntityId(typeof(Tournament));
 			RuleFor(m => m.Emails).ForEach(f => f.Email());

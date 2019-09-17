@@ -11,7 +11,7 @@ using OPCAIC.Domain.Entities;
 namespace OPCAIC.Persistence.Repositories
 {
 	public abstract class LookupRepository<TEntity, TFilterDto, TPreviewDto, TDetailDto>
-		: RepositoryBase<TEntity>
+		: EntityRepository<TEntity>
 		where TEntity : class, IEntity
 		where TFilterDto : FilterDtoBase
 		where TPreviewDto : class

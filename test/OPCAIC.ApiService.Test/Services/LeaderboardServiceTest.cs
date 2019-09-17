@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -57,7 +58,16 @@ namespace OPCAIC.ApiService.Test.Services
 				tournament.Deadline = null;
 			}
 
-			tournament.Submissions = Faker.Entities<Submission>(submissionCount);
+			tournament.Participants = Faker.Entities<Submission>(submissionCount).Select(s => new TournamentParticipation
+			{
+				Tournament = tournament,
+				User = s.Author,
+				ActiveSubmission = s,
+				Submissions = new List<Submission>
+				{
+					s
+				}
+			}).ToList();
 
 			DbContext.Add(tournament);
 			DbContext.SaveChanges();
@@ -75,7 +85,7 @@ namespace OPCAIC.ApiService.Test.Services
 
 			submissionRepository.Setup(r
 					=> r.AllSubmissionsFromTournament(tournamentId, CancellationToken))
-				.ReturnsAsync(() => Mapper.Map<List<SubmissionDetailDto>>(tournament.Submissions));
+				.ReturnsAsync(() => Mapper.Map<List<SubmissionDetailDto>>(tournament.Participants.SelectMany(p => p.Submissions)));
 
 			DbContext.SaveChanges();
 		}

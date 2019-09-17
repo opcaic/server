@@ -2,11 +2,10 @@
 using Newtonsoft.Json;
 using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Common;
-using OPCAIC.Utils;
 
-namespace OPCAIC.ApiService.Extensions
+namespace OPCAIC.Application.Logging
 {
-	internal static class DocumentLoggingExtensions
+	public static class DocumentLoggingExtensions
 	{
 		public static void DocumentCreated(this ILogger logger, long id, NewDocumentDto dto)
 		{

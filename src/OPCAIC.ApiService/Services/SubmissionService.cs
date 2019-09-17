@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Submissions;
@@ -14,6 +16,7 @@ using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Logging;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
@@ -25,12 +28,14 @@ namespace OPCAIC.ApiService.Services
 		private readonly ISubmissionRepository repository;
 		private readonly ITournamentRepository tournamentRepository;
 		private readonly IStorageService storage;
+		private readonly ILogger<SubmissionService> logger;
 
-		public SubmissionService(IMapper mapper, ISubmissionRepository repository, IStorageService storage, ITournamentRepository tournamentRepository)
+		public SubmissionService(IMapper mapper, ISubmissionRepository repository, IStorageService storage, ITournamentRepository tournamentRepository, ILogger<SubmissionService> logger)
 		{
 			this.repository = repository;
 			this.storage = storage;
 			this.tournamentRepository = tournamentRepository;
+			this.logger = logger;
 			this.mapper = mapper;
 		}
 
@@ -65,6 +70,8 @@ namespace OPCAIC.ApiService.Services
 				// TODO: connect db transactions and filesystem transactions storage
 				await model.Archive.CopyToAsync(stream, cancellationToken);
 			}
+
+			logger.SubmissionCreated(id, dto);
 
 			return id;
 		}
@@ -145,17 +152,6 @@ namespace OPCAIC.ApiService.Services
 			}
 
 			return storage.ReadSubmissionArchive(dto);
-		}
-
-		public async Task UpdateAsync(long id, UpdateSubmissionModel model,
-			CancellationToken cancellationToken)
-		{
-			var dto = mapper.Map<UpdateSubmissionDto>(model);
-
-			if (!await repository.UpdateAsync(id, dto, cancellationToken))
-			{
-				throw new NotFoundException(nameof(Submission), id);
-			}
 		}
 
 		public static bool CanTournamentAcceptSubmissions(TournamentDetailDto tournament)

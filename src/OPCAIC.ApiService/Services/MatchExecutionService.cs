@@ -16,6 +16,7 @@ using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Logging;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;

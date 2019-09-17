@@ -72,7 +72,7 @@
 
 		public static string RefreshTokenInvalid => "invalid-token";
 
-		public static string UserNotTournamentParticipant => "user-not-tounament-participant";
+		public static string UserNotInvited => "user-not-tounament-participant";
 
 		#endregion
 

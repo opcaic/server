@@ -2,7 +2,7 @@
 
 namespace OPCAIC.Application.Dtos.Tournaments
 {
-	public class TournamentParticipantDto
+	public class TournamentInvitationDto
 	{
 		public long Id { get; set; }
 

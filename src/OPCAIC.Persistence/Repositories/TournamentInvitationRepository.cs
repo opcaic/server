@@ -12,16 +12,16 @@ using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Persistence.Repositories
 {
-	public class TournamentParticipantRepository
-		: RepositoryBase<TournamentParticipant>, ITournamentParticipantRepository
+	public class TournamentInvitationRepository
+		: EntityRepository<TournamentInvitation>, ITournamentInvitationRepository
 	{
-		public TournamentParticipantRepository(DataContext context, IMapper mapper)
+		public TournamentInvitationRepository(DataContext context, IMapper mapper)
 			: base(context, mapper)
 		{
 		}
 
-		public async Task<ListDto<TournamentParticipantDto>> GetParticipantsAsync(long tournamentId,
-			TournamentParticipantFilterDto filter, CancellationToken cancellationToken)
+		public async Task<ListDto<TournamentInvitationDto>> GetInvitationsAsync(long tournamentId,
+			TournamentInvitationFilterDto filter, CancellationToken cancellationToken)
 		{
 			var query = DbSet.Where(row => row.TournamentId == tournamentId);
 
@@ -30,10 +30,10 @@ namespace OPCAIC.Persistence.Repositories
 				query = query.Filter(filter);
 			}
 
-			return new ListDto<TournamentParticipantDto>
+			return new ListDto<TournamentInvitationDto>
 			{
 				List = await query
-					.Select(row => new TournamentParticipantDto
+					.Select(row => new TournamentInvitationDto
 					{
 						Id = row.Id,
 						Email = row.Email,
@@ -59,10 +59,11 @@ namespace OPCAIC.Persistence.Repositories
 				return false;
 			}
 
-			foreach (var email in emails)
-			{
-				tournament.Participants.Add(new TournamentParticipant {Email = email});
-			}
+			// TODO:
+//			foreach (var email in emails)
+//			{
+//				tournament.Participants.Add(new TournamentInvitation {Email = email});
+//			}
 
 			await SaveChangesAsync(cancellationToken);
 			return true;

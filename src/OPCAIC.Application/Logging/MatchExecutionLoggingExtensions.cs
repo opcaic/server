@@ -3,11 +3,10 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Common;
-using OPCAIC.Utils;
 
-namespace OPCAIC.ApiService.Extensions
+namespace OPCAIC.Application.Logging
 {
-	internal static class MatchExecutionLoggingExtensions
+	public static class MatchExecutionLoggingExtensions
 	{
 		public static void MatchExecutionQueued(this ILogger logger, long id, long matchId,
 			Guid jobId)

@@ -54,7 +54,7 @@ namespace OPCAIC.ApiService.Test.Services
 					break;
 				case TournamentFormat.Elo:
 					matches = generator.GenerateOngoing(
-						TestMapper.Mapper.Map<TournamentOngoingGenerationDto>(tournament), tournament.Submissions.Count * 3);
+						TestMapper.Mapper.Map<TournamentOngoingGenerationDto>(tournament), tournament.Participants.Count * 3);
 					ExecuteMatches(tournament, matches, DateTime.Now, seed);
 					break;
 				default:
@@ -80,7 +80,7 @@ namespace OPCAIC.ApiService.Test.Services
 					Participations = matchDto.Submissions
 						.Select(s => new SubmissionParticipation
 						{
-							Submission = tournament.Submissions.Single(sub => sub.Id == s),
+							Submission = tournament.Participants.Select(p => p.ActiveSubmission).Single(sub => sub.Id == s),
 							SubmissionId = s,
 							Order = order++
 						}).ToList(),
@@ -98,7 +98,7 @@ namespace OPCAIC.ApiService.Test.Services
 							{
 								AdditionalData = "{}",
 								SubmissionId = s,
-								Submission = tournament.Submissions.Single(sub => sub.Id == s),
+								Submission = tournament.Participants.Select(p => p.ActiveSubmission).Single(sub => sub.Id == s),
 								CompilerResult = EntryPointResult.Success,
 								Crashed = false,
 								Score = (score = (score + 1 % 2))

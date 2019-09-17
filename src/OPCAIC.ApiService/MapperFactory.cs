@@ -24,8 +24,10 @@ using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.TournamentParticipations;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
+using OPCAIC.Application.SubmissionValidations.Events;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
@@ -42,6 +44,7 @@ namespace OPCAIC.ApiService
 			{
 				exp.AddUserMapping();
 				exp.AddTournamentMapping();
+				exp.AddTournamentParticipationMapping();
 				exp.AddSubmissionMapping();
 				exp.AddSubmissionValidationMapping();
 				exp.AddDocumentMapping();
@@ -180,7 +183,9 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<Tournament, TournamentAuthDto>(MemberList.Destination)
 				.ForMember(d => d.ManagerIds,
-					opt => opt.MapFrom(s => s.Managers.Select(m => m.UserId)));
+					opt => opt.MapFrom(s => s.Managers.Select(m => m.UserId)))
+				.ForMember(d => d.ParticipantIds,
+					opt => opt.MapFrom(e => e.Participants.Select(s => s.UserId)));
 
 			exp.CreateMap<Tournament, TournamentDetailDto>(MemberList.Destination)
 				.IncludeBase<Tournament, TournamentPreviewDto>();
@@ -191,10 +196,10 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<Tournament, TournamentPreviewDto>(MemberList
 					.Destination)
 				.ForMember(d => d.ActiveSubmissionsCount,
-					opt => opt.MapFrom(s => s.Submissions.Count(e => e.IsActive)))
+					opt => opt.MapFrom(s => s.Participants.Count(e => e.ActiveSubmissionId != null)))
 				.ForMember(d => d.PlayersCount,
 					opt => opt.MapFrom(s
-						=> s.Submissions.Select(x => x.Author.Id).Distinct().Count()))
+						=> s.Participants.Count))
 				.ForMember(d => d.ImageUrl,
 					opt => opt.MapFrom(s
 						=> s.ImageUrl ?? s.Game.DefaultTournamentImage))
@@ -203,7 +208,8 @@ namespace OPCAIC.ApiService
 						=> s.ImageOverlay ?? s.Game.DefaultTournamentImageOverlay))
 				.ForMember(d => d.ThemeColor,
 					opt => opt.MapFrom(s
-						=> s.ThemeColor ?? s.Game.DefaultTournamentThemeColor));
+						=> s.ThemeColor ?? s.Game.DefaultTournamentThemeColor))
+				.ForMember(d => d.SubmissionsCount, opt => opt.MapFrom(s => s.Participants.Sum(p => p.Submissions.Count)));
 
 			exp.CreateMap<TournamentPreviewDto, TournamentPreviewModel>(MemberList
 				.Destination);
@@ -216,16 +222,16 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<TournamentFilterModel, TournamentFilterDto>(MemberList.Source);
 
-			exp.CreateMap<TournamentParticipantDto, TournamentParticipantPreviewModel>(MemberList
+			exp.CreateMap<TournamentInvitationDto, TournamentInvitationPreviewModel>(MemberList
 				.Destination);
-			exp.CreateMap<TournamentParticipantFilter, TournamentParticipantFilterDto>(MemberList
+			exp.CreateMap<TournamentInvitationFilter, TournamentInvitationFilterDto>(MemberList
 				.Destination);
 			exp.CreateMap<TournamentDetailDto, TournamentReferenceModel>(MemberList.Destination);
 
 			exp.CreateMap<Tournament, TournamentGenerationDtoBase>(MemberList.Destination)
 				.ForMember(d => d.ActiveSubmissionIds,
 					opt => opt.MapFrom(f
-						=> f.Submissions.Where(s => s.IsActive).Select(s => s.Id)));
+						=> f.Participants.Where(s => s.ActiveSubmissionId != null).Select(s => s.ActiveSubmissionId.Value)));
 
 			exp.CreateMap<Tournament, TournamentBracketsGenerationDto>(MemberList.Destination)
 				.IncludeBase<Tournament, TournamentGenerationDtoBase>();
@@ -241,6 +247,13 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<TournamentStartedUpdateDto, Tournament>(MemberList.Source);
 		}
 
+		private static void AddTournamentParticipationMapping(
+			this IMapperConfigurationExpression exp)
+		{
+			exp.CreateMap<UpdateTournamentParticipationDto, TournamentParticipation>(MemberList
+				.Source);
+		}
+
 		private static void AddSubmissionMapping(this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap<NewSubmissionModel, NewSubmissionDto>(MemberList.Source)
@@ -253,7 +266,9 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<Submission, SubmissionPreviewDto>(MemberList.Destination)
 				.ForMember(s => s.LastValidation, opt => opt.MapFrom(
-					s => s.Validations.OrderByDescending(v => v.Id).First()));
+					s => s.Validations.OrderByDescending(v => v.Id).First()))
+				.ForMember(s => s.IsActive,
+					opt => opt.MapFrom(s => s.TournamentParticipation.ActiveSubmissionId == s.Id));
 
 			exp.CreateMap<Submission, SubmissionDetailDto>(MemberList.Destination)
 				.IncludeBase<Submission, SubmissionPreviewDto>();
@@ -267,8 +282,6 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<Submission, SubmissionReferenceDto, SubmissionReferenceModel>(MemberList
 				.Destination);
 
-			exp.CreateMap<UpdateSubmissionModel, UpdateSubmissionDto, Submission>(MemberList
-				.Source);
 			exp.CreateMap<SubmissionFilterModel, SubmissionFilterDto>(MemberList.Destination);
 
 			exp.CreateMap<Submission, SubmissionStorageDto>(MemberList.Destination);
@@ -287,11 +300,11 @@ namespace OPCAIC.ApiService
 				.Destination);
 
 			exp.CreateMap<NewSubmissionValidationDto, SubmissionValidation>(MemberList.Source);
-			exp.CreateMap<SubmissionValidationResult, UpdateSubmissionValidationDto>(MemberList
+			exp.CreateMap<SubmissionValidationResult, SubmissionValidationFinished>(MemberList
 					.Destination)
 				.ForMember(d => d.State, opt => opt.MapFrom(r => r.JobStatus))
 				.ForMember(d => d.Executed, opt => opt.Ignore());
-			exp.CreateMap<UpdateSubmissionValidationDto, SubmissionValidation>(MemberList.Source);
+			exp.CreateMap<SubmissionValidationFinished, SubmissionValidation>(MemberList.Source);
 			exp.CreateMap<JobStateUpdateDto, SubmissionValidation>(MemberList.Source);
 			exp.CreateMap<SubmissionValidation, SubmissionValidationRequestDataDto>(MemberList
 					.Destination)

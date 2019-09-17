@@ -55,11 +55,6 @@ namespace OPCAIC.Domain.Entities
 		public virtual Game Game { get; set; }
 
 		/// <summary>
-		///     All submissions submitted to this tournament.
-		/// </summary>
-		public virtual IList<Submission> Submissions { get; set; }
-
-		/// <summary>
 		///     All matches in this tournament.
 		/// </summary>
 		public virtual IList<Match> Matches { get; set; }
@@ -110,9 +105,14 @@ namespace OPCAIC.Domain.Entities
 		public DateTime? Deadline { get; set; }
 
 		/// <summary>
+		///     All invitations to this tournament.
+		/// </summary>
+		public virtual ICollection<TournamentInvitation> Invitations { get; set; }
+
+		/// <summary>
 		///     Participants of tournament.
 		/// </summary>
-		public virtual ICollection<TournamentParticipant> Participants { get; set; }
+		public virtual ICollection<TournamentParticipation> Participants { get; set; }
 
 		/// <summary>
 		///     Image url that is used both in tournament list and tournament detail.

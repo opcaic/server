@@ -50,6 +50,16 @@ namespace OPCAIC.Domain.Entities
 		public virtual IList<Submission> Submissions { get; set; }
 
 		/// <summary>
+		///     Link to participations to all tournaments this user participates in.
+		/// </summary>
+		public virtual IList<TournamentParticipation> TournamentParticipations { get; set; }
+
+		/// <summary>
+		///     All tournaments this user has created.
+		/// </summary>
+		public virtual IList<Tournament> OwnedTournaments { get; set; }
+
+		/// <summary>
 		///     Mapping to all tournaments this user is the manager of.
 		/// </summary>
 		public virtual IList<TournamentManager> ManagerOfTournaments { get; set; }

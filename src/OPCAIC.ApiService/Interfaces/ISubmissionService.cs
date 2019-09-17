@@ -19,9 +19,6 @@ namespace OPCAIC.ApiService.Interfaces
 
 		Task<Stream> GetSubmissionArchiveAsync(long id, CancellationToken cancellationToken);
 
-		Task UpdateAsync(long id, UpdateSubmissionModel model,
-			CancellationToken cancellationToken);
-
 		Task<bool> ExistsByIdAsync(long id, CancellationToken cancellationToken);
 	}
 }

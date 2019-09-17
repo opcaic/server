@@ -228,7 +228,6 @@ namespace OPCAIC.ApiService.Utils
 					Format = TournamentFormat.Table,
 					RankingStrategy = TournamentRankingStrategy.Maximum,
 					Scope = TournamentScope.Deadline,
-					Deadline = DateTime.Now.AddSeconds(10),
 					Availability = TournamentAvailability.Public,
 					State = TournamentState.Published,
 					Configuration = "{}",
@@ -241,7 +240,6 @@ namespace OPCAIC.ApiService.Utils
 					Format = TournamentFormat.DoubleElimination,
 					RankingStrategy = TournamentRankingStrategy.Maximum,
 					Scope = TournamentScope.Deadline,
-					Deadline = DateTime.Now.AddSeconds(40),
 					Availability = TournamentAvailability.Public,
 					State = TournamentState.Published,
 					Configuration = "{}",
@@ -578,11 +576,10 @@ namespace OPCAIC.ApiService.Utils
 
 		private static Submission CreateSubmission(User author, Tournament tournament, double score)
 		{
-			return new Submission
+			var submission = new Submission
 			{
 				Author = author,
 				Tournament = tournament,
-				IsActive = true,
 				Score = score,
 				Validations = new List<SubmissionValidation>
 				{
@@ -597,6 +594,24 @@ namespace OPCAIC.ApiService.Utils
 					}
 				}
 			};
+
+			if (tournament.Participants == null)
+			{
+				tournament.Participants = new List<TournamentParticipation>();
+			}
+
+			tournament.Participants.Add(new TournamentParticipation
+			{
+				Tournament = tournament,
+				User = author,
+				ActiveSubmission = submission,
+				Submissions = new List<Submission>
+				{
+					submission
+				}
+			});
+
+			return submission;
 		}
 
 		private static void AddEmailTemplates(DataContext context)

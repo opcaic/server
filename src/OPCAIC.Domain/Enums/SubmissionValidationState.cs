@@ -24,5 +24,10 @@
 		///     Validation failed.
 		/// </summary>
 		Error,
+
+		/// <summary>
+		///     Validation has been cancelled.
+		/// </summary>
+		Cancelled
 	}
 }

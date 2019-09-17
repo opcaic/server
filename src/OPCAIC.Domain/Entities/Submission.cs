@@ -23,11 +23,6 @@ namespace OPCAIC.Domain.Entities
 		public double Score { get; set; }
 
 		/// <summary>
-		///     Whether this submission is active and should participate in tournament matches.
-		/// </summary>
-		public bool IsActive { get; set; }
-
-		/// <summary>
 		///     Id of the tournament this submission has been posted to.
 		/// </summary>
 		public long TournamentId { get; set; }
@@ -36,6 +31,11 @@ namespace OPCAIC.Domain.Entities
 		///     Tournament this submission has been posted to.
 		/// </summary>
 		public virtual Tournament Tournament { get; set; }
+
+		/// <summary>
+		///     Link to the participation of this submission in the tournament.
+		/// </summary>
+		public virtual TournamentParticipation TournamentParticipation { get; set; }
 
 		/// <summary>
 		///     Reference to mapping table of matches and their participants.

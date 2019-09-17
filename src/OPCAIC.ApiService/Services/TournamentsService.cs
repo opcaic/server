@@ -13,6 +13,7 @@ using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Logging;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 

@@ -14,6 +14,7 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Emails;
 using OPCAIC.Application.Services;
+using OPCAIC.Application.Tournaments.Events;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Messaging.Config;
@@ -67,9 +68,10 @@ namespace OPCAIC.ApiService
 			});
 
 			// TODO: replace with real database
+//			services.AddDbContext<DataContext>(options => options.UseNpgsql("Server=127.0.0.1;Port=5432;Database=opcaic_server_db_dev;User Id=opcaic;Password=opcaic2019;"));
 			services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("Dummy"));
 
-			services.AddMediatR(typeof(Startup).Assembly);
+			services.AddMediatR(typeof(Startup).Assembly, typeof(TournamentFinished).Assembly);
 			services.AddServices();
 			services.AddBroker();
 			services.AddRepositories();

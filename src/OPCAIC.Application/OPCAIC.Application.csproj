@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MediatR" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
   </ItemGroup>
@@ -13,7 +14,6 @@
   <ItemGroup>
     <ProjectReference Include="..\OPCAIC.Broker\OPCAIC.Broker.csproj" />
     <ProjectReference Include="..\OPCAIC.Domain\OPCAIC.Domain.csproj" />
-    <ProjectReference Include="..\OPCAIC.Messaging\OPCAIC.Messaging.csproj" />
   </ItemGroup>
 
 </Project>

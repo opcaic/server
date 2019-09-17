@@ -14,14 +14,14 @@ namespace OPCAIC.ApiService.Controllers
 {
 	[Authorize]
 	[Route("api/tournaments/{tournamentId}/participants")]
-	public class TournamentParticipantsController : ControllerBase
+	public class TournamentInvitationsController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;
-		private readonly ITournamentParticipantsService tournamentParticipantsService;
+		private readonly ITournamentInvitationsService tournamentInvitationsService;
 
-		public TournamentParticipantsController(ITournamentParticipantsService tournamentParticipantsService, IAuthorizationService authorizationService)
+		public TournamentInvitationsController(ITournamentInvitationsService tournamentInvitationsService, IAuthorizationService authorizationService)
 		{
-			this.tournamentParticipantsService = tournamentParticipantsService;
+			this.tournamentInvitationsService = tournamentInvitationsService;
 			this.authorizationService = authorizationService;
 		}
 
@@ -30,15 +30,15 @@ namespace OPCAIC.ApiService.Controllers
 		/// </summary>
 		/// <returns>array of all tournaments</returns>
 		[HttpGet]
-		[ProducesResponseType(typeof(ListModel<TournamentParticipantPreviewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(ListModel<TournamentInvitationPreviewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ListModel<TournamentParticipantPreviewModel>> GetParticipantsAsync(long tournamentId, [FromQuery] TournamentParticipantFilter filter, CancellationToken cancellationToken)
+		public async Task<ListModel<TournamentInvitationPreviewModel>> GetParticipantsAsync(long tournamentId, [FromQuery] TournamentInvitationFilter filter, CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageInvites);
-			return await tournamentParticipantsService.GetParticipantsAsync(tournamentId, filter, cancellationToken);
+			return await tournamentInvitationsService.GetInvitationsAsync(tournamentId, filter, cancellationToken);
 		}
 
 		/// <summary>
@@ -55,10 +55,10 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task PostParticipantsAsync(long tournamentId, [FromBody] NewTournamentParticipantsModel model, CancellationToken cancellationToken)
+		public async Task PostParticipantsAsync(long tournamentId, [FromBody] NewTournamentInvitationsModel model, CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageInvites);
-			await tournamentParticipantsService.CreateAsync(tournamentId, model.Emails, cancellationToken);
+			await tournamentInvitationsService.CreateAsync(tournamentId, model.Emails, cancellationToken);
 		}
 
 		/// <summary>
@@ -75,10 +75,10 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task DeleteParticipantAsync(long tournamentId, DeleteTournamentParticipantModel model, CancellationToken cancellationToken)
+		public async Task DeleteParticipantAsync(long tournamentId, DeleteTournamentInvitationModel model, CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageInvites);
-			await tournamentParticipantsService.DeleteAsync(tournamentId, model.Email, cancellationToken);
+			await tournamentInvitationsService.DeleteAsync(tournamentId, model.Email, cancellationToken);
 		}
 	}
 }

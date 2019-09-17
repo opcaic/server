@@ -6,10 +6,10 @@ using OPCAIC.Application.Dtos.Tournaments;
 
 namespace OPCAIC.Application.Interfaces.Repositories
 {
-	public interface ITournamentParticipantRepository
+	public interface ITournamentInvitationRepository
 	{
-		Task<ListDto<TournamentParticipantDto>> GetParticipantsAsync(long tournamentId,
-			TournamentParticipantFilterDto filter, CancellationToken cancellationToken = default);
+		Task<ListDto<TournamentInvitationDto>> GetInvitationsAsync(long tournamentId,
+			TournamentInvitationFilterDto filter, CancellationToken cancellationToken = default);
 
 		Task<bool> CreateAsync(long tournamentId, IEnumerable<string> emails,
 			CancellationToken cancellationToken = default);

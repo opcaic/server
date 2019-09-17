@@ -13,6 +13,8 @@ using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Logging;
+using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Messaging.Messages;
@@ -26,15 +28,17 @@ namespace OPCAIC.ApiService.Services
 		private readonly IWorkerService workerService;
 		private readonly ILogger<SubmissionValidationService> logger;
 		private readonly ILogStorageService logStorage;
+		private readonly ITimeService time;
 
 		public SubmissionValidationService(ISubmissionValidationRepository repository, IWorkerService workerService,
-			ILogger<SubmissionValidationService> logger, IMapper mapper, ILogStorageService logStorage)
+			ILogger<SubmissionValidationService> logger, IMapper mapper, ILogStorageService logStorage, ITimeService time)
 		{
 			this.repository = repository;
 			this.workerService = workerService;
 			this.logger = logger;
 			this.mapper = mapper;
 			this.logStorage = logStorage;
+			this.time = time;
 		}
 
 		/// <inheritdoc />
@@ -58,14 +62,6 @@ namespace OPCAIC.ApiService.Services
 				AdditionalFilesUri = workerService.GetAdditionalFilesUrl(data.TournamentId),
 				AccessToken = CreateAccessToken(data.SubmissionId, data.Id, data.TournamentId)
 			};
-		}
-
-		public Task UpdateFromMessage(SubmissionValidationResult result)
-		{
-			var dto = mapper.Map<UpdateSubmissionValidationDto>(result);
-			dto.Executed = DateTime.Now;
-			logger.SubmissionValidationUpdated(result.JobId, dto);
-			return repository.UpdateFromJobAsync(result.JobId, dto, CancellationToken.None);
 		}
 
 		/// <inheritdoc />

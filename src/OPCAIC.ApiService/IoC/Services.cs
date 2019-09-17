@@ -6,6 +6,8 @@ using OPCAIC.Application.Emails;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Services;
+using OPCAIC.Common;
+using OPCAIC.Infrastructure;
 using OPCAIC.Infrastructure.Emails;
 
 namespace OPCAIC.ApiService.IoC
@@ -22,11 +24,12 @@ namespace OPCAIC.ApiService.IoC
 				.AddTransient<EmailSender>()
 				.AddSingleton<ILogStorageService, LogStorageService>()
 				.AddSingleton<IStorageService, StorageService>()
+				.AddSingleton<ITimeService, MachineTimeService>()
 				.AddScoped<IEmailService, EmailService>()
 				.AddScoped<IUserManager, UserManager>()
 				.AddScoped<IGamesService, GamesService>()
 				.AddScoped<ITournamentsService, TournamentsService>()
-				.AddScoped<ITournamentParticipantsService, TournamentParticipantsService>()
+				.AddScoped<ITournamentInvitationsService, TournamentInvitationsService>()
 				.AddScoped<IDocumentService, DocumentService>()
 				.AddScoped<ISubmissionService, SubmissionService>()
 				.AddScoped<IFrontendUrlGenerator, UrlGenerator>()

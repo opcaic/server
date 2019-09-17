@@ -52,8 +52,8 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Validators
 		}
 	}
 
-	public class TournamentParticipantFilterValidator
-		: FilterModelValidator<TournamentParticipantFilter>
+	public class TournamentInvitationFilterValidator
+		: FilterModelValidator<TournamentInvitationFilter>
 	{
 	}
 

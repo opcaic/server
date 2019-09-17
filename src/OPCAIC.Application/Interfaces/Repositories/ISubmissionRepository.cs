@@ -7,16 +7,13 @@ namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface ISubmissionRepository
 		: IGenericRepository<SubmissionFilterDto, SubmissionPreviewDto, SubmissionDetailDto,
-				NewSubmissionDto, UpdateSubmissionDto>,
+				NewSubmissionDto, UpdateSubmissionScoreDto>,
 			IAuthDataRepository<SubmissionAuthDto>
 	{
 		Task<SubmissionStorageDto> FindSubmissionForStorageAsync(long id,
 			CancellationToken cancellationToken = default);
 
 		Task<List<SubmissionDetailDto>> AllSubmissionsFromTournament(long tournamentId,
-			CancellationToken cancellationToken);
-
-		Task<bool> UpdateSubmissionScoreAsync(long id, UpdateSubmissionScoreDto update,
 			CancellationToken cancellationToken);
 	}
 }

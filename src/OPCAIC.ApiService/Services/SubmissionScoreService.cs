@@ -63,10 +63,10 @@ namespace OPCAIC.ApiService.Services
 			var ea = GetEloExpectedResult(playerAscore, playerBscore);
 			var eb = GetEloExpectedResult(playerBscore, playerAscore);
 
-			await submissionRepository.UpdateSubmissionScoreAsync(sub1Id,
+			await submissionRepository.UpdateAsync(sub1Id,
 				new UpdateSubmissionScoreDto {Score = playerAscore + K * (score1 - ea)},
 				cancellationToken);
-			await submissionRepository.UpdateSubmissionScoreAsync(sub2Id,
+			await submissionRepository.UpdateAsync(sub2Id,
 				new UpdateSubmissionScoreDto {Score = playerBscore + K * (score2 - eb)},
 				cancellationToken);
 		}
@@ -78,10 +78,10 @@ namespace OPCAIC.ApiService.Services
 			var sub2Id = result.BotResults[1].SubmissionId;
 			var score1 = result.BotResults[0].Score;
 			var score2 = result.BotResults[1].Score;
-			await submissionRepository.UpdateSubmissionScoreAsync(sub1Id,
+			await submissionRepository.UpdateAsync(sub1Id,
 				new UpdateSubmissionScoreDto { Score = score1 + result.BotResults[0].Score },
 				cancellationToken);
-			await submissionRepository.UpdateSubmissionScoreAsync(sub2Id,
+			await submissionRepository.UpdateAsync(sub2Id,
 				new UpdateSubmissionScoreDto { Score = score2 + result.BotResults[1].Score },
 				cancellationToken);
 		}
@@ -96,7 +96,7 @@ namespace OPCAIC.ApiService.Services
 			{
 				if (score > sub.Score)
 				{
-					await submissionRepository.UpdateSubmissionScoreAsync(subId,
+					await submissionRepository.UpdateAsync(subId,
 						new UpdateSubmissionScoreDto {Score = score},
 						cancellationToken);
 				}
@@ -105,7 +105,7 @@ namespace OPCAIC.ApiService.Services
 			{
 				if (score < sub.Score)
 				{
-					await submissionRepository.UpdateSubmissionScoreAsync(subId,
+					await submissionRepository.UpdateAsync(subId,
 						new UpdateSubmissionScoreDto {Score = score},
 						cancellationToken);
 				}

@@ -1,14 +1,12 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Emails;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
-using OPCAIC.Infrastructure.Emails;
 
-namespace OPCAIC.ApiService.Notifications.Events
+namespace OPCAIC.Application.Tournaments.Events
 {
 	public class TournamentFinished : INotification
 	{

@@ -10,7 +10,6 @@ namespace OPCAIC.ApiService.Interfaces
 	public interface ISubmissionValidationService
 	{
 		Task EnqueueValidationAsync(long submissionId, CancellationToken cancellationToken);
-		Task UpdateFromMessage(SubmissionValidationResult result);
 		Task OnValidationRequestExpired(Guid jobId);
 
 		SubmissionValidationRequest CreateRequest(SubmissionValidationRequestDataDto data);

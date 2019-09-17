@@ -13,6 +13,7 @@ using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Logging;
 
 namespace OPCAIC.ApiService.Controllers
 {

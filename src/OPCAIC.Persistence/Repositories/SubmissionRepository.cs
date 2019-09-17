@@ -12,7 +12,7 @@ namespace OPCAIC.Persistence.Repositories
 {
 	public class SubmissionRepository
 		: GenericRepository<Submission, SubmissionFilterDto, SubmissionPreviewDto,
-				SubmissionDetailDto, NewSubmissionDto, UpdateSubmissionDto>,
+				SubmissionDetailDto, NewSubmissionDto, UpdateSubmissionScoreDto>,
 			ISubmissionRepository
 	{
 		/// <inheritdoc />
@@ -35,13 +35,6 @@ namespace OPCAIC.Persistence.Repositories
 			return Query(s => s.TournamentId == tournamentId)
 				.ProjectTo<SubmissionDetailDto>(Mapper.ConfigurationProvider)
 				.ToListAsync(cancellationToken);
-		}
-
-		/// <inheritdoc />
-		public Task<bool> UpdateSubmissionScoreAsync(long id, UpdateSubmissionScoreDto update,
-			CancellationToken cancellationToken)
-		{
-			return UpdateFromDtoAsync(id, update, cancellationToken);
 		}
 
 		/// <inheritdoc />

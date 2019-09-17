@@ -6,14 +6,13 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Extensions;
-using OPCAIC.ApiService.Notifications.Events;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Tournaments;
-using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Logging;
+using OPCAIC.Application.Tournaments.Events;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService.Services
 {

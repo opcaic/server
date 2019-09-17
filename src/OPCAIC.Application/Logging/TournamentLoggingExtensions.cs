@@ -3,11 +3,10 @@ using Newtonsoft.Json;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Common;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Utils;
 
-namespace OPCAIC.ApiService.Extensions
+namespace OPCAIC.Application.Logging
 {
-	internal static class TournamentLoggingExtensions
+	public static class TournamentLoggingExtensions
 	{
 		public static void TournamentCreated(this ILogger logger, long tournamentId,
 			NewTournamentDto dto)

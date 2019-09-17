@@ -19,21 +19,21 @@ using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.ApiService.Services
 {
-	public class TournamentParticipantsService : ITournamentParticipantsService
+	public class TournamentInvitationsService : ITournamentInvitationsService
 	{
 		private readonly IFrontendUrlGenerator urlGenerator;
 		private readonly IEmailService emailService;
 		private readonly IMapper mapper;
 		private readonly ITournamentRepository tournamentRepository;
-		private readonly ITournamentParticipantRepository tournamentParticipantRepository;
+		private readonly ITournamentInvitationRepository tournamentInvitationRepository;
 
-		public TournamentParticipantsService(IEmailService emailService, IMapper mapper,
-			ITournamentRepository tournamentRepository, ITournamentParticipantRepository tournamentParticipantRepository, IFrontendUrlGenerator urlGenerator)
+		public TournamentInvitationsService(IEmailService emailService, IMapper mapper,
+			ITournamentRepository tournamentRepository, ITournamentInvitationRepository tournamentInvitationRepository, IFrontendUrlGenerator urlGenerator)
 		{
 			this.emailService = emailService;
 			this.mapper = mapper;
 			this.tournamentRepository = tournamentRepository;
-			this.tournamentParticipantRepository = tournamentParticipantRepository;
+			this.tournamentInvitationRepository = tournamentInvitationRepository;
 			this.urlGenerator = urlGenerator;
 		}
 
@@ -45,12 +45,12 @@ namespace OPCAIC.ApiService.Services
 				throw new NotFoundException(nameof(Tournament), tournamentId);
 			}
 
-			var participantsDto = await tournamentParticipantRepository.GetParticipantsAsync(tournamentId, null, cancellationToken);
+			var participantsDto = await tournamentInvitationRepository.GetInvitationsAsync(tournamentId, null, cancellationToken);
 
 			// add only those addresses, which are not already added
 			emails = emails.Where(email => !participantsDto.List.Select(dto => dto.Email).Contains(email));
 
-			await tournamentParticipantRepository.CreateAsync(tournamentId, emails, cancellationToken);
+			await tournamentInvitationRepository.CreateAsync(tournamentId, emails, cancellationToken);
 
 			string tournamentUrl = urlGenerator.TournamentPageLink(tournamentId);
 
@@ -70,20 +70,20 @@ namespace OPCAIC.ApiService.Services
 			if (!await tournamentRepository.ExistsByIdAsync(tournamentId, cancellationToken))
 				throw new NotFoundException(nameof(Tournament), tournamentId);
 
-			if (!await tournamentParticipantRepository.DeleteAsync(tournamentId, email, cancellationToken))
-				throw new ConflictException(ValidationErrorCodes.UserNotTournamentParticipant, $"User with email '{email}' is not participant of tournament with id {tournamentId}", nameof(email));
+			if (!await tournamentInvitationRepository.DeleteAsync(tournamentId, email, cancellationToken))
+				throw new ConflictException(ValidationErrorCodes.UserNotInvited, $"User with email '{email}' is not participant of tournament with id {tournamentId}", nameof(email));
 		}
 
-		public async Task<ListModel<TournamentParticipantPreviewModel>> GetParticipantsAsync(long tournamentId, TournamentParticipantFilter filter, CancellationToken cancellationToken)
+		public async Task<ListModel<TournamentInvitationPreviewModel>> GetInvitationsAsync(long tournamentId, TournamentInvitationFilter filter, CancellationToken cancellationToken)
 		{
 			if (!await tournamentRepository.ExistsByIdAsync(tournamentId, cancellationToken))
 				throw new NotFoundException(nameof(Tournament), tournamentId);
 
-			var filterDto = mapper.Map<TournamentParticipantFilterDto>(filter);
+			var filterDto = mapper.Map<TournamentInvitationFilterDto>(filter);
 
-			var dtoArray = await tournamentParticipantRepository.GetParticipantsAsync(tournamentId, filterDto, cancellationToken);
+			var dtoArray = await tournamentInvitationRepository.GetInvitationsAsync(tournamentId, filterDto, cancellationToken);
 
-			return mapper.Map<ListModel<TournamentParticipantPreviewModel>>(dtoArray);
+			return mapper.Map<ListModel<TournamentInvitationPreviewModel>>(dtoArray);
 		}
 	}
 }

@@ -15,7 +15,7 @@ using OPCAIC.Domain.Enums;
 namespace OPCAIC.Persistence.Repositories
 {
 	public class MatchExecutionRepository
-		: RepositoryBase<MatchExecution>, IMatchExecutionRepository
+		: EntityRepository<MatchExecution>, IMatchExecutionRepository
 	{
 		/// <inheritdoc />
 		public MatchExecutionRepository(DataContext context, IMapper mapper) : base(context, mapper)

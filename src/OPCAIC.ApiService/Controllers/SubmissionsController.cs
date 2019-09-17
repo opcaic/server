@@ -77,7 +77,6 @@ namespace OPCAIC.ApiService.Controllers
 			var id = await submissionService.CreateAsync(model, User.GetId(), cancellationToken);
 			await validationService.EnqueueValidationAsync(id, cancellationToken);
 
-			logger.SubmissionCreated(id, model);
 			return CreatedAtRoute(nameof(GetSubmissionByIdAsync), new {id}, new IdModel {Id = id});
 		}
 
@@ -124,30 +123,6 @@ namespace OPCAIC.ApiService.Controllers
 			await authorizationService.CheckPermissions(User, id, SubmissionPermission.Download);
 			return File(await submissionService.GetSubmissionArchiveAsync(id, cancellationToken),
 				MediaTypeNames.Application.Zip);
-		}
-
-		/// <summary>
-		///     Updates submission data by id.
-		/// </summary>
-		/// <param name="id">Id of the submission.</param>
-		/// <param name="model">Data of the updated submission.</param>
-		/// <param name="cancellationToken"></param>
-		/// <response code="200">User was successfully updated.</response>
-		/// <response code="401">User is not authenticated.</response>
-		/// <response code="403">User does not have permissions to this resource.</response>
-		/// <response code="404">Resource was not found.</response>
-		[HttpPut("{id}")]
-		[ProducesResponseType(StatusCodes.Status200OK)]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		[ProducesResponseType(StatusCodes.Status403Forbidden)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task UpdateAsync(long id, [FromBody] UpdateSubmissionModel model,
-			CancellationToken cancellationToken)
-		{
-			await authorizationService.CheckPermissions(User, id, SubmissionPermission.Update);
-			logger.SubmissionUpdated(id, model);
-			await submissionService.UpdateAsync(id, model, cancellationToken);
 		}
 
 		/// <summary>

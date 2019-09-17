@@ -9,13 +9,14 @@ using Microsoft.EntityFrameworkCore;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.SubmissionValidations.Events;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Persistence.Repositories
 {
 	public class SubmissionValidationRepository
-		: RepositoryBase<SubmissionValidation>, ISubmissionValidationRepository
+		: EntityRepository<SubmissionValidation>, ISubmissionValidationRepository
 	{
 		/// <inheritdoc />
 		public SubmissionValidationRepository(DataContext context, IMapper mapper) 
@@ -37,7 +38,13 @@ namespace OPCAIC.Persistence.Repositories
 			return GetDtoByIdAsync<SubmissionValidationStorageDto>(id, cancellationToken);
 		}
 
-		public Task<bool> UpdateFromJobAsync(Guid jobId, UpdateSubmissionValidationDto dto,
+		/// <inheritdoc />
+		public Task<SubmissionValidationDto> FindByGuidAsync(Guid guid, CancellationToken cancellationToken)
+		{
+			return GetDtoByQueryAsync<SubmissionValidationDto>(v => v.JobId == guid, cancellationToken);
+		}
+
+		public Task<bool> UpdateFromJobAsync(Guid jobId, SubmissionValidationFinished dto,
 			CancellationToken cancellationToken)
 		{
 			return UpdateFromDtoByQueryAsync(v => v.JobId == jobId, dto, cancellationToken);

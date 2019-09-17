@@ -147,20 +147,20 @@ namespace OPCAIC.Persistence.Repositories
 
 		#endregion
 
-		#region TournamentParticipants
+		#region TournamentInvitations
 
-		public static IQueryable<TournamentParticipant> Filter(
-			this IQueryable<TournamentParticipant> query, TournamentParticipantFilterDto filter)
+		public static IQueryable<TournamentInvitation> Filter(
+			this IQueryable<TournamentInvitation> query, TournamentInvitationFilterDto filter)
 		{
 			return query.SortBy(filter.SortBy, filter.Asc);
 		}
 
-		private static IQueryable<TournamentParticipant> SortBy(
-			this IQueryable<TournamentParticipant> query, string sortBy, bool asc)
+		private static IQueryable<TournamentInvitation> SortBy(
+			this IQueryable<TournamentInvitation> query, string sortBy, bool asc)
 		{
 			switch (sortBy)
 			{
-				case TournamentParticipantFilterDto.SortByEmail:
+				case TournamentInvitationFilterDto.SortByEmail:
 					return query.Sort(row => row.Email, asc);
 				default:
 					return query.Sort(row => row.Id, asc);
@@ -220,7 +220,7 @@ namespace OPCAIC.Persistence.Repositories
 
 			if (filter.IsActive != null)
 			{
-				query = query.Where(row => row.IsActive == filter.IsActive);
+				query = query.Where(row => row.TournamentParticipation.ActiveSubmissionId == row.Id);
 			}
 
 			if (filter.TournamentId != null)

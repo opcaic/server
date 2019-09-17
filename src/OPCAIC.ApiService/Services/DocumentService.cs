@@ -11,6 +11,7 @@ using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Logging;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.ApiService.Services

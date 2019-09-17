@@ -10,7 +10,7 @@ using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Persistence.Repositories.Emails
 {
-	public class EmailTemplateRepository : RepositoryBase<EmailTemplate>, IEmailTemplateRepository
+	public class EmailTemplateRepository : EntityRepository<EmailTemplate>, IEmailTemplateRepository
 	{
 		public EmailTemplateRepository(DataContext context, IMapper mapper)
 			: base(context, mapper)

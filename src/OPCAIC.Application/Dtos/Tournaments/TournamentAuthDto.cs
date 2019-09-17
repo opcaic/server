@@ -10,6 +10,8 @@ namespace OPCAIC.Application.Dtos.Tournaments
 
 		public long[] ManagerIds { get; set; }
 
+		public long[] ParticipantIds { get; set; }
+
 		public TournamentAvailability Availability { get; set; }
 	}
 }

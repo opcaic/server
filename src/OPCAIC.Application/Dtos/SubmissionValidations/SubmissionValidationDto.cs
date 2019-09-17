@@ -7,6 +7,8 @@ namespace OPCAIC.Application.Dtos.SubmissionValidations
 	{
 		public long Id { get; set; }
 
+		public long SubmissionId { get; set; }
+
 		public Guid JobId { get; set; }
 
 		public EntryPointResult CheckerResult { get; set; }

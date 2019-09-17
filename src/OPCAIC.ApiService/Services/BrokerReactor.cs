@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,6 +14,7 @@ using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.SubmissionValidations.Events;
 using OPCAIC.Broker;
 using OPCAIC.Common;
 using OPCAIC.Domain.Enums;
@@ -23,12 +26,17 @@ namespace OPCAIC.ApiService.Services
 	public class BrokerReactor : HostedJob
 	{
 		private readonly IBroker broker;
+		private readonly IMapper mapper;
+		private readonly ITimeService time;
 		private const int maxBrokerItems = 50;
 
-		public BrokerReactor(IBroker broker, IServiceProvider serviceProvider, ILogger<BrokerReactor> logger)
+		public BrokerReactor(IBroker broker, IServiceProvider serviceProvider, ILogger<BrokerReactor> logger, IMapper mapper, ITimeService time)
 			: base(serviceProvider, logger, TimeSpan.FromSeconds(1))
 		{
 			this.broker = broker;
+			this.mapper = mapper;
+			this.time = time;
+
 			broker.RegisterHandler<MatchExecutionResult>(
 				msg => Task.Run(() => ScopeExecute((sp, ct) => OnMatchExecuted(sp, msg, ct))));
 			broker.RegisterHandler<SubmissionValidationResult>(
@@ -96,8 +104,9 @@ namespace OPCAIC.ApiService.Services
 		{
 			using (Logger.BeginScope((LoggingTags.JobId, result.JobId)))
 			{
-				var validationService = services.GetRequiredService<ISubmissionValidationService>();
-				await validationService.UpdateFromMessage(result);
+				var dto = mapper.Map<SubmissionValidationFinished>(result);
+				dto.Executed = time.Now;
+				await services.GetRequiredService<IMediator>().Publish(dto, cancellationToken);
 			}
 		}
 

@@ -148,7 +148,17 @@ namespace OPCAIC.ApiService.Test.Services
 		{
 			var tournament = NewTrackedEntity<Tournament>();
 			tournament.State = TournamentState.Running;
-			tournament.Submissions = Faker.Entities<Submission>(submissionCount);
+			tournament.Participants = Faker.Entities<Submission>(submissionCount).Select(s => new TournamentParticipation
+			{
+				Tournament = tournament,
+				User = s.Author,
+				ActiveSubmission = s,
+				Submissions = new List<Submission>
+				{
+					s
+				}
+			}).ToList();
+
 			return tournament;
 		}
 
