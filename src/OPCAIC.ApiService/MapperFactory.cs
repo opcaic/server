@@ -27,6 +27,7 @@ using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Dtos.TournamentParticipations;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Application.SubmissionValidations.Events;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
@@ -68,6 +69,7 @@ namespace OPCAIC.ApiService
 		private static void AddOther(this IMapperConfigurationExpression exp)
 		{
 			exp.CreateMap(typeof(ListDto<>), typeof(ListModel<>), MemberList.Destination);
+			exp.CreateMap(typeof(PagedResult<>), typeof(ListModel<>), MemberList.Destination);
 
 			exp.CreateMap<Dictionary<string, object>, string>()
 				.ConvertUsing(d => JsonConvert.SerializeObject(d));

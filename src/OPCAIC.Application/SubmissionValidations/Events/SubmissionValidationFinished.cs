@@ -8,6 +8,7 @@ using OPCAIC.Application.Dtos.TournamentParticipations;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
@@ -52,7 +53,7 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 				}
 
 				// check whether this is last validation of the submission
-				var spec = ProjectionSpecification<SubmissionValidation>.Create(
+				var spec = ProjectingSpecification<SubmissionValidation>.Create(
 					v => v.JobId == notification.JobId,
 					v => new
 					{

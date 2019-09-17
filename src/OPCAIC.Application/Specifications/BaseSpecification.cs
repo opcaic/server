@@ -6,19 +6,8 @@ namespace OPCAIC.Application.Specifications
 {
 	public class BaseSpecification<T> : ISpecification<T>
 	{
-		public BaseSpecification()
-		{
-		}
-
 		/// <inheritdoc />
 		public Expression<Func<T, bool>> Criteria { get; set; }
-
-		public void AddCriteria(Expression<Func<T, bool>> criteria)
-		{
-			Criteria = Criteria == null 
-				? criteria 
-				: Criteria.And(criteria);
-		}
 
 		/// <inheritdoc />
 		public Expression<Func<T, object>> OrderBy { get; set; }
@@ -28,5 +17,28 @@ namespace OPCAIC.Application.Specifications
 
 		/// <inheritdoc />
 		public PagingInfo? PagingInfo { get; set; }
+
+		public BaseSpecification<T> AddCriteria(Expression<Func<T, bool>> criteria)
+		{
+			Criteria = Criteria == null
+				? criteria
+				: Criteria.And(criteria);
+
+			return this;
+		}
+
+		public BaseSpecification<T> Ordered(Expression<Func<T, object>> selector,
+			bool orderDescending = false)
+		{
+			OrderBy = selector;
+			OrderByDescending = orderDescending;
+			return this;
+		}
+
+		public BaseSpecification<T> WithPaging(int offset, int count)
+		{
+			PagingInfo = new PagingInfo(offset, count);
+			return this;
+		}
 	}
 }

@@ -123,7 +123,7 @@ namespace OPCAIC.Persistence.Repositories
 		public Task<List<TEntity>> ListAsync(ISpecification<TEntity> specification,
 			CancellationToken cancellationToken)
 		{
-			return SpecificationEvaluator<TEntity>.ApplySpecification(Queryable, specification)
+			return Queryable.ApplySpecification(specification)
 				.ToListAsync(cancellationToken);
 		}
 
@@ -132,15 +132,51 @@ namespace OPCAIC.Persistence.Repositories
 			IProjectingSpecification<TEntity, TDestination> specification,
 			CancellationToken cancellationToken)
 		{
-			return SpecificationEvaluator<TEntity>.ApplyProjection(Queryable, specification)
+			return Queryable.ApplyProjection(specification)
 				.ToListAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public async Task<PagedResult<TEntity>> ListPagedAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken)
+		{
+			// fetch items and count in one query
+			var query = Queryable.ApplySpecification(specification);
+			var result = await query.ApplyPaging(specification)
+				.Select(e => new { Total = query.Count(), Item = e })
+				.ToListAsync(cancellationToken);
+
+			if (result.Count > 0)
+			{
+				return new PagedResult<TEntity>(result[0].Total, result.Select(s => s.Item).ToList());
+			}
+
+			return new PagedResult<TEntity>(0, new List<TEntity>());
+		}
+
+		/// <inheritdoc />
+		public async Task<PagedResult<TDestination>> ListPagedAsync<TDestination>(IProjectingSpecification<TEntity, TDestination> specification,
+			CancellationToken cancellationToken)
+		{
+			// fetch items and count in one query
+			var query = Queryable.ApplySpecification(specification);
+			var result = await query.ApplyPaging(specification)
+				.ApplyProjection(specification)
+				.Select(e => new { Total = query.Count(), Item = e })
+				.ToListAsync(cancellationToken);
+
+			if (result.Count > 0)
+			{
+				return new PagedResult<TDestination>(result[0].Total, result.Select(s => s.Item).ToList());
+			}
+
+			return new PagedResult<TDestination>(0, new List<TDestination>());
 		}
 
 		/// <inheritdoc />
 		public Task<TEntity> FindAsync(ISpecification<TEntity> specification,
 			CancellationToken cancellationToken)
 		{
-			return SpecificationEvaluator<TEntity>.ApplySpecification(Queryable, specification)
+			return Queryable.ApplySpecification(specification)
 				.SingleOrDefaultAsync(cancellationToken);
 		}
 
@@ -149,7 +185,7 @@ namespace OPCAIC.Persistence.Repositories
 			IProjectingSpecification<TEntity, TDestination> specification,
 			CancellationToken cancellationToken)
 		{
-			return SpecificationEvaluator<TEntity>.ApplyProjection(Queryable, specification)
+			return Queryable.ApplyProjection(specification)
 				.SingleOrDefaultAsync(cancellationToken);
 		}
 	}

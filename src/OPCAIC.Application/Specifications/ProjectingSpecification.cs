@@ -35,24 +35,6 @@ namespace OPCAIC.Application.Specifications
 		}
 
 		public static ProjectingSpecification<TSource, TDestination> Create<TDestination>(
-			Expression<Func<TSource, bool>> criteria,
-			Expression<Func<TSource, TDestination>> projection)
-		{
-			var spec = Create(projection);
-			spec.Criteria = criteria;
-			return spec;
-		}
-
-		public static ProjectingSpecification<TSource, TDestination> Create<TDestination>(
-			Expression<Func<TSource, bool>> criteria,
-			IMapper mapper)
-		{
-			var projection = mapper.ConfigurationProvider.ExpressionBuilder
-				.GetMapExpression<TSource, TDestination>();
-			return Create(criteria, projection);
-		}
-
-		public static ProjectingSpecification<TSource, TDestination> Create<TDestination>(
 			IMapper mapper)
 		{
 			var projection = mapper.ConfigurationProvider.ExpressionBuilder

@@ -1,12 +1,14 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Application.Dtos.Games;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IGameRepository
-		: IGenericRepository<GameFilterDto, GamePreviewDto, GameDetailDto, NewGameDto, UpdateGameDto
-		>
+		: IGenericRepository<GameFilterDto, GamePreviewDto, GameDetailDto, NewGameDto, UpdateGameDto>,
+			IRepository<Game>
 	{
 		/// <summary>
 		///     Checks whether game with given Id exists.
