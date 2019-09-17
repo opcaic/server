@@ -24,7 +24,17 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 		public static IRuleBuilderOptions<T, int> InRange<T>(
 			this IRuleBuilder<T, int> rule, int min, int max)
 		{
-			var dict = new Dictionary<string, object> {["minimum"] = min, ["maximum"] = max};
+			var dict = new Dictionary<string, object> { ["minimum"] = min, ["maximum"] = max };
+			return rule.InclusiveBetween(min, max)
+				.WithState(_ => dict)
+				.WithErrorCode(ValidationErrorCodes.RangeError);
+		}
+
+		public static IRuleBuilderOptions<T, TVal?> InRange<T, TVal>(
+			this IRuleBuilder<T, TVal?> rule, TVal min, TVal max)
+			where TVal: struct, IComparable, IComparable<TVal>
+		{
+			var dict = new Dictionary<string, object> { ["minimum"] = min, ["maximum"] = max };
 			return rule.InclusiveBetween(min, max)
 				.WithState(_ => dict)
 				.WithErrorCode(ValidationErrorCodes.RangeError);
@@ -95,6 +105,14 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 						});
 				}
 			});
+		}
+
+		public static IRuleBuilderOptions<T, string> Url<T>(
+			this IRuleBuilder<T, string> rule)
+		{
+			return rule
+				.Must(value => value == null || Uri.IsWellFormedUriString(value, UriKind.Absolute))
+				.WithErrorCode(ValidationErrorCodes.InvalidUrlError);
 		}
 	}
 }

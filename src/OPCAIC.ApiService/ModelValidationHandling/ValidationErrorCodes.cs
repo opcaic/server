@@ -16,11 +16,15 @@
 
 		public static string MaxLengthError => "field-max-length";
 
+		public static string StringLengthError => "field-string-length";
+
 		public static string MinValueError => "field-min-value";
 
 		public static string RequiredError => "field-required";
 
 		public static string InvalidEmailError => "field-invalid-email";
+
+		public static string InvalidUrlError => "field-invalid-url";
 
 		public static string InvalidUsernameError => "field-invalid-username";
 

@@ -147,7 +147,7 @@ namespace OPCAIC.ApiService.Utils
 					ImageUrl =
 						"https://images.chesscomfiles.com/uploads/v1/article/17623.87bb05cd.668x375o.47d81802f1eb@2x.jpeg",
 					DefaultTournamentImageOverlay = 0.7f,
-					DefaultTournamentImage =
+					DefaultTournamentImageUrl =
 						"https://images.chesscomfiles.com/uploads/v1/article/17623.87bb05cd.668x375o.47d81802f1eb@2x.jpeg",
 					DefaultTournamentThemeColor = "#491e01",
 					MaxAdditionalFilesSize = 1024 * 1024,
@@ -160,7 +160,7 @@ namespace OPCAIC.ApiService.Utils
 					ImageUrl =
 						"https://upload.wikimedia.org/wikipedia/commons/6/64/2048_Screenshot.png",
 					DefaultTournamentImageOverlay = 0.7f,
-					DefaultTournamentImage =
+					DefaultTournamentImageUrl =
 						"https://upload.wikimedia.org/wikipedia/commons/6/64/2048_Screenshot.png",
 					DefaultTournamentThemeColor = "#f67c5f",
 					MaxAdditionalFilesSize = 1024 * 1024,
@@ -172,7 +172,7 @@ namespace OPCAIC.ApiService.Utils
 					Key = "dota2",
 					ImageUrl = "https://wallpapercave.com/wp/V8Ee1Bm.jpg",
 					DefaultTournamentImageOverlay = 0.2f,
-					DefaultTournamentImage = "https://wallpapercave.com/wp/V8Ee1Bm.jpg",
+					DefaultTournamentImageUrl = "https://wallpapercave.com/wp/V8Ee1Bm.jpg",
 					DefaultTournamentThemeColor = "#2d0f0a",
 					MaxAdditionalFilesSize = 1024 * 1024,
 					ConfigurationSchema = "{}"
@@ -184,7 +184,7 @@ namespace OPCAIC.ApiService.Utils
 					ImageUrl =
 						"https://cdn02.nintendo-europe.com/media/images/10_share_images/games_15/nintendo_ds_22/SI_NDS_NewSuperMarioBrosDS_image1600w.jpg",
 					DefaultTournamentImageOverlay = 0.6f,
-					DefaultTournamentImage =
+					DefaultTournamentImageUrl =
 						"https://cdn02.nintendo-europe.com/media/images/10_share_images/games_15/nintendo_ds_22/SI_NDS_NewSuperMarioBrosDS_image1600w.jpg",
 					DefaultTournamentThemeColor = "#db0522",
 					MaxAdditionalFilesSize = 1024 * 1024,
@@ -197,7 +197,7 @@ namespace OPCAIC.ApiService.Utils
 					ImageUrl =
 						"https://raw.githubusercontent.com/kefik/Sokoban4J/master/Sokoban4J/screenshot2.png",
 					DefaultTournamentImageOverlay = 0.6f,
-					DefaultTournamentImage =
+					DefaultTournamentImageUrl =
 						"https://raw.githubusercontent.com/kefik/Sokoban4J/master/Sokoban4J/screenshot2.png",
 					DefaultTournamentThemeColor = "#97714a",
 					MaxAdditionalFilesSize = 1024 * 1024,

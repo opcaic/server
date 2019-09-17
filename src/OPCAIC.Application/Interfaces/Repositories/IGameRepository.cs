@@ -9,12 +9,13 @@ namespace OPCAIC.Application.Interfaces.Repositories
 		>
 	{
 		/// <summary>
-		///     Checks whether game with given Id exists.
+		///     Checks whether another game with given name exists.
 		/// </summary>
 		/// <param name="name">Name of the game to be checked.</param>
+		/// <param name="currentGameId">ID of currently updated game, which is excluded from search.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken);
+		Task<bool> ExistsOtherByNameAsync(string name, long? currentGameId, CancellationToken cancellationToken);
 
 		/// <summary>
 		///     Gets JSON schema for configurations of tournaments in given game.

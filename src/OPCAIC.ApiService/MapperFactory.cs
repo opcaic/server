@@ -71,7 +71,7 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<Dictionary<string, object>, string>()
 				.ConvertUsing(d => JsonConvert.SerializeObject(d));
-			exp.CreateMap<JObject, string>().ConvertUsing(j => JsonConvert.SerializeObject(j));
+			exp.CreateMap<JObject, string>().ConvertUsing(j => j == null ? null : JsonConvert.SerializeObject(j));
 			exp.CreateMap<string, JObject>().ConvertUsing(j => j == null ? null : JObject.Parse(j));
 			exp.CreateMap<SubTaskResult, EntryPointResult>()
 				.ConvertUsing(s => SubTaskResultToEntryPointResult(s));
@@ -202,7 +202,7 @@ namespace OPCAIC.ApiService
 						=> s.Participants.Count))
 				.ForMember(d => d.ImageUrl,
 					opt => opt.MapFrom(s
-						=> s.ImageUrl ?? s.Game.DefaultTournamentImage))
+						=> s.ImageUrl ?? s.Game.DefaultTournamentImageUrl))
 				.ForMember(d => d.ImageOverlay,
 					opt => opt.MapFrom(s
 						=> s.ImageOverlay ?? s.Game.DefaultTournamentImageOverlay))

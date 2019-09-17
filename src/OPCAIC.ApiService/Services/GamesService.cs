@@ -38,7 +38,7 @@ namespace OPCAIC.ApiService.Services
 		/// <inheritdoc />
 		public async Task<long> CreateAsync(NewGameModel game, CancellationToken cancellationToken)
 		{
-			if (await gameRepository.ExistsByNameAsync(game.Name, cancellationToken))
+			if (await gameRepository.ExistsOtherByNameAsync(game.Name, null, cancellationToken))
 			{
 				throw new ConflictException(
 					new ValidationError(ValidationErrorCodes.GameNameConflict, null,
@@ -81,8 +81,12 @@ namespace OPCAIC.ApiService.Services
 		public async Task UpdateAsync(long id, UpdateGameModel model,
 			CancellationToken cancellationToken)
 		{
-			// TODO: this check must be improved because it fails when the name is not changed and there is therefore this entity with the same name in DB
-			if (await gameRepository.ExistsByNameAsync(model.Name, cancellationToken))
+			if (model.ConfigurationSchema != null && !model.ConfigurationSchema.IsValid(JsonSchemaDefinition.Version7, out IList<string> messages))
+			{
+				throw new BadRequestException(ValidationErrorCodes.InvalidSchema, string.Join("\n", messages), nameof(UpdateGameModel.ConfigurationSchema));
+			}
+
+			if (await gameRepository.ExistsOtherByNameAsync(model.Name, id, cancellationToken))
 			{
 				throw new ConflictException(
 					new ValidationError(ValidationErrorCodes.GameNameConflict, null,

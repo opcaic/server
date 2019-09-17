@@ -9,6 +9,7 @@ using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.Games;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -28,6 +29,9 @@ namespace OPCAIC.ApiService.Test.Services
 
 		private const string GameName = "Game";
 		private const long GameId = 1;
+		private const string GameKey = "Key";
+		private const string GameDefaultColor = "#FFFFFF";
+		private const GameType GameDefaultType = GameType.SinglePlayer;
 
 		private const string SomeSchema = @"{
   'title': 'A registration form',
@@ -53,7 +57,7 @@ namespace OPCAIC.ApiService.Test.Services
 		[Fact]
 		public async Task Create_NameConflict()
 		{
-			gameRepository.Setup(r => r.ExistsByNameAsync(GameName, CancellationToken))
+			gameRepository.Setup(r => r.ExistsOtherByNameAsync(GameName, null, CancellationToken))
 				.ReturnsAsync(true);
 
 			await AssertConflict(ValidationErrorCodes.GameNameConflict, nameof(NewGameModel.Name),
@@ -61,14 +65,14 @@ namespace OPCAIC.ApiService.Test.Services
 					.CreateAsync(
 						new NewGameModel
 						{
-							Name = GameName, ConfigurationSchema = JObject.Parse(SomeSchema)
+							Name = GameName
 						}, CancellationToken));
 		}
 
 		[Fact]
 		public async Task Create_Success()
 		{
-			gameRepository.Setup(r => r.ExistsByNameAsync(GameName, CancellationToken))
+			gameRepository.Setup(r => r.ExistsOtherByNameAsync(GameName, null, CancellationToken))
 				.ReturnsAsync(false);
 
 			gameRepository.Setup(r => r.CreateAsync(It.IsAny<NewGameDto>(), CancellationToken))
@@ -78,7 +82,10 @@ namespace OPCAIC.ApiService.Test.Services
 				.CreateAsync(
 					new NewGameModel
 					{
-						Name = GameName, ConfigurationSchema = JObject.Parse(SomeSchema)
+						Name = GameName,
+						Key = GameKey,
+						DefaultTournamentThemeColor = GameDefaultColor,
+						Type = GameDefaultType
 					}, CancellationToken);
 		}
 
@@ -86,16 +93,20 @@ namespace OPCAIC.ApiService.Test.Services
 		public async Task GetByFilter_Success()
 		{
 			gameRepository.Setup(r => r.GetByFilterAsync(It.IsAny<GameFilterDto>(), CancellationToken))
-				.ReturnsAsync(new ListDto<GamePreviewDto> {Total = 1, List = new[]
+				.ReturnsAsync(new ListDto<GamePreviewDto>
+				{
+					Total = 1,
+					List = new[]
 				{
 					new GamePreviewDto
 					{
 						Id=1,
 						Name = "Name"
 					}
-				}});
+				}
+				});
 
-			var filter = new GameFilterModel {Count = 1};
+			var filter = new GameFilterModel { Count = 1 };
 			await GetService<GamesService>().GetByFilterAsync(filter, CancellationToken);
 		}
 
@@ -123,23 +134,40 @@ namespace OPCAIC.ApiService.Test.Services
 		[Fact]
 		public async Task UpdateAsync_Success()
 		{
-			gameRepository.Setup(r => r.ExistsByNameAsync(GameName, CancellationToken))
+			gameRepository.Setup(r => r.ExistsOtherByNameAsync(GameName, GameId, CancellationToken))
 				.ReturnsAsync(false);
 			gameRepository.Setup(r => r.UpdateAsync(GameId, It.Is<UpdateGameDto>(g => g.Name == GameName), CancellationToken))
 				.ReturnsAsync(true);
 
 			await GetService<GamesService>()
-				.UpdateAsync(GameId, new UpdateGameModel() {Name = GameName}, CancellationToken);
+				.UpdateAsync(GameId, new UpdateGameModel() { Name = GameName, ConfigurationSchema = JObject.Parse(SomeSchema) }, CancellationToken);
 		}
 
 		[Fact]
 		public async Task UpdateAsync_NameConflict()
 		{
-			gameRepository.Setup(r => r.ExistsByNameAsync(GameName, CancellationToken))
+			gameRepository.Setup(r => r.ExistsOtherByNameAsync(GameName, GameId, CancellationToken))
 				.ReturnsAsync(true);
 
 			await AssertConflict(ValidationErrorCodes.GameNameConflict, nameof(UpdateGameModel.Name), () => GetService<GamesService>()
-				.UpdateAsync(GameId, new UpdateGameModel() {Name = GameName}, CancellationToken));
+				.UpdateAsync(GameId, new UpdateGameModel() { Name = GameName }, CancellationToken));
+		}
+
+
+		[Fact]
+		public async Task UpdateAsync_InvalidSchema()
+		{
+			gameRepository.Setup(r => r.ExistsOtherByNameAsync(GameName, null, CancellationToken))
+				.ReturnsAsync(false);
+
+			await AssertBadRequest(ValidationErrorCodes.InvalidSchema,
+				nameof(UpdateGameModel.ConfigurationSchema), () => GetService<GamesService>()
+					.UpdateAsync(GameId,
+						new UpdateGameModel
+						{
+							Name = GameName,
+							ConfigurationSchema = JObject.Parse("{ 'some': 'object'}")
+						}, CancellationToken));
 		}
 	}
 }
