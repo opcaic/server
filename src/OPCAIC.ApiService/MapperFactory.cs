@@ -27,6 +27,7 @@ using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Dtos.TournamentParticipations;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
+using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Games.Queries;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.SubmissionValidations.Events;

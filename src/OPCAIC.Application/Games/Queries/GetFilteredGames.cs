@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;

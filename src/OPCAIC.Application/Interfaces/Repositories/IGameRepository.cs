@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Application.Dtos.Games;
+using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Games.Queries;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;

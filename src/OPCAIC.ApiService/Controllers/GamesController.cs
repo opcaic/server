@@ -14,6 +14,7 @@ using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Games.Queries;
 using OPCAIC.Application.Specifications;
 

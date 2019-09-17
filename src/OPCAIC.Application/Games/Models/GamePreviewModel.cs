@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OPCAIC.Application.Games.Queries
+namespace OPCAIC.Application.Games.Models
 {
 	public class GamePreviewModel
 	{

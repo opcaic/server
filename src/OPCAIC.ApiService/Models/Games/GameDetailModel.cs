@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Games.Queries;
 using OPCAIC.Domain.Enums;
 
