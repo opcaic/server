@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Specifications;
 
 namespace OPCAIC.Persistence.Repositories
 {
@@ -16,7 +15,7 @@ namespace OPCAIC.Persistence.Repositories
 	///     Base class for all repositories containing basic functionality.
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
-	public abstract class RepositoryBase<TEntity> : IDisposable
+	public abstract class RepositoryBase<TEntity> : IDisposable, IRepository<TEntity>
 		where TEntity : class
 	{
 		protected RepositoryBase(DataContext context, IMapper mapper)
@@ -115,15 +114,43 @@ namespace OPCAIC.Persistence.Repositories
 			return DbSet.Where(predicate);
 		}
 
-		protected Task SaveChangesAsync(CancellationToken cancellationToken)
+		public Task SaveChangesAsync(CancellationToken cancellationToken)
 		{
 			return Context.SaveChangesAsync(cancellationToken);
 		}
 
 		/// <inheritdoc />
-		public Task<TResult> QueryAsync<TResult>(Func<IQueryable<TEntity>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+		public Task<List<TEntity>> ListAsync(ISpecification<TEntity> specification,
+			CancellationToken cancellationToken)
 		{
-			return query(Queryable).SingleOrDefaultAsync(cancellationToken);
+			return SpecificationEvaluator<TEntity>.ApplySpecification(Queryable, specification)
+				.ToListAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<List<TDestination>> ListAsync<TDestination>(
+			IProjectingSpecification<TEntity, TDestination> specification,
+			CancellationToken cancellationToken)
+		{
+			return SpecificationEvaluator<TEntity>.ApplyProjection(Queryable, specification)
+				.ToListAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<TEntity> FindAsync(ISpecification<TEntity> specification,
+			CancellationToken cancellationToken)
+		{
+			return SpecificationEvaluator<TEntity>.ApplySpecification(Queryable, specification)
+				.SingleOrDefaultAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<TDestination> FindAsync<TDestination>(
+			IProjectingSpecification<TEntity, TDestination> specification,
+			CancellationToken cancellationToken)
+		{
+			return SpecificationEvaluator<TEntity>.ApplyProjection(Queryable, specification)
+				.SingleOrDefaultAsync(cancellationToken);
 		}
 	}
 }
