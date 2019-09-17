@@ -266,7 +266,7 @@ namespace OPCAIC.ApiService.Utils
 					Scope = TournamentScope.Deadline,
 					Deadline = DateTime.Now.AddDays(6),
 					Availability = TournamentAvailability.Public,
-					State = TournamentState.Published,
+					State = TournamentState.Finished,
 					Configuration = "{}",
 					MaxSubmissionSize = 100 * 1024
 				};

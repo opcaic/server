@@ -237,7 +237,9 @@ namespace OPCAIC.ApiService
 				.IncludeBase<Tournament, TournamentGenerationDtoBase>();
 
 			exp.CreateMap<Tournament, TournamentOngoingGenerationDto>(MemberList.Destination)
-				.IncludeBase<Tournament, TournamentGenerationDtoBase>();
+				.IncludeBase<Tournament, TournamentGenerationDtoBase>()
+				.ForMember(t => t.Submissions,
+					opt => opt.MapFrom(x => x.Participants.SelectMany(p => p.Submissions)));
 
 			exp.CreateMap<Tournament, TournamentDeadlineGenerationDto>(MemberList.Destination)
 				.IncludeBase<Tournament, TournamentGenerationDtoBase>();
@@ -281,6 +283,7 @@ namespace OPCAIC.ApiService
 
 			exp.CreateMap<Submission, SubmissionReferenceDto, SubmissionReferenceModel>(MemberList
 				.Destination);
+			exp.CreateMap<Submission, SubmissionScoreViewDto>(MemberList.Destination);
 
 			exp.CreateMap<SubmissionFilterModel, SubmissionFilterDto>(MemberList.Destination);
 

@@ -86,9 +86,9 @@ namespace OPCAIC.Persistence.Repositories
 
 		public Task<List<TournamentOngoingGenerationDto>> GetOngoingTournamentsForMatchGenerationAsync(CancellationToken cancellationToken)
 		{
-			return Query(t => t.State == TournamentState.Running)
-				.Where(t => t.Scope == TournamentScope.Ongoing)
-				.ProjectTo<TournamentOngoingGenerationDto>(Mapper.ConfigurationProvider)
+			var q = Query(t => t.State == TournamentState.Running)
+				.Where(t => t.Scope == TournamentScope.Ongoing);
+			return q.ProjectTo<TournamentOngoingGenerationDto>(Mapper.ConfigurationProvider)
 				.ToListAsync(cancellationToken);
 		}
 

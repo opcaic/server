@@ -15,8 +15,6 @@ namespace OPCAIC.Application.Services.MatchGeneration
 		/// <inheritdoc />
 		public List<NewMatchDto> Generate(TournamentOngoingGenerationDto tournament, int count)
 		{
-			// TODO: implement true ELO algorithm
-
 			var rand = new Random();
 			var matches = new List<NewMatchDto>(count);
 			var submissions = tournament.ActiveSubmissionIds.Count;
@@ -26,17 +24,26 @@ namespace OPCAIC.Application.Services.MatchGeneration
 				return matches;
 			}
 
-			for (var i = 0; i < count; i++)
+			int matchesGenerated = 0;
+			var pools = GeneratePlayersPools(tournament);
+			while (matchesGenerated < count)
 			{
-				var sub1 = tournament.ActiveSubmissionIds[rand.Next(submissions)];
+				var pickPool = rand.NextDouble();
+				var pool = pools[0];
 
+				if (pickPool < 0.33) pool = pools[0];
+				else if (pickPool < 0.66) pool = pools[1];
+				else pool = pools[2];
+
+				if (pool.Count < 2) continue;
+
+				var sub1 = pool[rand.Next(pool.Count)];
 				// make sure the two submissions are different;
 				long sub2;
 				do
 				{
-					sub2 = tournament.ActiveSubmissionIds[rand.Next(submissions)];
+					sub2 = pool[rand.Next(pool.Count)];
 				} while (sub1 == sub2);
-
 
 				matches.Add(new NewMatchDto
 				{
@@ -44,9 +51,39 @@ namespace OPCAIC.Application.Services.MatchGeneration
 					Submissions = new List<long> {sub1, sub2},
 					TournamentId = tournament.Id
 				});
+				matchesGenerated++;
 			}
 
 			return matches;
+		}
+
+		/// <summary>
+		///     Divides players into 3 pools by their expected skill. The system is inspired by the one used by League of Legends,
+		///     see: https://leagueoflegends.fandom.com/wiki/Elo_rating_system
+		/// </summary>
+		/// <returns> Three pools of submission ids, divided by their expected skill.</returns>
+		private List<List<long>> GeneratePlayersPools(TournamentOngoingGenerationDto tournament)
+		{
+			var pools = new List<List<long>>();
+			// "bronze division", elo 0 - 1149
+			var bronze = new List<long>();
+			// "silver division", elo 1150 - 1499
+			var silver = new List<long>();
+			// "gold division", elo above 1500
+			var gold = new List<long>();
+
+			var submissions = tournament.Submissions;
+			foreach (var submission in submissions)
+			{
+				if (submission.Score < 1150) bronze.Add(submission.Id);
+				else if (submission.Score < 1500) silver.Add(submission.Id);
+				else gold.Add(submission.Id);
+			}
+
+			pools.Add(bronze);
+			pools.Add(silver);
+			pools.Add(gold);
+			return pools;
 		}
 	}
 }

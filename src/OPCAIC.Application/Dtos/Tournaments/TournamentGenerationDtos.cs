@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using OPCAIC.Application.Dtos.Matches;
+using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Dtos.Tournaments
@@ -24,9 +25,8 @@ namespace OPCAIC.Application.Dtos.Tournaments
 	public class TournamentOngoingGenerationDto : TournamentGenerationDtoBase
 	{
 		public int MatchesCount { get; set; }
-		
 		public DateTime EvaluationStarted { get; set; }
-
 		public int MatchesPerDay { get; set; }
+		public List<SubmissionScoreViewDto> Submissions { get; set; }
 	}
 }
