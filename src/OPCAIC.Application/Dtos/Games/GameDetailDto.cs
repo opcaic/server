@@ -1,8 +1,10 @@
-﻿using OPCAIC.Domain.Enums;
+﻿using OPCAIC.Application.Games.Models;
+using OPCAIC.Application.Games.Queries;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Dtos.Games
 {
-	public class GameDetailDto : GamePreviewDto
+	public class GameDetailDto : GamePreviewModel
 	{
 		public string Key { get; set; }
 

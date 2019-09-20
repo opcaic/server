@@ -38,12 +38,6 @@ namespace OPCAIC.Persistence.Repositories
 			return GetDtoByIdAsync<SubmissionValidationStorageDto>(id, cancellationToken);
 		}
 
-		/// <inheritdoc />
-		public Task<SubmissionValidationDto> FindByGuidAsync(Guid guid, CancellationToken cancellationToken)
-		{
-			return GetDtoByQueryAsync<SubmissionValidationDto>(v => v.JobId == guid, cancellationToken);
-		}
-
 		public Task<bool> UpdateFromJobAsync(Guid jobId, SubmissionValidationFinished dto,
 			CancellationToken cancellationToken)
 		{
@@ -66,12 +60,6 @@ namespace OPCAIC.Persistence.Repositories
 				.Take(count)
 				.ProjectTo<SubmissionValidationRequestDataDto>(Mapper.ConfigurationProvider)
 				.ToListAsync(cancellationToken);
-		}
-
-		public Task<SubmissionValidationRequestDataDto> GetRequestDataAsync(long id,
-			CancellationToken cancellationToken)
-		{
-			return GetDtoByIdAsync<SubmissionValidationRequestDataDto>(id, cancellationToken);
 		}
 
 		/// <inheritdoc />

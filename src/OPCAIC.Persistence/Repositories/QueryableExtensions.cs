@@ -70,33 +70,6 @@ namespace OPCAIC.Persistence.Repositories
 
 		#endregion
 
-		#region Games
-
-		public static IQueryable<Game> Filter(this IQueryable<Game> query, GameFilterDto filter)
-		{
-			if (filter.Name != null)
-			{
-				query = query.Where(row => row.Name.ToUpper().StartsWith(filter.Name.ToUpper()));
-			}
-
-			return query.SortBy(filter.SortBy, filter.Asc);
-		}
-
-		private static IQueryable<Game> SortBy(this IQueryable<Game> query, string sortBy, bool asc)
-		{
-			switch (sortBy)
-			{
-				case GameFilterDto.SortByCreated:
-					return query.Sort(row => row.Created, asc);
-				case GameFilterDto.SortByName:
-					return query.Sort(row => row.Name, asc);
-				default:
-					return query.Sort(row => row.Id, asc);
-			}
-		}
-
-		#endregion
-
 		#region Tournaments
 
 		public static IQueryable<Tournament> Filter(this IQueryable<Tournament> query,

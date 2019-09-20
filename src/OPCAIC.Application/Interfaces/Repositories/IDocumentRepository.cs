@@ -1,4 +1,6 @@
 ﻿using OPCAIC.Application.Dtos.Documents;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.Interfaces.Repositories
 {
@@ -6,7 +8,8 @@ namespace OPCAIC.Application.Interfaces.Repositories
 		: IGenericRepository<DocumentFilterDto, DocumentDetailDto, DocumentDetailDto, NewDocumentDto
 				, UpdateDocumentDto>,
 			IDeleteRepository,
-			IAuthDataRepository<DocumentAuthDto>
+			IAuthDataRepository<DocumentAuthDto>,
+			IRepository<Document>
 	{
 	}
 }

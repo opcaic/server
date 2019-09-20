@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Application.Dtos.TournamentParticipations;
+using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.SubmissionValidations.Events
@@ -22,11 +25,13 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 
 		public class Handler : INotificationHandler<SubmissionValidationFinished>
 		{
-			private readonly ISubmissionValidationRepository repository;
-			private readonly ITournamentParticipationsRepository participationsRepository;
 			private readonly ILogger<SubmissionValidationFinished> logger;
+			private readonly ITournamentParticipationsRepository participationsRepository;
+			private readonly ISubmissionValidationRepository repository;
 
-			public Handler(ISubmissionValidationRepository repository, ILogger<SubmissionValidationFinished> logger, ITournamentParticipationsRepository participationsRepository)
+			public Handler(ISubmissionValidationRepository repository,
+				ILogger<SubmissionValidationFinished> logger,
+				ITournamentParticipationsRepository participationsRepository)
 			{
 				this.repository = repository;
 				this.logger = logger;
@@ -34,10 +39,12 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 			}
 
 			/// <inheritdoc />
-			public async Task Handle(SubmissionValidationFinished notification, CancellationToken cancellationToken)
+			public async Task Handle(SubmissionValidationFinished notification,
+				CancellationToken cancellationToken)
 			{
 				// update in database
-				await repository.UpdateFromJobAsync(notification.JobId, notification, cancellationToken);
+				await repository.UpdateFromJobAsync(notification.JobId, notification,
+					cancellationToken);
 				logger.SubmissionValidationUpdated(notification);
 
 				if (notification.ValidatorResult != EntryPointResult.Success)
@@ -46,17 +53,23 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 				}
 
 				// check whether this is last validation of the submission
-				var data = await repository.QueryAsync(
-					q => q.Where(v => v.JobId == notification.JobId).Select(v => new
+				var spec = ProjectingSpecification<SubmissionValidation>.Create(
+					v => new
 					{
-						TournamentId = v.Submission.TournamentId,
+						v.Submission.TournamentId,
 						UserId = v.Submission.AuthorId,
-						SubmissionId = v.SubmissionId,
+						v.SubmissionId,
 						LastSubmissionId = v.Submission.TournamentParticipation.Submissions
 							.OrderByDescending(s => s.Created).First().Id,
 						ValidationId = v.Id,
-						LastValidationId = v.Submission.Validations.OrderByDescending(vv => vv.Created).First().Id
-					}), cancellationToken);
+						LastValidationId = v.Submission.Validations
+							.OrderByDescending(vv => vv.Created)
+							.First().Id
+					});
+
+				spec.AddCriteria(v => v.JobId == notification.JobId);
+
+				var data = await repository.FindAsync(spec, cancellationToken);
 
 				if (data.ValidationId != data.LastValidationId)
 				{
@@ -69,10 +82,8 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 				}
 
 				await participationsRepository.SetActiveSubmission(data.TournamentId, data.UserId,
-					new UpdateTournamentParticipationDto
-					{
-						ActiveSubmissionId = data.SubmissionId
-					}, cancellationToken);
+					new UpdateTournamentParticipationDto {ActiveSubmissionId = data.SubmissionId},
+					cancellationToken);
 			}
 		}
 	}

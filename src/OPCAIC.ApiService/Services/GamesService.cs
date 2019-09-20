@@ -11,7 +11,6 @@ using Newtonsoft.Json.Schema.Generation;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
-using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Application.Dtos.Games;
@@ -50,17 +49,6 @@ namespace OPCAIC.ApiService.Services
 			var id = await gameRepository.CreateAsync(dto, cancellationToken);
 			logger.GameCreated(id, dto);
 			return id;
-		}
-
-		/// <inheritdoc />
-		public async Task<ListModel<GamePreviewModel>> GetByFilterAsync(GameFilterModel filter,
-			CancellationToken cancellationToken)
-		{
-			var filterDto = mapper.Map<GameFilterDto>(filter);
-
-			var dto = await gameRepository.GetByFilterAsync(filterDto, cancellationToken);
-
-			return mapper.Map<ListModel<GamePreviewModel>>(dto);
 		}
 
 		/// <inheritdoc />

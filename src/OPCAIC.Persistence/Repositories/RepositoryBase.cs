@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Specifications;
 
 namespace OPCAIC.Persistence.Repositories
 {
@@ -16,7 +15,7 @@ namespace OPCAIC.Persistence.Repositories
 	///     Base class for all repositories containing basic functionality.
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
-	public abstract class RepositoryBase<TEntity> : IDisposable
+	public abstract class RepositoryBase<TEntity> : IDisposable, IRepository<TEntity>
 		where TEntity : class
 	{
 		protected RepositoryBase(DataContext context, IMapper mapper)
@@ -115,15 +114,79 @@ namespace OPCAIC.Persistence.Repositories
 			return DbSet.Where(predicate);
 		}
 
-		protected Task SaveChangesAsync(CancellationToken cancellationToken)
+		public Task SaveChangesAsync(CancellationToken cancellationToken)
 		{
 			return Context.SaveChangesAsync(cancellationToken);
 		}
 
 		/// <inheritdoc />
-		public Task<TResult> QueryAsync<TResult>(Func<IQueryable<TEntity>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+		public Task<List<TEntity>> ListAsync(ISpecification<TEntity> specification,
+			CancellationToken cancellationToken)
 		{
-			return query(Queryable).SingleOrDefaultAsync(cancellationToken);
+			return Queryable.ApplySpecification(specification)
+				.ToListAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<List<TDestination>> ListAsync<TDestination>(
+			IProjectingSpecification<TEntity, TDestination> specification,
+			CancellationToken cancellationToken)
+		{
+			return Queryable.ApplyProjection(specification)
+				.ToListAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public async Task<PagedResult<TEntity>> ListPagedAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken)
+		{
+			// fetch items and count in one query
+			var query = Queryable.ApplySpecification(specification);
+			var result = await query.ApplyPaging(specification)
+				.Select(e => new { Total = query.Count(), Item = e })
+				.ToListAsync(cancellationToken);
+
+			if (result.Count > 0)
+			{
+				return new PagedResult<TEntity>(result[0].Total, result.Select(s => s.Item).ToList());
+			}
+
+			return new PagedResult<TEntity>(0, new List<TEntity>());
+		}
+
+		/// <inheritdoc />
+		public async Task<PagedResult<TDestination>> ListPagedAsync<TDestination>(IProjectingSpecification<TEntity, TDestination> specification,
+			CancellationToken cancellationToken)
+		{
+			// fetch items and count in one query
+			var query = Queryable.ApplySpecification(specification);
+			var result = await query.ApplyPaging(specification)
+				.ApplyProjection(specification)
+				.Select(e => new { Total = query.Count(), Item = e })
+				.ToListAsync(cancellationToken);
+
+			if (result.Count > 0)
+			{
+				return new PagedResult<TDestination>(result[0].Total, result.Select(s => s.Item).ToList());
+			}
+
+			return new PagedResult<TDestination>(0, new List<TDestination>());
+		}
+
+		/// <inheritdoc />
+		public Task<TEntity> FindAsync(ISpecification<TEntity> specification,
+			CancellationToken cancellationToken)
+		{
+			return Queryable.ApplySpecification(specification)
+				.SingleOrDefaultAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<TDestination> FindAsync<TDestination>(
+			IProjectingSpecification<TEntity, TDestination> specification,
+			CancellationToken cancellationToken)
+		{
+			return Queryable.ApplyProjection(specification)
+				.SingleOrDefaultAsync(cancellationToken);
 		}
 	}
 }

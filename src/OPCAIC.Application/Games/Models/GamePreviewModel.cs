@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace OPCAIC.Application.Dtos.Games
+namespace OPCAIC.Application.Games.Models
 {
-	public class GamePreviewDto
+	public class GamePreviewModel
 	{
 		public long Id { get; set; }
 
