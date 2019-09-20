@@ -89,6 +89,7 @@ namespace OPCAIC.ApiService
 			services.Configure<UrlGeneratorConfiguration>(Configuration);
 			services.Configure<SecurityConfiguration>(
 				Configuration.GetSection(ConfigNames.Security));
+			services.Configure<RequestSizeConfig>(Configuration.GetSection("Limits"));
 			services.Configure<StorageConfiguration>(Configuration.GetSection("Storage"));
 			services.Configure<EmailsConfiguration>(Configuration.GetSection("Emails"));
 			services.Configure<SecurityConfiguration>(Configuration.GetSection("Security"));

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Security;
@@ -44,6 +45,9 @@ namespace OPCAIC.ApiService.Middlewares
 			// data can be seen in the logged event.
 			catch (ApiException ex) when (DoLog(context, ex.StatusCode,
 				GetElapsedMilliseconds(start), null))
+			{
+			}
+			catch (BadHttpRequestException ex) when (DoLog(context, ex.StatusCode, GetElapsedMilliseconds(start), null))
 			{
 			}
 			catch (Exception ex) when (DoLog(context, 500, GetElapsedMilliseconds(start), ex))

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using OPCAIC.ApiService.Attributes;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
@@ -68,6 +69,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[CustomRequestSizeLimit(CustomRequestSizeLimitAttribute.Type.Submission)]
 		public async Task<IActionResult> PostAsync([FromForm] NewSubmissionModel model,
 			CancellationToken cancellationToken)
 		{

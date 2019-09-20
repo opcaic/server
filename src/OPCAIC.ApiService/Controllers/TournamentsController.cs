@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OPCAIC.ApiService.Attributes;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
@@ -165,6 +166,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[CustomRequestSizeLimit(CustomRequestSizeLimitAttribute.Type.Tournament)]
 		public async Task UploadAdditionalFiles(AdditionalTournamentFilesModel model,
 			CancellationToken cancellationToken)
 		{
