@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.ApiService.Models.Submissions;
+using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Persistence;
 

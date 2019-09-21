@@ -7,6 +7,8 @@ using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using Xunit;
 using Xunit.Abstractions;

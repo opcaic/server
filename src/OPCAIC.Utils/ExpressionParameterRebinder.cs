@@ -7,7 +7,7 @@ namespace OPCAIC.Utils
 	{
 		private readonly Dictionary<ParameterExpression, ParameterExpression> map;
 
-		public ExpressionParameterRebinder(Dictionary<ParameterExpression, ParameterExpression> map)
+		private ExpressionParameterRebinder(Dictionary<ParameterExpression, ParameterExpression> map)
 		{
 			this.map = map ?? new Dictionary<ParameterExpression, ParameterExpression>();
 		}

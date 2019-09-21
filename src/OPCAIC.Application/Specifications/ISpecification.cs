@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace OPCAIC.Application.Specifications
@@ -10,13 +11,9 @@ namespace OPCAIC.Application.Specifications
 		/// </summary>
 		Expression<Func<T, bool>> Criteria { get; }
 		/// <summary>
-		///     Expression returning a value according to which the instances should be ordered.
+		///     Specifies the order in which the result should be ordered.
 		/// </summary>
-		Expression<Func<T, object>> OrderBy { get; }
-		/// <summary>
-		///     True if the ordering specified by <see cref="OrderBy"/> should be descending.
-		/// </summary>
-		bool OrderByDescending { get; }
+		IEnumerable<Ordering<T>> OrderBy { get; }
 		/// <summary>
 		///     If not null, contains information about pagination of the resulting query.
 		/// </summary>

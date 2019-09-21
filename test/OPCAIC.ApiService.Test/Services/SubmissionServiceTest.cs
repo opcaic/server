@@ -14,6 +14,8 @@ using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;

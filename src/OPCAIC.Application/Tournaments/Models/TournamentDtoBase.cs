@@ -1,15 +1,16 @@
 ﻿using System;
+using OPCAIC.Application.Dtos.Games;
 using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.ApiService.Models.Tournaments
+namespace OPCAIC.Application.Tournaments.Models
 {
-	public class TournamentPreviewModel
+	public class TournamentDtoBase
 	{
 		public long Id { get; set; }
 
 		public string Name { get; set; }
 
-		public GameReferenceModel Game { get; set; }
+		public GameReferenceDto Game { get; set; }
 
 		public TournamentFormat Format { get; set; }
 
@@ -19,9 +20,13 @@ namespace OPCAIC.ApiService.Models.Tournaments
 
 		public DateTime Created { get; set; }
 
+		public TournamentState State { get; set; }
+
 		public int PlayersCount { get; set; }
 
 		public int SubmissionsCount { get; set; }
+
+		public int ActiveSubmissionsCount { get; set; }
 
 		public string ImageUrl { get; set; }
 

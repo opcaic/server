@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.ApiService.Models.Tournaments
+﻿namespace OPCAIC.Application.Games.Models
 {
 	public class GameReferenceModel
 	{

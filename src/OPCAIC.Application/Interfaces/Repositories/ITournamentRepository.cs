@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Application.Tournaments.Models;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Interfaces.Repositories
@@ -10,7 +13,8 @@ namespace OPCAIC.Application.Interfaces.Repositories
 	public interface ITournamentRepository
 		: IGenericRepository<TournamentFilterDto, TournamentPreviewDto, TournamentDetailDto,
 				NewTournamentDto, UpdateTournamentDto>,
-			IAuthDataRepository<TournamentAuthDto>
+			IAuthDataRepository<TournamentAuthDto>,
+			IRepository<Tournament>
 	{
 		/// <summary>
 		///     Gets tournaments for which to update the set of matches.

@@ -7,6 +7,8 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.Games;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;

@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
+using OPCAIC.Application.Tournaments.Models;
 
 namespace OPCAIC.ApiService.Interfaces
 {
@@ -10,9 +10,6 @@ namespace OPCAIC.ApiService.Interfaces
 		Task<bool> ExistsByIdAsync(long id, CancellationToken cancellationToken);
 
 		Task<long> CreateAsync(NewTournamentModel tournament, CancellationToken cancellationToken);
-
-		Task<ListModel<TournamentPreviewModel>> GetByFilterAsync(TournamentFilterModel filter,
-			CancellationToken cancellationToken);
 
 		Task<TournamentDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken);
 

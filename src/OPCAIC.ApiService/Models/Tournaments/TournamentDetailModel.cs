@@ -1,6 +1,8 @@
-﻿namespace OPCAIC.ApiService.Models.Tournaments
+﻿using OPCAIC.Application.Tournaments.Models;
+
+namespace OPCAIC.ApiService.Models.Tournaments
 {
-	public class TournamentDetailModel : TournamentPreviewModel
+	public class TournamentDetailModel : TournamentPreviewDto
 	{
 		public string Description { get; set; }
 

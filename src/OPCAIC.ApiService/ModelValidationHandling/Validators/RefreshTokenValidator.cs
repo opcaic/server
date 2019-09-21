@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using OPCAIC.ApiService.Models;
+using OPCAIC.Application.Infrastructure.Validation;
 
 namespace OPCAIC.ApiService.ModelValidationHandling.Validators
 {

@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Utils;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Validation;
 
 namespace OPCAIC.ApiService.ModelValidationHandling
 {

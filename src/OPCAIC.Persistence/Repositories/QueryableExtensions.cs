@@ -70,56 +70,6 @@ namespace OPCAIC.Persistence.Repositories
 
 		#endregion
 
-		#region Tournaments
-
-		public static IQueryable<Tournament> Filter(this IQueryable<Tournament> query,
-			TournamentFilterDto filter)
-		{
-			if (filter.Name != null)
-			{
-				query = query.Where(row => row.Name.ToUpper().StartsWith(filter.Name.ToUpper()));
-			}
-
-			// TODO(ON): check how sql queries are generated and whether it is optimal or not (comparing nullable types instead of using .Value)
-			if (filter.GameId != null)
-			{
-				query = query.Where(row => row.GameId == filter.GameId);
-			}
-
-			if (filter.Format != null)
-			{
-				query = query.Where(row => row.Format == filter.Format);
-			}
-
-			if (filter.Scope != null)
-			{
-				query = query.Where(row => row.Scope == filter.Scope);
-			}
-
-			if (filter.RankingStrategy != null)
-			{
-				query = query.Where(row => row.RankingStrategy == filter.RankingStrategy);
-			}
-
-			return query.SortBy(filter.SortBy, filter.Asc);
-		}
-
-		private static IQueryable<Tournament> SortBy(this IQueryable<Tournament> query,
-			string sortBy, bool asc)
-		{
-			switch (sortBy)
-			{
-				case TournamentFilterDto.SortByCreated:
-					return query.Sort(row => row.Created, asc);
-				case TournamentFilterDto.SortByName:
-					return query.Sort(row => row.Name, asc);
-				default:
-					return query.Sort(row => row.Id, asc);
-			}
-		}
-
-		#endregion
-
 		#region TournamentInvitations
 
 		public static IQueryable<TournamentInvitation> Filter(

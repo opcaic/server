@@ -1,6 +1,7 @@
 ﻿using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,9 @@ using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Application.Tournaments.Models;
+using OPCAIC.Application.Tournaments.Queries;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -18,16 +22,18 @@ namespace OPCAIC.ApiService.Controllers
 	[Route("api/tournaments")]
 	public class TournamentsController : ControllerBase
 	{
+		private readonly IMediator mediator;
 		private readonly IAuthorizationService authorizationService;
 		private readonly IStorageService storage;
 		private readonly ITournamentsService tournamentsService;
 
 		public TournamentsController(ITournamentsService tournamentsService,
-			IAuthorizationService authorizationService, IStorageService storage)
+			IAuthorizationService authorizationService, IStorageService storage, IMediator mediator)
 		{
 			this.tournamentsService = tournamentsService;
 			this.authorizationService = authorizationService;
 			this.storage = storage;
+			this.mediator = mediator;
 		}
 
 		/// <summary>
@@ -38,15 +44,15 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this action.</response>
 		[HttpGet]
-		[ProducesResponseType(typeof(ListModel<TournamentPreviewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PagedResult<TournamentPreviewDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[RequiresPermission(TournamentPermission.Search)]
-		public Task<ListModel<TournamentPreviewModel>> GetTournamentsAsync(
-			[FromQuery] TournamentFilterModel filter, CancellationToken cancellationToken)
+		public Task<PagedResult<TournamentPreviewDto>> GetTournamentsAsync(
+			[FromQuery] GetTournamentsQuery filter, CancellationToken cancellationToken)
 		{
-			return tournamentsService.GetByFilterAsync(filter, cancellationToken);
+			return mediator.Send(filter, cancellationToken);
 		}
 
 		/// <summary>

@@ -15,6 +15,8 @@ using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Emails;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Infrastructure.Emails;

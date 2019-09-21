@@ -14,6 +14,8 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Application.Dtos.Games;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Domain.Entities;

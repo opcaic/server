@@ -9,6 +9,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
@@ -28,7 +29,7 @@ namespace OPCAIC.Persistence.Repositories
 
 		/// <inheritdoc />
 		public TournamentRepository(DataContext context, IMapper mapper)
-			: base(context, mapper, QueryableExtensions.Filter)
+			: base(context, mapper, null)
 		{
 		}
 

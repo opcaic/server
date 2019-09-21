@@ -20,7 +20,6 @@ namespace OPCAIC.Persistence.Repositories
 	{
 		protected RepositoryBase(DataContext context, IMapper mapper)
 		{
-			
 			Context = context;
 			Mapper = mapper;
 		}

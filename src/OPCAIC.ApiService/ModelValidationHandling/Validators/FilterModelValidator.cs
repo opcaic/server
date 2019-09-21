@@ -6,9 +6,11 @@ using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
+using OPCAIC.Application.Infrastructure.Validation;
 
 namespace OPCAIC.ApiService.ModelValidationHandling.Validators
 {
+	// TODO: gradually move these to Application
 	public abstract class FilterModelValidator<T> : AbstractValidator<T>
 		where T : FilterModelBase
 	{
@@ -28,28 +30,12 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Validators
 		}
 	}
 
-	public class GameFilterValidator : FilterModelValidator<GameFilterModel>
-	{
-		public GameFilterValidator()
-		{
-			RuleFor(m => m.Name).MinLength(1);
-		}
-	}
-
 	public class MatchFilterValidator : FilterModelValidator<MatchFilterModel>
 	{
 	}
 
 	public class SubmissionFilterValidator : FilterModelValidator<SubmissionFilterModel>
 	{
-	}
-
-	public class TournamentFilterValidator : FilterModelValidator<TournamentFilterModel>
-	{
-		public TournamentFilterValidator()
-		{
-			RuleFor(m => m.Name).MinLength(1);
-		}
 	}
 
 	public class TournamentInvitationFilterValidator

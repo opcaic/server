@@ -31,6 +31,7 @@ using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Games.Queries;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.SubmissionValidations.Events;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
@@ -195,7 +196,7 @@ namespace OPCAIC.ApiService
 			exp.CreateMap<TournamentDetailDto, TournamentDetailModel>(MemberList
 				.Destination);
 
-			exp.CreateMap<Tournament, TournamentPreviewDto>(MemberList
+			exp.CreateMap<Tournament, TournamentDtoBase>(MemberList
 					.Destination)
 				.ForMember(d => d.ActiveSubmissionsCount,
 					opt => opt.MapFrom(s => s.Participants.Count(e => e.ActiveSubmissionId != null)))
@@ -213,8 +214,9 @@ namespace OPCAIC.ApiService
 						=> s.ThemeColor ?? s.Game.DefaultTournamentThemeColor))
 				.ForMember(d => d.SubmissionsCount, opt => opt.MapFrom(s => s.Participants.Sum(p => p.Submissions.Count)));
 
-			exp.CreateMap<TournamentPreviewDto, TournamentPreviewModel>(MemberList
-				.Destination);
+			exp.CreateMap<Tournament, TournamentPreviewDto>(MemberList.Destination)
+				.IncludeBase<Tournament, TournamentDtoBase>()
+				.ForMember(t => t.LastUserSubmissionDate, opt => opt.Ignore());
 
 			exp.CreateMap<Tournament, TournamentStateInfoDto>(MemberList.Destination);
 			exp.CreateMap<Tournament, TournamentReferenceDto, TournamentReferenceModel>(MemberList

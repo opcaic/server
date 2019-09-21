@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.ApiService.ModelValidationHandling
+﻿namespace OPCAIC.Application.Infrastructure.Validation
 {
 	public static class ValidationErrorCodes
 	{

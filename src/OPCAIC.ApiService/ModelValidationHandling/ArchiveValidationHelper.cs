@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using FluentValidation.Validators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Validation;
 
 namespace OPCAIC.ApiService.ModelValidationHandling
 {

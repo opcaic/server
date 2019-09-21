@@ -8,12 +8,14 @@ using Newtonsoft.Json.Schema;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
-using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
@@ -78,18 +80,6 @@ namespace OPCAIC.ApiService.Services
 			var id = await tournamentRepository.CreateAsync(dto, cancellationToken);
 			logger.TournamentCreated(id, dto);
 			return id;
-		}
-
-		/// <inheritdoc />
-		public async Task<ListModel<TournamentPreviewModel>> GetByFilterAsync(
-			TournamentFilterModel filter,
-			CancellationToken cancellationToken)
-		{
-			var filterDto = mapper.Map<TournamentFilterDto>(filter);
-
-			var dto = await tournamentRepository.GetByFilterAsync(filterDto, cancellationToken);
-
-			return mapper.Map<ListModel<TournamentPreviewModel>>(dto);
 		}
 
 		/// <inheritdoc />

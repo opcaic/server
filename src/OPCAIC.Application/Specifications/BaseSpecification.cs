@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using OPCAIC.Utils;
 
@@ -6,14 +7,16 @@ namespace OPCAIC.Application.Specifications
 {
 	public class BaseSpecification<T> : ISpecification<T>
 	{
+		private readonly List<Ordering<T>> orderBy = new List<Ordering<T>>();
+
+		/// <inheritdoc />
+		public bool OrderByDescending { get; set; }
+
 		/// <inheritdoc />
 		public Expression<Func<T, bool>> Criteria { get; set; }
 
 		/// <inheritdoc />
-		public Expression<Func<T, object>> OrderBy { get; set; }
-
-		/// <inheritdoc />
-		public bool OrderByDescending { get; set; }
+		public IEnumerable<Ordering<T>> OrderBy => orderBy;
 
 		/// <inheritdoc />
 		public PagingInfo? PagingInfo { get; set; }
@@ -28,10 +31,9 @@ namespace OPCAIC.Application.Specifications
 		}
 
 		public BaseSpecification<T> Ordered(Expression<Func<T, object>> selector,
-			bool orderDescending = false)
+			bool ascending = true)
 		{
-			OrderBy = selector;
-			OrderByDescending = orderDescending;
+			orderBy.Add(new Ordering<T>(selector, ascending));
 			return this;
 		}
 

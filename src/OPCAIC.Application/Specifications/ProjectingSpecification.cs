@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
+using OPCAIC.Application.Extensions;
 
 namespace OPCAIC.Application.Specifications
 {
@@ -14,13 +15,28 @@ namespace OPCAIC.Application.Specifications
 		: BaseSpecification<TSource>, IProjectingSpecification<TSource, TDestination>
 	{
 		/// <inheritdoc />
+		private readonly List<Ordering<TDestination>> orderByProjected;
+
+		/// <inheritdoc />
 		public ProjectingSpecification(Expression<Func<TSource, TDestination>> projection)
 		{
 			Projection = projection;
+			orderByProjected = new List<Ordering<TDestination>>();
 		}
 
 		/// <inheritdoc />
 		public Expression<Func<TSource, TDestination>> Projection { get; }
+
+		/// <inheritdoc />
+		public IEnumerable<Ordering<TDestination>> OrderByProjected => orderByProjected;
+
+		public ProjectingSpecification<TSource, TDestination> OrderedProjection(
+			Expression<Func<TDestination, object>> selector,
+			bool ascending = true)
+		{
+			orderByProjected.Add(new Ordering<TDestination>(selector, ascending));
+			return this;
+		}
 	}
 
 	/// <summary>
@@ -37,9 +53,19 @@ namespace OPCAIC.Application.Specifications
 		public static ProjectingSpecification<TSource, TDestination> Create<TDestination>(
 			IMapper mapper)
 		{
-			var projection = mapper.ConfigurationProvider.ExpressionBuilder
-				.GetMapExpression<TSource, TDestination>();
-			return Create(projection);
+			return Create(mapper.GetMapExpression<TSource, TDestination>());
+		}
+	}
+
+	/// <summary>
+	///     Helper class for creating specification with anonymous types.
+	/// </summary>
+	public static class ProjectingSpecification
+	{
+		public static ProjectingSpecification<TSource, TDestination> Create<TSource, TDestination>(
+			Expression<Func<TSource, TDestination>> projection)
+		{
+			return ProjectingSpecification<TSource>.Create(projection);
 		}
 	}
 }

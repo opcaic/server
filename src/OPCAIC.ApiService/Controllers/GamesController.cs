@@ -45,7 +45,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[RequiresPermission(GamePermission.Search)]
-		public Task<PagedResult<GamePreviewModel>> GetGamesAsync([FromQuery] GetFilteredGames filter,
+		public Task<PagedResult<GamePreviewModel>> GetGamesAsync([FromQuery] GetGamesQuery filter,
 			CancellationToken cancellationToken)
 		{
 			return mediator.Send(filter, cancellationToken);

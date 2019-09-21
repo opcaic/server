@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Identity;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Utils;
 
 namespace OPCAIC.ApiService.Extensions

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using OPCAIC.ApiService.Models.Tournaments;
+using OPCAIC.Application.Infrastructure.Validation;
 
 namespace OPCAIC.ApiService.ModelValidationHandling.Validators.Tournaments
 {

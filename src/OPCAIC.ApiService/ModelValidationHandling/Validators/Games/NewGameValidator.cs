@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using OPCAIC.ApiService.Models.Games;
+using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Common;
 using OPCAIC.Infrastructure;
 

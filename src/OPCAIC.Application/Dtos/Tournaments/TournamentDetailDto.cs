@@ -1,4 +1,6 @@
-﻿namespace OPCAIC.Application.Dtos.Tournaments
+﻿using OPCAIC.Application.Tournaments.Models;
+
+namespace OPCAIC.Application.Dtos.Tournaments
 {
 	public class TournamentDetailDto : TournamentPreviewDto
 	{

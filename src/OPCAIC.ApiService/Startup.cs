@@ -52,6 +52,7 @@ namespace OPCAIC.ApiService
 				}).AddFluentValidation(options =>
 				{
 					options.RegisterValidatorsFromAssemblyContaining<Startup>();
+					options.RegisterValidatorsFromAssemblyContaining<TournamentFinished>();
 				});
 			services.AddTransient<IValidatorInterceptor, ValidationInterceptor>();
 
