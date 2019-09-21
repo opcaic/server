@@ -19,6 +19,7 @@ using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Exceptions;
 using ValidationError = OPCAIC.ApiService.ModelValidationHandling.ValidationError;
 
 namespace OPCAIC.ApiService.Services

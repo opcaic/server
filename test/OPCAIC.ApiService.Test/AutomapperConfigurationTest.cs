@@ -1,4 +1,8 @@
-﻿using Xunit;
+﻿using AutoMapper;
+using Microsoft.Extensions.DependencyInjection;
+using OPCAIC.ApiService.IoC;
+using OPCAIC.ApiService.Test.Services;
+using Xunit;
 
 namespace OPCAIC.ApiService.Test
 {
@@ -7,7 +11,7 @@ namespace OPCAIC.ApiService.Test
 		[Fact]
 		public void ConfigurationCorrect()
 		{
-			MapperConfigurationFactory.Create().AssertConfigurationIsValid();
+			TestMapper.Mapper.ConfigurationProvider.AssertConfigurationIsValid();
 		}
 	}
 }

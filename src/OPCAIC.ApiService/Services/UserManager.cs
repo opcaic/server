@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Configs;
-using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
@@ -19,6 +18,7 @@ using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Exceptions;
 
 namespace OPCAIC.ApiService.Services
 {

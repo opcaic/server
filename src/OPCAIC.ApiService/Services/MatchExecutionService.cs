@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models.Matches;
@@ -20,6 +19,7 @@ using OPCAIC.Application.Logging;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using OPCAIC.Domain.Exceptions;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 
@@ -46,14 +46,6 @@ namespace OPCAIC.ApiService.Services
 			this.scoreService = scoreService;
 			this.mapper = mapper;
 			this.logStorage = logStorage;
-		}
-
-		/// <inheritdoc />
-		public async Task EnqueueExecutionAsync(long matchId, CancellationToken cancellationToken)
-		{
-			var execution = new NewMatchExecutionDto {MatchId = matchId, JobId = Guid.NewGuid()};
-			var id = await repository.CreateAsync(execution, cancellationToken);
-			logger.MatchExecutionQueued(id, matchId, execution.JobId);
 		}
 
 		/// <inheritdoc />

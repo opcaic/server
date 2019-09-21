@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -7,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Utils;
+using OPCAIC.Domain.Exceptions;
 
 namespace OPCAIC.ApiService.Middlewares
 {
@@ -50,6 +52,10 @@ namespace OPCAIC.ApiService.Middlewares
 			catch (ApiException ex)
 			{
 				await WriteResponseAsync(context, ex);
+			}
+			catch (NotFoundException ex)
+			{
+				await WriteResponseAsync(context, StatusCodes.Status404NotFound, ex);
 			}
 			catch (Exception ex) when (env.IsDevelopment())
 			{

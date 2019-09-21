@@ -18,6 +18,11 @@
 		/// <summary>
 		///     Last match execution failed.
 		/// </summary>
-		Failed
+		Failed,
+
+		/// <summary>
+		///     Last match execution was cancelled.
+		/// </summary>
+		Cancelled
 	}
 }

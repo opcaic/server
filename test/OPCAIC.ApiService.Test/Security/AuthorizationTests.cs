@@ -32,7 +32,7 @@ namespace OPCAIC.ApiService.Test.Security
 
 		protected ClaimsPrincipal GetClaimsPrincipal(User user)
 		{
-			return GetService<SignInManager>().CreateUserPrincipalAsync(user).Result;
+			return GetService<SignInManager>().CreateUserPrincipalAsync(user).GetAwaiter().GetResult();
 		}
 
 		protected ClaimsPrincipal ClaimsPrincipal { get; set; }

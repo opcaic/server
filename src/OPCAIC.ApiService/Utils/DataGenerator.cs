@@ -23,7 +23,7 @@ namespace OPCAIC.ApiService.Utils
 {
 	public class DataGenerator
 	{
-		private static readonly Mapper mapper = new Mapper(MapperConfigurationFactory.Create());
+		private static IMapper mapper;
 		private static readonly Random random = new Random(0);
 		private static readonly Faker faker = new Faker();
 
@@ -119,6 +119,7 @@ namespace OPCAIC.ApiService.Utils
 
 		public static void Initialize(IServiceProvider serviceProvider)
 		{
+			mapper = serviceProvider.GetRequiredService<IMapper>();
 			using (var context = new DataContext(
 				serviceProvider.GetRequiredService<DbContextOptions<DataContext>>()))
 			{

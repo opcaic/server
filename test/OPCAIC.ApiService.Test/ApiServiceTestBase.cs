@@ -17,6 +17,7 @@ using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Exceptions;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Persistence;
 using OPCAIC.TestUtils;

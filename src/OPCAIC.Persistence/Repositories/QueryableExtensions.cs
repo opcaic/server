@@ -3,7 +3,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Application.Dtos.Games;
-using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
@@ -203,75 +202,5 @@ namespace OPCAIC.Persistence.Repositories
 
 		#endregion
 
-		#region Matches
-
-		public static IQueryable<Match> Filter(this IQueryable<Match> query,
-			MatchFilterDto filter)
-		{
-			if (filter.TournamentId != null)
-			{
-				query = query.Where(row => row.Tournament.Id == filter.TournamentId);
-			}
-
-			if (filter.UserId != null)
-			{
-				query = query.Where(row
-					=> row.Participations.Any(p => p.Submission.AuthorId == filter.UserId));
-			}
-
-			if (filter.SubmissionId != null)
-			{
-				query = query.Where(row =>
-					row.Participations.Any(p => p.SubmissionId == filter.SubmissionId));
-			}
-
-			switch (filter.State)
-			{
-				// a match should always have at least one execution
-				case null:
-					break; // nothing
-				case MatchState.Queued:
-					query = query.Where(row => !row.Executions
-						.OrderByDescending(e => e.Created).First().Executed.HasValue);
-					break;
-				case MatchState.Executed:
-					query = query.Where(row => row.Executions
-							.OrderByDescending(e => e.Created).First().ExecutorResult ==
-						EntryPointResult.Success);
-					break;
-				case MatchState.Failed:
-					query = query.Where(row => row.Executions
-							.OrderByDescending(e => e.Created).First().ExecutorResult >=
-						EntryPointResult.UserError);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-
-			if (filter.Username != null)
-			{
-				query = query.Where(row =>
-					row.Participations.Any(s
-						=> s.Submission.Author.UserName.Contains(filter.Username)));
-			}
-
-			return query.SortBy(filter.SortBy, filter.Asc);
-		}
-
-		private static IQueryable<Match> SortBy(this IQueryable<Match> query, string sortBy,
-			bool asc)
-		{
-			switch (sortBy)
-			{
-				case MatchFilterDto.SortByCreated:
-					return query.Sort(row => row.Created, asc);
-				case MatchFilterDto.SortByUpdated:
-					return query.Sort(row => row.Updated, asc);
-				default:
-					return query.Sort(row => row.Id, asc);
-			}
-		}
-
-		#endregion
 	}
 }

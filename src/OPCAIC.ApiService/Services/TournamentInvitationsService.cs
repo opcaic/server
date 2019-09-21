@@ -18,6 +18,7 @@ using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Exceptions;
 
 namespace OPCAIC.ApiService.Services
 {

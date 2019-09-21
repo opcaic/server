@@ -18,6 +18,7 @@ using OPCAIC.Application.Logging;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using OPCAIC.Domain.Exceptions;
 
 namespace OPCAIC.ApiService.Services
 {

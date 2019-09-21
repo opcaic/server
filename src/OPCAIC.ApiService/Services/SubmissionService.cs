@@ -21,6 +21,7 @@ using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using OPCAIC.Domain.Exceptions;
 
 namespace OPCAIC.ApiService.Services
 {

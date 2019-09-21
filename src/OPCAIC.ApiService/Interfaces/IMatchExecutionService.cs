@@ -9,7 +9,6 @@ namespace OPCAIC.ApiService.Interfaces
 {
 	public interface IMatchExecutionService
 	{
-		Task EnqueueExecutionAsync(long matchId, CancellationToken cancellationToken);
 		Task UpdateFromMessage(MatchExecutionResult result);
 		Task OnExecutionRequestExpired(Guid jobId);
 		Task<MatchExecutionDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken);

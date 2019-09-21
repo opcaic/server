@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
+using OPCAIC.Application.Matches;
 
 namespace OPCAIC.ApiService.IoC
 {
@@ -7,9 +8,7 @@ namespace OPCAIC.ApiService.IoC
 	{
 		public static void AddMapper(this IServiceCollection services)
 		{
-			services.AddSingleton(MapperConfigurationFactory.Create());
-			services.AddTransient<IMapper>(provider
-				=> new Mapper(provider.GetService<MapperConfiguration>()));
+			services.AddAutoMapper(typeof(Startup).Assembly, typeof(MatchMapperProfile).Assembly);
 		}
 	}
 }

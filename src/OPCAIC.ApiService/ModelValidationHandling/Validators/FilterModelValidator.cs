@@ -2,7 +2,6 @@
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Models.Games;
-using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
@@ -28,10 +27,6 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Validators
 		{
 			RuleFor(m => m.Name).MinLength(1);
 		}
-	}
-
-	public class MatchFilterValidator : FilterModelValidator<MatchFilterModel>
-	{
 	}
 
 	public class SubmissionFilterValidator : FilterModelValidator<SubmissionFilterModel>

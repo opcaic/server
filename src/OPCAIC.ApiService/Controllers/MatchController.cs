@@ -1,14 +1,17 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
-using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Security;
-using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Matches.Command;
+using OPCAIC.Application.Matches.Models;
+using OPCAIC.Application.Matches.Queries;
+using OPCAIC.Application.Specifications;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -16,15 +19,16 @@ namespace OPCAIC.ApiService.Controllers
 	[Route("api/matches")]
 	public class MatchController : ControllerBase
 	{
-		private readonly IMatchService matchService;
-		private readonly IMatchExecutionService executionService;
 		private readonly IAuthorizationService authorizationService;
+		private readonly IMatchExecutionService executionService;
+		private readonly IMediator mediator;
 
-		public MatchController(IMatchService matchService, IAuthorizationService authorizationService, IMatchExecutionService executionService)
+		public MatchController(IAuthorizationService authorizationService,
+			IMatchExecutionService executionService, IMediator mediator)
 		{
-			this.matchService = matchService;
 			this.authorizationService = authorizationService;
 			this.executionService = executionService;
+			this.mediator = mediator;
 		}
 
 		/// <summary>
@@ -37,15 +41,15 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this action.</response>
 		[HttpGet]
-		[ProducesResponseType(typeof(ListModel<MatchDetailModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(ListModel<MatchDetailDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[RequiresPermission(MatchPermission.Search)]
-		public Task<ListModel<MatchDetailModel>> GetMatchesAsync(MatchFilterModel filter,
+		public Task<PagedResult<MatchDetailDto>> GetMatchesAsync(GetMatchesQuery filter,
 			CancellationToken cancellationToken)
 		{
-			return matchService.GetByFilterAsync(filter, cancellationToken);
+			return mediator.Send(filter, cancellationToken);
 		}
 
 		/// <summary>
@@ -58,14 +62,14 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this action.</response>
 		/// <response code="404">Match with given id does not exist.</response>
 		[HttpGet("{id}")]
-		[ProducesResponseType(typeof(MatchDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(MatchDetailDto), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<MatchDetailModel> GetMatchById(long id, CancellationToken cancellationToken)
+		public async Task<MatchDetailDto> GetMatchById(long id, CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id, MatchPermission.Read);
-			return await matchService.GetByIdAsync(id, cancellationToken);
+			return await mediator.Send(new GetMatchQuery(id), cancellationToken);
 		}
 
 
@@ -85,8 +89,9 @@ namespace OPCAIC.ApiService.Controllers
 		[HttpPost("{id}/execute")]
 		public async Task ExecuteAsync(long id, CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, MatchPermission.QueueMatchExecution);
-			await executionService.EnqueueExecutionAsync(id, cancellationToken);
+			await authorizationService.CheckPermissions(User, id,
+				MatchPermission.QueueMatchExecution);
+			await mediator.Send(new ExecuteMatchCommand(id), cancellationToken);
 		}
 	}
 }

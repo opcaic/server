@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using OPCAIC.ApiService.Controllers;
-using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.ModelValidationHandling;
@@ -14,6 +13,7 @@ using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Exceptions;
 using Xunit;
 using Xunit.Abstractions;
 

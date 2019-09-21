@@ -4,13 +4,14 @@ using System.Linq;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using OPCAIC.Application.Dtos.Matches;
+using Newtonsoft.Json.Linq;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Matches.Models;
 using OPCAIC.Application.Services;
 using OPCAIC.Application.Services.MatchGeneration;
 using OPCAIC.Domain.Enums;
@@ -124,14 +125,19 @@ namespace OPCAIC.Application.Test.MatchGeneration
 			tournament.Matches.Count.ShouldBe(executions.Count);
 		}
 
-		protected List<MatchExecutionDto> Simulate(TournamentBracketsGenerationDto tournament,
+		protected List<MatchDetailDto.ExecutionDto> Simulate(TournamentBracketsGenerationDto tournament,
 			Func<int, int> matchPicker,
 			Func<MatchDetailDto, int> resultPicker)
 		{
 			var toExecute = new List<MatchDetailDto>();
-			var executions = new List<MatchExecutionDto>();
+			var executions = new List<MatchDetailDto.ExecutionDto>();
 			var tournamentRef =
-				new TournamentReferenceDto {Id = tournament.Id, Name = "Mock Tournament"};
+				new MatchDetailDto.TournamentDto
+				{
+					Id = tournament.Id,
+					Name = "Mock Tournament",
+					Format = tournament.Format,
+				};
 
 			var (matches, done) = generator.Generate(tournament);
 			while (!done)
@@ -142,9 +148,9 @@ namespace OPCAIC.Application.Test.MatchGeneration
 					Submissions =
 						m.Submissions.ConvertAll(i => new SubmissionReferenceDto {Id = i}),
 					Index = m.Index,
-					Executions = new List<MatchExecutionDto>
+					Executions = new List<MatchDetailDto.ExecutionDto>
 					{
-						new MatchExecutionDto {Created = DateTime.Now}
+						new MatchDetailDto.ExecutionDto {Created = DateTime.Now}
 					}
 				}).ToList();
 
@@ -171,18 +177,18 @@ namespace OPCAIC.Application.Test.MatchGeneration
 			return executions;
 		}
 
-		private void ExecuteMatch(MatchExecutionDto execution,
+		private void ExecuteMatch(MatchDetailDto.ExecutionDto execution,
 			IList<SubmissionReferenceDto> submissions, int result)
 		{
 			execution.Executed = DateTime.Now;
-			execution.AdditionalData = "{}";
+			execution.AdditionalData = new JObject();
 			execution.ExecutorResult = EntryPointResult.Success;
 			execution.BotResults = Enumerable.Range(0, 2).Select(i =>
-				new SubmissionMatchResultDto
+				new MatchDetailDto.ExecutionDto.SubmissionResultDto()
 				{
 					Submission = new SubmissionReferenceDto {Id = submissions[i].Id},
 					Score = result == i ? 1 : 0,
-					AdditionalData = "{}",
+					AdditionalData = new JObject(),
 					CompilerResult = EntryPointResult.Success
 				}).ToList();
 		}
