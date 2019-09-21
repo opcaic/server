@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using OPCAIC.ApiService.Exceptions;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Interfaces;
@@ -9,6 +7,9 @@ using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Domain.Exceptions;
 using OPCAIC.Messaging.Messages;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OPCAIC.ApiService.Services
 {
@@ -61,10 +62,10 @@ namespace OPCAIC.ApiService.Services
 			var eb = GetEloExpectedResult(playerBscore, playerAscore);
 
 			await submissionRepository.UpdateAsync(sub1Id,
-				new UpdateSubmissionScoreDto {Score = playerAscore + K * (score1 - ea)},
+				new UpdateSubmissionScoreDto { Score = playerAscore + K * (score1 - ea) },
 				cancellationToken);
 			await submissionRepository.UpdateAsync(sub2Id,
-				new UpdateSubmissionScoreDto {Score = playerBscore + K * (score2 - eb)},
+				new UpdateSubmissionScoreDto { Score = playerBscore + K * (score2 - eb) },
 				cancellationToken);
 		}
 
@@ -94,7 +95,7 @@ namespace OPCAIC.ApiService.Services
 				if (score > sub.Score)
 				{
 					await submissionRepository.UpdateAsync(subId,
-						new UpdateSubmissionScoreDto {Score = score},
+						new UpdateSubmissionScoreDto { Score = score },
 						cancellationToken);
 				}
 			}
@@ -103,7 +104,7 @@ namespace OPCAIC.ApiService.Services
 				if (score < sub.Score)
 				{
 					await submissionRepository.UpdateAsync(subId,
-						new UpdateSubmissionScoreDto {Score = score},
+						new UpdateSubmissionScoreDto { Score = score },
 						cancellationToken);
 				}
 			}
@@ -113,12 +114,13 @@ namespace OPCAIC.ApiService.Services
 			CancellationToken cancellationToken)
 		{
 			var subId = match.BotResults[0].SubmissionId;
-			if (!await submissionRepository.ExistsByIdAsync(subId, cancellationToken))
+
+			var sub = await submissionRepository.FindByIdAsync(subId, cancellationToken);
+			if (sub == null)
 			{
 				throw new NotFoundException(nameof(Submission), subId);
 			}
 
-			var sub = await submissionRepository.FindByIdAsync(subId, cancellationToken);
 			return await tournamentRepository.FindByIdAsync(sub.Tournament.Id, cancellationToken);
 		}
 

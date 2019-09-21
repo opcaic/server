@@ -1,13 +1,10 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Moq;
 using Newtonsoft.Json.Linq;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Models.Tournaments;
-using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Dtos.Tournaments;
-using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using Xunit;
@@ -15,10 +12,10 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.ApiService.Test.Services
 {
-	public class TournamentServiceTest : ApiServiceTestBase
+	public class TournamentsServiceTest : ApiServiceTestBase
 	{
 		/// <inheritdoc />
-		public TournamentServiceTest(ITestOutputHelper output) : base(output)
+		public TournamentsServiceTest(ITestOutputHelper output) : base(output)
 		{
 			tournamentRepository = Services.Mock<ITournamentRepository>(MockBehavior.Strict);
 			gameRepository = Services.Mock<IGameRepository>(MockBehavior.Strict);
@@ -82,7 +79,9 @@ namespace OPCAIC.ApiService.Test.Services
 			gameRepository.Setup(r => r.GetConfigurationSchemaAsync(gameId, CancellationToken))
 				.ReturnsAsync(SomeSchema);
 
-			tournamentRepository.Setup(r => r.CreateAsync(It.IsAny<NewTournamentDto>(), CancellationToken)).ReturnsAsync(1);
+			tournamentRepository
+				.Setup(r => r.CreateAsync(It.IsAny<NewTournamentDto>(), CancellationToken))
+				.ReturnsAsync(1);
 
 			await GetService<TournamentsService>()
 				.CreateAsync(

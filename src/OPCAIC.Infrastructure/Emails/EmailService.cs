@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using HandlebarsDotNet;
 using OPCAIC.Application.Dtos.Emails;
@@ -25,7 +24,8 @@ namespace OPCAIC.Infrastructure.Emails
 			this.userRepository = userRepository;
 		}
 
-		public async Task EnqueueEmailAsync(EmailDtoBase dto, string recipientEmail, CancellationToken cancellationToken)
+		public async Task EnqueueEmailAsync(EmailDtoBase dto, string recipientEmail,
+			CancellationToken cancellationToken)
 		{
 			var user = await userRepository.FindRecipientAsync(recipientEmail, cancellationToken);
 

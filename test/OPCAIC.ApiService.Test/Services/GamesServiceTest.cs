@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Moq;
+﻿using Moq;
 using Newtonsoft.Json.Linq;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Models.Games;
@@ -12,15 +11,16 @@ using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace OPCAIC.ApiService.Test.Services
 {
-	public class GameServiceTest : ApiServiceTestBase
+	public class GamesServiceTest : ApiServiceTestBase
 	{
 		/// <inheritdoc />
-		public GameServiceTest(ITestOutputHelper output) : base(output)
+		public GamesServiceTest(ITestOutputHelper output) : base(output)
 		{
 			gameRepository = Services.Mock<IGameRepository>(MockBehavior.Strict);
 
@@ -65,10 +65,7 @@ namespace OPCAIC.ApiService.Test.Services
 			await AssertConflict(ValidationErrorCodes.GameNameConflict, nameof(NewGameModel.Name),
 				() => GetService<GamesService>()
 					.CreateAsync(
-						new NewGameModel
-						{
-							Name = GameName
-						}, CancellationToken));
+						new NewGameModel { Name = GameName }, CancellationToken));
 		}
 
 		[Fact]
@@ -90,17 +87,7 @@ namespace OPCAIC.ApiService.Test.Services
 						Type = GameDefaultType
 					}, CancellationToken);
 		}
-
-		[Fact]
-		public async Task GetById_Success()
-		{
-			gameRepository.Setup(r => r.FindByIdAsync(GameId, CancellationToken))
-				.ReturnsAsync(new GameDetailDto { ConfigurationSchema = "{}" });
-
-			await GetService<GamesService>()
-				.GetByIdAsync(GameId, CancellationToken);
-		}
-
+		
 		[Fact]
 		public async Task GetById_NotFound()
 		{
@@ -113,25 +100,13 @@ namespace OPCAIC.ApiService.Test.Services
 		}
 
 		[Fact]
-		public async Task UpdateAsync_Success()
+		public async Task GetById_Success()
 		{
-			gameRepository.Setup(r => r.ExistsOtherByNameAsync(GameName, GameId, CancellationToken))
-				.ReturnsAsync(false);
-			gameRepository.Setup(r => r.UpdateAsync(GameId, It.Is<UpdateGameDto>(g => g.Name == GameName), CancellationToken))
-				.ReturnsAsync(true);
+			gameRepository.Setup(r => r.FindByIdAsync(GameId, CancellationToken))
+				.ReturnsAsync(new GameDetailDto { ConfigurationSchema = "{}" });
 
 			await GetService<GamesService>()
-				.UpdateAsync(GameId, new UpdateGameModel() { Name = GameName, ConfigurationSchema = JObject.Parse(SomeSchema) }, CancellationToken);
-		}
-
-		[Fact]
-		public async Task UpdateAsync_NameConflict()
-		{
-			gameRepository.Setup(r => r.ExistsOtherByNameAsync(GameName, GameId, CancellationToken))
-				.ReturnsAsync(true);
-
-			await AssertConflict(ValidationErrorCodes.GameNameConflict, nameof(UpdateGameModel.Name), () => GetService<GamesService>()
-				.UpdateAsync(GameId, new UpdateGameModel() { Name = GameName }, CancellationToken));
+				.GetByIdAsync(GameId, CancellationToken);
 		}
 
 
@@ -149,6 +124,35 @@ namespace OPCAIC.ApiService.Test.Services
 							Name = GameName,
 							ConfigurationSchema = JObject.Parse("{ 'some': 'object'}")
 						}, CancellationToken));
+		}
+
+		[Fact]
+		public async Task UpdateAsync_NameConflict()
+		{
+			gameRepository.Setup(r => r.ExistsOtherByNameAsync(GameName, GameId, CancellationToken))
+				.ReturnsAsync(true);
+
+			await AssertConflict(ValidationErrorCodes.GameNameConflict,
+				nameof(UpdateGameModel.Name), () => GetService<GamesService>()
+					.UpdateAsync(GameId, new UpdateGameModel { Name = GameName }, CancellationToken));
+		}
+
+		[Fact]
+		public async Task UpdateAsync_Success()
+		{
+			gameRepository.Setup(r => r.ExistsOtherByNameAsync(GameName, GameId, CancellationToken))
+				.ReturnsAsync(false);
+			gameRepository.Setup(r => r.UpdateAsync(GameId,
+					It.Is<UpdateGameDto>(g => g.Name == GameName), CancellationToken))
+				.ReturnsAsync(true);
+
+			await GetService<GamesService>()
+				.UpdateAsync(GameId,
+					new UpdateGameModel
+					{
+						Name = GameName,
+						ConfigurationSchema = JObject.Parse(SomeSchema)
+					}, CancellationToken);
 		}
 	}
 }
