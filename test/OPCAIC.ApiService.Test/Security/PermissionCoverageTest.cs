@@ -103,11 +103,5 @@ namespace OPCAIC.ApiService.Test.Security
 					new PermissionRequirement<TPermission>((TPermission) permission));
 			}
 		}
-
-
-		public static object[] GetEnumMembers(Type enumType)
-		{
-			return (object[]) Enum.GetValues(enumType);
-		}
 	}
 }

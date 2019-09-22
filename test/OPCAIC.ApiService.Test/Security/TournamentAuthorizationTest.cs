@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Security;
@@ -37,6 +38,23 @@ namespace OPCAIC.ApiService.Test.Security
 			DbContext.SaveChanges();
 
 			AuthorizationService.CheckPermissions(GetClaimsPrincipal(manager), tournament.Id,
+				TournamentPermission.Update);
+		}
+
+		[Fact]
+		public void AllowEveryoneBrowseTournametns()
+		{
+			var game = NewTrackedEntity<Game>();
+			var manager = NewUser();
+			var owner = NewUser();
+			var tournament = NewTrackedEntity<Tournament>();
+
+			tournament.Game = game;
+			tournament.Owner = owner;
+
+			DbContext.SaveChanges();
+
+			AuthorizationService.CheckPermissions(new ClaimsPrincipal(),
 				TournamentPermission.Update);
 		}
 	}

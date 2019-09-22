@@ -9,14 +9,14 @@ using OPCAIC.Domain.Exceptions;
 namespace OPCAIC.ApiService.Security.Handlers
 {
 	public abstract class ResourcePermissionAuthorizationHandler<TPermission, TAuthData>
-		: AuthorizationHandler<PermissionRequirement<TPermission>, long?>
+		: AuthorizationHandler<PermissionRequirement<TPermission>, ResourceId>
 		where TPermission : Enum
 		where TAuthData : class
 	{
 		/// <inheritdoc />
 		protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context,
 			PermissionRequirement<TPermission> requirement,
-			long? resourceId)
+			ResourceId resourceId)
 		{
 			TAuthData authData = default;
 			if (resourceId.HasValue)

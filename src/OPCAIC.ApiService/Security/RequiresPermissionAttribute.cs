@@ -48,7 +48,7 @@ namespace OPCAIC.ApiService.Security
 					return;
 				}
 
-				if (!(await authorizationService.AuthorizeAsync(context.HttpContext.User, null,
+				if (!(await authorizationService.AuthorizeAsync(context.HttpContext.User, ResourceId.Null,
 					requirements)).Succeeded)
 				{
 					context.Result = new ForbidResult();

@@ -42,6 +42,7 @@ namespace OPCAIC.Application.Games.Queries
 			public Task<PagedResult<GamePreviewModel>> Handle(GetGamesQuery request, CancellationToken cancellationToken)
 			{
 				var spec = ProjectingSpecification<Game>.Create<GamePreviewModel>(mapper);
+				spec.WithPaging(request.Offset, request.Count);
 
 				if (request.Name != null)
 				{
