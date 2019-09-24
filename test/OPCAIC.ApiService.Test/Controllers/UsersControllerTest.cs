@@ -255,12 +255,29 @@ namespace OPCAIC.ApiService.Test.Controllers
 
 			await AssertInvalidModel(
 				ValidationErrorCodes.PasswordMismatch,
-				nameof(userModel.Password),
+				nameof(NewPasswordModel.OldPassword),
 				() => Controller.PostPasswordAsync(
 					new NewPasswordModel
 					{
 						NewPassword = "abfaiwef23r203r92r23rXX#@$",
 						OldPassword = "Not old password"
+					}, CancellationToken));
+		}
+
+		[Fact]
+		public async Task PasswordChange_Fail()
+		{
+			var user = await DoCreateUser(userModel, true);
+			HttpContext.User = await GetService<SignInManager>().CreateUserPrincipalAsync(user);
+
+			await AssertInvalidModel(
+				ValidationErrorCodes.PasswordTooShort,
+				nameof(NewPasswordModel.NewPassword),
+				() => Controller.PostPasswordAsync(
+					new NewPasswordModel
+					{
+						NewPassword = "a", // too short
+						OldPassword = userModel.Password
 					}, CancellationToken));
 		}
 

@@ -36,7 +36,7 @@ namespace OPCAIC.ApiService.Security
 		/// <inheritdoc />
 		public override IdentityError PasswordMismatch()
 		{
-			return Map(base.PasswordMismatch(), new IdentityValidationError(ValidationErrorCodes.PasswordMismatch, nameof(UserCredentialsModel.Password)));
+			return Map(base.PasswordMismatch(), new IdentityValidationError(ValidationErrorCodes.PasswordMismatch, nameof(NewPasswordModel.OldPassword)));
 		}
 
 		/// <inheritdoc />

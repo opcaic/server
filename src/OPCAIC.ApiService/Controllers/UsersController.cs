@@ -105,7 +105,8 @@ namespace OPCAIC.ApiService.Controllers
 						Email = user.Email,
 						Role = (UserRole)user.RoleId,
 						RefreshToken = tokens.RefreshToken,
-						AccessToken = tokens.AccessToken
+						AccessToken = tokens.AccessToken,
+						LocalizationLanguage = user.LocalizationLanguage
 					};
 				}
 
@@ -180,7 +181,7 @@ namespace OPCAIC.ApiService.Controllers
 		{
 			var user = mapper.Map<User>(model);
 			var result = await userManager.CreateAsync(user, model.Password);
-			result.ThrowIfFailed(StatusCodes.Status400BadRequest);
+			result.ThrowIfFailed();
 
 			var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 			var url = urlGenerator.EmailConfirmLink(user.Email, token);
@@ -289,7 +290,7 @@ namespace OPCAIC.ApiService.Controllers
 			var result =
 				await userManager.ResetPasswordAsync(user, model.ResetToken, model.Password);
 			logger.UserPasswordReset(user, result);
-			result.ThrowIfFailed(StatusCodes.Status400BadRequest);
+			result.ThrowIfFailed();
 
 			return NoContent();
 		}
@@ -313,7 +314,7 @@ namespace OPCAIC.ApiService.Controllers
 			var result = await userManager.ChangePasswordAsync(user,
 				model.OldPassword, model.NewPassword);
 			logger.UserPasswordChange(user, result);
-			result.ThrowIfFailed(StatusCodes.Status400BadRequest);
+			result.ThrowIfFailed(nameof(NewPasswordModel.NewPassword));
 
 			return await userManager.GenerateUserTokensAsync(user);
 		}
@@ -340,7 +341,7 @@ namespace OPCAIC.ApiService.Controllers
 			}
 
 			var result = await userManager.ConfirmEmailAsync(user, model.Token);
-			result.ThrowIfFailed(StatusCodes.Status400BadRequest);
+			result.ThrowIfFailed();
 			logger.UserConfirmEmail(user, result);
 
 			return NoContent();

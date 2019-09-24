@@ -13,5 +13,7 @@
 		public UserRole Role { get; set; }
 
 		public long[] ManagedTournamentIds { get; set; }
+
+		public string LocalizationLanguage { get; set; }
 	}
 }
