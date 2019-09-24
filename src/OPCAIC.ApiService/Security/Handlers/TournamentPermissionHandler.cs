@@ -41,10 +41,14 @@ namespace OPCAIC.ApiService.Security.Handlers
 					return user.GetUserRole() == UserRole.Organizer;
 
 				case TournamentPermission.UploadAdditionalFiles:
-				case TournamentPermission.StartTournamentEvaluation:
+				case TournamentPermission.StartEvaluation:
 				case TournamentPermission.ManageInvites:
 				case TournamentPermission.EditDocument:
 				case TournamentPermission.Update:
+				case TournamentPermission.StopEvaluation:
+				case TournamentPermission.PauseEvaluation:
+				case TournamentPermission.UnpauseEvaluation:
+				case TournamentPermission.Publish:
 					// only owner and managers
 					return IsOwnerOrManager(userId, authData);
 
@@ -74,12 +78,13 @@ namespace OPCAIC.ApiService.Security.Handlers
 						default:
 							throw new ArgumentOutOfRangeException();
 					}
+					
 				case TournamentPermission.DownloadAdditionalFiles:
 					return
 						user.HasClaim(WorkerClaimTypes.TournamentId, authData.Id.ToString()) ||
 						IsOwnerOrManager(userId, authData);
 
-				default:
+						default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
 			}
 		}

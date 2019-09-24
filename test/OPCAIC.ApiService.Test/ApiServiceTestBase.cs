@@ -10,17 +10,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Exceptions;
+using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Domain.Exceptions;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Persistence;
 using OPCAIC.TestUtils;
+using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -96,9 +97,10 @@ namespace OPCAIC.ApiService.Test
 			var ex = await Assert.ThrowsAsync<TEx>(testCode);
 			Assert.Equal(statusCode, ex.StatusCode);
 
-			var error = Assert.Single(ex.ValidationErrors);
-			Assert.Equal(errorCode, error.Code);
-			Assert.Equal(field, error.Field);
+			var error = ex.ValidationErrors.ShouldHaveSingleItem();
+			var valError = error as ValidationError;
+			valError.Code.ShouldBe(errorCode);
+			valError.Field.ShouldBe(field);
 		}
 
 		protected Task AssertInvalidModel(string errorCode, string field, Func<Task> testCode)

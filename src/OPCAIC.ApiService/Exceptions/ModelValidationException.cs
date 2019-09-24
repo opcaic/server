@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using OPCAIC.ApiService.ModelValidationHandling;
+using OPCAIC.Application.Infrastructure.Validation;
 
 namespace OPCAIC.ApiService.Exceptions
 {
@@ -7,12 +8,12 @@ namespace OPCAIC.ApiService.Exceptions
 	{
 		/// <inheritdoc />
 		public ModelValidationException(int statusCode,
-			IEnumerable<ValidationErrorBase> validationErrors) : base(
+			IEnumerable<ApplicationError> validationErrors) : base(
 			statusCode, nameof(ModelValidationException), null)
 		{
 			ValidationErrors = validationErrors;
 		}
 
-		public IEnumerable<ValidationErrorBase> ValidationErrors { get; }
+		public IEnumerable<ApplicationError> ValidationErrors { get; }
 	}
 }

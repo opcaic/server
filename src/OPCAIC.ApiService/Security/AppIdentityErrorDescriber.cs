@@ -163,13 +163,12 @@ namespace OPCAIC.ApiService.Security
 				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresUpper, nameof(NewUserModel.Password)));
 		}
 
-		public class IdentityValidationError : ValidationErrorBase
+		public class IdentityValidationError : ValidationError
 		{
 			/// <inheritdoc />
 			public IdentityValidationError(string code, string field)
-				: base(code, "") // message will be replaced by IdentityError.Description
+				: base(code, "", field) // message will be replaced by IdentityError.Description
 			{
-				Field = field;
 			}
 		}
 

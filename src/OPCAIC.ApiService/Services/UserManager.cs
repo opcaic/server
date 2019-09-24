@@ -16,9 +16,9 @@ using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos.Users;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Domain.Exceptions;
 
 namespace OPCAIC.ApiService.Services
 {

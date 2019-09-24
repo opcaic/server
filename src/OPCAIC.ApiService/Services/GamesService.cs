@@ -1,36 +1,30 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
-using Newtonsoft.Json.Schema.Generation;
 using OPCAIC.ApiService.Exceptions;
-using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models.Games;
-using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Application.Dtos.Games;
-using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Domain.Exceptions;
-using ValidationError = OPCAIC.ApiService.ModelValidationHandling.ValidationError;
+using ValidationError = OPCAIC.Application.Infrastructure.Validation.ValidationError;
 
 namespace OPCAIC.ApiService.Services
 {
 	public class GamesService : IGamesService
 	{
 		private readonly IGameRepository gameRepository;
-		private readonly IMapper mapper;
 		private readonly ILogger<GamesService> logger;
+		private readonly IMapper mapper;
 
-		public GamesService(IGameRepository gameRepository, IMapper mapper, ILogger<GamesService> logger)
+		public GamesService(IGameRepository gameRepository, IMapper mapper,
+			ILogger<GamesService> logger)
 		{
 			this.gameRepository = gameRepository;
 			this.mapper = mapper;
@@ -72,9 +66,12 @@ namespace OPCAIC.ApiService.Services
 		public async Task UpdateAsync(long id, UpdateGameModel model,
 			CancellationToken cancellationToken)
 		{
-			if (model.ConfigurationSchema != null && !model.ConfigurationSchema.IsValid(JsonSchemaDefinition.Version7, out IList<string> messages))
+			if (model.ConfigurationSchema != null &&
+				!model.ConfigurationSchema.IsValid(JsonSchemaDefinition.Version7,
+					out IList<string> messages))
 			{
-				throw new BadRequestException(ValidationErrorCodes.InvalidSchema, string.Join("\n", messages), nameof(UpdateGameModel.ConfigurationSchema));
+				throw new BadRequestException(ValidationErrorCodes.InvalidSchema,
+					string.Join("\n", messages), nameof(UpdateGameModel.ConfigurationSchema));
 			}
 
 			if (await gameRepository.ExistsOtherByNameAsync(model.Name, id, cancellationToken))

@@ -20,6 +20,7 @@
 		/// </summary>
 		Running,
 
+
 		/// <summary>
 		///     Manually stopped by administrator, no matches are generated.
 		/// </summary>
@@ -33,6 +34,11 @@
 		/// <summary>
 		///     Tournament's evaluation ended.
 		/// </summary>
-		Finished
+		Finished,
+
+		/// <summary>
+		///     Tournament's evaluation was manually paused by administrator, no matches are executed until unpausing.
+		/// </summary>
+		Paused
 	}
 }

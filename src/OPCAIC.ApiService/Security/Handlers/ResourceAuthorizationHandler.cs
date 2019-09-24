@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using OPCAIC.ApiService.Extensions;
-using OPCAIC.Domain.Exceptions;
+using OPCAIC.Application.Exceptions;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {

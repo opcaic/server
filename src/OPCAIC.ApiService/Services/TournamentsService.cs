@@ -11,6 +11,7 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
@@ -18,7 +19,6 @@ using OPCAIC.Application.Logging;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Domain.Exceptions;
 
 namespace OPCAIC.ApiService.Services
 {
@@ -36,30 +36,6 @@ namespace OPCAIC.ApiService.Services
 			this.mapper = mapper;
 			this.gameRepository = gameRepository;
 			this.logger = logger;
-		}
-
-		/// <inheritdoc />
-		public Task<bool> ExistsByIdAsync(long id, CancellationToken cancellationToken)
-		{
-			return tournamentRepository.ExistsByIdAsync(id, cancellationToken);
-		}
-
-		public async Task StartTournamentEvaluation(long id, CancellationToken cancellationToken)
-		{
-			var detail = await tournamentRepository.FindByIdAsync(id, cancellationToken);
-			if (detail.State != TournamentState.Published)
-			{
-				throw new BadRequestException(
-					ValidationErrorCodes.TournamentEvaluationAlreadyStarted,
-					"Only tournaments in Published state can be started", null);
-			}
-
-			logger.TournamentStateChanged(id, TournamentState.Running);
-			await tournamentRepository.UpdateTournamentState(id,
-				new TournamentStartedUpdateDto
-				{
-					State = TournamentState.Running, EvaluationStarted = DateTime.Now
-				}, cancellationToken);
 		}
 
 		/// <inheritdoc />

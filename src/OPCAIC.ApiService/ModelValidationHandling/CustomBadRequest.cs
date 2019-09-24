@@ -19,7 +19,7 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 			ConstructErrorMessages(context);
 		}
 
-		public List<ValidationErrorBase> Errors { get; set; } = new List<ValidationErrorBase>();
+		public List<ApplicationError> Errors { get; set; } = new List<ApplicationError>();
 
 		public string Title { get; }
 

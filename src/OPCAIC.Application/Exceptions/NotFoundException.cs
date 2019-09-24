@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OPCAIC.Domain.Exceptions
+namespace OPCAIC.Application.Exceptions
 {
 	[Serializable]
 	public class NotFoundException : Exception

@@ -11,9 +11,9 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Security;
-using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Specifications;
+using OPCAIC.Application.Tournaments.Command;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Application.Tournaments.Queries;
 
@@ -23,8 +23,8 @@ namespace OPCAIC.ApiService.Controllers
 	[Route("api/tournaments")]
 	public class TournamentsController : ControllerBase
 	{
-		private readonly IMediator mediator;
 		private readonly IAuthorizationService authorizationService;
+		private readonly IMediator mediator;
 		private readonly IStorageService storage;
 		private readonly ITournamentsService tournamentsService;
 
@@ -200,9 +200,119 @@ namespace OPCAIC.ApiService.Controllers
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id,
-				TournamentPermission.StartTournamentEvaluation);
+				TournamentPermission.StartEvaluation);
 
-			await tournamentsService.StartTournamentEvaluation(id, cancellationToken);
+			await mediator.Send(new StartTournamentEvaluationCommand {TournamentId = id},
+				cancellationToken);
+		}
+
+		/// <summary>
+		///     Manually pauses evaluation of a tournament.
+		/// </summary>
+		/// <param name="id">Id of the tournament.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		/// <response code="200">Successfully paused.</response>
+		/// <response code="400">Tournament is not being evaluated.</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to this action.</response>
+		/// <response code="404">Tournament not found.</response>
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpPost("{id}/pause")]
+		public async Task PauseTournamentEvaluationAsync(long id,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, id,
+				TournamentPermission.PauseEvaluation);
+
+			await mediator.Send(new PauseTournamentEvaluationCommand {TournamentId = id},
+				cancellationToken);
+		}
+
+		/// <summary>
+		///     Manually continues with the evaluation of a paused tournament.
+		/// </summary>
+		/// <param name="id">Id of the tournament.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		/// <response code="200">Successfully unpaused.</response>
+		/// <response code="400">Tournament is not paused.</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to this action.</response>
+		/// <response code="404">Tournament not found.</response>
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpPost("{id}/unpause")]
+		public async Task UnpauseTournamentEvaluationAsync(long id,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, id,
+				TournamentPermission.UnpauseEvaluation);
+
+			await mediator.Send(new UnpauseTournamentEvaluationCommand {TournamentId = id},
+				cancellationToken);
+		}
+
+		/// <summary>
+		///     Manually stops the evaluation of an ongoing tournament.
+		/// </summary>
+		/// <param name="id">Id of the tournament.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		/// <response code="200">Successfully stopped.</response>
+		/// <response code="400">Tournament is not being evaluated or is not ongoing.</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to this action.</response>
+		/// <response code="404">Tournament not found.</response>
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpPost("{id}/stop")]
+		public async Task StopTournamentEvaluationAsync(long id,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, id,
+				TournamentPermission.StopEvaluation);
+
+			await mediator.Send(new StopTournamentEvaluationCommand {TournamentId = id},
+				cancellationToken);
+		}
+
+
+		/// <summary>
+		///     Manually publishes tournament.
+		/// </summary>
+		/// <param name="id">Id of the tournament.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		/// <response code="200">Successfully published.</response>
+		/// <response code="400">Tournament is not in state "Created".</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to this action.</response>
+		/// <response code="404">Tournament not found.</response>
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpPost("{id}/publish")]
+		public async Task PublishTournamentEvaluationAsync(long id,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, id,
+				TournamentPermission.Publish);
+
+			await mediator.Send(new PublishTournamentCommand {TournamentId = id},
+				cancellationToken);
 		}
 	}
 }

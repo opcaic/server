@@ -9,10 +9,10 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.Application.Dtos.Documents;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Domain.Exceptions;
 
 namespace OPCAIC.ApiService.Services
 {

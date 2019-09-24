@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -8,8 +10,10 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using OPCAIC.ApiService.Exceptions;
+using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Utils;
-using OPCAIC.Domain.Exceptions;
+using OPCAIC.Application.Exceptions;
+using OPCAIC.Application.Infrastructure.Validation;
 
 namespace OPCAIC.ApiService.Middlewares
 {
@@ -48,7 +52,7 @@ namespace OPCAIC.ApiService.Middlewares
 			}
 			catch (ModelValidationException ex)
 			{
-				await WriteResponseAsync(context, ex);
+				await WriteResponseAsync(context, ex.StatusCode, ex.ValidationErrors.ToList());
 			}
 			catch (ApiException ex)
 			{
@@ -56,9 +60,13 @@ namespace OPCAIC.ApiService.Middlewares
 			}
 			catch (NotFoundException ex)
 			{
-				await WriteResponseAsync(context, StatusCodes.Status404NotFound, ex);
+				await WriteResponseAsync(context, StatusCodes.Status404NotFound, new { ex.ResourceId, ex.Resource });
 			}
-			catch(BadHttpRequestException ex)
+			catch (BusinessException ex)
+			{
+				await WriteResponseAsync(context, StatusCodes.Status400BadRequest, ex.Error);
+			}
+			catch (BadHttpRequestException ex)
 			{
 				await WriteResponseAsync(context, new ApiException(ex.StatusCode, ex.Message, null));
 			}
@@ -79,17 +87,23 @@ namespace OPCAIC.ApiService.Middlewares
 			await WriteResponseAsync(context, apiException.StatusCode, model);
 		}
 
-		private static async Task WriteResponseAsync(HttpContext context,
-			ModelValidationException modelValidationException)
+		private static Task WriteResponseAsync(HttpContext context, int statusCode,
+			ApplicationError error)
 		{
-			foreach (var error in modelValidationException.ValidationErrors)
+			return WriteResponseAsync(context, statusCode, new List<ApplicationError> {error});
+		}
+
+		private static Task WriteResponseAsync(HttpContext context, int statusCode,
+			List<ApplicationError> errors)
+		{
+			foreach (var error in errors.OfType<ValidationError>())
 			{
 				error.Field = error.Field.FirstLetterToLower();
 			}
 
-			await WriteResponseAsync(context, modelValidationException.StatusCode, new ValidationErrorModel
+			return WriteResponseAsync(context, statusCode, new ValidationErrorModel
 			{
-				Errors = modelValidationException.ValidationErrors.ToList(),
+				Errors = errors,
 			});
 		}
 

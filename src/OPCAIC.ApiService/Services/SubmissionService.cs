@@ -14,6 +14,7 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
@@ -21,7 +22,6 @@ using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Domain.Exceptions;
 
 namespace OPCAIC.ApiService.Services
 {

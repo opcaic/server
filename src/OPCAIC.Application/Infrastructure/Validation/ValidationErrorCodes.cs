@@ -34,7 +34,13 @@
 
 		public static string TournamentDoesNotAcceptSubmission => "tournament-not-active";
 
-		public static string TournamentEvaluationAlreadyStarted => "evaluation-already-started";
+		public static string TournamentInBadState => "tournament-in-bad-state";
+
+		public static string TournamentHasBadScope => "tournament-in-bad-scope";
+
+
+		public static string DeadlineTournamentsCannotBeStopped
+			=> "deadline-tournaments-evaluation-cannot-be-stopped";
 
 		#endregion
 

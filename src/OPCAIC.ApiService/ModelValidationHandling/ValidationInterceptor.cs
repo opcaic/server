@@ -60,13 +60,12 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 				: ValidationErrorCodes.GenericError;
 		}
 
-		private class FluentValidationError : ValidationErrorBase
+		private class FluentValidationError : ValidationError
 		{
 			/// <inheritdoc />
 			public FluentValidationError(string field, string code, string message,
-				Dictionary<string, object> additionalData) : base(code, message)
+				Dictionary<string, object> additionalData) : base(code, message, field)
 			{
-				Field = field;
 				AdditionalData = additionalData;
 			}
 

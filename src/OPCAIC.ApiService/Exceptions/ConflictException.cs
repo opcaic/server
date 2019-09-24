@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using OPCAIC.ApiService.ModelValidationHandling;
+using OPCAIC.Application.Infrastructure.Validation;
 
 namespace OPCAIC.ApiService.Exceptions
 {
 	public class ConflictException : ModelValidationException
 	{
-		public ConflictException(ValidationErrorBase validationError)
+		public ConflictException(ApplicationError validationError)
 			: base(StatusCodes.Status409Conflict, new[] {validationError})
 		{
 		}

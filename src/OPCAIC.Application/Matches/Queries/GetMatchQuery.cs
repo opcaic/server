@@ -2,11 +2,11 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Matches.Models;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Domain.Exceptions;
 
 namespace OPCAIC.Application.Matches.Queries
 {

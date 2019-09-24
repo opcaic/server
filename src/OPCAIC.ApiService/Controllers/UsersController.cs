@@ -15,11 +15,11 @@ using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Emails;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Domain.Exceptions;
 using OPCAIC.Infrastructure.Emails;
 
 namespace OPCAIC.ApiService.Controllers

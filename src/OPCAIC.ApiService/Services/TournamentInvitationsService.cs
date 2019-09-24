@@ -11,12 +11,12 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Emails;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Domain.Exceptions;
 
 namespace OPCAIC.ApiService.Services
 {

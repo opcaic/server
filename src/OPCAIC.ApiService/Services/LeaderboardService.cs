@@ -10,6 +10,7 @@ using OPCAIC.ApiService.Models.Leaderboards;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
@@ -17,7 +18,6 @@ using OPCAIC.Application.Matches.Models;
 using OPCAIC.Application.Services;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Domain.Exceptions;
 
 namespace OPCAIC.ApiService.Services
 {

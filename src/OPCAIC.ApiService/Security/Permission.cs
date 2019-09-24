@@ -14,7 +14,11 @@
 		EditDocument,
 		DownloadAdditionalFiles,
 		UploadAdditionalFiles,
-		StartTournamentEvaluation,
+		StartEvaluation,
+        PauseEvaluation,
+        UnpauseEvaluation,
+        StopEvaluation,
+        Publish
 	}
 
 	public enum UserPermission

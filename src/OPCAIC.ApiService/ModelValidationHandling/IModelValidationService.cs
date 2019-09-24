@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using OPCAIC.Application.Infrastructure.Validation;
 
 namespace OPCAIC.ApiService.ModelValidationHandling
 {
@@ -10,7 +11,7 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 		/// </summary>
 		/// <param name="guid"></param>
 		/// <returns>Validation error or null</returns>
-		ValidationErrorBase GetValidationError(string guid);
+		ValidationError GetValidationError(string guid);
 
 		/// <summary>
 		///     Processes a given validation error and adds it to a collection of errors with a generated id.
@@ -21,6 +22,6 @@ namespace OPCAIC.ApiService.ModelValidationHandling
 		/// <param name="error"></param>
 		/// <returns></returns>
 		ValidationResult ProcessValidationError(IEnumerable<string> memberNames,
-			ValidationErrorBase error);
+			ValidationError error);
 	}
 }

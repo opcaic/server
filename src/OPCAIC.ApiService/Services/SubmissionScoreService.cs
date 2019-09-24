@@ -5,11 +5,11 @@ using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Domain.Exceptions;
 using OPCAIC.Messaging.Messages;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Application.Exceptions;
 
 namespace OPCAIC.ApiService.Services
 {

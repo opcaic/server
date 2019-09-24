@@ -1,15 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OPCAIC.ApiService.ModelValidationHandling;
+using OPCAIC.Application.Infrastructure.Validation;
 using Xunit;
 
 namespace OPCAIC.ApiService.Test.ModelValidationHandling
 {
 	public class ModelValidationServiceTest
 	{
-		private class TestValidationError : ValidationErrorBase
+		private class TestValidationError : ValidationError
 		{
 			/// <inheritdoc />
-			public TestValidationError(string code, string message) : base(code, message)
+			public TestValidationError(string code, string message) : base(code, message, null)
 			{
 			}
 		}

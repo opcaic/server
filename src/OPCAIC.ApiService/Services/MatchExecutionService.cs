@@ -13,13 +13,13 @@ using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Domain.Exceptions;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 
