@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using OPCAIC.ApiService.Controllers;
@@ -13,6 +14,7 @@ using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Users.Queries;
 using OPCAIC.Domain.Entities;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,6 +25,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 	{
 		public UsersControllerTest(ITestOutputHelper output) : base(output)
 		{
+			Services.AddMediatR(typeof(GetUsersQuery).Assembly);
 			FrontendUrlGeneratorMock = Services.Mock<IFrontendUrlGenerator>();
 			EmailServiceMock = Services.Mock<IEmailService>();
 			TurnOffAuthorization();
@@ -75,7 +78,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			var user = await DoCreateUser(userModel, true);
 
-			var list = await Controller.GetUsersAsync(new UserFilterModel()
+			var list = await Controller.GetUsersAsync(new GetUsersQuery 
 			{
 				Count = 5,
 			}, CancellationToken);

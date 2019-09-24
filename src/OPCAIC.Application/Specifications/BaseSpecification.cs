@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using OPCAIC.Application.Infrastructure;
 using OPCAIC.Utils;
 
 namespace OPCAIC.Application.Specifications
@@ -13,7 +14,7 @@ namespace OPCAIC.Application.Specifications
 		public bool OrderByDescending { get; set; }
 
 		/// <inheritdoc />
-		public Expression<Func<T, bool>> Criteria { get; set; }
+		public Expression<Func<T, bool>> Criteria { get; private set; }
 
 		/// <inheritdoc />
 		public IEnumerable<Ordering<T>> OrderBy => orderBy;

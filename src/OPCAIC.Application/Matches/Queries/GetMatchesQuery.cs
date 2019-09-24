@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using AutoMapper;
 using FluentValidation;
 using MediatR;
 using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Matches.Models;
@@ -34,26 +34,17 @@ namespace OPCAIC.Application.Matches.Queries
 			}
 		}
 
-		public class Handler : IRequestHandler<GetMatchesQuery, PagedResult<MatchDetailDto>>
+		public class Handler : FilterQueryHandler<GetMatchesQuery, Match, MatchDetailDto>
 		{
-			private readonly IMapper mapper;
-			private readonly IMatchRepository repository;
-
 			/// <inheritdoc />
-			public Handler(IMapper mapper, IMatchRepository repository)
+			public Handler(IMapper mapper, IMatchRepository repository) : base(mapper, repository)
 			{
-				this.mapper = mapper;
-				this.repository = repository;
 			}
 
 			/// <inheritdoc />
-			public Task<PagedResult<MatchDetailDto>> Handle(GetMatchesQuery request,
-				CancellationToken cancellationToken)
+			protected override void SetupSpecification(GetMatchesQuery request,
+				ProjectingSpecification<Match, MatchDetailDto> spec)
 			{
-				var spec = ProjectingSpecification<Match>.Create<MatchDetailDto>(mapper);
-				spec.WithPaging(request.Offset, request.Count);
-
-
 				if (request.TournamentId != null)
 				{
 					spec.AddCriteria(row => row.Tournament.Id == request.TournamentId);
@@ -119,8 +110,6 @@ namespace OPCAIC.Application.Matches.Queries
 						spec.Ordered(row => row.Id, request.Asc);
 						break;
 				}
-
-				return repository.ListPagedAsync(spec, cancellationToken);
 			}
 		}
 	}

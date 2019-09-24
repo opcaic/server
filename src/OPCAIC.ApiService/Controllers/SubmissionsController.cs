@@ -1,6 +1,7 @@
 ﻿using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,10 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Security;
-using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Submissions.Models;
+using OPCAIC.Application.Submissions.Queries;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -19,6 +23,7 @@ namespace OPCAIC.ApiService.Controllers
 	[Route("api/submissions")]
 	public class SubmissionsController : ControllerBase
 	{
+		private readonly IMediator mediator;
 		private readonly IAuthorizationService authorizationService;
 		private readonly ILogger<SubmissionsController> logger;
 		private readonly ISubmissionService submissionService;
@@ -27,12 +32,13 @@ namespace OPCAIC.ApiService.Controllers
 		/// <inheritdoc />
 		public SubmissionsController(ILogger<SubmissionsController> logger,
 			IAuthorizationService authorizationService, ISubmissionService submissionService,
-			ISubmissionValidationService validationService)
+			ISubmissionValidationService validationService, IMediator mediator)
 		{
 			this.logger = logger;
 			this.authorizationService = authorizationService;
 			this.submissionService = submissionService;
 			this.validationService = validationService;
+			this.mediator = mediator;
 		}
 
 		/// <summary>
@@ -44,15 +50,15 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permission to search submissions.</response>
 		[HttpGet]
-		[ProducesResponseType(typeof(ListModel<SubmissionPreviewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PagedResult<SubmissionPreviewDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[RequiresPermission(SubmissionPermission.Search)]
-		public Task<ListModel<SubmissionPreviewModel>> GetSubmissionsAsync(
-			[FromQuery] SubmissionFilterModel filter, CancellationToken cancellationToken)
+		public Task<PagedResult<SubmissionPreviewDto>> GetSubmissionsAsync(
+			[FromQuery] GetSubmissionsQuery filter, CancellationToken cancellationToken)
 		{
-			return submissionService.GetByFilterAsync(filter, cancellationToken);
+			return mediator.Send(filter, cancellationToken);
 		}
 
 		/// <summary>
@@ -93,15 +99,15 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to view given submission.</response>
 		/// <response code="404">Resource was not found.</response>
 		[HttpGet("{id}", Name = nameof(GetSubmissionByIdAsync))]
-		[ProducesResponseType(typeof(SubmissionDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(SubmissionDetailDto), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<SubmissionDetailModel> GetSubmissionByIdAsync(long id,
+		public async Task<SubmissionDetailDto> GetSubmissionByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id, SubmissionPermission.Read);
-			return await submissionService.GetByIdAsync(id, cancellationToken);
+			return await mediator.Send(new GetSubmissionQuery(id), cancellationToken);
 		}
 
 		/// <summary>

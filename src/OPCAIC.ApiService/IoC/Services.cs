@@ -29,7 +29,6 @@ namespace OPCAIC.ApiService.IoC
 				.AddScoped<IUserManager, UserManager>()
 				.AddScoped<IGamesService, GamesService>()
 				.AddScoped<ITournamentsService, TournamentsService>()
-				.AddScoped<ITournamentInvitationsService, TournamentInvitationsService>()
 				.AddScoped<IDocumentService, DocumentService>()
 				.AddScoped<ISubmissionService, SubmissionService>()
 				.AddScoped<IFrontendUrlGenerator, UrlGenerator>()

@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Application.Specifications
+﻿namespace OPCAIC.Application.Infrastructure
 {
 	/// <summary>
 	///     Information about query pagination.

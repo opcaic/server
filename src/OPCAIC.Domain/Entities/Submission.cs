@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Domain.Entities
 {
@@ -46,5 +47,11 @@ namespace OPCAIC.Domain.Entities
 		///     All validations of this submission.
 		/// </summary>
 		public virtual IList<SubmissionValidation> Validations { get; set; }
+
+		/// <summary>
+		///     Resulting state of the validation process.
+		/// </summary>
+		public SubmissionValidationState ValidationState { get; set; }
+
 	}
 }

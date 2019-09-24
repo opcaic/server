@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,9 @@ using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Documents.Queries;
+using OPCAIC.Application.Dtos.Documents;
+using OPCAIC.Application.Infrastructure;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -18,11 +22,13 @@ namespace OPCAIC.ApiService.Controllers
 	{
 		private readonly IDocumentService documentService;
 		private readonly IAuthorizationService authorizationService;
+		private readonly IMediator mediator;
 
-		public DocumentController(IDocumentService documentService, IAuthorizationService authorizationService)
+		public DocumentController(IDocumentService documentService, IAuthorizationService authorizationService, IMediator mediator)
 		{
 			this.documentService = documentService;
 			this.authorizationService = authorizationService;
+			this.mediator = mediator;
 		}
 
 		/// <summary>
@@ -32,15 +38,15 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[HttpGet]
-		[ProducesResponseType(typeof(ListModel<DocumentDetailModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PagedResult<DocumentDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[RequiresPermission(DocumentPermission.Search)]
-		public Task<ListModel<DocumentDetailModel>> GetDocumentsAsync(
-			[FromQuery] DocumentFilterModel filter, CancellationToken cancellationToken)
+		public Task<PagedResult<DocumentDto>> GetDocumentsAsync(
+			[FromQuery] GetDocumentsQuery filter, CancellationToken cancellationToken)
 		{
-			return documentService.GetByFilterAsync(filter, cancellationToken);
+			return mediator.Send(filter, cancellationToken);
 		}
 
 		/// <summary>
@@ -79,15 +85,15 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
 		[HttpGet("{id}", Name = nameof(GetDocumentByIdAsync))]
-		[ProducesResponseType(typeof(DocumentDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(DocumentDto), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<DocumentDetailModel> GetDocumentByIdAsync(long id,
+		public async Task<DocumentDto> GetDocumentByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id, DocumentPermission.Read);
-			return await documentService.GetByIdAsync(id, cancellationToken);
+			return await mediator.Send(new GetDocumentQuery(id), cancellationToken);
 		}
 
 		/// <summary>
@@ -101,7 +107,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
 		[HttpPut("{id}")]
-		[ProducesResponseType(typeof(DocumentDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -121,7 +127,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[HttpDelete("{id}")]
-		[ProducesResponseType(typeof(DocumentDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using OPCAIC.Application.Documents.Queries;
 using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
@@ -10,13 +11,13 @@ using OPCAIC.Domain.Entities;
 namespace OPCAIC.Persistence.Repositories
 {
 	public class DocumentRepository
-		: GenericRepository<Document, DocumentFilterDto, DocumentDetailDto, DocumentDetailDto,
+		: GenericRepository<Document, GetDocumentsQuery, DocumentDto, DocumentDto,
 				NewDocumentDto, UpdateDocumentDto>,
 			IDocumentRepository
 	{
 		/// <inheritdoc />
 		public DocumentRepository(DataContext context, IMapper mapper)
-			: base(context, mapper, QueryableExtensions.Filter)
+			: base(context, mapper, null)
 		{
 		}
 

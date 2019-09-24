@@ -6,18 +6,20 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Submissions.Models;
+using OPCAIC.Application.Submissions.Queries;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Persistence.Repositories
 {
 	public class SubmissionRepository
-		: GenericRepository<Submission, SubmissionFilterDto, SubmissionPreviewDto,
+		: GenericRepository<Submission, GetSubmissionsQuery, SubmissionPreviewDto,
 				SubmissionDetailDto, NewSubmissionDto, UpdateSubmissionScoreDto>,
 			ISubmissionRepository
 	{
 		/// <inheritdoc />
 		public SubmissionRepository(DataContext context, IMapper mapper)
-			: base(context, mapper, QueryableExtensions.Filter)
+			: base(context, mapper, null)
 		{
 		}
 

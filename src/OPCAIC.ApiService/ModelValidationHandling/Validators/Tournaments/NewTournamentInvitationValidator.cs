@@ -10,7 +10,6 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Validators.Tournaments
 	{
 		public NewTournamentInvitationValidator()
 		{
-			RuleFor(m => m.TournamentId).EntityId(typeof(Tournament));
 			RuleFor(m => m.Emails).ForEach(f => f.Email());
 		}
 	}

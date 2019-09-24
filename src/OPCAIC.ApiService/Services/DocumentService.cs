@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
-using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Application.Exceptions;
@@ -47,32 +46,6 @@ namespace OPCAIC.ApiService.Services
 			var id = await documentRepository.CreateAsync(dto, cancellationToken);
 			logger.DocumentCreated(id, dto);
 			return id;
-		}
-
-		/// <inheritdoc />
-		public async Task<ListModel<DocumentDetailModel>> GetByFilterAsync(
-			DocumentFilterModel filter,
-			CancellationToken cancellationToken)
-		{
-			var filterDto = mapper.Map<DocumentFilterDto>(filter);
-
-			var dto = await documentRepository.GetByFilterAsync(filterDto, cancellationToken);
-
-			return mapper.Map<ListModel<DocumentDetailModel>>(dto);
-		}
-
-		/// <inheritdoc />
-		public async Task<DocumentDetailModel> GetByIdAsync(long id,
-			CancellationToken cancellationToken)
-		{
-			var dto = await documentRepository.FindByIdAsync(id, cancellationToken);
-
-			if (dto == null)
-			{
-				throw new NotFoundException(nameof(Document), id);
-			}
-
-			return mapper.Map<DocumentDetailModel>(dto);
 		}
 
 		/// <inheritdoc />

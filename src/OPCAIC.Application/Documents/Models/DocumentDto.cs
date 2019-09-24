@@ -3,7 +3,7 @@ using OPCAIC.Application.Dtos.Tournaments;
 
 namespace OPCAIC.Application.Dtos.Documents
 {
-	public class DocumentDetailDto
+	public class DocumentDto
 	{
 		public long Id { get; set; }
 

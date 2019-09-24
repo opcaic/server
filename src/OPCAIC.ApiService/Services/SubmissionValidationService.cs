@@ -9,7 +9,9 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
@@ -25,13 +27,14 @@ namespace OPCAIC.ApiService.Services
 	{
 		private readonly IMapper mapper;
 		private readonly ISubmissionValidationRepository repository;
+		private readonly ISubmissionRepository submissionRepository;
 		private readonly IWorkerService workerService;
 		private readonly ILogger<SubmissionValidationService> logger;
 		private readonly ILogStorageService logStorage;
 		private readonly ITimeService time;
 
 		public SubmissionValidationService(ISubmissionValidationRepository repository, IWorkerService workerService,
-			ILogger<SubmissionValidationService> logger, IMapper mapper, ILogStorageService logStorage, ITimeService time)
+			ILogger<SubmissionValidationService> logger, IMapper mapper, ILogStorageService logStorage, ITimeService time, ISubmissionRepository submissionRepository)
 		{
 			this.repository = repository;
 			this.workerService = workerService;
@@ -39,6 +42,7 @@ namespace OPCAIC.ApiService.Services
 			this.mapper = mapper;
 			this.logStorage = logStorage;
 			this.time = time;
+			this.submissionRepository = submissionRepository;
 		}
 
 		/// <inheritdoc />
@@ -47,6 +51,8 @@ namespace OPCAIC.ApiService.Services
 		{
 			var validation = new NewSubmissionValidationDto { SubmissionId = submissionId, JobId = Guid.NewGuid() };
 			var id = await repository.CreateAsync(validation, cancellationToken);
+			await submissionRepository.UpdateAsync(submissionId,
+				new UpdateValidationStateDto(SubmissionValidationState.Queued), cancellationToken);
 			logger.SubmissionValidationQueued(id, submissionId, validation.JobId);
 		}
 
@@ -81,8 +87,7 @@ namespace OPCAIC.ApiService.Services
 				throw new NotFoundException(nameof(SubmissionValidation), id);
 			}
 
-			var logs =
-				logStorage.GetSubmissionValidationLogs(
+			var logs = logStorage.GetSubmissionValidationLogs(
 					mapper.Map<SubmissionValidationStorageDto>(dto));
 
 			var model = mapper.Map<SubmissionValidationDetailModel>(dto);

@@ -1,16 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Application.Dtos;
-using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.Interfaces.Repositories
 {
-	public interface ITournamentInvitationRepository
+	public interface ITournamentInvitationRepository : IRepository<TournamentInvitation>
 	{
-		Task<ListDto<TournamentInvitationDto>> GetInvitationsAsync(long tournamentId,
-			TournamentInvitationFilterDto filter, CancellationToken cancellationToken = default);
-
 		Task<bool> CreateAsync(long tournamentId, IEnumerable<string> emails,
 			CancellationToken cancellationToken = default);
 

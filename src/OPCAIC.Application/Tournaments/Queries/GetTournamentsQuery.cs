@@ -8,6 +8,7 @@ using FluentValidation;
 using MediatR;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Extensions;
+using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
@@ -72,6 +73,8 @@ namespace OPCAIC.Application.Tournaments.Queries
 				CancellationToken cancellationToken)
 			{
 				var tournamentMap = mapper.GetMapExpression<Tournament, TournamentPreviewDto>();
+
+				// TODO: Filter data based on the user
 
 				var spec = ProjectingSpecification.Create(
 					request.UserId.HasValue // we cannot use conditionals inside the query, as the conditional would get compiled to SQL

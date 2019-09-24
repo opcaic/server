@@ -11,8 +11,8 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Interfaces;
-using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Tournaments.Command;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Application.Tournaments.Queries;
@@ -45,6 +45,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this action.</response>
 		[HttpGet]
+		[AllowAnonymous]
 		[ProducesResponseType(typeof(PagedResult<TournamentPreviewDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -88,6 +89,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
 		[HttpGet("{id}", Name = nameof(GetTournamentByIdAsync))]
+		[AllowAnonymous]
 		[ProducesResponseType(typeof(TournamentDetailModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]

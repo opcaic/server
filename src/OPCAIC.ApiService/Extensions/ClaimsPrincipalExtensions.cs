@@ -22,5 +22,10 @@ namespace OPCAIC.ApiService.Extensions
 				? id
 				: long.MinValue;
 		}
+
+		public static bool TryGetId(this ClaimsPrincipal user, out long id)
+		{
+			return long.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out id);
+		}
 	}
 }

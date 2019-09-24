@@ -4,6 +4,7 @@ using Moq;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Documents.Queries;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Application.Dtos.Tournaments;
@@ -56,49 +57,6 @@ namespace OPCAIC.ApiService.Test.Services
 					Name = "TEST"
 				}, CancellationToken);
 			id.ShouldBe(DocumentId);
-		}
-
-		[Fact]
-		public async Task GetByFilter_Success()
-		{
-			documentRepository.Setup(r
-					=> r.GetByFilterAsync(It.IsAny<DocumentFilterDto>(), CancellationToken))
-				.ReturnsAsync(new ListDto<DocumentDetailDto>
-				{
-					Total = 1,
-					List = new List<DocumentDetailDto>
-					{
-						new DocumentDetailDto
-						{
-							Tournament = new TournamentReferenceDto {Id = TournamentId}
-						}
-					}
-				});
-
-			var list = await DocumentService.GetByFilterAsync(new DocumentFilterModel {Count = 1},
-				CancellationToken);
-
-			list.Total.ShouldBe(1);
-			list.List.ShouldHaveSingleItem();
-		}
-
-		[Fact]
-		public async Task Manage_NotExistingIds()
-		{
-			var fakeId = 5;
-
-			tournamentRepository.Setup(r => r.ExistsByIdAsync(fakeId, CancellationToken))
-				.ReturnsAsync(false);
-			var exception = await Should.ThrowAsync<NotFoundException>(() =>
-				DocumentService.CreateAsync(new NewDocumentModel {TournamentId = fakeId},
-					CancellationToken));
-			exception.Resource.ShouldBe(nameof(Tournament));
-
-			documentRepository.Setup(r => r.FindByIdAsync(fakeId, CancellationToken))
-				.ReturnsAsync(default(DocumentDetailDto));
-			exception = await Should.ThrowAsync<NotFoundException>(() =>
-				DocumentService.GetByIdAsync(fakeId, CancellationToken));
-			exception.Resource.ShouldBe(nameof(Document));
 		}
 	}
 }

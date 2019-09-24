@@ -8,6 +8,7 @@ using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Matches.Command;
 using OPCAIC.Application.Matches.Models;
 using OPCAIC.Application.Matches.Queries;
@@ -41,6 +42,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this action.</response>
 		[HttpGet]
+		[AllowAnonymous]
 		[ProducesResponseType(typeof(ListModel<MatchDetailDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -62,6 +64,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this action.</response>
 		/// <response code="404">Match with given id does not exist.</response>
 		[HttpGet("{id}")]
+		[AllowAnonymous]
 		[ProducesResponseType(typeof(MatchDetailDto), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]

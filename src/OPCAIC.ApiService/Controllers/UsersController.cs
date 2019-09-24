@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +20,8 @@ using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Users.Model;
+using OPCAIC.Application.Users.Queries;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Infrastructure.Emails;
 
@@ -35,11 +38,12 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly SignInManager signInManager;
 		private readonly IFrontendUrlGenerator urlGenerator;
 		private readonly IUserManager userManager;
+		private readonly IMediator mediator;
 
 		public UsersController(ILogger<UsersController> logger, IEmailService emailService,
 			SignInManager signInManager, IUserManager userManager,
 			IFrontendUrlGenerator urlGenerator, IAuthorizationService authorizationService,
-			IMapper mapper)
+			IMapper mapper, IMediator mediator)
 		{
 			this.logger = logger;
 			this.emailService = emailService;
@@ -48,6 +52,7 @@ namespace OPCAIC.ApiService.Controllers
 			this.urlGenerator = urlGenerator;
 			this.authorizationService = authorizationService;
 			this.mapper = mapper;
+			this.mediator = mediator;
 			this.logger = logger;
 		}
 
@@ -59,14 +64,14 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authorized.</response>
 		/// <response code="403">User does not have permission to this action.</response>
 		[HttpGet]
-		[ProducesResponseType(typeof(ListModel<UserPreviewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PagedResult<UserPreviewDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[RequiresPermission(UserPermission.Search)]
-		public async Task<ListModel<UserPreviewModel>> GetUsersAsync(UserFilterModel filter,
+		public Task<PagedResult<UserPreviewDto>> GetUsersAsync(GetUsersQuery filter,
 			CancellationToken cancellationToken)
 		{
-			return await userManager.GetByFilterAsync(filter, cancellationToken);
+			return mediator.Send(filter, cancellationToken);
 		}
 
 		/// <summary>

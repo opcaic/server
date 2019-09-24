@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using AutoMapper;
 using OPCAIC.Application.Extensions;
+using OPCAIC.Utils;
 
 namespace OPCAIC.Application.Specifications
 {

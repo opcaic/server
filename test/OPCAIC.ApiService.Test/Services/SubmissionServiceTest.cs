@@ -18,6 +18,7 @@ using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Submissions.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using Shouldly;
@@ -112,32 +113,6 @@ namespace OPCAIC.ApiService.Test.Services
 				CancellationToken);
 
 			id.ShouldBe(SubmissionId);
-		}
-
-		[Fact]
-		public async Task GetByFilter_Sucess()
-		{
-			submissionRepository.Setup(r
-					=> r.GetByFilterAsync(It.IsAny<SubmissionFilterDto>(), CancellationToken))
-				.ReturnsAsync(new ListDto<SubmissionPreviewDto>
-				{
-					Total = 1,
-					List = new List<SubmissionPreviewDto>
-					{
-						new SubmissionPreviewDto
-						{
-							Tournament = new TournamentReferenceDto {Id = TournamentId},
-							Author = new UserReferenceDto {Id = UserId},
-							LastValidation = new SubmissionValidationDto()
-						}
-					}
-				});
-
-			var list = await SubmissionService
-				.GetByFilterAsync(new SubmissionFilterModel {Count = 1}, CancellationToken);
-
-			list.Total.ShouldBe(1);
-			list.List.ShouldHaveSingleItem();
 		}
 	}
 }

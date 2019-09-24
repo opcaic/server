@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OPCAIC.Application.Dtos.Users
+namespace OPCAIC.Application.Users.Model
 {
 	public class UserPreviewDto
 	{
@@ -8,7 +8,7 @@ namespace OPCAIC.Application.Dtos.Users
 
 		public string Email { get; set; }
 
-		public string UserName { get; set; }
+		public string Username { get; set; }
 
 		public bool EmailVerified { get; set; }
 

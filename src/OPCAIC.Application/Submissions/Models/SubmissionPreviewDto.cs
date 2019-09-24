@@ -2,8 +2,9 @@
 using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
+using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Application.Dtos.Submissions
+namespace OPCAIC.Application.Submissions.Models
 {
 	public class SubmissionPreviewDto
 	{
@@ -13,6 +14,6 @@ namespace OPCAIC.Application.Dtos.Submissions
 		public TournamentReferenceDto Tournament { get; set; }
 		public bool IsActive { get; set; }
 		public DateTime Created { get; set; }
-		public SubmissionValidationDto LastValidation { get; set; }
+		public SubmissionValidationState ValidationState { get; set; }
 	}
 }

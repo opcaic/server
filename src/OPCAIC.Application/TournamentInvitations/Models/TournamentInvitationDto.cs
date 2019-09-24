@@ -1,6 +1,6 @@
 ﻿using OPCAIC.Application.Dtos.Users;
 
-namespace OPCAIC.Application.Dtos.Tournaments
+namespace OPCAIC.Application.TournamentInvitations.Models
 {
 	public class TournamentInvitationDto
 	{

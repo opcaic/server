@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +8,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using OPCAIC.ApiService.Exceptions;
-using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Utils;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure.Validation;
@@ -60,7 +57,8 @@ namespace OPCAIC.ApiService.Middlewares
 			}
 			catch (NotFoundException ex)
 			{
-				await WriteResponseAsync(context, StatusCodes.Status404NotFound, new { ex.ResourceId, ex.Resource });
+				await WriteResponseAsync(context, StatusCodes.Status404NotFound,
+					new {ex.ResourceId, ex.Resource});
 			}
 			catch (BusinessException ex)
 			{
@@ -68,7 +66,8 @@ namespace OPCAIC.ApiService.Middlewares
 			}
 			catch (BadHttpRequestException ex)
 			{
-				await WriteResponseAsync(context, new ApiException(ex.StatusCode, ex.Message, null));
+				await WriteResponseAsync(context,
+					new ApiException(ex.StatusCode, ex.Message, null));
 			}
 			catch (Exception ex) when (env.IsDevelopment())
 			{
@@ -101,10 +100,8 @@ namespace OPCAIC.ApiService.Middlewares
 				error.Field = error.Field.FirstLetterToLower();
 			}
 
-			return WriteResponseAsync(context, statusCode, new ValidationErrorModel
-			{
-				Errors = errors,
-			});
+			return WriteResponseAsync(context, statusCode,
+				new ValidationErrorModel {Errors = errors});
 		}
 
 		public static Task WriteResponseAsync(HttpContext context, int statusCode, object model)

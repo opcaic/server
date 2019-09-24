@@ -4,7 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.TournamentParticipations;
+using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
@@ -28,14 +30,16 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 			private readonly ILogger<SubmissionValidationFinished> logger;
 			private readonly ITournamentParticipationsRepository participationsRepository;
 			private readonly ISubmissionValidationRepository repository;
+			private readonly ISubmissionRepository submissionRepository;
 
 			public Handler(ISubmissionValidationRepository repository,
 				ILogger<SubmissionValidationFinished> logger,
-				ITournamentParticipationsRepository participationsRepository)
+				ITournamentParticipationsRepository participationsRepository, ISubmissionRepository submissionRepository)
 			{
 				this.repository = repository;
 				this.logger = logger;
 				this.participationsRepository = participationsRepository;
+				this.submissionRepository = submissionRepository;
 			}
 
 			/// <inheritdoc />
@@ -45,12 +49,8 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 				// update in database
 				await repository.UpdateFromJobAsync(notification.JobId, notification,
 					cancellationToken);
+				
 				logger.SubmissionValidationUpdated(notification);
-
-				if (notification.ValidatorResult != EntryPointResult.Success)
-				{
-					return;
-				}
 
 				// check whether this is last validation of the submission
 				var spec = ProjectingSpecification<SubmissionValidation>.Create(
@@ -76,6 +76,14 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 					return; // newer validation exists
 				}
 
+				await submissionRepository.UpdateAsync(data.SubmissionId,
+					new UpdateValidationStateDto(SelectValidationState(notification)), cancellationToken);
+
+				if (notification.ValidatorResult != EntryPointResult.Success)
+				{
+					return; // invalid submission cannot be set to active
+				}
+
 				if (data.SubmissionId != data.LastSubmissionId)
 				{
 					return; // newer submission exists
@@ -84,6 +92,35 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 				await participationsRepository.SetActiveSubmission(data.TournamentId, data.UserId,
 					new UpdateTournamentParticipationDto {ActiveSubmissionId = data.SubmissionId},
 					cancellationToken);
+			}
+
+			public SubmissionValidationState SelectValidationState(
+				SubmissionValidationFinished notification)
+			{
+				if (notification.State == WorkerJobState.Cancelled)
+				{
+					return SubmissionValidationState.Cancelled;
+				}
+
+				switch (notification.ValidatorResult)
+				{
+					case EntryPointResult.Success:
+						return SubmissionValidationState.Valid;
+
+					case EntryPointResult.UserError:
+						return SubmissionValidationState.Invalid;
+
+					case EntryPointResult.Cancelled:
+						return SubmissionValidationState.Cancelled;
+
+					case EntryPointResult.NotExecuted: // validation ended in earlier stage
+					case EntryPointResult.ModuleError:
+					case EntryPointResult.PlatformError:
+						return SubmissionValidationState.Error;
+
+					default:
+						throw new ArgumentOutOfRangeException();
+				}
 			}
 		}
 	}

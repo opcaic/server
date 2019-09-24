@@ -30,7 +30,7 @@ namespace OPCAIC.Infrastructure.Emails
 			var user = await userRepository.FindRecipientAsync(recipientEmail, cancellationToken);
 
 #warning Default language code needs to be placed somewhere to configuration or to constant
-			await EnqueueEmailAsync(dto, recipientEmail, user.LocalizationLanguage ?? "en",
+			await EnqueueEmailAsync(dto, recipientEmail, user?.LocalizationLanguage ?? "en",
 				cancellationToken);
 		}
 

@@ -1,4 +1,6 @@
-﻿namespace OPCAIC.Application.Dtos.Users
+﻿using OPCAIC.Application.Users.Model;
+
+namespace OPCAIC.Application.Dtos.Users
 {
 	public class UserDetailDto : UserPreviewDto
 	{

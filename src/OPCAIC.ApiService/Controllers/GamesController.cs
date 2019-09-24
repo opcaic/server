@@ -16,6 +16,7 @@ using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Games.Queries;
+using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Specifications;
 
 namespace OPCAIC.ApiService.Controllers
@@ -40,6 +41,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// </summary>
 		/// <returns>array of all games</returns>
 		[HttpGet]
+		[AllowAnonymous]
 		[ProducesResponseType(typeof(ListModel<GamePreviewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -83,6 +85,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
 		[HttpGet("{id}", Name = nameof(GetGameByIdAsync))]
+		[AllowAnonymous]
 		[ProducesResponseType(typeof(GameDetailModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]

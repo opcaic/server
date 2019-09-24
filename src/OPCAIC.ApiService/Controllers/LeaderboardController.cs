@@ -34,6 +34,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
 		[HttpGet( Name = nameof(GetLeaderboardByTournamentIdAsync))]
+		[AllowAnonymous]
 		[ProducesResponseType(typeof(LeaderboardModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Application.Infrastructure;
 
 namespace OPCAIC.Application.Specifications
 {
@@ -21,6 +22,9 @@ namespace OPCAIC.Application.Specifications
 		Task<T> FindAsync(ISpecification<T> specification, CancellationToken cancellationToken);
 		Task<TDestination> FindAsync<TDestination>(
 			IProjectingSpecification<T, TDestination> specification,
+			CancellationToken cancellationToken);
+
+		Task<bool> UpdateAsync<TDto>(ISpecification<T> specification, TDto dto,
 			CancellationToken cancellationToken);
 
 		Task SaveChangesAsync(CancellationToken cancellationToken);

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OPCAIC.Application.Specifications
+namespace OPCAIC.Application.Infrastructure
 {
 	public struct PagedResult<T>
 	{

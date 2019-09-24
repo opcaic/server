@@ -1,6 +1,8 @@
-﻿namespace OPCAIC.Application.Dtos
+﻿using OPCAIC.Application.Infrastructure;
+
+namespace OPCAIC.Application.Dtos
 {
-	public abstract class FilterDtoBase
+	public abstract class FilterDtoBase : UserRequest
 	{
 		public int Offset { get; set; }
 

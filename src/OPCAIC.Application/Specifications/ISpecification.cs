@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using OPCAIC.Application.Infrastructure;
 
 namespace OPCAIC.Application.Specifications
 {

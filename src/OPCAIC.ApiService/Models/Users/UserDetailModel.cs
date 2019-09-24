@@ -1,6 +1,8 @@
-﻿namespace OPCAIC.ApiService.Models.Users
+﻿using OPCAIC.Application.Users.Model;
+
+namespace OPCAIC.ApiService.Models.Users
 {
-	public class UserDetailModel : UserPreviewModel
+	public class UserDetailModel : UserPreviewDto
 	{
 		public string Organization { get; set; }
 

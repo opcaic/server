@@ -42,12 +42,6 @@ namespace OPCAIC.ApiService.Security
 			public async Task OnResourceExecutionAsync(ResourceExecutingContext context,
 				ResourceExecutionDelegate next)
 			{
-				if (context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) == null)
-				{
-					context.Result = new ChallengeResult();
-					return;
-				}
-
 				if (!(await authorizationService.AuthorizeAsync(context.HttpContext.User, ResourceId.Null,
 					requirements)).Succeeded)
 				{

@@ -12,7 +12,6 @@ using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
-using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos.Users;
@@ -63,17 +62,6 @@ namespace OPCAIC.ApiService.Services
 			claims.Add(new Claim(RolePolicy.UserRoleClaim, ((UserRole)user.RoleId).ToString()));
 
 			return claims;
-		}
-
-		/// <inheritdoc />
-		public async Task<ListModel<UserPreviewModel>> GetByFilterAsync(UserFilterModel filter,
-			CancellationToken cancellationToken)
-		{
-			var filterDto = mapper.Map<UserFilterDto>(filter);
-
-			var dto = await userRepository.GetByFilterAsync(filterDto, cancellationToken);
-
-			return mapper.Map<ListModel<UserPreviewModel>>(dto);
 		}
 
 		/// <inheritdoc />

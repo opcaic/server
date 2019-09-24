@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Bogus;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using static OPCAIC.ApiService.Test.Services.TestMapper;
 
 namespace OPCAIC.ApiService.Test
 {
@@ -81,18 +80,5 @@ namespace OPCAIC.ApiService.Test
 		{
 			return Configure<T>().Generate(count);
 		}
-
-		public TDto Dto<TEntity, TDto>(Action<TDto> additionalSetup) where TEntity : class
-		{
-			var dto = Mapper.Map<TDto>(Configure<TEntity>().Generate());
-			additionalSetup(dto);
-			return dto;
-		}
-
-		public TDto Dto<TEntity, TDto>() where TEntity : class
-		{
-			return Dto<TEntity, TDto>(d => { });
-		}
 	}
-
 }

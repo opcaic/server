@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Games.Models;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
@@ -27,31 +27,23 @@ namespace OPCAIC.Application.Games.Queries
 			}
 		}
 
-		public class Handler : IRequestHandler<GetGamesQuery, PagedResult<GamePreviewModel>>
+		public class Handler : FilterQueryHandler<GetGamesQuery, Game, GamePreviewModel>
 		{
-			private readonly IGameRepository repository;
-			private readonly IMapper mapper;
-
-			public Handler(IGameRepository repository, IMapper mapper)
+			/// <inheritdoc />
+			public Handler(IMapper mapper, IGameRepository repository) : base(mapper, repository)
 			{
-				this.repository = repository;
-				this.mapper = mapper;
 			}
 
 			/// <inheritdoc />
-			public Task<PagedResult<GamePreviewModel>> Handle(GetGamesQuery request, CancellationToken cancellationToken)
+			protected override void SetupSpecification(GetGamesQuery request,
+				ProjectingSpecification<Game, GamePreviewModel> spec)
 			{
-				var spec = ProjectingSpecification<Game>.Create<GamePreviewModel>(mapper);
-				spec.WithPaging(request.Offset, request.Count);
-
 				if (request.Name != null)
 				{
 					spec.AddCriteria(row => row.Name.ToUpper().StartsWith(request.Name.ToUpper()));
 				}
 
 				spec.Ordered(GetSortingKey(request.SortBy), request.Asc);
-
-				return repository.ListPagedAsync(spec, cancellationToken);
 			}
 
 			private Expression<Func<Game, object>> GetSortingKey(string key)

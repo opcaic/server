@@ -14,6 +14,7 @@ using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
+using OPCAIC.Application.Documents.Queries;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.Broker;
 using OPCAIC.Application.Dtos.Documents;
@@ -28,9 +29,14 @@ using OPCAIC.Application.Dtos.TournamentParticipations;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Games.Models;
-using OPCAIC.Application.Specifications;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Submissions.Models;
+using OPCAIC.Application.Submissions.Queries;
 using OPCAIC.Application.SubmissionValidations.Events;
+using OPCAIC.Application.TournamentInvitations.Models;
+using OPCAIC.Application.TournamentInvitations.Queries;
 using OPCAIC.Application.Tournaments.Models;
+using OPCAIC.Application.Users.Model;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
@@ -124,11 +130,7 @@ namespace OPCAIC.ApiService
 		private void AddDocumentMapping()
 		{
 			CreateMap<NewDocumentModel, NewDocumentDto, Document>(MemberList.Source);
-
-			CreateMap<Document, DocumentDetailDto, DocumentDetailModel>(MemberList.Destination);
 			CreateMap<UpdateDocumentModel, UpdateDocumentDto, Document>(MemberList.Source);
-
-			CreateMap<DocumentFilterModel, DocumentFilterDto>(MemberList.Destination);
 		}
 
 		private void AddUserMapping()
@@ -150,10 +152,7 @@ namespace OPCAIC.ApiService
 				.ForMember(u => u.EmailVerified,
 					opt => opt.MapFrom(u => u.EmailConfirmed));
 
-			CreateMap<UserPreviewDto, UserPreviewModel>(MemberList.Destination);
-
 			CreateMap<UserProfileModel, UserProfileDto, User>(MemberList.Source);
-			CreateMap<UserFilterModel, UserFilterDto>(MemberList.Source);
 
 			CreateMap<UserReferenceDto, UserLeaderboardViewModel>(MemberList.Destination);
 			CreateMap<User, UserReferenceDto, UserReferenceModel>(MemberList.Destination);
@@ -226,10 +225,8 @@ namespace OPCAIC.ApiService
 
 			CreateMap<TournamentFilterModel, TournamentFilterDto>(MemberList.Source);
 
-			CreateMap<TournamentInvitationDto, TournamentInvitationPreviewModel>(MemberList
-				.Destination);
-			CreateMap<TournamentInvitationFilter, TournamentInvitationFilterDto>(MemberList
-				.Destination);
+			CreateMap<TournamentInvitation, TournamentInvitationDto>(MemberList.Destination);
+
 			CreateMap<TournamentDetailDto, TournamentReferenceModel>(MemberList.Destination);
 
 			CreateMap<Tournament, TournamentGenerationDtoBase>(MemberList.Destination)
@@ -271,8 +268,6 @@ namespace OPCAIC.ApiService
 					opt => opt.MapFrom(s => s.Tournament.Managers.Select(m => m.UserId)));
 
 			CreateMap<Submission, SubmissionPreviewDto>(MemberList.Destination)
-				.ForMember(s => s.LastValidation, opt => opt.MapFrom(
-					s => s.Validations.OrderByDescending(v => v.Id).First()))
 				.ForMember(s => s.IsActive,
 					opt => opt.MapFrom(s => s.TournamentParticipation.ActiveSubmissionId == s.Id));
 
@@ -289,11 +284,12 @@ namespace OPCAIC.ApiService
 				.Destination);
 			CreateMap<Submission, SubmissionScoreViewDto>(MemberList.Destination);
 
-			CreateMap<SubmissionFilterModel, SubmissionFilterDto>(MemberList.Destination);
+			CreateMap<SubmissionFilterModel, GetSubmissionsQuery>(MemberList.Destination);
 
 			CreateMap<Submission, SubmissionStorageDto>(MemberList.Destination);
 			CreateMap<Submission, UpdateSubmissionScoreDto>(MemberList.Destination);
 			CreateMap<UpdateSubmissionScoreDto, Submission>(MemberList.Source);
+			CreateMap<UpdateValidationStateDto, Submission>(MemberList.Source);
 
 			CreateMap<SubmissionDetailDto, LeaderboardParticipationModel>(MemberList.None)
 				.ForMember(s => s.User, opt => opt.MapFrom(s => s.Author));

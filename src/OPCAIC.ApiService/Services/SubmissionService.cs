@@ -12,7 +12,6 @@ using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.Application.Dtos.Submissions;
-using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
@@ -78,72 +77,6 @@ namespace OPCAIC.ApiService.Services
 			logger.SubmissionCreated(id, dto);
 
 			return id;
-		}
-
-		public async Task<ListModel<SubmissionPreviewModel>> GetByFilterAsync(
-			SubmissionFilterModel filter, CancellationToken cancellationToken)
-		{
-			var filterDto = mapper.Map<SubmissionFilterDto>(filter);
-
-			var list = await repository.GetByFilterAsync(filterDto, cancellationToken);
-
-			var mapped = mapper.Map<ListModel<SubmissionPreviewModel>>(list);
-
-			for (var i = 0; i < list.List.Count; i++)
-			{
-				mapped.List[i].ValidationState = GetValidationState(list.List[i].LastValidation);
-			}
-
-			return mapped;
-		}
-
-		private static SubmissionValidationState GetValidationState(SubmissionValidationDto validation)
-		{
-			SubmissionValidationState target;
-			if (!validation.Executed.HasValue)
-			{
-				target = SubmissionValidationState.Queued;
-			}
-
-			else
-			{
-				switch (validation.ValidatorResult)
-				{
-					case EntryPointResult.Success:
-						target = SubmissionValidationState.Valid;
-						break;
-
-					case EntryPointResult.UserError:
-						target = SubmissionValidationState.Invalid;
-						break;
-
-					case EntryPointResult.NotExecuted: // validation ended in earlier stage
-					case EntryPointResult.Cancelled:
-					case EntryPointResult.ModuleError:
-					case EntryPointResult.PlatformError:
-						target = SubmissionValidationState.Error;
-						break;
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
-			}
-
-			return target;
-		}
-
-		public async Task<SubmissionDetailModel> GetByIdAsync(long id,
-			CancellationToken cancellationToken)
-		{
-			var dto = await repository.FindByIdAsync(id, cancellationToken);
-
-			if (dto == null)
-			{
-				throw new NotFoundException(nameof(Submission), id);
-			}
-
-			var mapped = mapper.Map<SubmissionDetailModel>(dto);
-			mapped.ValidationState = GetValidationState(dto.LastValidation);
-			return mapped;
 		}
 
 		public async Task<Stream> GetSubmissionArchiveAsync(long id, CancellationToken cancellationToken)
