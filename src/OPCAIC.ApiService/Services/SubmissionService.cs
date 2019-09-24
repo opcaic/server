@@ -41,44 +41,6 @@ namespace OPCAIC.ApiService.Services
 			this.mapper = mapper;
 		}
 
-		public async Task<long> CreateAsync(NewSubmissionModel model, long userId,
-			CancellationToken cancellationToken)
-		{
-			// check whether the tournament can still accept submissions
-			var tournament =
-				await tournamentRepository.FindByIdAsync(model.TournamentId, cancellationToken);
-
-			if (!CanTournamentAcceptSubmissions(tournament))
-			{
-				if (tournament.Deadline.HasValue && tournament.Deadline < DateTime.Now)
-				{
-					throw new BadRequestException(ValidationErrorCodes.TournamentDeadlinePassed, "Deadline for tournament registration has passed.", null);
-				}
-
-				throw new BadRequestException(ValidationErrorCodes.TournamentDoesNotAcceptSubmission, "This tournament does not accept submissions anymore.", null);
-			}
-
-			// save db entity
-			var dto = mapper.Map<NewSubmissionDto>(model);
-			dto.Score = tournament.Format == TournamentFormat.Elo ? 1200 : 0;
-			dto.AuthorId = userId;
-			var id = await repository.CreateAsync(dto, cancellationToken);
-
-			var storeDto = await repository.FindSubmissionForStorageAsync(id, cancellationToken);
-
-			// save archive
-			using (var stream = storage.WriteSubmissionArchive(storeDto))
-			{
-				// TODO: do we really want to permit cancellation here?
-				// TODO: connect db transactions and filesystem transactions storage
-				await model.Archive.CopyToAsync(stream, cancellationToken);
-			}
-
-			logger.SubmissionCreated(id, dto);
-
-			return id;
-		}
-
 		public async Task<Stream> GetSubmissionArchiveAsync(long id, CancellationToken cancellationToken)
 		{
 			var dto = await repository.FindSubmissionForStorageAsync(id, cancellationToken);
@@ -89,14 +51,6 @@ namespace OPCAIC.ApiService.Services
 			}
 
 			return storage.ReadSubmissionArchive(dto);
-		}
-
-		public static bool CanTournamentAcceptSubmissions(TournamentDetailDto tournament)
-		{
-			return tournament.State == TournamentState.Published &&
-				(tournament.Deadline == null || tournament.Deadline > DateTime.Now) ||
-				tournament.State == TournamentState.Running &&
-				tournament.Scope == TournamentScope.Ongoing;
 		}
 
 		/// <inheritdoc />

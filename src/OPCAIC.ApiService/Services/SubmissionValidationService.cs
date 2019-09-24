@@ -9,9 +9,7 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos;
-using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.SubmissionValidations;
-using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
@@ -43,17 +41,6 @@ namespace OPCAIC.ApiService.Services
 			this.logStorage = logStorage;
 			this.time = time;
 			this.submissionRepository = submissionRepository;
-		}
-
-		/// <inheritdoc />
-		public async Task EnqueueValidationAsync(long submissionId,
-			CancellationToken cancellationToken)
-		{
-			var validation = new NewSubmissionValidationDto { SubmissionId = submissionId, JobId = Guid.NewGuid() };
-			var id = await repository.CreateAsync(validation, cancellationToken);
-			await submissionRepository.UpdateAsync(submissionId,
-				new UpdateValidationStateDto(SubmissionValidationState.Queued), cancellationToken);
-			logger.SubmissionValidationQueued(id, submissionId, validation.JobId);
 		}
 
 		public SubmissionValidationRequest CreateRequest(SubmissionValidationRequestDataDto data)

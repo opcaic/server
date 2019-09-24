@@ -1,14 +1,14 @@
 ﻿using System;
-using static OPCAIC.ApiService.Test.Services.TestMapper;
+using OPCAIC.ApiService.Test;
 
-namespace OPCAIC.ApiService.Test
+namespace OPCAIC.Application.Test
 {
 	public static class EntityFakerExtensions
 	{
 		public static TDto Dto<TEntity, TDto>(this EntityFaker faker, Action<TDto> additionalSetup)
 			where TEntity : class
 		{
-			var dto = Mapper.Map<TDto>(faker.Configure<TEntity>().Generate());
+			var dto = TestMapper.Mapper.Map<TDto>(faker.Configure<TEntity>().Generate());
 			additionalSetup(dto);
 			return dto;
 		}

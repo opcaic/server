@@ -120,6 +120,19 @@ namespace OPCAIC.Persistence.Repositories
 			return UpdateFromDtoByQueryAsync(specification.Criteria, dto, cancellationToken);
 		}
 
+		/// <inheritdoc />
+		public Task<bool> ExistsAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken)
+		{
+			return Query(specification.Criteria).AnyAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task CreateAsync(TEntity entity, CancellationToken cancellationToken)
+		{
+			DbSet.Add(entity);
+			return SaveChangesAsync(cancellationToken);
+		}
+
 		public Task SaveChangesAsync(CancellationToken cancellationToken)
 		{
 			return Context.SaveChangesAsync(cancellationToken);

@@ -20,6 +20,12 @@ namespace OPCAIC.Application.Extensions
 				new BaseSpecification<TEntity>().AddCriteria(e => e.Id == id), dto, cancellationToken);
 		}
 
+		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken)
+		{
+			var spec = new BaseSpecification<TEntity>().AddCriteria(criteria);
+			return repository.ExistsAsync(spec, cancellationToken);
+		}
+
 		public static async Task<TDto> GetAsync<TEntity, TDto>(this IRepository<TEntity> repository,
 			long id, IMapper mapper, CancellationToken cancellationToken)
 			where TEntity : IEntity

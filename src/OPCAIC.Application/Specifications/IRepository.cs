@@ -27,6 +27,11 @@ namespace OPCAIC.Application.Specifications
 		Task<bool> UpdateAsync<TDto>(ISpecification<T> specification, TDto dto,
 			CancellationToken cancellationToken);
 
+		Task<bool> ExistsAsync(ISpecification<T> specification,
+			CancellationToken cancellationToken);
+
+		Task CreateAsync(T entity, CancellationToken cancellationToken);
+
 		Task SaveChangesAsync(CancellationToken cancellationToken);
 	}
 }

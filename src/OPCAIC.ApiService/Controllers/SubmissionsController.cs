@@ -14,6 +14,7 @@ using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Submissions.Commands;
 using OPCAIC.Application.Submissions.Models;
 using OPCAIC.Application.Submissions.Queries;
 
@@ -23,9 +24,9 @@ namespace OPCAIC.ApiService.Controllers
 	[Route("api/submissions")]
 	public class SubmissionsController : ControllerBase
 	{
-		private readonly IMediator mediator;
 		private readonly IAuthorizationService authorizationService;
 		private readonly ILogger<SubmissionsController> logger;
+		private readonly IMediator mediator;
 		private readonly ISubmissionService submissionService;
 		private readonly ISubmissionValidationService validationService;
 
@@ -82,8 +83,11 @@ namespace OPCAIC.ApiService.Controllers
 			await authorizationService.CheckPermissions(User, model.TournamentId,
 				TournamentPermission.Submit);
 
-			var id = await submissionService.CreateAsync(model, User.GetId(), cancellationToken);
-			await validationService.EnqueueValidationAsync(id, cancellationToken);
+			var id = await mediator.Send(
+				new SubmitSubmissionCommand
+				{
+					TournamentId = model.TournamentId, Archive = model.Archive.OpenReadStream()
+				}, cancellationToken);
 
 			return CreatedAtRoute(nameof(GetSubmissionByIdAsync), new {id}, new IdModel {Id = id});
 		}
@@ -152,7 +156,7 @@ namespace OPCAIC.ApiService.Controllers
 		{
 			await authorizationService.CheckPermissions(User, id,
 				SubmissionPermission.QueueValidation);
-			await validationService.EnqueueValidationAsync(id, cancellationToken);
+			await mediator.Send(new EnqueueValidationCommand(id), cancellationToken);
 		}
 	}
 }
