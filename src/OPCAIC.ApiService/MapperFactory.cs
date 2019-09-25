@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using AutoMapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Broker;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Models.Games;
@@ -30,6 +30,7 @@ using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Application.Submissions.Models;
 using OPCAIC.Application.Submissions.Queries;
 using OPCAIC.Application.SubmissionValidations.Events;
@@ -46,6 +47,13 @@ using OPCAIC.Persistence.Repositories;
 namespace OPCAIC.ApiService
 {
 	// TODO: Split to separate profiles and gradually move to Application project
+	public class DynamicProfile : AutoMapperProfile
+	{
+		public DynamicProfile()
+			:base(Assembly.GetExecutingAssembly())
+		{
+		}
+	}
 	public class AutomapperProfile : Profile
 	{
 		public AutomapperProfile()
@@ -74,57 +82,11 @@ namespace OPCAIC.ApiService
 
 		private void AddOther()
 		{
-			CreateMap(typeof(ListDto<>), typeof(ListModel<>), MemberList.Destination);
-			CreateMap(typeof(PagedResult<>), typeof(ListModel<>), MemberList.Destination);
-
 			CreateMap<Dictionary<string, object>, string>()
 				.ConvertUsing(d => JsonConvert.SerializeObject(d));
 			CreateMap<JObject, string>()
 				.ConvertUsing(j => j == null ? null : JsonConvert.SerializeObject(j));
 			CreateMap<string, JObject>().ConvertUsing(j => j == null ? null : JObject.Parse(j));
-			CreateMap<SubTaskResult, EntryPointResult>()
-				.ConvertUsing(s => SubTaskResultToEntryPointResult(s));
-			CreateMap<JobStatus, WorkerJobState>()
-				.ConvertUsing(s => JobStatusToWorkerJobState(s));
-		}
-
-		private WorkerJobState JobStatusToWorkerJobState(JobStatus status)
-		{
-			switch (status)
-			{
-				case JobStatus.Ok:
-				case JobStatus.Timeout:
-				case JobStatus.Error:
-					return WorkerJobState.Finished;
-
-				case JobStatus.Canceled:
-					return WorkerJobState.Cancelled;
-
-				case JobStatus.Unknown:
-				default:
-					throw new ArgumentOutOfRangeException(nameof(status), status, null);
-			}
-		}
-
-		private EntryPointResult SubTaskResultToEntryPointResult(SubTaskResult status)
-		{
-			switch (status)
-			{
-				case SubTaskResult.Unknown:
-					return EntryPointResult.NotExecuted;
-				case SubTaskResult.Ok:
-					return EntryPointResult.Success;
-				case SubTaskResult.NotOk:
-					return EntryPointResult.UserError;
-				case SubTaskResult.Aborted:
-					return EntryPointResult.Cancelled;
-				case SubTaskResult.ModuleError:
-					return EntryPointResult.ModuleError;
-				case SubTaskResult.PlatformError:
-					return EntryPointResult.PlatformError;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(status), status, null);
-			}
 		}
 
 		private void AddDocumentMapping()
@@ -135,26 +97,7 @@ namespace OPCAIC.ApiService
 
 		private void AddUserMapping()
 		{
-			CreateMap<NewUserModel, User>(MemberList.Source)
-				.ForSourceMember(m => m.Password, opt => opt.DoNotValidate());
-
-			CreateMap<User, UserPreviewDto>(MemberList.Destination)
-				.ForMember(usr => usr.UserRole,
-					opt => opt.MapFrom(usr => usr.RoleId))
-				.ForMember(u => u.EmailVerified,
-					opt => opt.MapFrom(u => u.EmailConfirmed));
-
-			CreateMap<User, EmailRecipientDto>(MemberList.Destination);
-
-			CreateMap<User, UserDetailModel>(MemberList.Destination)
-				.ForMember(usr => usr.UserRole,
-					opt => opt.MapFrom(usr => usr.RoleId))
-				.ForMember(u => u.EmailVerified,
-					opt => opt.MapFrom(u => u.EmailConfirmed));
-
 			CreateMap<UserProfileModel, UserProfileDto, User>(MemberList.Source);
-
-			CreateMap<UserReferenceDto, UserLeaderboardViewModel>(MemberList.Destination);
 			CreateMap<User, UserReferenceDto, UserReferenceModel>(MemberList.Destination);
 		}
 
@@ -162,93 +105,28 @@ namespace OPCAIC.ApiService
 		{
 			CreateMap<NewGameModel, NewGameDto, Game>(MemberList.Source);
 
-			CreateMap<Game, GameDetailDto>(MemberList.Destination)
-				.IncludeBase<Game, GamePreviewModel>();
-
-			CreateMap<GameDetailDto, GameDetailModel>(MemberList.Destination);
-
 			CreateMap<Game, GamePreviewModel>(MemberList.Destination)
 				.ForMember(d => d.ActiveTournamentsCount,
-					opt => opt.MapFrom(GameRepository.ActiveTournamentsExpression));
+					opt => opt.MapFrom(GameRepository.ActiveTournamentsExpression))
+				.IncludeAllDerived();
 
 			CreateMap<Game, GameReferenceDto, GameReferenceModel>(MemberList.Destination);
 			CreateMap<UpdateGameModel, UpdateGameDto, Game>(MemberList.Source);
-
-			CreateMap<GameFilterModel, GameFilterDto>(MemberList.Source);
 		}
 
 		private void AddTournamentMapping()
 		{
 			CreateMap<NewTournamentModel, NewTournamentDto, Tournament>(MemberList.Source);
 
-			CreateMap<Tournament, TournamentAuthDto>(MemberList.Destination)
-				.ForMember(d => d.ManagerIds,
-					opt => opt.MapFrom(s => s.Managers.Select(m => m.UserId)))
-				.ForMember(d => d.ParticipantIds,
-					opt => opt.MapFrom(e => e.Participants.Select(s => s.UserId)));
-
-			CreateMap<Tournament, TournamentDetailDto>(MemberList.Destination)
-				.IncludeBase<Tournament, TournamentPreviewDto>();
-
 			CreateMap<TournamentDetailDto, TournamentDetailModel>(MemberList
 				.Destination);
 
-			CreateMap<Tournament, TournamentDtoBase>(MemberList
-					.Destination)
-				.ForMember(d => d.ActiveSubmissionsCount,
-					opt => opt.MapFrom(s
-						=> s.Participants.Count(e => e.ActiveSubmissionId != null)))
-				.ForMember(d => d.PlayersCount,
-					opt => opt.MapFrom(s
-						=> s.Participants.Count))
-				.ForMember(d => d.ImageUrl,
-					opt => opt.MapFrom(s
-						=> s.ImageUrl ?? s.Game.DefaultTournamentImageUrl))
-				.ForMember(d => d.ImageOverlay,
-					opt => opt.MapFrom(s
-						=> s.ImageOverlay ?? s.Game.DefaultTournamentImageOverlay))
-				.ForMember(d => d.ThemeColor,
-					opt => opt.MapFrom(s
-						=> s.ThemeColor ?? s.Game.DefaultTournamentThemeColor))
-				.ForMember(d => d.SubmissionsCount,
-					opt => opt.MapFrom(s => s.Participants.Sum(p => p.Submissions.Count)));
-
-			CreateMap<Tournament, TournamentPreviewDto>(MemberList.Destination)
-				.IncludeBase<Tournament, TournamentDtoBase>()
-				.ForMember(t => t.LastUserSubmissionDate, opt => opt.Ignore());
-
-			CreateMap<Tournament, TournamentStateInfoDto>(MemberList.Destination);
 			CreateMap<Tournament, TournamentReferenceDto, TournamentReferenceModel>(MemberList
 				.Destination);
 			CreateMap<UpdateTournamentModel, UpdateTournamentDto, Tournament>(MemberList
 				.Source);
 
-			CreateMap<TournamentFilterModel, TournamentFilterDto>(MemberList.Source);
-
-			CreateMap<TournamentInvitation, TournamentInvitationDto>(MemberList.Destination);
-
 			CreateMap<TournamentDetailDto, TournamentReferenceModel>(MemberList.Destination);
-
-			CreateMap<Tournament, TournamentGenerationDtoBase>(MemberList.Destination)
-				.ForMember(d => d.ActiveSubmissionIds,
-					opt => opt.MapFrom(f
-						=> f.Participants.Where(s => s.ActiveSubmissionId != null)
-							.Select(s => s.ActiveSubmissionId.Value)));
-
-			CreateMap<Tournament, TournamentBracketsGenerationDto>(MemberList.Destination)
-				.IncludeBase<Tournament, TournamentGenerationDtoBase>();
-
-			CreateMap<Tournament, TournamentOngoingGenerationDto>(MemberList.Destination)
-				.IncludeBase<Tournament, TournamentGenerationDtoBase>()
-				.ForMember(t => t.Submissions,
-					opt => opt.MapFrom(x => x.Participants.SelectMany(p => p.Submissions)));
-
-			CreateMap<Tournament, TournamentDeadlineGenerationDto>(MemberList.Destination)
-				.IncludeBase<Tournament, TournamentGenerationDtoBase>();
-
-			CreateMap<TournamentStateUpdateDto, Tournament>(MemberList.Source);
-			CreateMap<TournamentFinishedUpdateDto, Tournament>(MemberList.Source);
-			CreateMap<TournamentStartedUpdateDto, Tournament>(MemberList.Source);
 		}
 
 		private void AddTournamentParticipationMapping()
@@ -261,38 +139,11 @@ namespace OPCAIC.ApiService
 		{
 			CreateMap<NewSubmissionModel, NewSubmissionDto>(MemberList.Source)
 				.ForSourceMember(d => d.Archive, opt => opt.DoNotValidate());
-			CreateMap<NewSubmissionDto, Submission>(MemberList.Source);
 
-			CreateMap<Submission, SubmissionAuthDto>(MemberList.Destination)
-				.ForMember(d => d.TournamentManagersIds,
-					opt => opt.MapFrom(s => s.Tournament.Managers.Select(m => m.UserId)));
-
-			CreateMap<Submission, SubmissionPreviewDto>(MemberList.Destination)
-				.ForMember(s => s.IsActive,
-					opt => opt.MapFrom(s => s.TournamentParticipation.ActiveSubmissionId == s.Id));
-
-			CreateMap<Submission, SubmissionDetailDto>(MemberList.Destination)
-				.IncludeBase<Submission, SubmissionPreviewDto>();
-
-			CreateMap<SubmissionPreviewDto, SubmissionPreviewModel>(MemberList.Destination)
-				.ForMember(s => s.ValidationState, opt => opt.Ignore());
-
-			CreateMap<SubmissionDetailDto, SubmissionDetailModel>(MemberList.Destination)
-				.IncludeBase<SubmissionPreviewDto, SubmissionPreviewModel>();
+			CreateMap<SubmissionDetailDto, SubmissionDetailModel>(MemberList.Destination);
 
 			CreateMap<Submission, SubmissionReferenceDto, SubmissionReferenceModel>(MemberList
 				.Destination);
-			CreateMap<Submission, SubmissionScoreViewDto>(MemberList.Destination);
-
-			CreateMap<SubmissionFilterModel, GetSubmissionsQuery>(MemberList.Destination);
-
-			CreateMap<Submission, SubmissionStorageDto>(MemberList.Destination);
-			CreateMap<Submission, UpdateSubmissionScoreDto>(MemberList.Destination);
-			CreateMap<UpdateSubmissionScoreDto, Submission>(MemberList.Source);
-			CreateMap<UpdateValidationStateDto, Submission>(MemberList.Source);
-
-			CreateMap<SubmissionDetailDto, LeaderboardParticipationModel>(MemberList.None)
-				.ForMember(s => s.User, opt => opt.MapFrom(s => s.Author));
 		}
 
 		private void AddSubmissionValidationMapping()
@@ -306,7 +157,7 @@ namespace OPCAIC.ApiService
 			CreateMap<SubmissionValidationResult, SubmissionValidationFinished>(MemberList
 					.Destination)
 				.ForMember(d => d.State, opt => opt.MapFrom(r => r.JobStatus))
-				.ForMember(d => d.Executed, opt => opt.Ignore());
+				.IgnoreProperty(m => m.Executed);
 			CreateMap<SubmissionValidationFinished, SubmissionValidation>(MemberList.Source);
 			CreateMap<JobStateUpdateDto, SubmissionValidation>(MemberList.Source);
 			CreateMap<SubmissionValidation, SubmissionValidationRequestDataDto>(MemberList

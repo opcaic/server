@@ -1,25 +1,18 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using OPCAIC.Application.Dtos;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Persistence.Repositories
 {
-	public abstract class GenericRepository<TEntity, TFilterDto, TPreviewDto, TDetailDto, TNewDto,
+	public abstract class GenericRepository<TEntity, TDetailDto, TNewDto,
 			TUpdateDto>
-		: LookupRepository<TEntity, TFilterDto, TPreviewDto, TDetailDto>
+		: LookupRepository<TEntity, TDetailDto>
 		where TEntity : class, IEntity
-		where TFilterDto : FilterDtoBase
-		where TPreviewDto : class
 	{
 		/// <inheritdoc />
-		protected GenericRepository(DataContext context, IMapper mapper,
-			Func<DbSet<TEntity>, TFilterDto, IQueryable<TEntity>> applyFilterFunc) : base(context,
-			mapper, applyFilterFunc)
+		protected GenericRepository(DataContext context, IMapper mapper) : base(context,
+			mapper)
 		{
 		}
 

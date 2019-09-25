@@ -1,12 +1,10 @@
 ﻿namespace OPCAIC.Application.Interfaces.Repositories
 {
-	public interface IGenericRepository<in TFilterDto, TPreviewDto, TDetailDto, in TNewDto,
+	public interface IGenericRepository<TDetailDto, in TNewDto,
 			in TUpdateDto>
-		: IFilterRepository<TFilterDto, TPreviewDto>,
-			ICreateRepository<TNewDto>,
+		: ICreateRepository<TNewDto>,
 			ILookupRepository<TDetailDto>,
 			IUpdateRepository<TUpdateDto>
-		where TPreviewDto : class
 	{
 	}
 }

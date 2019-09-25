@@ -1,9 +1,11 @@
 ﻿using System;
 using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Domain.Entities;
 
-namespace OPCAIC.Application.Dtos.Documents
+namespace OPCAIC.Application.Documents.Models
 {
-	public class DocumentDto
+	public class DocumentDto : IMapFrom<Document>
 	{
 		public long Id { get; set; }
 

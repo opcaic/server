@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Matches.Models;
@@ -15,11 +14,11 @@ using OPCAIC.Domain.Entities;
 namespace OPCAIC.Persistence.Repositories
 {
 	public class MatchRepository
-		: LookupRepository<Match, FilterDtoBase, MatchDetailDto, MatchDetailDto>, IMatchRepository
+		: LookupRepository<Match, MatchDetailDto>, IMatchRepository
 	{
 		/// <inheritdoc />
 		public MatchRepository(DataContext context, IMapper mapper)
-			: base(context, mapper, null)
+			: base(context, mapper)
 		{
 		}
 

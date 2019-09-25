@@ -3,6 +3,7 @@ using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.ApiService;
 using OPCAIC.ApiService.Test;
+using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.TestUtils;
 using Xunit.Abstractions;
 
@@ -22,10 +23,7 @@ namespace OPCAIC.Application.Test
 		{
 			Faker = new EntityFaker();
 
-			Services.AddSingleton<IMapper>(new Mapper(new MapperConfiguration(cfg =>
-			{
-				cfg.AddProfile<AutomapperProfile>();
-			})));
+			Services.AddSingleton(TestMapper.Mapper);
 		}
 	}
 }

@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Linq;
+using AutoMapper;
 using OPCAIC.Application.Dtos.Games;
+using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Tournaments.Models
 {
-	public class TournamentDtoBase
+	public class TournamentDtoBase : ICustomMapping
 	{
 		public long Id { get; set; }
 
@@ -37,5 +41,30 @@ namespace OPCAIC.Application.Tournaments.Models
 		public DateTime? Deadline { get; set; }
 
 		public TournamentAvailability Availability { get; set; }
+
+		/// <inheritdoc />
+		void ICustomMapping.CreateMapping(Profile configuration)
+		{
+			configuration.CreateMap<Tournament, TournamentDtoBase>(MemberList
+					.Destination)
+				.ForMember(d => d.ActiveSubmissionsCount,
+					opt => opt.MapFrom(s
+						=> s.Participants.Count(e => e.ActiveSubmissionId != null)))
+				.ForMember(d => d.PlayersCount,
+					opt => opt.MapFrom(s
+						=> s.Participants.Count))
+				.ForMember(d => d.ImageUrl,
+					opt => opt.MapFrom(s
+						=> s.ImageUrl ?? s.Game.DefaultTournamentImageUrl))
+				.ForMember(d => d.ImageOverlay,
+					opt => opt.MapFrom(s
+						=> s.ImageOverlay ?? s.Game.DefaultTournamentImageOverlay))
+				.ForMember(d => d.ThemeColor,
+					opt => opt.MapFrom(s
+						=> s.ThemeColor ?? s.Game.DefaultTournamentThemeColor))
+				.ForMember(d => d.SubmissionsCount,
+					opt => opt.MapFrom(s => s.Participants.Sum(p => p.Submissions.Count)))
+				.IncludeAllDerived();
+		}
 	}
 }

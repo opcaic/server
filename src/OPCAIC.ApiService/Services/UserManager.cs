@@ -66,7 +66,7 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
-		public async Task<UserDetailModel> GetByIdAsync(long id,
+		public async Task<UserDetailDto> GetByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
 			var user = await FindByIdAsync(id, cancellationToken);
@@ -75,7 +75,7 @@ namespace OPCAIC.ApiService.Services
 				throw new NotFoundException(nameof(User), id);
 			}
 
-			return mapper.Map<UserDetailModel>(user);
+			return mapper.Map<UserDetailDto>(user);
 		}
 
 		/// <inheritdoc />

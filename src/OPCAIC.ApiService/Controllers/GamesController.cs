@@ -42,7 +42,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <returns>array of all games</returns>
 		[HttpGet]
 		[AllowAnonymous]
-		[ProducesResponseType(typeof(ListModel<GamePreviewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PagedResult<GamePreviewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]

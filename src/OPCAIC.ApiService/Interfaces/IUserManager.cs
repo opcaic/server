@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using OPCAIC.ApiService.Models.Users;
+using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.ApiService.Interfaces
@@ -12,7 +13,7 @@ namespace OPCAIC.ApiService.Interfaces
 		Task<User> FindByIdAsync(long id, CancellationToken cancellationToken);
 		Task<IdentityResult> CreateAsync(User user, string password);
 
-		Task<UserDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken);
+		Task<UserDetailDto> GetByIdAsync(long id, CancellationToken cancellationToken);
 		Task UpdateAsync(long id, UserProfileModel model, CancellationToken cancellationToken);
 		Task<UserTokens> GenerateUserTokensAsync(User user);
 

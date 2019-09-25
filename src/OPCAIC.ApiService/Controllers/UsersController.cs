@@ -15,6 +15,7 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Dtos.EmailTemplates;
+using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Emails;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
@@ -207,11 +208,11 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resouce was not found.</response>
 		[HttpGet("{id}", Name = nameof(GetUserByIdAsync))]
-		[ProducesResponseType(typeof(UserDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(UserDetailDto), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<UserDetailModel> GetUserByIdAsync(long id,
+		public async Task<UserDetailDto> GetUserByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id, UserPermission.Read);

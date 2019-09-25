@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using AutoMapper;
 using MediatR;
+using OPCAIC.Application.Documents.Models;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Application.Infrastructure;

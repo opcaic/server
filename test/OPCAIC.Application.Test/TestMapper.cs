@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.ApiService;
 using OPCAIC.ApiService.IoC;
+using OPCAIC.Application.Infrastructure.AutoMapper;
 
 namespace OPCAIC.Application.Test
 {
@@ -15,6 +16,7 @@ namespace OPCAIC.Application.Test
 			return new Mapper(new MapperConfiguration(cfg =>
 			{
 				cfg.AddProfile<AutomapperProfile>();
+				cfg.AddProfile(new AutoMapperProfile(typeof(AutoMapperProfile).Assembly));
 			}));
 		}
 	}

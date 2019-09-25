@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Application.Dtos.Games;
-using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Games.Queries;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
@@ -15,8 +14,7 @@ using OPCAIC.Domain.Enums;
 namespace OPCAIC.Persistence.Repositories
 {
 	public class GameRepository
-		: GenericRepository<Game, GameFilterDto, GamePreviewModel, GameDetailDto, NewGameDto,
-				UpdateGameDto>,
+		: GenericRepository<Game, GameDetailDto, NewGameDto, UpdateGameDto>,
 			IGameRepository
 	{
 		// must be kept in sync with TournamentRepository.ActiveTournamentPredicate
@@ -29,7 +27,7 @@ namespace OPCAIC.Persistence.Repositories
 
 		/// <inheritdoc />
 		public GameRepository(DataContext context, IMapper mapper)
-			: base(context, mapper, null)
+			: base(context, mapper)
 		{
 		}
 

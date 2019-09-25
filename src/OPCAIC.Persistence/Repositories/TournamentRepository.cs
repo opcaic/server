@@ -9,15 +9,13 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Interfaces.Repositories;
-using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Persistence.Repositories
 {
 	public class TournamentRepository
-		: GenericRepository<Tournament, TournamentFilterDto, TournamentPreviewDto,
-				TournamentDetailDto, NewTournamentDto, UpdateTournamentDto>,
+		: GenericRepository<Tournament, TournamentDetailDto, NewTournamentDto, UpdateTournamentDto>,
 			ITournamentRepository
 	{
 		// must be kept in sync with GameRepository.ActiveTournamentsExpression
@@ -29,7 +27,7 @@ namespace OPCAIC.Persistence.Repositories
 
 		/// <inheritdoc />
 		public TournamentRepository(DataContext context, IMapper mapper)
-			: base(context, mapper, null)
+			: base(context, mapper)
 		{
 		}
 

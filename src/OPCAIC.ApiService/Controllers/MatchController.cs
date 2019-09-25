@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
-using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Matches.Command;
@@ -43,7 +42,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this action.</response>
 		[HttpGet]
 		[AllowAnonymous]
-		[ProducesResponseType(typeof(ListModel<MatchDetailDto>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PagedResult<MatchDetailDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]

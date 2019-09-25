@@ -1,8 +1,10 @@
 ﻿using System;
+using OPCAIC.Application.Dtos.Games;
+using OPCAIC.Application.Infrastructure.AutoMapper;
 
 namespace OPCAIC.Application.Games.Models
 {
-	public class GamePreviewModel
+	public class GamePreviewModel : IMapFrom<GameDetailDto>
 	{
 		public long Id { get; set; }
 

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
-using OPCAIC.Application.Matches;
+using OPCAIC.Application.Documents.Queries;
 
 namespace OPCAIC.ApiService.IoC
 {
@@ -8,7 +8,7 @@ namespace OPCAIC.ApiService.IoC
 	{
 		public static void AddMapper(this IServiceCollection services)
 		{
-			services.AddAutoMapper(typeof(Startup).Assembly, typeof(MatchMapperProfile).Assembly);
+			services.AddAutoMapper(typeof(Startup).Assembly, typeof(GetDocumentsQuery).Assembly);
 		}
 	}
 }

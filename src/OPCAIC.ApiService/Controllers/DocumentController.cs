@@ -10,6 +10,7 @@ using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Documents.Models;
 using OPCAIC.Application.Documents.Queries;
 using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Application.Infrastructure;

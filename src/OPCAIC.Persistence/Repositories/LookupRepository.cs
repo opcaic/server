@@ -1,45 +1,19 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Microsoft.EntityFrameworkCore;
-using OPCAIC.Application.Dtos;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Persistence.Repositories
 {
-	public abstract class LookupRepository<TEntity, TFilterDto, TPreviewDto, TDetailDto>
+	public abstract class LookupRepository<TEntity, TDetailDto>
 		: EntityRepository<TEntity>
 		where TEntity : class, IEntity
-		where TFilterDto : FilterDtoBase
-		where TPreviewDto : class
 	{
-		private readonly Func<DbSet<TEntity>, TFilterDto, IQueryable<TEntity>> applyFilterFunc;
-
 		/// <inheritdoc />
-		protected LookupRepository(DataContext context, IMapper mapper,
-			Func<DbSet<TEntity>, TFilterDto, IQueryable<TEntity>> applyFilterFunc) : base(context,
+		protected LookupRepository(DataContext context, IMapper mapper) : base(context,
 			mapper)
 		{
-			this.applyFilterFunc = applyFilterFunc;
-		}
-
-		public async Task<ListDto<TPreviewDto>> GetByFilterAsync(TFilterDto filter,
-			CancellationToken cancellationToken)
-		{
-			var query = applyFilterFunc(DbSet, filter);
-
-			return new ListDto<TPreviewDto>
-			{
-				List = await query
-					.Skip(filter.Offset)
-					.Take(filter.Count)
-					.ProjectTo<TPreviewDto>(Mapper.ConfigurationProvider)
-					.ToListAsync(cancellationToken),
-				Total = await query.CountAsync(cancellationToken)
-			};
 		}
 
 		public Task<TDetailDto> FindByIdAsync(long id, CancellationToken cancellationToken)

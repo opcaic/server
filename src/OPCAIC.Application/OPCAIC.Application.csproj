@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <Folder Include="Matches\Command\" />
-    <Folder Include="Matches\Models\" />
     <Folder Include="Matches\Queries\" />
     <Folder Include="Tournaments\Command\" />
   </ItemGroup>

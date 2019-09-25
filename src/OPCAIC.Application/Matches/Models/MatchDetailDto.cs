@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoMapper;
 using Newtonsoft.Json.Linq;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Matches.Models
 {
-	public class MatchDetailDto
+	public class MatchDetailDto : ICustomMapping
 	{
 		public long Id { get; set; }
 		public long Index { get; set; }
+
 		public MatchState State
 		{
 			get
@@ -43,7 +47,16 @@ namespace OPCAIC.Application.Matches.Models
 		public IList<SubmissionReferenceDto> Submissions { get; set; }
 		public IList<ExecutionDto> Executions { get; set; }
 
-		public class TournamentDto : TournamentReferenceDto
+		/// <inheritdoc />
+		void ICustomMapping.CreateMapping(Profile configuration)
+		{
+			configuration.CreateMap<Match, MatchDetailDto>(MemberList.Destination)
+				.ForMember(d => d.Submissions,
+					opt => opt.MapFrom(m => m.Participations.Select(p => p.Submission)))
+				.IncludeAllDerived();
+		}
+
+		public class TournamentDto : TournamentReferenceDto, IMapFrom<Tournament>
 		{
 			public TournamentFormat Format { get; set; }
 
@@ -52,7 +65,7 @@ namespace OPCAIC.Application.Matches.Models
 			public TournamentRankingStrategy RankingStrategy { get; set; }
 		}
 
-		public class ExecutionDto
+		public class ExecutionDto : IMapFrom<MatchExecution>
 		{
 			public long Id { get; set; }
 			public EntryPointResult ExecutorResult { get; set; }
@@ -61,7 +74,7 @@ namespace OPCAIC.Application.Matches.Models
 			public DateTime Created { get; set; }
 			public JObject AdditionalData { get; set; }
 
-			public class SubmissionResultDto
+			public class SubmissionResultDto : IMapFrom<SubmissionMatchResult>
 			{
 				public SubmissionReferenceDto Submission { get; set; }
 				public double Score { get; set; }

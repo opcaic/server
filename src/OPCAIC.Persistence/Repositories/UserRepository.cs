@@ -7,19 +7,17 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Interfaces.Repositories;
-using OPCAIC.Application.Users.Model;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Persistence.Repositories
 {
 	public class UserRepository
-		: GenericRepository<User, UserFilterDto, UserPreviewDto, UserDetailDto, NewUserDto,
-				UserProfileDto>,
+		: GenericRepository<User, UserDetailDto, NewUserDto, UserProfileDto>,
 			IUserRepository
 	{
 		/// <inheritdoc />
 		public UserRepository(DataContext context, IMapper mapper)
-			: base(context, mapper, null)
+			: base(context, mapper)
 		{
 		}
 

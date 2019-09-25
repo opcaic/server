@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using OPCAIC.Application.Documents.Models;
 using OPCAIC.Application.Documents.Queries;
 using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Application.Dtos.Tournaments;

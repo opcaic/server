@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using MediatR;
-using OPCAIC.Application.Dtos.Documents;
+using OPCAIC.Application.Documents.Models;
 using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;

@@ -9,7 +9,7 @@ namespace OPCAIC.ApiService.Test.Services
 		// Static IMapper instance to be used via `using static TestMapper`
 		public static readonly IMapper Mapper = ConstructMapper();
 
-		private static IMapper ConstructMapper()
+		public static IMapper ConstructMapper()
 		{
 			var services = new ServiceCollection();
 			services.AddMapper();

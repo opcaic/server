@@ -9,6 +9,7 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Dtos.EmailTemplates;
+using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Emails;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
@@ -186,7 +187,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		}
 
 		[Fact]
-		public async Task<UserDetailModel> CreateUser_Success()
+		public async Task<UserDetailDto> CreateUser_Success()
 		{
 			var result = await Controller.PostAsync(userModel, CancellationToken);
 			var idModel =

@@ -1,6 +1,9 @@
-﻿namespace OPCAIC.Application.Dtos.Submissions
+﻿using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Domain.Entities;
+
+namespace OPCAIC.Application.Dtos.Submissions
 {
-	public class SubmissionStorageDto
+	public class SubmissionStorageDto : IMapFrom<Submission>
 	{
 		/// <summary>
 		///     Submission id
