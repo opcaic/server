@@ -8,7 +8,7 @@ namespace OPCAIC.Utils.Test
 	public class RebindTest
 	{
 		[Fact]
-		public void SimpleMapStillWorks()
+		public void TrivialMap_No_Invoke()
 		{
 			Expression<Func<string, string>> expected = s => s + s;
 
@@ -27,7 +27,7 @@ namespace OPCAIC.Utils.Test
 		}
 
 		[Fact]
-		public void CollapsesMap()
+		public void SimpleSelect()
 		{
 			Func<string, TestClass> expected =
 				s => new TestClass
@@ -47,6 +47,27 @@ namespace OPCAIC.Utils.Test
 			var actual = Rebind.Map(input).Compile();
 			
 			actual("abc").ShouldBe(expected("abc"));
+		}
+
+		private class OuterClass
+		{
+			public TestClass TestClass { get; set; }
+		}
+
+		[Fact]
+		public void TrivialMap_InvokeOnly()
+		{
+			Func<OuterClass, string> expected = o => o.TestClass.A;
+
+			Expression<Func<TestClass, string>> map = i => i.A;
+			Expression<Func<OuterClass, string>> actualExpression =
+				s => Rebind.Invoke(s.TestClass, map);
+
+			var actual = Rebind.Map(actualExpression).Compile();
+
+			var instance = new OuterClass {TestClass = new TestClass {A = "aaa", B = "bbb"}};
+
+			actual(instance).ShouldBe(expected(instance));
 		}
 	}
 }

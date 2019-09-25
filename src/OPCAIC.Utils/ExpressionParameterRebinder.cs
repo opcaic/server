@@ -3,29 +3,34 @@ using System.Linq.Expressions;
 
 namespace OPCAIC.Utils
 {
-	public class ExpressionParameterRebinder : ExpressionVisitor
+	public class ExpressionParameterRebinder
 	{
-		private readonly Dictionary<ParameterExpression, ParameterExpression> map;
-
-		private ExpressionParameterRebinder(Dictionary<ParameterExpression, ParameterExpression> map)
+		public static Expression ReplaceParameters<TTarget>(
+			Dictionary<ParameterExpression, TTarget> map, Expression exp)
+			where TTarget : Expression
 		{
-			this.map = map ?? new Dictionary<ParameterExpression, ParameterExpression>();
+			return new Visitor<TTarget>(map).Visit(exp);
 		}
 
-		public static Expression ReplaceParameters(
-			Dictionary<ParameterExpression, ParameterExpression> map, Expression exp)
+		private class Visitor<TTarget> : ExpressionVisitor
+			where TTarget : Expression
 		{
-			return new ExpressionParameterRebinder(map).Visit(exp);
-		}
+			private readonly Dictionary<ParameterExpression, TTarget> map;
 
-		protected override Expression VisitParameter(ParameterExpression p)
-		{
-			if (map.TryGetValue(p, out var replacement))
+			public Visitor(Dictionary<ParameterExpression, TTarget> map)
 			{
-				p = replacement;
+				this.map = map;
 			}
 
-			return base.VisitParameter(p);
+			protected override Expression VisitParameter(ParameterExpression p)
+			{
+				if (map.TryGetValue(p, out var replacement))
+				{
+					return replacement;
+				}
+
+				return base.VisitParameter(p);
+			}
 		}
 	}
 }

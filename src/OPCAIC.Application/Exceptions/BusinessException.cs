@@ -17,6 +17,11 @@ namespace OPCAIC.Application.Exceptions
 			Error = new ApplicationError(errorCode, message);
 		}
 
+		public BusinessException(string message)
+		{
+			Error = new ApplicationError(ValidationErrorCodes.GenericError, message);
+		}
+
 		public string ErrorCode => Error.Code;
 
 		/// <inheritdoc />

@@ -10,8 +10,10 @@ using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Matches.Models;
 using OPCAIC.Application.Specifications;
+using OPCAIC.Application.Tournaments.Queries;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using OPCAIC.Utils;
 
 namespace OPCAIC.Application.Matches.Queries
 {
@@ -39,6 +41,15 @@ namespace OPCAIC.Application.Matches.Queries
 			/// <inheritdoc />
 			public Handler(IMapper mapper, IMatchRepository repository) : base(mapper, repository)
 			{
+			}
+
+			/// <inheritdoc />
+			protected override void ApplyUserFilter(ProjectingSpecification<Match, MatchDetailDto> spec, long? userId)
+			{
+				// only matches from tournaments visible by the user (includes matches with user's submissions)
+				var tournamentCriteria = GetTournamentsQuery.Handler.GetUserFilter(userId);
+				spec.AddCriteria(Rebind.Map((Match m)
+					=> Rebind.Invoke(m.Tournament, tournamentCriteria)));
 			}
 
 			/// <inheritdoc />

@@ -3,7 +3,7 @@ using OPCAIC.Application.Infrastructure;
 
 namespace OPCAIC.ApiService.Models
 {
-	public abstract class FilterModelBase : IUserRequest
+	public abstract class FilterModelBase : UserRequest
 	{
 		public int Offset { get; set; }
 
@@ -12,8 +12,5 @@ namespace OPCAIC.ApiService.Models
 		public string SortBy { get; set; }
 
 		public bool Asc { get; set; }
-
-		/// <inheritdoc />
-		public long? RequestingUserId { get; set; }
 	}
 }

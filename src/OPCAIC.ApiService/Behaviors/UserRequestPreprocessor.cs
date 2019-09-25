@@ -23,9 +23,14 @@ namespace OPCAIC.ApiService.Behaviors
 			if (request is IUserRequest userRequest)
 			{
 				var user = httpContextAccessor.HttpContext.User;
-				if (user.Identity.IsAuthenticated && user.TryGetId(out var id))
+				if (user.Identity.IsAuthenticated)
 				{
-					userRequest.RequestingUserId = id;
+					if (user.TryGetId(out var id))
+					{
+						userRequest.RequestingUserId = id;
+					}
+
+					userRequest.RequestingUserRole = user.GetUserRole();
 				}
 			}
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Security
 {

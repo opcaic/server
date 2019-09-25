@@ -4,6 +4,7 @@ using AutoMapper;
 using FluentValidation;
 using MediatR;
 using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
@@ -43,6 +44,12 @@ namespace OPCAIC.Application.Users.Queries
 			/// <inheritdoc />
 			public Handler(IMapper mapper, IUserRepository repository) : base(mapper, repository)
 			{
+			}
+
+			/// <inheritdoc />
+			protected override void ApplyUserFilter(ProjectingSpecification<User, UserPreviewDto> spec, long? userId)
+			{
+				throw new BusinessException("Only admin may query users.");
 			}
 
 			/// <inheritdoc />

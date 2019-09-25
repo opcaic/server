@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -9,6 +10,7 @@ using MediatR;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
@@ -93,6 +95,12 @@ namespace OPCAIC.Application.Tournaments.Queries
 						})
 				);
 
+				// admins must be able to see everything
+				if (request.RequestingUserRole != UserRole.Admin)
+				{
+					ApplyUserFilter(spec, request.RequestingUserId);
+				}
+
 				spec.WithPaging(request.Offset, request.Count);
 
 				if (request.Name != null)
@@ -149,6 +157,28 @@ namespace OPCAIC.Application.Tournaments.Queries
 					t.Tournament.LastUserSubmissionDate = t.LastUserSubmission;
 					return t.Tournament;
 				}));
+			}
+
+			public static Expression<Func<Tournament, bool>> GetUserFilter(
+				long? userId)
+			{
+				Expression<Func<Tournament, bool>> criteria = t
+					=> t.Availability == TournamentAvailability.Public;
+
+				if (userId.HasValue)
+				{
+					criteria = criteria.Or(t => 
+						t.Participants.Any(p => p.UserId == userId) ||
+						t.Managers.Any(m => m.UserId == userId) ||
+						t.OwnerId == userId);
+				}
+
+				return criteria;
+			}
+
+			private void ApplyUserFilter(ProjectingSpecification<Tournament, TournamentPreviewAndSubmissionDate> spec, long? userId)
+			{
+				spec.AddCriteria(GetUserFilter(userId));
 			}
 
 			private static void AddOrdering(

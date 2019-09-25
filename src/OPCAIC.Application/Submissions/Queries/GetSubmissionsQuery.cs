@@ -10,8 +10,10 @@ using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Submissions.Models;
+using OPCAIC.Application.Tournaments.Queries;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using OPCAIC.Utils;
 
 namespace OPCAIC.Application.Submissions.Queries
 {
@@ -38,6 +40,15 @@ namespace OPCAIC.Application.Submissions.Queries
 			public Handler(IMapper mapper, ISubmissionRepository repository) : base(mapper,
 				repository)
 			{
+			}
+
+			/// <inheritdoc />
+			protected override void ApplyUserFilter(ProjectingSpecification<Submission, SubmissionPreviewDto> spec, long? userId)
+			{
+				// only submissions from tournaments visible by the user (includes his submissions by design)
+				var tournamentCriteria = GetTournamentsQuery.Handler.GetUserFilter(userId);
+				spec.AddCriteria(Rebind.Map((Submission s)
+					=> Rebind.Invoke(s.Tournament, tournamentCriteria)));
 			}
 
 			/// <inheritdoc />

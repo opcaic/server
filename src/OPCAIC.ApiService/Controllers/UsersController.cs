@@ -23,6 +23,7 @@ using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Users.Model;
 using OPCAIC.Application.Users.Queries;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Infrastructure.Emails;
 
 namespace OPCAIC.ApiService.Controllers

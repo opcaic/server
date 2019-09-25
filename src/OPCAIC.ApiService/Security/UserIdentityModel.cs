@@ -1,4 +1,6 @@
-﻿namespace OPCAIC.ApiService.Security
+﻿using OPCAIC.Domain.Enums;
+
+namespace OPCAIC.ApiService.Security
 {
 	public class UserIdentityModel
 	{

@@ -34,6 +34,12 @@ namespace OPCAIC.Application.TournamentInvitations.Queries
 			}
 
 			/// <inheritdoc />
+			protected override void ApplyUserFilter(ProjectingSpecification<TournamentInvitation, TournamentInvitationDto> spec, long? userId)
+			{
+				// only invitations to those tournaments managed by the user
+			}
+
+			/// <inheritdoc />
 			protected override void SetupSpecification(GetTournamentInvitationsQuery request,
 				ProjectingSpecification<TournamentInvitation, TournamentInvitationDto> spec)
 			{

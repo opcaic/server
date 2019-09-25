@@ -9,7 +9,9 @@ using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
+using OPCAIC.Application.Tournaments.Queries;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Utils;
 
 namespace OPCAIC.Application.Documents.Queries
 {
@@ -36,6 +38,15 @@ namespace OPCAIC.Application.Documents.Queries
 			public Handler(IMapper mapper, IDocumentRepository repository) : base(mapper,
 				repository)
 			{
+			}
+
+			/// <inheritdoc />
+			protected override void ApplyUserFilter(ProjectingSpecification<Document, DocumentDto> spec, long? userId)
+			{
+				// if user can see the tournament, then he should be able to see the documents
+				var tournamentCriteria = GetTournamentsQuery.Handler.GetUserFilter(userId);
+				spec.AddCriteria(Rebind.Map((Document d)
+					=> Rebind.Invoke(d.Tournament, tournamentCriteria)));
 			}
 
 			/// <inheritdoc />

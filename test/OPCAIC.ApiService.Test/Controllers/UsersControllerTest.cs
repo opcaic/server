@@ -16,6 +16,7 @@ using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Users.Queries;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -81,6 +82,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 			var list = await Controller.GetUsersAsync(new GetUsersQuery 
 			{
 				Count = 5,
+				RequestingUserRole = UserRole.Admin
 			}, CancellationToken);
 
 			Assert.Equal(1, list.Total);

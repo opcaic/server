@@ -4,31 +4,62 @@ using AutoMapper;
 using MediatR;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Specifications;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Infrastructure.Queries
 {
-	public abstract class FilterQueryHandler<TRequest, TEntity, TResult> : IRequestHandler<TRequest, PagedResult<TResult>> where TRequest : FilterDtoBase, IRequest<PagedResult<TResult>>
+	/// <summary>
+	///     Base class for filter oriented query handlers.
+	/// </summary>
+	/// <typeparam name="TRequest">Type of the request.</typeparam>
+	/// <typeparam name="TEntity">Type of the entity queried.</typeparam>
+	/// <typeparam name="TResult">Type of the result DTO.</typeparam>
+	public abstract class
+		FilterQueryHandler<TRequest, TEntity, TResult>
+		: IRequestHandler<TRequest, PagedResult<TResult>>
+		where TRequest : FilterDtoBase, IRequest<PagedResult<TResult>>
 	{
-		protected readonly IMapper mapper;
-		protected readonly IRepository<TEntity> repository;
+		protected readonly IMapper Mapper;
+		protected readonly IRepository<TEntity> Repository;
 
 		protected FilterQueryHandler(IMapper mapper, IRepository<TEntity> repository)
 		{
-			this.mapper = mapper;
-			this.repository = repository;
+			Mapper = mapper;
+			Repository = repository;
 		}
 
 		/// <inheritdoc />
-		public virtual Task<PagedResult<TResult>> Handle(TRequest request, CancellationToken cancellationToken)
+		public virtual Task<PagedResult<TResult>> Handle(TRequest request,
+			CancellationToken cancellationToken)
 		{
-			var spec = ProjectingSpecification<TEntity>.Create<TResult>(mapper);
+			var spec = ProjectingSpecification<TEntity>.Create<TResult>(Mapper);
 			spec.WithPaging(request.Offset, request.Count);
+
+			// admins must be able to see everything
+			if (request.RequestingUserRole != UserRole.Admin)
+			{
+				ApplyUserFilter(spec, request.RequestingUserId);
+			}
 
 			SetupSpecification(request, spec);
 
-			return repository.ListPagedAsync(spec, cancellationToken);
+			return Repository.ListPagedAsync(spec, cancellationToken);
 		}
 
-		protected abstract void SetupSpecification(TRequest request, ProjectingSpecification<TEntity, TResult> spec);
+		/// <summary>
+		///     Applies data viewing restriction for the current user
+		/// </summary>
+		/// <param name="spec">The specification for the db query.</param>
+		/// <param name="userId">The user who initiated the request.</param>
+		protected abstract void ApplyUserFilter(ProjectingSpecification<TEntity, TResult> spec,
+			long? userId);
+
+		/// <summary>
+		///     Sets up the specification for db query based on the request data.
+		/// </summary>
+		/// <param name="request">The request for data.</param>
+		/// <param name="spec">Specification to be fit with criteria.</param>
+		protected abstract void SetupSpecification(TRequest request,
+			ProjectingSpecification<TEntity, TResult> spec);
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {

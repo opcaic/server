@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 using Xunit;
 using Xunit.Abstractions;
 

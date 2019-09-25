@@ -28,37 +28,26 @@ namespace OPCAIC.Utils
 		}
 
 		/// <inheritdoc />
-		protected override MemberAssignment VisitMemberAssignment(MemberAssignment node)
+		protected override Expression VisitMethodCall(MethodCallExpression node)
 		{
-			// replace all instances of the Rebind.Invoke method by the target expression
-			if (node.Expression is MethodCallExpression expr &&
-				expr.Method.DeclaringType == typeof(Rebind) && expr.Method.Name == nameof(Invoke))
+			if (!(node.Arguments[1] is MemberExpression projectionArg &&
+				projectionArg.Expression is ConstantExpression valueExpression))
 			{
-				if (!(expr.Arguments[0] is ParameterExpression sourceArg))
-				{
-					throw new InvalidOperationException("Invalid expression in argument to the Invoke function");
-				}
-
-				if (!(expr.Arguments[1] is MemberExpression projectionArg &&
-						projectionArg.Expression is ConstantExpression valueExpression))
-				{
-					throw new NotSupportedException("Only captured variable outside the lambda expression is supported");
-				}
-
-				// get the mapping expression
-				var field = (FieldInfo) projectionArg.Member;
-				var map = (LambdaExpression) field.GetValue(valueExpression.Value);
-
-				// replace the method call by the lambda's body
-				var newValueExpression = ExpressionParameterRebinder.ReplaceParameters(new Dictionary<ParameterExpression, ParameterExpression>
-				{
-					[map.Parameters[0]] = sourceArg
-				}, map.Body);
-
-				return node.Update(newValueExpression);
+				throw new NotSupportedException(
+					"Only captured variable outside the lambda expression is supported");
 			}
 
-			return base.VisitMemberAssignment(node);
+			// get the mapping expression
+			var field = (FieldInfo) projectionArg.Member;
+			var map = (LambdaExpression) field.GetValue(valueExpression.Value);
+
+			// replace the method call by the lambda's body
+			var newValueExpression = ExpressionParameterRebinder.ReplaceParameters(
+				new Dictionary<ParameterExpression, Expression>
+				{
+					[map.Parameters[0]] = node.Arguments[0]
+				}, map.Body);
+			return newValueExpression;
 		}
 	}
 }

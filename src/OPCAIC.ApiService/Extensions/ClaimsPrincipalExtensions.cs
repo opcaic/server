@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Security.Claims;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Extensions
 {
@@ -8,7 +9,9 @@ namespace OPCAIC.ApiService.Extensions
 	{
 		public static UserRole GetUserRole(this ClaimsPrincipal user)
 		{
-			return Enum.Parse<UserRole>(user.FindFirstValue(RolePolicy.UserRoleClaim));
+			return Enum.TryParse<UserRole>(user.FindFirstValue(RolePolicy.UserRoleClaim), out var role) ?
+				role
+				: UserRole.None;
 		}
 
 		public static long GetId(this ClaimsPrincipal user)

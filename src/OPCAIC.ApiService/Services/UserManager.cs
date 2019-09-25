@@ -18,6 +18,7 @@ using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Services
 {
