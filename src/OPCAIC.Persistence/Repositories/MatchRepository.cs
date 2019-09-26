@@ -26,15 +26,7 @@ namespace OPCAIC.Persistence.Repositories
 		public Task<MatchAuthDto> GetAuthorizationData(long id,
 			CancellationToken cancellationToken = default)
 		{
-			return DbSet.Where(m => m.Id == id)
-				.Select(m => new MatchAuthDto
-				{
-					TournamentOwnerId = m.Tournament.OwnerId,
-					ParticipantsIds =
-						m.Participations.Select(p => p.Submission.AuthorId).ToArray(),
-					TournamentManagersIds =
-						m.Tournament.Managers.Select(u => u.UserId).ToArray()
-				}).SingleOrDefaultAsync(cancellationToken);
+			return GetDtoByIdAsync<MatchAuthDto>(id, cancellationToken);
 		}
 
 		public Task CreateMatchesAsync(List<NewMatchDto> matches,

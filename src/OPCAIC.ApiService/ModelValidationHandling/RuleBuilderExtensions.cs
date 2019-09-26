@@ -5,6 +5,7 @@ using FluentValidation.Results;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
+using OPCAIC.Application;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Persistence;
 

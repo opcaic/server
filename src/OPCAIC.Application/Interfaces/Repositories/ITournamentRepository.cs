@@ -4,13 +4,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Specifications;
+using OPCAIC.Application.Tournaments.Commands;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface ITournamentRepository
-		: IGenericRepository<TournamentDetailDto, NewTournamentDto, UpdateTournamentDto>,
+		: IGenericRepository<TournamentDetailDto, CreateTournamentCommand, object>,
 			IAuthDataRepository<TournamentAuthDto>,
 			IRepository<Tournament>
 	{

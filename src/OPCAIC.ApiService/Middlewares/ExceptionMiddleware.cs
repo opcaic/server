@@ -58,7 +58,7 @@ namespace OPCAIC.ApiService.Middlewares
 			catch (NotFoundException ex)
 			{
 				await WriteResponseAsync(context, StatusCodes.Status404NotFound,
-					new {ex.ResourceId, ex.Resource});
+					new {ex.ResourceId, ex.Resource, ex.Message});
 			}
 			catch (BusinessException ex)
 			{

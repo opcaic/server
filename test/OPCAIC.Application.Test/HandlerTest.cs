@@ -24,6 +24,7 @@ namespace OPCAIC.Application.Test
 			Faker = new EntityFaker();
 
 			Services.AddSingleton(TestMapper.Mapper);
+			Services.AddTransient<THandler>();
 		}
 	}
 }

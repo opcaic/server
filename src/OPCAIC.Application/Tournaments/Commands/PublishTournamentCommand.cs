@@ -2,27 +2,25 @@
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
-using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Application.Tournaments.Command
+namespace OPCAIC.Application.Tournaments.Commands
 {
-	public class PauseTournamentEvaluationCommand : IRequest
+	public class PublishTournamentCommand : IRequest
 	{
 		public long TournamentId { get; set; }
 
-		public class Handler : IRequestHandler<PauseTournamentEvaluationCommand>
+		public class Handler : IRequestHandler<PublishTournamentCommand>
 		{
-			private readonly ILogger<PauseTournamentEvaluationCommand> logger;
+			private readonly ILogger<PublishTournamentCommand> logger;
 			private readonly ITournamentRepository repository;
 
-			public Handler(ILogger<PauseTournamentEvaluationCommand> logger,
+			public Handler(ILogger<PublishTournamentCommand> logger,
 				ITournamentRepository repository)
 			{
 				this.repository = repository;
@@ -30,25 +28,27 @@ namespace OPCAIC.Application.Tournaments.Command
 			}
 
 			/// <inheritdoc />
-			public async Task<Unit> Handle(PauseTournamentEvaluationCommand request, CancellationToken cancellationToken)
+			public async Task<Unit> Handle(PublishTournamentCommand request,
+				CancellationToken cancellationToken)
 			{
-				var tournament = await repository.FindByIdAsync(request.TournamentId, cancellationToken);
+				var tournament =
+					await repository.FindByIdAsync(request.TournamentId, cancellationToken);
 
 				if (tournament == null)
 				{
 					throw new NotFoundException(nameof(Tournament), request.TournamentId);
 				}
 
-				if (tournament.State != TournamentState.Running)
+				if (tournament.State != TournamentState.Created)
 				{
 					throw new BadTournamentStateException(nameof(Tournament), request.TournamentId,
-						nameof(TournamentState.Running), tournament.State.ToString());
+						nameof(TournamentState.Created), tournament.State.ToString());
 				}
 
 				await repository.UpdateTournamentState(request.TournamentId,
-					new TournamentStateUpdateDto {State = TournamentState.Paused},
+					new TournamentStateUpdateDto {State = TournamentState.Published},
 					cancellationToken);
-				logger.TournamentStateChanged(request.TournamentId, TournamentState.Paused);
+				logger.TournamentStateChanged(request.TournamentId, TournamentState.Published);
 
 				return Unit.Value;
 			}

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Schema;
 
-namespace OPCAIC.ApiService
+namespace OPCAIC.Application
 {
 	public static class JsonSchemaDefinition
 	{

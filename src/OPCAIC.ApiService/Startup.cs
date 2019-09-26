@@ -4,8 +4,6 @@ using MediatR.Pipeline;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,12 +12,11 @@ using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Health;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Middlewares;
+using OPCAIC.ApiService.ModelBinding;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
-using OPCAIC.Application.Emails;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Services;
-using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Tournaments.Events;
 using OPCAIC.Broker;
 using OPCAIC.Infrastructure.Emails;
@@ -45,8 +42,10 @@ namespace OPCAIC.ApiService
 		{
 			services.AddMvc(options =>
 				{
-					options.ModelMetadataDetailsProviders.Add(new ExcludeInterfaceMetadataProvider(typeof(IUserRequest)));
+					options.ModelMetadataDetailsProviders.Add(new ExcludeInterfaceMetadataProvider(typeof(IPublicRequest)));
+					options.ModelMetadataDetailsProviders.Add(new ExcludeInterfaceMetadataProvider(typeof(IAuthenticatedRequest)));
 				})
+				.ConfigureHybridBinder()
 				.SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
 				.ConfigureApiBehaviorOptions(options =>
 				{

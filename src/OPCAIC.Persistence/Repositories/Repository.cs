@@ -16,10 +16,10 @@ namespace OPCAIC.Persistence.Repositories
 	///     Base class for all repositories containing basic functionality.
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
-	public abstract class RepositoryBase<TEntity> : IDisposable, IRepository<TEntity>
+	public class Repository<TEntity> : IDisposable, IRepository<TEntity>
 		where TEntity : class
 	{
-		protected RepositoryBase(DataContext context, IMapper mapper)
+		public Repository(DataContext context, IMapper mapper)
 		{
 			Context = context;
 			Mapper = mapper;

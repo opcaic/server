@@ -10,6 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Application.Exceptions;
+using OPCAIC.Application.Tournaments.Models;
 
 namespace OPCAIC.ApiService.Services
 {

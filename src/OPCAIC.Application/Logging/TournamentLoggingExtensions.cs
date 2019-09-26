@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Common;
 using OPCAIC.Domain.Enums;
 
@@ -9,11 +10,11 @@ namespace OPCAIC.Application.Logging
 	public static class TournamentLoggingExtensions
 	{
 		public static void TournamentCreated(this ILogger logger, long tournamentId,
-			NewTournamentDto dto)
+			CreateTournamentCommand command)
 		{
 			logger.LogInformation(LoggingEvents.TournamentCreated,
-				$"New tournament '{dto.Name}' for game with id {{{LoggingTags.Game}}} was created with id {{{LoggingTags.TournamentId}}}",
-				dto.GameId, tournamentId);
+				$"New tournament '{command.Name}' for game with id {{{LoggingTags.Game}}} was created with id {{{LoggingTags.TournamentId}}}",
+				command.GameId, tournamentId);
 		}
 
 		public static void TournamentStateChanged(this ILogger logger, long tournamentId,
@@ -33,7 +34,7 @@ namespace OPCAIC.Application.Logging
 		}
 
 		public static void TournamentUpdated(this ILogger logger, long tournamentId,
-			UpdateTournamentDto dto)
+			UpdateTournamentCommand dto)
 		{
 			logger.LogInformation(LoggingEvents.TournamentUpdated,
 				$"Tournament {{{LoggingTags.TournamentId}}} was updated: {{{LoggingTags.UpdateData}}}",

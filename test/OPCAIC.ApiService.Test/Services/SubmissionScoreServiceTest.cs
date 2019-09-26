@@ -8,6 +8,7 @@ using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Messaging.Messages;
 using System.Threading.Tasks;
+using OPCAIC.Application.Tournaments.Models;
 using Xunit;
 using Xunit.Abstractions;
 

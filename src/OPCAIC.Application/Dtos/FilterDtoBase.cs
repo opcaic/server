@@ -2,7 +2,7 @@
 
 namespace OPCAIC.Application.Dtos
 {
-	public abstract class FilterDtoBase : UserRequest
+	public abstract class FilterDtoBase : PublicRequest
 	{
 		public int Offset { get; set; }
 

@@ -50,6 +50,14 @@ namespace OPCAIC.Application.Matches.Queries
 				var tournamentCriteria = GetTournamentsQuery.Handler.GetUserFilter(userId);
 				spec.AddCriteria(Rebind.Map((Match m)
 					=> Rebind.Invoke(m.Tournament, tournamentCriteria)));
+
+				// also, if tournament has private matchlog, we want to hide matches of other players,
+				// unless the user is tournament organizer
+				spec.AddCriteria(m
+					=> !m.Tournament.PrivateMatchlog ||
+					m.Participations.Any(s => s.Submission.AuthorId == userId) ||
+					m.Tournament.OwnerId == userId ||
+					m.Tournament.Managers.Any(u => u.UserId == userId));
 			}
 
 			/// <inheritdoc />

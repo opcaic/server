@@ -9,7 +9,7 @@ using OPCAIC.Application.Logging;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Application.Tournaments.Command
+namespace OPCAIC.Application.Tournaments.Commands
 {
 	public class StopTournamentEvaluationCommand : IRequest
 	{

@@ -13,7 +13,7 @@ using OPCAIC.Domain.Entities;
 namespace OPCAIC.Persistence.Repositories
 {
 	public class TournamentParticipationsRepository 
-		: RepositoryBase<TournamentParticipation>,
+		: Repository<TournamentParticipation>,
 			ITournamentParticipationsRepository
 	{
 		/// <inheritdoc />

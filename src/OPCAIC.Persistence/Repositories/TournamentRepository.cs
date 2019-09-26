@@ -9,13 +9,15 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Tournaments.Commands;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Persistence.Repositories
 {
 	public class TournamentRepository
-		: GenericRepository<Tournament, TournamentDetailDto, NewTournamentDto, UpdateTournamentDto>,
+		: GenericRepository<Tournament, TournamentDetailDto, CreateTournamentCommand, object>,
 			ITournamentRepository
 	{
 		// must be kept in sync with GameRepository.ActiveTournamentsExpression

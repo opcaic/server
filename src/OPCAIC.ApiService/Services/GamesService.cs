@@ -7,6 +7,7 @@ using Newtonsoft.Json.Schema;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models.Games;
+using OPCAIC.Application;
 using OPCAIC.Application.Dtos.Games;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure.Validation;

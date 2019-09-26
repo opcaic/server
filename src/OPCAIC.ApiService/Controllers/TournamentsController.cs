@@ -1,19 +1,20 @@
 ﻿using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using HybridModelBinding;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Attributes;
 using OPCAIC.ApiService.Extensions;
-using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Interfaces;
-using OPCAIC.Application.Tournaments.Command;
+using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Application.Tournaments.Queries;
 
@@ -26,12 +27,9 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly IAuthorizationService authorizationService;
 		private readonly IMediator mediator;
 		private readonly IStorageService storage;
-		private readonly ITournamentsService tournamentsService;
 
-		public TournamentsController(ITournamentsService tournamentsService,
-			IAuthorizationService authorizationService, IStorageService storage, IMediator mediator)
+		public TournamentsController(IAuthorizationService authorizationService, IStorageService storage, IMediator mediator)
 		{
-			this.tournamentsService = tournamentsService;
 			this.authorizationService = authorizationService;
 			this.storage = storage;
 			this.mediator = mediator;
@@ -71,10 +69,10 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status409Conflict)]
 		[RequiresPermission(TournamentPermission.Create)]
-		public async Task<IActionResult> PostAsync([FromBody] NewTournamentModel model,
+		public async Task<IActionResult> PostAsync([FromBody] CreateTournamentCommand model,
 			CancellationToken cancellationToken)
 		{
-			var id = await tournamentsService.CreateAsync(model, cancellationToken);
+			var id = await mediator.Send(model, cancellationToken);
 			return CreatedAtRoute(nameof(GetTournamentByIdAsync), new {id}, new IdModel {Id = id});
 		}
 
@@ -90,15 +88,15 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="404">Resource was not found.</response>
 		[HttpGet("{id}", Name = nameof(GetTournamentByIdAsync))]
 		[AllowAnonymous]
-		[ProducesResponseType(typeof(TournamentDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(TournamentDetailDto), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<TournamentDetailModel> GetTournamentByIdAsync(long id,
+		public async Task<TournamentDetailDto> GetTournamentByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id, TournamentPermission.Read);
-			return await tournamentsService.GetByIdAsync(id, cancellationToken);
+			return await mediator.Send(new GetTournamentQuery(id), cancellationToken);
 		}
 
 		/// <summary>
@@ -117,11 +115,11 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task UpdateAsync(long id, [FromBody] UpdateTournamentModel model,
+		public async Task UpdateAsync([FromHybrid] UpdateTournamentCommand model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, TournamentPermission.Update);
-			await tournamentsService.UpdateAsync(id, model, cancellationToken);
+			await authorizationService.CheckPermissions(User, model.Id, TournamentPermission.Update);
+			await mediator.Send(model, cancellationToken);
 		}
 
 		/// <summary>

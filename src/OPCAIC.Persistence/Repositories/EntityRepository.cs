@@ -11,7 +11,7 @@ namespace OPCAIC.Persistence.Repositories
 	///     Base class for repository of <see cref="TEntity" /> instances.
 	/// </summary>
 	/// <typeparam name="TEntity">Type of the entity.</typeparam>
-	public abstract class EntityRepository<TEntity> : RepositoryBase<TEntity>
+	public abstract class EntityRepository<TEntity> : Repository<TEntity>
 		where TEntity : class, IEntity
 	{
 		protected EntityRepository(DataContext context, IMapper mapper)

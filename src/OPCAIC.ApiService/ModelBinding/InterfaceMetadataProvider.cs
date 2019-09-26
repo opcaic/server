@@ -1,24 +1,20 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
-using OPCAIC.Application.Infrastructure;
 using OPCAIC.Utils;
 
-namespace OPCAIC.ApiService
+namespace OPCAIC.ApiService.ModelBinding
 {
-	public class ExcludeInterfaceMetadataProvider : IBindingMetadataProvider
+	public abstract class InterfaceMetadataProvider : IBindingMetadataProvider
 	{
 		private readonly Type interfaceType;
 
-		public ExcludeInterfaceMetadataProvider(Type interfaceType)
+		protected InterfaceMetadataProvider(Type interfaceType)
 		{
 			Require.ArgNotNull(interfaceType, nameof(interfaceType));
 			Require.That<ArgumentException>(interfaceType.IsInterface, "Type is not interface.");
 
 			this.interfaceType = interfaceType;
 		}
-
 		/// <inheritdoc />
 		public void CreateBindingMetadata(BindingMetadataProviderContext context)
 		{
@@ -31,10 +27,11 @@ namespace OPCAIC.ApiService
 			{
 				if (interfaceType.GetProperty(context.Key.Name) != null)
 				{
-					context.BindingMetadata.IsBindingAllowed = false;
+					ConfigureBinding(context);
 				}
 			}
-
 		}
+
+		protected abstract void ConfigureBinding(BindingMetadataProviderContext context);
 	}
 }

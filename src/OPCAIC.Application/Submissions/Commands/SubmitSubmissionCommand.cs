@@ -14,13 +14,14 @@ using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Application.Submissions.Events;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Submissions.Commands
 {
-	public class SubmitSubmissionCommand : UserRequest, IRequest<long>
+	public class SubmitSubmissionCommand : PublicRequest, IRequest<long>
 	{
 		public long TournamentId { get; set; }
 

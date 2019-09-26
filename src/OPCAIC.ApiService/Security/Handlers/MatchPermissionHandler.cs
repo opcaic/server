@@ -36,7 +36,8 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case MatchPermission.Read:
 					// authors of participated submissions and tournament managers
 					var userId = user.TryGetId();
-					return authData.ParticipantsIds.Contains(userId) ||
+					return !authData.TournamentPrivateMatchlog ||
+						authData.ParticipantsIds.Contains(userId) ||
 						authData.TournamentManagersIds.Contains(userId) ||
 						authData.TournamentOwnerId == userId;
 

@@ -3,11 +3,11 @@ using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Infrastructure
 {
-	public abstract class PublicRequest : IPublicRequest
+	public abstract class AuthenticatedRequest : IAuthenticatedRequest
 	{
 		/// <inheritdoc />
 		[IgnoreMap]
-		public long? RequestingUserId { get; set; }
+		public long RequestingUserId { get; set; }
 
 		/// <inheritdoc />
 		[IgnoreMap]

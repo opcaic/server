@@ -20,9 +20,9 @@ namespace OPCAIC.ApiService.Behaviors
 		/// <inheritdoc />
 		public Task Process(TRequest request, CancellationToken cancellationToken)
 		{
-			if (request is IUserRequest userRequest)
+			var user = httpContextAccessor.HttpContext.User;
+			if (request is IPublicRequest userRequest)
 			{
-				var user = httpContextAccessor.HttpContext.User;
 				if (user.Identity.IsAuthenticated)
 				{
 					if (user.TryGetId(out var id))
@@ -31,6 +31,18 @@ namespace OPCAIC.ApiService.Behaviors
 					}
 
 					userRequest.RequestingUserRole = user.GetUserRole();
+				}
+			}
+			else if (request is IAuthenticatedRequest authRequest)
+			{
+				if (user.Identity.IsAuthenticated)
+				{
+					if (user.TryGetId(out var id))
+					{
+						authRequest.RequestingUserId = id;
+					}
+
+					authRequest.RequestingUserRole = user.GetUserRole();
 				}
 			}
 

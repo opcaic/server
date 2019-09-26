@@ -18,6 +18,7 @@ using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Submissions.Commands;
 using OPCAIC.Application.Submissions.Events;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;

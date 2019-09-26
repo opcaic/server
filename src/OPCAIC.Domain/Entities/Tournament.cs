@@ -140,6 +140,11 @@ namespace OPCAIC.Domain.Entities
 		public int? MatchesPerDay { get; set; }
 
 		/// <summary>
+		///     If true, ordinary users can see only matches where their submissions participate.
+		/// </summary>
+		public bool PrivateMatchlog { get; set; }
+
+		/// <summary>
 		///     Maximum size in bytes on the submission archive contents.
 		/// </summary>
 		public long MaxSubmissionSize { get; set; }
