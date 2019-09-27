@@ -42,6 +42,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<PagedResult<TournamentInvitationDto>> GetParticipantsAsync(long tournamentId, [FromQuery] GetTournamentInvitationsQuery filter, CancellationToken cancellationToken)
 		{
+			filter.TournamentId = tournamentId; // TODO: hide the TournamentId property from swagger
 			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageInvites);
 			return await mediator.Send(filter, cancellationToken);
 		}

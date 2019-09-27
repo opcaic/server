@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using MediatR.Pipeline;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.Application.Infrastructure;
 
@@ -20,10 +19,15 @@ namespace OPCAIC.ApiService.Behaviors
 		/// <inheritdoc />
 		public Task Process(TRequest request, CancellationToken cancellationToken)
 		{
-			var user = httpContextAccessor.HttpContext.User;
-			if (request is IPublicRequest userRequest)
+			var user = httpContextAccessor.HttpContext?.User;
+			if (user == null || !user.Identity.IsAuthenticated)
 			{
-				if (user.Identity.IsAuthenticated)
+				return Task.CompletedTask;
+			}
+
+			switch (request)
+			{
+				case IPublicRequest userRequest:
 				{
 					if (user.TryGetId(out var id))
 					{
@@ -31,11 +35,11 @@ namespace OPCAIC.ApiService.Behaviors
 					}
 
 					userRequest.RequestingUserRole = user.GetUserRole();
+
+					break;
 				}
-			}
-			else if (request is IAuthenticatedRequest authRequest)
-			{
-				if (user.Identity.IsAuthenticated)
+
+				case IAuthenticatedRequest authRequest:
 				{
 					if (user.TryGetId(out var id))
 					{
@@ -43,6 +47,8 @@ namespace OPCAIC.ApiService.Behaviors
 					}
 
 					authRequest.RequestingUserRole = user.GetUserRole();
+
+					break;
 				}
 			}
 

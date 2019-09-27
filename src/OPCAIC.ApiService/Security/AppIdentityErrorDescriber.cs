@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.ModelValidationHandling;
+using OPCAIC.ApiService.Users.Commands;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 
@@ -139,28 +140,28 @@ namespace OPCAIC.ApiService.Security
 		public override IdentityError PasswordRequiresNonAlphanumeric()
 		{
 			return Map(base.PasswordRequiresNonAlphanumeric(),
-				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresNonAlphanumeric, nameof(NewUserModel.Password)));
+				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresNonAlphanumeric, nameof(CreateUserCommand.Password)));
 		}
 
 		/// <inheritdoc />
 		public override IdentityError PasswordRequiresDigit()
 		{
 			return Map(base.PasswordRequiresDigit(),
-				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresDigit, nameof(NewUserModel.Password)));
+				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresDigit, nameof(CreateUserCommand.Password)));
 		}
 
 		/// <inheritdoc />
 		public override IdentityError PasswordRequiresLower()
 		{
 			return Map(base.PasswordRequiresLower(),
-				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresLower, nameof(NewUserModel.Password)));
+				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresLower, nameof(CreateUserCommand.Password)));
 		}
 
 		/// <inheritdoc />
 		public override IdentityError PasswordRequiresUpper()
 		{
 			return Map(base.PasswordRequiresUpper(),
-				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresUpper, nameof(NewUserModel.Password)));
+				new IdentityValidationError(ValidationErrorCodes.PasswordRequiresUpper, nameof(CreateUserCommand.Password)));
 		}
 
 		public class IdentityValidationError : ValidationError
@@ -198,7 +199,7 @@ namespace OPCAIC.ApiService.Security
 		private class PasswordLengthError : IdentityValidationError
 		{
 			public PasswordLengthError(int length)
-				: base(ValidationErrorCodes.PasswordTooShort, nameof(NewUserModel.Password))
+				: base(ValidationErrorCodes.PasswordTooShort, nameof(CreateUserCommand.Password))
 			{
 				Minimum = length;
 			}
@@ -209,7 +210,7 @@ namespace OPCAIC.ApiService.Security
 		private class PasswordUniqueCharsError : IdentityValidationError
 		{
 			public PasswordUniqueCharsError(int count)
-				: base(ValidationErrorCodes.PasswordRequiresUnique, nameof(NewUserModel.Password))
+				: base(ValidationErrorCodes.PasswordRequiresUnique, nameof(CreateUserCommand.Password))
 			{
 				Count = count;
 			}

@@ -30,7 +30,20 @@ namespace OPCAIC.Application.Specifications
 		Task<bool> ExistsAsync(ISpecification<T> specification,
 			CancellationToken cancellationToken);
 
+		/// <summary>
+		///     Creates entity and enforces it's creation in the database.
+		/// </summary>
+		/// <param name="entity"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		Task CreateAsync(T entity, CancellationToken cancellationToken);
+
+		/// <summary>
+		///    Adds entity to be added to the database when <see cref="SaveChangesAsync"/> is called.
+		/// </summary>
+		/// <param name="entity"></param>
+		/// <returns></returns>
+		void Add(T entity);
 
 		Task SaveChangesAsync(CancellationToken cancellationToken);
 	}

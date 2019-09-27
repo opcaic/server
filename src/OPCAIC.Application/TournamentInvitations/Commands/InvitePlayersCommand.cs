@@ -34,13 +34,17 @@ namespace OPCAIC.Application.TournamentInvitations.Commands
 			private readonly IFrontendUrlGenerator urlGenerator;
 			private readonly ITournamentRepository tournamentRepository;
 			private readonly ITournamentInvitationRepository repository;
+			private readonly ITournamentParticipationsRepository participationsRepository;
+			private readonly IUserRepository userRepository;
 
-			public Handler(ITournamentInvitationRepository repository, ITournamentRepository tournamentRepository, IFrontendUrlGenerator urlGenerator, IEmailService emailService)
+			public Handler(ITournamentInvitationRepository repository, ITournamentRepository tournamentRepository, IFrontendUrlGenerator urlGenerator, IEmailService emailService, ITournamentParticipationsRepository participationsRepository, IUserRepository userRepository)
 			{
 				this.repository = repository;
 				this.tournamentRepository = tournamentRepository;
 				this.urlGenerator = urlGenerator;
 				this.emailService = emailService;
+				this.participationsRepository = participationsRepository;
+				this.userRepository = userRepository;
 			}
 
 			/// <inheritdoc />
@@ -58,20 +62,39 @@ namespace OPCAIC.Application.TournamentInvitations.Commands
 				// add only those addresses, which are not already added
 				var toSend = request.Emails.Where(invite => !invitations.Contains(invite)).ToList();
 
-				await repository.CreateAsync(request.TournamentId, toSend,
-					cancellationToken);
-
 				var mailDto = new TournamentInvitationEmailDto
 				{
 					TournamentUrl = urlGenerator.TournamentPageLink(request.TournamentId),
 					TournamentName = tournamentName
 				};
 
-				// todo: make TournamentUserInvited event + handler?
-				foreach (string email in toSend)
+				foreach (var email in toSend)
 				{
+					// TODO: Fetch all at once 
+					var userId =
+						await userRepository.FindAsync<User, long?>(u => u.Email == email, u => u.Id, cancellationToken);
+
+					repository.Add(new TournamentInvitation
+					{
+						TournamentId = request.TournamentId,
+						Email = email,
+						UserId = userId
+					});
+
+					if (userId.HasValue)
+					{
+						participationsRepository.Add(new TournamentParticipation
+						{
+							TournamentId = request.TournamentId,
+							UserId = userId.Value
+						});
+					}
+
 					await emailService.EnqueueEmailAsync(mailDto, email, cancellationToken);
 				}
+
+				await repository.SaveChangesAsync(cancellationToken);
+				await participationsRepository.SaveChangesAsync(cancellationToken);
 
 				return Unit.Value;
 			}

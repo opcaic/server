@@ -129,8 +129,14 @@ namespace OPCAIC.Persistence.Repositories
 		/// <inheritdoc />
 		public Task CreateAsync(TEntity entity, CancellationToken cancellationToken)
 		{
-			DbSet.Add(entity);
+			Add(entity);
 			return SaveChangesAsync(cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public void Add(TEntity entity)
+		{
+			DbSet.Add(entity);
 		}
 
 		public Task SaveChangesAsync(CancellationToken cancellationToken)
@@ -143,6 +149,7 @@ namespace OPCAIC.Persistence.Repositories
 			CancellationToken cancellationToken)
 		{
 			return Queryable
+				.ApplyFilter(specification)
 				.ApplyOrdering(specification.OrderBy)
 				.ToListAsync(cancellationToken);
 		}
@@ -153,6 +160,7 @@ namespace OPCAIC.Persistence.Repositories
 			CancellationToken cancellationToken)
 		{
 			return Queryable
+				.ApplyFilter(specification)
 				.ApplyOrdering(specification.OrderBy)
 				.Select(specification.Projection)
 				.ApplyOrdering(specification.OrderByProjected)

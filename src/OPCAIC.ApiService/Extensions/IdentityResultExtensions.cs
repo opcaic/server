@@ -3,9 +3,9 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using OPCAIC.ApiService.Exceptions;
-using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
+using OPCAIC.ApiService.Users.Commands;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Utils;
@@ -30,7 +30,7 @@ namespace OPCAIC.ApiService.Extensions
 				{
 					if (e is AppIdentityError aie)
 					{
-						if (aie.ValidationError.Field == nameof(NewUserModel.Password) &&
+						if (aie.ValidationError.Field == nameof(CreateUserCommand.Password) &&
 							passwordFieldOverride != null)
 						{
 							aie.ValidationError.Field = passwordFieldOverride;

@@ -22,6 +22,8 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 		private readonly Mock<IFrontendUrlGenerator> urlGenerator;
 		private readonly Mock<ITournamentRepository> tournamentRepository;
 		private readonly Mock<ITournamentInvitationRepository> repository;
+		private readonly Mock<ITournamentParticipationsRepository> participationsRepository;
+		private readonly Mock<IUserRepository> userRepository;
 		/// <inheritdoc />
 		public InvitePlayersCommandTest(ITestOutputHelper output) : base(output)
 		{
@@ -29,10 +31,13 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 			urlGenerator = Services.Mock<IFrontendUrlGenerator>(MockBehavior.Strict);
 			tournamentRepository = Services.Mock<ITournamentRepository>(MockBehavior.Strict);
 			repository = Services.Mock<ITournamentInvitationRepository>(MockBehavior.Strict);
+			participationsRepository =
+				Services.Mock<ITournamentParticipationsRepository>(MockBehavior.Strict);
+			userRepository = Services.Mock<IUserRepository>(MockBehavior.Strict);
 		}
 
 		[Fact]
-		public async Task Success()
+		public async Task Success_NonexistingUser()
 		{
 			long tournamentId = 1;
 			var newmail = "newmail@mail.cz";
@@ -40,20 +45,22 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 			var emails = new[] {newmail, oldmail};
 
 			tournamentRepository
-				.Setup(r => r.FindAsync(It.IsAny<IProjectingSpecification<Tournament, string>>(), CancellationToken.None))
+				.Setup(r => r.FindAsync(It.IsAny<IProjectingSpecification<Tournament, string>>(), CancellationToken))
 				.ReturnsAsync("Tournament");
 
 			repository
 				.Setup(r => r.ListAsync(It.IsAny<
 						IProjectingSpecification<TournamentInvitation, string>>(),
-					CancellationToken.None))
+					CancellationToken))
 				.ReturnsAsync(new List<string> { oldmail });
 
 			// expect only new mail to be created
 			repository
-				.Setup(r => r.CreateAsync(tournamentId, new List<string>{newmail},
-					CancellationToken.None))
-				.ReturnsAsync(true);
+				.Setup(r => r.Add(It.Is<TournamentInvitation>(i => i.TournamentId == tournamentId && i.UserId == null && i.Email == newmail)));
+
+			userRepository.Setup(r => r.FindAsync(It.IsAny<ProjectingSpecification<User, long?>>(),
+					CancellationToken))
+				.ReturnsAsync((long?)null);
 
 			urlGenerator
 				.Setup(r => r.TournamentPageLink(tournamentId))
@@ -61,14 +68,67 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 
 			emailService
 				.Setup(r => r.EnqueueEmailAsync(It.IsAny<EmailDtoBase>(), newmail,
-					CancellationToken.None))
+					CancellationToken))
+				.Returns(Task.CompletedTask);
+
+			participationsRepository.Setup(s => s.SaveChangesAsync(CancellationToken))
+				.Returns(Task.CompletedTask);
+			repository.Setup(s => s.SaveChangesAsync(CancellationToken))
 				.Returns(Task.CompletedTask);
 
 			await Handler.Handle(new InvitePlayersCommand
 			{
 				Emails = emails,
 				TournamentId = tournamentId,
-			}, CancellationToken.None);
+			}, CancellationToken);
+		}
+
+		[Fact]
+		public async Task Success_ExistingUser()
+		{
+			long tournamentId = 1;
+			long userId = 1;
+			var email = "newmail@mail.cz";
+			var emails = new[] { email };
+
+			tournamentRepository
+				.Setup(r => r.FindAsync(It.IsAny<IProjectingSpecification<Tournament, string>>(), CancellationToken))
+				.ReturnsAsync("Tournament");
+
+			repository
+				.Setup(r => r.ListAsync(It.IsAny<
+						IProjectingSpecification<TournamentInvitation, string>>(),
+					CancellationToken))
+				.ReturnsAsync(new List<string> {});
+
+			repository
+				.Setup(r => r.Add(It.Is<TournamentInvitation>(i => i.TournamentId == tournamentId && i.UserId == userId && i.Email == email)));
+
+			userRepository.Setup(r => r.FindAsync(It.IsAny<ProjectingSpecification<User, long?>>(),
+					CancellationToken))
+				.ReturnsAsync(userId);
+
+			participationsRepository.Setup(r => r.Add(It.Is<TournamentParticipation>(e => e.TournamentId == tournamentId && e.UserId == userId)));
+
+			urlGenerator
+				.Setup(r => r.TournamentPageLink(tournamentId))
+				.Returns("url");
+
+			emailService
+				.Setup(r => r.EnqueueEmailAsync(It.IsAny<EmailDtoBase>(), email,
+					CancellationToken))
+				.Returns(Task.CompletedTask);
+
+			participationsRepository.Setup(s => s.SaveChangesAsync(CancellationToken))
+				.Returns(Task.CompletedTask);
+			repository.Setup(s => s.SaveChangesAsync(CancellationToken))
+				.Returns(Task.CompletedTask);
+
+			await Handler.Handle(new InvitePlayersCommand
+			{
+				Emails = emails,
+				TournamentId = tournamentId,
+			}, CancellationToken);
 		}
 	}
 }

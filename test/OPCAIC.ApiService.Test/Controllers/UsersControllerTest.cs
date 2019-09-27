@@ -8,6 +8,7 @@ using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.ApiService.Users.Commands;
 using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Emails;
@@ -27,13 +28,13 @@ namespace OPCAIC.ApiService.Test.Controllers
 	{
 		public UsersControllerTest(ITestOutputHelper output) : base(output)
 		{
-			Services.AddMediatR(typeof(GetUsersQuery).Assembly);
+			Services.AddMediatR(typeof(GetUsersQuery).Assembly, typeof(CreateUserCommand).Assembly);
 			FrontendUrlGeneratorMock = Services.Mock<IFrontendUrlGenerator>();
 			EmailServiceMock = Services.Mock<IEmailService>();
 			TurnOffAuthorization();
 		}
 
-		private readonly NewUserModel userModel = new NewUserModel
+		private readonly CreateUserCommand userModel = new CreateUserCommand
 		{
 			Email = "a@a.com",
 			Password = "11afiejofa#XFAEFF@#23fafw",
@@ -46,7 +47,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 
 		public Mock<IEmailService> EmailServiceMock { get; }
 
-		private async Task<User> DoCreateUser(NewUserModel model, bool confirmEmail = false)
+		private async Task<User> DoCreateUser(CreateUserCommand model, bool confirmEmail = false)
 		{
 			var userManager = GetService<UserManager>();
 			var user = new User

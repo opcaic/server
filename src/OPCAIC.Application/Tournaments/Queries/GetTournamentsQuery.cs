@@ -49,6 +49,8 @@ namespace OPCAIC.Application.Tournaments.Queries
 
 		public TournamentState[] State { get; set; }
 
+		public bool? Invited { get; set; }
+
 		public class Validator : FilterValidator<GetTournamentsQuery>
 		{
 			public Validator()
@@ -156,6 +158,13 @@ namespace OPCAIC.Application.Tournaments.Queries
 				if (request.State != null && request.State.Length > 0)
 				{
 					spec.AddCriteria(row => request.State.Contains(row.State));
+				}
+
+				if (request.Invited != null)
+				{
+					var userId = request.UserId ?? request.RequestingUserId;
+					spec.AddCriteria(row
+						=> row.Invitations.Any(i => i.UserId == userId));
 				}
 
 				AddOrdering(spec, request.SortBy, request.Asc);

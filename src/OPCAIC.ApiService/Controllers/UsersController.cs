@@ -14,6 +14,7 @@ using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.ApiService.Users.Commands;
 using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Emails;
@@ -178,23 +179,12 @@ namespace OPCAIC.ApiService.Controllers
 		[HttpPost]
 		[ProducesResponseType(typeof(IdModel), StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> PostAsync([FromBody] NewUserModel model,
+		public async Task<IActionResult> PostAsync([FromBody] CreateUserCommand model,
 			CancellationToken cancellationToken)
 		{
-			var user = mapper.Map<User>(model);
-			var result = await userManager.CreateAsync(user, model.Password);
-			result.ThrowIfFailed();
-
-			var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-			var url = urlGenerator.EmailConfirmLink(user.Email, token);
-
-			await emailService.EnqueueEmailAsync(
-				new UserVerificationEmailDto {VerificationUrl = url}, user.Email,
-				cancellationToken);
-
-			logger.UserCreated(user);
-			return CreatedAtRoute(nameof(GetUserByIdAsync), new {id = user.Id},
-				new IdModel {Id = user.Id});
+			var id = await mediator.Send(model, cancellationToken);
+			return CreatedAtRoute(nameof(GetUserByIdAsync), new { id },
+				new IdModel { Id = id });
 		}
 
 		/// <summary>
