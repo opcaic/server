@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -10,7 +9,6 @@ using MediatR;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure;
-using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
@@ -26,6 +24,9 @@ namespace OPCAIC.Application.Tournaments.Queries
 		public const string SortByName = "name";
 		public const string SortByCreated = "created";
 		public const string SortByDeadline = "deadline";
+		public const string SortByFinishedDate = "finished";
+		public const string SortByStartedDate = "started";
+		public const string SortByPublishedDate = "published";
 		public const string SortByUserSubmissionDate = "userSubmissionDate";
 
 		public string Name { get; set; }
@@ -37,6 +38,8 @@ namespace OPCAIC.Application.Tournaments.Queries
 		public long? OwnerId { get; set; }
 
 		public long? ManagerId { get; set; }
+
+		public bool? AcceptsSubmission { get; set; }
 
 		public TournamentFormat? Format { get; set; }
 
@@ -76,10 +79,9 @@ namespace OPCAIC.Application.Tournaments.Queries
 			{
 				var tournamentMap = mapper.GetMapExpression<Tournament, TournamentPreviewDto>();
 
-				// TODO: Filter data based on the user
-
 				var spec = ProjectingSpecification.Create(
-					request.UserId.HasValue // we cannot use conditionals inside the query, as the conditional would get compiled to SQL
+					request.UserId
+						.HasValue // we cannot use conditionals inside the query, as the conditional would get compiled to SQL
 						? Rebind.Map((Tournament t) => new TournamentPreviewAndSubmissionDate
 						{
 							Tournament = Rebind.Invoke(t, tournamentMap),
@@ -129,6 +131,13 @@ namespace OPCAIC.Application.Tournaments.Queries
 					spec.AddCriteria(row => row.Managers.Any(m => m.UserId == request.ManagerId));
 				}
 
+				if (request.AcceptsSubmission != null)
+				{
+					spec.AddCriteria(Rebind.Map((Tournament t)
+						=> Rebind.Invoke(t, Tournament.AcceptsSubmissionExpression) ==
+						request.AcceptsSubmission));
+				}
+
 				if (request.Format != null)
 				{
 					spec.AddCriteria(row => row.Format == request.Format);
@@ -152,7 +161,8 @@ namespace OPCAIC.Application.Tournaments.Queries
 				AddOrdering(spec, request.SortBy, request.Asc);
 				var result = await repository.ListPagedAsync(spec, cancellationToken);
 
-				return new PagedResult<TournamentPreviewDto>(result.Total, result.List.ConvertAll(t =>
+				return new PagedResult<TournamentPreviewDto>(result.Total, result.List.ConvertAll(t
+					=>
 				{
 					t.Tournament.LastUserSubmissionDate = t.LastUserSubmission;
 					return t.Tournament;
@@ -167,7 +177,7 @@ namespace OPCAIC.Application.Tournaments.Queries
 
 				if (userId.HasValue)
 				{
-					criteria = criteria.Or(t => 
+					criteria = criteria.Or(t =>
 						t.Participants.Any(p => p.UserId == userId) ||
 						t.Managers.Any(m => m.UserId == userId) ||
 						t.OwnerId == userId);
@@ -176,13 +186,16 @@ namespace OPCAIC.Application.Tournaments.Queries
 				return criteria;
 			}
 
-			private void ApplyUserFilter(ProjectingSpecification<Tournament, TournamentPreviewAndSubmissionDate> spec, long? userId)
+			private void ApplyUserFilter(
+				ProjectingSpecification<Tournament, TournamentPreviewAndSubmissionDate> spec,
+				long? userId)
 			{
 				spec.AddCriteria(GetUserFilter(userId));
 			}
 
 			private static void AddOrdering(
-				ProjectingSpecification<Tournament, TournamentPreviewAndSubmissionDate> spec, string key,
+				ProjectingSpecification<Tournament, TournamentPreviewAndSubmissionDate> spec,
+				string key,
 				bool ascending)
 			{
 				switch (key)
@@ -190,19 +203,34 @@ namespace OPCAIC.Application.Tournaments.Queries
 					case SortByCreated:
 						spec.Ordered(row => row.Created, ascending);
 						break;
+
 					case SortByName:
 						spec.Ordered(row => row.Name, ascending);
 						break;
+
 					case SortByDeadline:
-						// put items with deadline first
-						spec.Ordered(row => row.Deadline == null);
-						spec.Ordered(row => row.Deadline, ascending);
+						spec.Ordered(row => row.Deadline ?? DateTime.MaxValue, ascending);
 						break;
+
 					case SortByUserSubmissionDate:
-						// put items with deadline first
-						spec.OrderedProjection(row => row.LastUserSubmission);
+						// put items with valid date first
+						spec.OrderedProjection(row => row.LastUserSubmission == null);
 						spec.OrderedProjection(row => row.LastUserSubmission, ascending);
 						break;
+
+					case SortByPublishedDate:
+						spec.Ordered(row => row.Published ?? DateTime.MaxValue, ascending);
+						break;
+
+					case SortByStartedDate:
+						spec.Ordered(row => row.EvaluationStarted ?? DateTime.MaxValue, ascending);
+						break;
+
+					case SortByFinishedDate:
+						// treat null as DateTime.MaxValue
+						spec.Ordered(row => row.EvaluationFinished ?? DateTime.MaxValue, ascending);
+						break;
+
 					default:
 						spec.Ordered(row => row.Id, ascending);
 						break;

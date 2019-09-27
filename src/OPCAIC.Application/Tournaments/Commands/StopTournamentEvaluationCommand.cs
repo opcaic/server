@@ -39,19 +39,19 @@ namespace OPCAIC.Application.Tournaments.Commands
 
 				if (tournament.State != TournamentState.Running)
 				{
-					throw new BadTournamentStateException(nameof(Tournament), request.TournamentId,
+					throw new BadTournamentStateException(request.TournamentId,
 						nameof(TournamentState.Running), tournament.State.ToString());
 				}
 				if (tournament.Scope != TournamentScope.Ongoing)
 				{
-					throw new BadTournamentScopeException(nameof(Tournament), request.TournamentId,
+					throw new BadTournamentScopeException(request.TournamentId,
 						nameof(TournamentScope.Ongoing), tournament.Scope.ToString());
 				}
 
-				await repository.UpdateTournamentState(request.TournamentId,
-					new TournamentStateUpdateDto { State = TournamentState.Stopped },
-					cancellationToken);
-				logger.TournamentStateChanged(request.TournamentId, TournamentState.Stopped);
+				// Will be transitioned to finished by TournamentProcessor when all matches finish
+				var dto = new TournamentStateUpdateDto(TournamentState.WaitingForFinish);
+				await repository.UpdateAsync(request.TournamentId, dto, cancellationToken);
+				logger.TournamentStateChanged(request.TournamentId, dto.State);
 
 				return Unit.Value;
 			}

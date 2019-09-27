@@ -6,6 +6,7 @@ using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
+using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
@@ -19,18 +20,22 @@ namespace OPCAIC.Application.Tournaments.Commands
 		{
 			private readonly ILogger<StartTournamentEvaluationCommand> logger;
 			private readonly ITournamentRepository repository;
+			private readonly ITimeService time;
 
 			public Handler(ILogger<StartTournamentEvaluationCommand> logger,
-				ITournamentRepository repository)
+				ITournamentRepository repository, ITimeService time)
 			{
 				this.repository = repository;
+				this.time = time;
 				this.logger = logger;
 			}
 
 			/// <inheritdoc />
-			public async Task<Unit> Handle(StartTournamentEvaluationCommand request, CancellationToken cancellationToken)
+			public async Task<Unit> Handle(StartTournamentEvaluationCommand request,
+				CancellationToken cancellationToken)
 			{
-				var tournament = await repository.FindByIdAsync(request.TournamentId, cancellationToken);
+				var tournament =
+					await repository.FindByIdAsync(request.TournamentId, cancellationToken);
 
 				if (tournament == null)
 				{
@@ -39,14 +44,13 @@ namespace OPCAIC.Application.Tournaments.Commands
 
 				if (tournament.State != TournamentState.Published)
 				{
-					throw new BadTournamentStateException(nameof(Tournament), request.TournamentId,
+					throw new BadTournamentStateException(request.TournamentId,
 						nameof(TournamentState.Published), tournament.State.ToString());
 				}
 
-				await repository.UpdateTournamentState(request.TournamentId,
-					new TournamentStateUpdateDto { State = TournamentState.Running },
-					cancellationToken);
-				logger.TournamentStateChanged(request.TournamentId, TournamentState.Running);
+				var dto = new TournamentStartedUpdateDto(time.Now);
+				await repository.UpdateAsync(request.TournamentId, dto, cancellationToken);
+				logger.TournamentStateChanged(request.TournamentId, dto.State);
 
 				return Unit.Value;
 			}

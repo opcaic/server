@@ -4,9 +4,11 @@ using Moq;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Test.Tournaments;
 using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Application.Tournaments.Models;
+using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using OPCAIC.TestUtils;
@@ -21,7 +23,9 @@ namespace OPCAIC.Application.Test.Handlers.Tournaments
 		/// <inheritdoc />
 		public PublishTournamentCommandHandlerTest(ITestOutputHelper output) : base(output)
 		{
+			Services.Mock<ITimeService>();
 		}
+
 		[Fact]
 		public async Task Handle_NonExistingIDs()
 		{
@@ -43,7 +47,7 @@ namespace OPCAIC.Application.Test.Handlers.Tournaments
 				.ReturnsAsync(new TournamentDetailDto { State = TournamentState.Created });
 
 			repository
-				.Setup(r => r.UpdateTournamentState(It.IsAny<long>(),
+				.Setup(r => r.UpdateAsync(It.IsAny<ISpecification<Tournament>>(),
 					It.IsAny<TournamentStateUpdateDto>(), It.IsAny<CancellationToken>()));
 
 			await GetService<PublishTournamentCommand.Handler>()

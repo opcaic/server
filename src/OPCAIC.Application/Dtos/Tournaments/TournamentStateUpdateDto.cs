@@ -6,6 +6,11 @@ namespace OPCAIC.Application.Dtos.Tournaments
 {
 	public class TournamentStateUpdateDto : IMapTo<Tournament>
 	{
-		public TournamentState State { get; set; }
+		public TournamentStateUpdateDto(TournamentState state)
+		{
+			State = state;
+		}
+
+		public TournamentState State { get; }
 	}
 }

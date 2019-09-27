@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
+using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Domain.Entities;
@@ -39,14 +40,13 @@ namespace OPCAIC.Application.Tournaments.Commands
 
 				if (tournament.State != TournamentState.Running)
 				{
-					throw new BadTournamentStateException(nameof(Tournament), request.TournamentId,
+					throw new BadTournamentStateException(request.TournamentId,
 						nameof(TournamentState.Running), tournament.State.ToString());
 				}
 
-				await repository.UpdateTournamentState(request.TournamentId,
-					new TournamentStateUpdateDto {State = TournamentState.Paused},
-					cancellationToken);
-				logger.TournamentStateChanged(request.TournamentId, TournamentState.Paused);
+				var updateDto = new TournamentStateUpdateDto(TournamentState.Paused);
+				await repository.UpdateAsync(request.TournamentId, updateDto, cancellationToken);
+				logger.TournamentStateChanged(request.TournamentId, updateDto.State);
 
 				return Unit.Value;
 			}

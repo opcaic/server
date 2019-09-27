@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Moq;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Test.Tournaments;
 using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Application.Tournaments.Models;
@@ -42,7 +43,7 @@ namespace OPCAIC.Application.Test.Handlers.Tournaments
 				.ReturnsAsync(new TournamentDetailDto {State = TournamentState.Running});
 
 			repository
-				.Setup(r => r.UpdateTournamentState(It.IsAny<long>(),
+				.Setup(r => r.UpdateAsync(It.IsAny<ISpecification<Tournament>>(),
 					It.IsAny<TournamentStateUpdateDto>(), It.IsAny<CancellationToken>()));
 
 			await GetService<PauseTournamentEvaluationCommand.Handler>()

@@ -10,6 +10,7 @@ using OPCAIC.Application.Games.Queries;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using OPCAIC.Utils;
 
 namespace OPCAIC.Persistence.Repositories
 {
@@ -17,14 +18,6 @@ namespace OPCAIC.Persistence.Repositories
 		: GenericRepository<Game, GameDetailDto, NewGameDto, UpdateGameDto>,
 			IGameRepository
 	{
-		// must be kept in sync with TournamentRepository.ActiveTournamentPredicate
-		public static readonly Expression<Func<Game, int>> ActiveTournamentsExpression
-			= g => g.Tournaments.Count(t
-				=> t.State == TournamentState.Published &&
-				(t.Deadline == null || t.Deadline > DateTime.Now) ||
-				t.State == TournamentState.Running &&
-				t.Scope == TournamentScope.Ongoing);
-
 		/// <inheritdoc />
 		public GameRepository(DataContext context, IMapper mapper)
 			: base(context, mapper)

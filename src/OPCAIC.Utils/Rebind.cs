@@ -30,16 +30,13 @@ namespace OPCAIC.Utils
 		/// <inheritdoc />
 		protected override Expression VisitMethodCall(MethodCallExpression node)
 		{
-			if (!(node.Arguments[1] is MemberExpression projectionArg &&
-				projectionArg.Expression is ConstantExpression valueExpression))
+			if (node.Method.DeclaringType != typeof(Rebind))
 			{
-				throw new NotSupportedException(
-					"Only captured variable outside the lambda expression is supported");
+				return base.VisitMethodCall(node);
 			}
 
 			// get the mapping expression
-			var field = (FieldInfo) projectionArg.Member;
-			var map = (LambdaExpression) field.GetValue(valueExpression.Value);
+			var map = (LambdaExpression) new EvaluatingVisitor().Evaluate(node.Arguments[1]);
 
 			// replace the method call by the lambda's body
 			var newValueExpression = ExpressionParameterRebinder.ReplaceParameters(
@@ -48,6 +45,47 @@ namespace OPCAIC.Utils
 					[map.Parameters[0]] = node.Arguments[0]
 				}, map.Body);
 			return newValueExpression;
+		}
+
+		private class EvaluatingVisitor : ExpressionVisitor
+		{
+			private object value;
+
+			public object Evaluate(Expression e)
+			{
+				if (e == null)
+				{
+					return null;
+				}
+				Visit(e);
+				return value;
+			}
+
+			/// <inheritdoc />
+			protected override Expression VisitConstant(ConstantExpression node)
+			{
+				value = node.Value;
+				return node;
+			}
+
+			/// <inheritdoc />
+			protected override Expression VisitMember(MemberExpression node)
+			{
+				var instance = Evaluate(node.Expression);
+				switch (node.Member)
+				{
+					case FieldInfo fieldInfo:
+						value = fieldInfo.GetValue(instance);
+						break;
+					case PropertyInfo propertyInfo:
+						value = propertyInfo.GetValue(instance);
+						break;
+					default:
+						throw new NotSupportedException();
+				}
+
+				return node;
+			}
 		}
 	}
 }

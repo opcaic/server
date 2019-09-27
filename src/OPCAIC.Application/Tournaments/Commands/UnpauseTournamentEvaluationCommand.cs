@@ -41,14 +41,14 @@ namespace OPCAIC.Application.Tournaments.Commands
 
 				if (tournament.State != TournamentState.Paused)
 				{
-					throw new BadTournamentStateException(nameof(Tournament), request.TournamentId,
+					throw new BadTournamentStateException(request.TournamentId,
 						nameof(TournamentState.Paused), tournament.State.ToString());
 				}
 
-				await repository.UpdateTournamentState(request.TournamentId,
-					new TournamentStateUpdateDto {State = TournamentState.Running},
-					cancellationToken);
-				logger.TournamentStateChanged(request.TournamentId, TournamentState.Running);
+				// do not use TournamentStartedUpdateDto in order to not update EvaluationStarted
+				var dto = new TournamentStateUpdateDto(TournamentState.Running);
+				await repository.UpdateAsync(request.TournamentId, dto, cancellationToken);
+				logger.TournamentStateChanged(request.TournamentId, dto.State);
 
 				return Unit.Value;
 			}

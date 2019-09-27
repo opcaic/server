@@ -1,12 +1,13 @@
 ﻿using OPCAIC.Application.Infrastructure.Validation;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.Exceptions
 {
 	public class BadTournamentScopeException : BusinessException
 	{
-		public BadTournamentScopeException(string resourceName, long resourceId,
+		public BadTournamentScopeException(long resourceId,
 			string expectedScope, string actualScope) :
-			base(new Error(resourceName, expectedScope, actualScope, resourceId))
+			base(new Error(nameof(Tournament), expectedScope, actualScope, resourceId))
 		{
 		}
 

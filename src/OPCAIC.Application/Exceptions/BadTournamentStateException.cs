@@ -1,14 +1,15 @@
 ﻿using System;
 using OPCAIC.Application.Infrastructure.Validation;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.Exceptions
 {
 	[Serializable]
 	public class BadTournamentStateException : BusinessException
 	{
-		public BadTournamentStateException(string resourceName, long resourceId,
+		public BadTournamentStateException(long resourceId,
 			string expectedState, string actualState) :
-			base(new Error(resourceName, expectedState, actualState, resourceId))
+			base(new Error(nameof(Tournament), expectedState, actualState, resourceId))
 		{
 		}
 

@@ -20,12 +20,6 @@
 		/// </summary>
 		Running,
 
-
-		/// <summary>
-		///     Manually stopped by administrator, no matches are generated.
-		/// </summary>
-		Stopped,
-
 		/// <summary>
 		///     All matches have been scheduled, waiting for the last ones to execute.
 		/// </summary>

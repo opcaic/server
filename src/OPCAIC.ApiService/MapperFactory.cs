@@ -107,7 +107,7 @@ namespace OPCAIC.ApiService
 
 			CreateMap<Game, GamePreviewModel>(MemberList.Destination)
 				.ForMember(d => d.ActiveTournamentsCount,
-					opt => opt.MapFrom(GameRepository.ActiveTournamentsExpression))
+					opt => opt.MapFrom(Game.ActiveTournamentCountExpression))
 				.IncludeAllDerived();
 
 			CreateMap<Game, GameReferenceDto, GameReferenceModel>(MemberList.Destination);

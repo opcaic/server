@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Linq;
 using Shouldly;
 using Xunit;
 
@@ -68,6 +70,48 @@ namespace OPCAIC.Utils.Test
 			var instance = new OuterClass {TestClass = new TestClass {A = "aaa", B = "bbb"}};
 
 			actual(instance).ShouldBe(expected(instance));
+		}
+
+		class ClassWithStaticMemberExpression
+		{
+			public int Property { get; set; }
+
+			public static Expression<Func<ClassWithStaticMemberExpression, int>> PropertyExpression =
+				e => e.Property;
+		}
+
+		[Fact]
+		public void StaticClassMember_Expression()
+		{
+			var instance = new ClassWithStaticMemberExpression() {Property = 5};
+
+			var selector = Rebind.Map((ClassWithStaticMemberExpression i)
+				=> Rebind.Invoke(i, ClassWithStaticMemberExpression.PropertyExpression)).Compile();
+
+			selector(instance).ShouldBe(5);
+		}
+
+		class ClassWithCollection
+		{
+			public IList<TestClass> Collection { get; set; }
+		}
+
+		[Fact]
+		public void ExtensionMethod()
+		{
+			Expression<Func<TestClass, bool>> filter = i => i.A.Length != 1;
+			var instance = new ClassWithCollection
+			{
+				Collection = new List<TestClass>
+				{
+					new TestClass {A = ""}, new TestClass {A = "1"}
+				}
+			};
+
+			var compiled = Rebind.Map<ClassWithCollection,int>(i
+				=> i.Collection.Count(e => Rebind.Invoke(e, filter))).Compile();
+
+			compiled(instance).ShouldBe(1);
 		}
 	}
 }

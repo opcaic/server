@@ -20,12 +20,6 @@ namespace OPCAIC.Persistence.Repositories
 		: GenericRepository<Tournament, TournamentDetailDto, CreateTournamentCommand, object>,
 			ITournamentRepository
 	{
-		// must be kept in sync with GameRepository.ActiveTournamentsExpression
-		public static readonly Expression<Func<Tournament, bool>> ActiveTournamentPredicate =
-			t => t.State == TournamentState.Published &&
-				(t.Deadline == null || t.Deadline > DateTime.Now) ||
-				t.State == TournamentState.Running &&
-				t.Scope == TournamentScope.Ongoing;
 
 		/// <inheritdoc />
 		public TournamentRepository(DataContext context, IMapper mapper)
@@ -53,27 +47,6 @@ namespace OPCAIC.Persistence.Repositories
 			return Query(t => states.Contains(t.State))
 				.ProjectTo<TournamentStateInfoDto>(Mapper.ConfigurationProvider)
 				.ToListAsync(cancellationToken);
-		}
-
-		/// <inheritdoc />
-		public Task UpdateTournamentState(long id, TournamentStateUpdateDto dto,
-			CancellationToken cancellationToken)
-		{
-			return UpdateFromDtoAsync(id, dto, cancellationToken);
-		}
-
-		/// <inheritdoc />
-		public Task UpdateTournamentState(long id, TournamentFinishedUpdateDto dto,
-			CancellationToken cancellationToken)
-		{
-			return UpdateFromDtoAsync(id, dto, cancellationToken);
-		}
-
-		/// <inheritdoc />
-		public Task UpdateTournamentState(long id, TournamentStartedUpdateDto dto,
-			CancellationToken cancellationToken)
-		{
-			return UpdateFromDtoAsync(id, dto, cancellationToken);
 		}
 
 		public Task<List<TournamentDeadlineGenerationDto>> GetDeadlineTournamentsForMatchGenerationAsync(CancellationToken cancellationToken)

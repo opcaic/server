@@ -30,13 +30,6 @@ namespace OPCAIC.Application.Interfaces.Repositories
 		Task<List<TournamentStateInfoDto>> GetTournamentsStateInfoAsync(
 			IEnumerable<TournamentState> states, CancellationToken cancellationToken);
 
-		Task UpdateTournamentState(long id, TournamentStateUpdateDto dto,
-			CancellationToken cancellationToken);
-		Task UpdateTournamentState(long id, TournamentFinishedUpdateDto dto,
-			CancellationToken cancellationToken);
-		Task UpdateTournamentState(long id, TournamentStartedUpdateDto dto,
-			CancellationToken cancellationToken);
-
 		Task<List<TournamentReferenceDto>> GetTournamentsForFinishing(
 			CancellationToken cancellationToken);
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Domain.Entities
@@ -148,5 +149,11 @@ namespace OPCAIC.Domain.Entities
 		///     Maximum size in bytes on the submission archive contents.
 		/// </summary>
 		public long MaxSubmissionSize { get; set; }
+
+		public static readonly Expression<Func<Tournament, bool>> AcceptsSubmissionExpression =
+			t => t.State == TournamentState.Published &&
+				(t.Deadline == null || t.Deadline > DateTime.Now) ||
+				t.State == TournamentState.Running &&
+				t.Scope == TournamentScope.Ongoing;
 	}
 }

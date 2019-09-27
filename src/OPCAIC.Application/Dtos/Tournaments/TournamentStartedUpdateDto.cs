@@ -5,10 +5,14 @@ using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Dtos.Tournaments
 {
-	public class TournamentStartedUpdateDto : IMapTo<Tournament>
+	public class TournamentStartedUpdateDto : TournamentStateUpdateDto
 	{
-		public TournamentState State { get; set; }
+		public TournamentStartedUpdateDto(DateTime evaluationStarted)
+			: base(TournamentState.Running)
+		{
+			EvaluationStarted = evaluationStarted;
+		}
 
-		public DateTime? EvaluationStarted { get; set; }
+		public DateTime EvaluationStarted { get; }
 	}
 }

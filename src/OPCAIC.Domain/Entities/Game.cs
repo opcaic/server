@@ -1,6 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using OPCAIC.Common;
 using OPCAIC.Domain.Enums;
+using OPCAIC.Utils;
 
 namespace OPCAIC.Domain.Entities
 {
@@ -63,5 +67,10 @@ namespace OPCAIC.Domain.Entities
 		///     Maximum size of additional files for evaluating matches in this game.
 		/// </summary>
 		public long MaxAdditionalFilesSize { get; set; }
+
+		public static readonly Expression<Func<Game, int>> ActiveTournamentCountExpression
+			= Rebind.Map<Game, int>(g => g.Tournaments.Count(t
+				=> Rebind.Invoke(t, Tournament.AcceptsSubmissionExpression)));
+
 	}
 }

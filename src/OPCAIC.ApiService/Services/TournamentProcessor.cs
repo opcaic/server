@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
@@ -143,13 +144,10 @@ namespace OPCAIC.ApiService.Services
 			private async Task MarkGenerationDone(long tournamentId,
 				CancellationToken cancellationToken)
 			{
-				await tournamentRepository.UpdateTournamentState(tournamentId,
-					new TournamentStateUpdateDto
-					{
-						State = TournamentState.WaitingForFinish,
-					}, cancellationToken);
+				var updateDto = new TournamentStateUpdateDto(TournamentState.WaitingForFinish);
+				await tournamentRepository.UpdateAsync(tournamentId, updateDto, cancellationToken);
 
-				logger.TournamentStateChanged(tournamentId, TournamentState.WaitingForFinish);
+				logger.TournamentStateChanged(tournamentId, updateDto.State);
 			}
 
 			private async Task TransferTournamentsToRunning(CancellationToken cancellationToken)
@@ -158,17 +156,13 @@ namespace OPCAIC.ApiService.Services
 					new[] { TournamentState.Published },
 					cancellationToken);
 
-				var updateDto = new TournamentStartedUpdateDto
-				{
-					State = TournamentState.Running,
-					EvaluationStarted = now
-				};
+				var updateDto = new TournamentStartedUpdateDto(now);
 
 				foreach (var tournament in tournaments)
 				{
 					if (tournament.Deadline.HasValue && tournament.Deadline.Value < now)
 					{
-						await tournamentRepository.UpdateTournamentState(tournament.Id, updateDto,
+						await tournamentRepository.UpdateAsync(tournament.Id, updateDto,
 							cancellationToken);
 
 						logger.TournamentStateChanged(tournament.Id, updateDto.State);
@@ -179,19 +173,12 @@ namespace OPCAIC.ApiService.Services
 			private async Task TransferTournamentsToFinished(CancellationToken cancellationToken)
 			{
 				var tournaments = await tournamentRepository.GetTournamentsForFinishing(cancellationToken);
-
-				var updateDto = new TournamentFinishedUpdateDto
-				{
-					State = TournamentState.Finished,
-					EvaluationFinished = now
-				};
+				var updateDto = new TournamentFinishedUpdateDto(now);
 
 				foreach (var tournament in tournaments)
 				{
 					await mediator.Publish(new TournamentFinished(tournament.Id, tournament.Name), cancellationToken);
-
-					await tournamentRepository.UpdateTournamentState(tournament.Id, updateDto,
-						cancellationToken);
+					await tournamentRepository.UpdateAsync(tournament.Id, updateDto, cancellationToken);
 
 					logger.TournamentStateChanged(tournament.Id, updateDto.State);
 				}
