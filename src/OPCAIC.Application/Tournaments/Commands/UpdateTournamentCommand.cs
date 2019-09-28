@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentValidation;
@@ -11,9 +12,11 @@ using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using OPCAIC.Domain.ValueObjects;
 
 namespace OPCAIC.Application.Tournaments.Commands
 {
@@ -29,22 +32,46 @@ namespace OPCAIC.Application.Tournaments.Commands
 
 		public TournamentRankingStrategy RankingStrategy { get; set; }
 
-		public string MenuData { get; set; }
-
 		public int? MatchesPerDay { get; set; }
 
 		public long MaxSubmissionSize { get; set; }
 
 		public bool PrivateMatchLog { get; set; }
 
+		public List<MenuItemDto> MenuItems { get; set; }
+
 		/// <inheritdoc />
 		public long Id { get; set; }
 
 		public class Validator : AbstractValidator<UpdateTournamentCommand>
 		{
-			public Validator()
+			public class MenuItemValidator : AbstractValidator<MenuItemDto>
+			{
+				public MenuItemValidator()
+				{
+					RuleFor(m => m.Type).Required().IsInEnum();
+
+					When(m => m.Type == MenuItemType.DocumentLink, () =>
+					{
+						RuleFor(m => ((DocumentLinkMenuItemDto)m).DocumentId)
+							.EntityId(typeof(Document));
+					});
+
+					When(m => m.Type == MenuItemType.ExternalUrl, () =>
+					{
+						RuleFor(m => ((ExternalUrlMenuItemDto)m).ExternalLink)
+							.Url();
+						RuleFor(m => ((ExternalUrlMenuItemDto)m).Text)
+							.MaxLength(StringLengths.MenuItemText);
+					});
+				}
+			}
+
+			public Validator(MenuItemValidator menuItemValidator)
 			{
 				RuleFor(m => m.Name).Required().MaxLength(StringLengths.TournamentName);
+
+				RuleForEach(m => m.MenuItems).SetValidator(menuItemValidator);
 
 				// keep these rules synchronized with NewTournamentModel
 				RuleFor(m => m.Format).IsInEnum().NotEqual(TournamentFormat.Unknown)

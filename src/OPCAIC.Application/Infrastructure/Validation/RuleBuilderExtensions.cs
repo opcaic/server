@@ -100,7 +100,7 @@ namespace OPCAIC.Application.Infrastructure.Validation
 		{
 			/// <inheritdoc />
 			public EntityIdValidator() 
-				: base("'{PropertyName}' does not reference valid entity: {PropertyValue}.")
+				: base($"'{{PropertyName}}' does not reference valid {typeof(TEntity).Name}: {{PropertyValue}}.")
 			{
 			}
 

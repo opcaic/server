@@ -61,7 +61,7 @@ namespace OPCAIC.Application.Infrastructure.AutoMapper
 
 			foreach (var (dest, src) in GetMaps(types, typeof(IMapFrom<>)))
 			{
-				var map = CreateMap(src[0], dest, MemberList.Destination);
+				var map = CreateMap(src[0], dest, MemberList.Destination).IncludeAllDerived();
 
 				foreach (var property in dest.GetNotMappedProperties())
 				{
@@ -74,6 +74,11 @@ namespace OPCAIC.Application.Infrastructure.AutoMapper
 					map = map.IncludeBase(src[0], t);
 				}
 			}
+		}
+
+		private void AddBaseIncludes(IMappingExpression map, Type src, Type dest)
+		{
+
 		}
 
 		private IEnumerable<(Type type, Type[] metadataType)> GetMaps(

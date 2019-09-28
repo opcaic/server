@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using OPCAIC.Domain.Enums;
+using OPCAIC.Domain.ValueObjects;
 
 namespace OPCAIC.Domain.Entities
 {
@@ -106,6 +107,11 @@ namespace OPCAIC.Domain.Entities
 		public DateTime? Deadline { get; set; }
 
 		/// <summary>
+		///     List of menu items displayed in the tournament page.
+		/// </summary>
+		public virtual IList<MenuItem> MenuItems { get; set; }
+
+		/// <summary>
 		///     All invitations to this tournament.
 		/// </summary>
 		public virtual ICollection<TournamentInvitation> Invitations { get; set; }
@@ -129,11 +135,6 @@ namespace OPCAIC.Domain.Entities
 		///     Theme color of the tournament.
 		/// </summary>
 		public string ThemeColor { get; set; }
-
-		/// <summary>
-		///     JSON data with information about menu items.
-		/// </summary>
-		public string MenuData { get; set; }
 
 		/// <summary>
 		///     How many matches to generate per day. Valid only for <see cref="TournamentScope.Ongoing" /> tournaments.

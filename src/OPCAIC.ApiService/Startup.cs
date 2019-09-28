@@ -15,6 +15,7 @@ using OPCAIC.ApiService.Middlewares;
 using OPCAIC.ApiService.ModelBinding;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
+using OPCAIC.ApiService.Serialization;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Services;
 using OPCAIC.Application.Tournaments.Events;
@@ -45,6 +46,7 @@ namespace OPCAIC.ApiService
 					options.ModelMetadataDetailsProviders.Add(new ExcludeInterfaceMetadataProvider(typeof(IPublicRequest)));
 					options.ModelMetadataDetailsProviders.Add(new ExcludeInterfaceMetadataProvider(typeof(IAuthenticatedRequest)));
 				})
+				.AddCustomJsonConverters()
 				.ConfigureHybridBinder()
 				.SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
 				.ConfigureApiBehaviorOptions(options =>

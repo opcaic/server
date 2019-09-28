@@ -11,8 +11,8 @@ namespace OPCAIC.ApiService.ModelValidationHandling.Validators.Games
 		{
 			RuleFor(m => m.Name).Required().MaxLength(StringLengths.GameName);
 			RuleFor(m => m.Key).Required().MaxLength(StringLengths.GameKey);
-			RuleFor(m => m.DefaultTournamentImageUrl).MaxLength(StringLengths.GameDefaultTournamentImageUrl);
-			RuleFor(m => m.ImageUrl).MaxLength(StringLengths.GameImageUrl);
+			RuleFor(m => m.DefaultTournamentImageUrl).MaxLength(StringLengths.Url);
+			RuleFor(m => m.ImageUrl).MaxLength(StringLengths.Url);
 			RuleFor(m => m.Description).MaxLength(StringLengths.GameDescription);
 			RuleFor(m => m.DefaultTournamentImageOverlay).InclusiveBetween(0, 1);
 			RuleFor(m => m.ConfigurationSchema).ValidSchema();
