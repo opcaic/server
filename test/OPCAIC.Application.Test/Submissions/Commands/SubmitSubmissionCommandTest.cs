@@ -36,7 +36,7 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 			Services.AddMapper();
 			submissionRepository = Services.Mock<ISubmissionRepository>(MockBehavior.Strict);
 			tournamentRepository = Services.Mock<ITournamentRepository>(MockBehavior.Strict);
-			tournamentParticipationRepository = Services.Mock<ITournamentParticipationsRepository>(MockBehavior.Strict);
+			tournamentParticipationRepository = Services.Mock<IRepository<TournamentParticipation>>(MockBehavior.Strict);
 			storageService = Services.Mock<IStorageService>(MockBehavior.Strict);
 			time = Services.Mock<ITimeService>(MockBehavior.Strict);
 			mediator = Services.Mock<IMediator>(MockBehavior.Strict);
@@ -50,7 +50,7 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 
 		private readonly Mock<ISubmissionRepository> submissionRepository;
 		private readonly Mock<ITournamentRepository> tournamentRepository;
-		private readonly Mock<ITournamentParticipationsRepository> tournamentParticipationRepository;
+		private readonly Mock<IRepository<TournamentParticipation>> tournamentParticipationRepository;
 		private readonly Mock<IStorageService> storageService;
 		private readonly Mock<ITimeService> time;
 		private readonly Mock<IMediator> mediator;

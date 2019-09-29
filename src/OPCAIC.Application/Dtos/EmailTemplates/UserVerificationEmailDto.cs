@@ -2,8 +2,14 @@
 {
 	public class UserVerificationEmailDto : EmailDtoBase
 	{
+		/// <inheritdoc />
+		public UserVerificationEmailDto(string verificationUrl)
+		{
+			VerificationUrl = verificationUrl;
+		}
+
 		public override string TemplateName => "userVerificationEmail";
 
-		public string VerificationUrl { get; set; }
+		public string VerificationUrl { get; }
 	}
 }

@@ -3,24 +3,21 @@ using System.Threading.Tasks;
 using Moq;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
-using OPCAIC.Application.Test.Tournaments;
 using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.TestUtils;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace OPCAIC.Application.Test.Handlers.Tournaments
+namespace OPCAIC.Application.Test.Tournaments.Commands
 {
-	public class StopTournamentEvaluationCommandHandlerTest : TournamentCommandHandlerTestBase
+	public class StopTournamentEvaluationCommandTest : TournamentHandlerTestBase
 	{
 		/// <inheritdoc />
-		public StopTournamentEvaluationCommandHandlerTest(ITestOutputHelper output) : base(output)
+		public StopTournamentEvaluationCommandTest(ITestOutputHelper output) : base(output)
 		{
 		}
 

@@ -33,6 +33,12 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
+		public string SubmissionPageLink(long tournamentId, long submissionId)
+		{
+			return $"{config.FrontendUrl}/tournament/{tournamentId}/submission/{submissionId}";
+		}
+
+		/// <inheritdoc />
 		public string GenerateAdditionalFilesUrl(long tournamentId)
 		{
 			return $"api/tournaments/{tournamentId}/files";

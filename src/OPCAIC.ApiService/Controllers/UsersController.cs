@@ -254,7 +254,7 @@ namespace OPCAIC.ApiService.Controllers
 			var token = await userManager.GeneratePasswordResetTokenAsync(user);
 			var url = urlGenerator.PasswordResetLink(user.Email, token);
 
-			await emailService.EnqueueEmailAsync(new PasswordResetEmailDto {ResetUrl = url},
+			await emailService.EnqueueEmailAsync(new PasswordResetEmailDto(url),
 				model.Email, cancellationToken);
 		}
 

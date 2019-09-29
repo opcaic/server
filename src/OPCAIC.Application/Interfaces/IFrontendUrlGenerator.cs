@@ -24,5 +24,13 @@
 		/// <param name="tournamentId">Id of the tournament.</param>
 		/// <returns></returns>
 		string TournamentPageLink(long tournamentId);
+
+		/// <summary>
+		///     Generates url for user submission page.
+		/// </summary>
+		/// <param name="tournamentId"></param>
+		/// <param name="submissionId">Id of the submission.</param>
+		/// <returns></returns>
+		string SubmissionPageLink(long tournamentId, long submissionId);
 	}
 }

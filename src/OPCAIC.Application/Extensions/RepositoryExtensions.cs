@@ -20,7 +20,14 @@ namespace OPCAIC.Application.Extensions
 				new BaseSpecification<TEntity>().AddCriteria(e => e.Id == id), dto, cancellationToken);
 		}
 
-		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken = default)
+		public static Task<bool> UpdateAsync<TEntity, TDto>(this IRepository<TEntity> repository,
+			Expression<Func<TEntity, bool>> criteria, TDto dto, CancellationToken cancellationToken = default)
+		{
+			return repository.UpdateAsync(
+				new BaseSpecification<TEntity>().AddCriteria(criteria), dto, cancellationToken);
+		}
+
+		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken)
 		{
 			var spec = new BaseSpecification<TEntity>().AddCriteria(criteria);
 			return repository.ExistsAsync(spec, cancellationToken);
@@ -114,6 +121,18 @@ namespace OPCAIC.Application.Extensions
 			throw new NotFoundException(typeof(TEntity).Name, id);
 		}
 
+		public static async Task<TDto> GetAsync<TEntity, TDto>(this IRepository<TEntity> repository,
+			Expression<Func<TEntity, bool>> criteria, Expression<Func<TEntity, TDto>> projection, CancellationToken cancellationToken)
+			where TEntity : IEntity
+			where TDto : class
+		{
+			var spec = ProjectingSpecification<TEntity>.Create(projection);
+			spec.AddCriteria(criteria);
+
+			return await repository.FindAsync(spec, cancellationToken) ?? 
+				throw new NotFoundException(typeof(TEntity).Name, -1); // TODO
+		}
+
 		public static async Task<TEntity> GetAsync<TEntity>(this IRepository<TEntity> repository,
 			long id, CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity
@@ -135,6 +154,16 @@ namespace OPCAIC.Application.Extensions
 			where TEntity : class, IEntity
 		{
 			var spec = new ProjectingSpecification<TEntity,TDestination>(projection);
+			spec.AddCriteria(criteria);
+
+			return repository.ListAsync( spec, cancellationToken);
+		}
+
+		public static Task<List<TDestination>> ListAsync<TEntity, TDestination>(this IRepository<TEntity> repository,
+			Expression<Func<TEntity, bool>> criteria, IMapper mapper, CancellationToken cancellationToken)
+			where TEntity : class, IEntity
+		{
+			var spec = new ProjectingSpecification<TEntity,TDestination>(mapper.GetMapExpression<TEntity, TDestination>());
 			spec.AddCriteria(criteria);
 
 			return repository.ListAsync( spec, cancellationToken);

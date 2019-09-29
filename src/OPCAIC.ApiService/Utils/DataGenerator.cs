@@ -706,6 +706,22 @@ namespace OPCAIC.ApiService.Utils
 				new EmailTemplate
 				{
 					LanguageCode = "cs",
+					Name = "submissionValidationFailedEmail",
+					SubjectTemplate = "Validace vaší submission selhala",
+					BodyTemplate =
+						"<html><body>Vaše submission není validní a nemůže se zúčastnit turnaje: {{SubmissionUrl}}.</body></html>"
+				},
+				new EmailTemplate
+				{
+					LanguageCode = "en",
+					Name = "submissionValidationFailedEmail",
+					SubjectTemplate = "Submission validation failed",
+					BodyTemplate =
+						"<html><body>Your submission is not valid for the tournament: {{SubmissionUrl}}.</body></html>"
+				},
+				new EmailTemplate
+				{
+					LanguageCode = "cs",
 					Name = "tournamentFinishedEmail",
 					SubjectTemplate = "Vyhodnocení turnaje '{{TournamentName}}' skončilo",
 					BodyTemplate =

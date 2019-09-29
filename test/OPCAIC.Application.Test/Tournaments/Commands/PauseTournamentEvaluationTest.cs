@@ -3,25 +3,21 @@ using System.Threading.Tasks;
 using Moq;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
-using OPCAIC.Application.Test.Tournaments;
 using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using OPCAIC.TestUtils;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace OPCAIC.Application.Test.Handlers.Tournaments
+namespace OPCAIC.Application.Test.Tournaments.Commands
 {
-	public class UnpauseTournamentEvaluationCommandHandlerTest : TournamentCommandHandlerTestBase
+	public class PauseTournamentEvaluationTest : TournamentHandlerTestBase
 	{
 		/// <inheritdoc />
-		public UnpauseTournamentEvaluationCommandHandlerTest(ITestOutputHelper output) :
-			base(output)
+		public PauseTournamentEvaluationTest(ITestOutputHelper output) : base(output)
 		{
 		}
 
@@ -33,8 +29,8 @@ namespace OPCAIC.Application.Test.Handlers.Tournaments
 				.ReturnsAsync(default(TournamentDetailDto));
 
 			var exception = await Should.ThrowAsync<NotFoundException>(
-				GetService<UnpauseTournamentEvaluationCommand.Handler>()
-					.Handle(new UnpauseTournamentEvaluationCommand(), CancellationToken.None));
+				GetService<PauseTournamentEvaluationCommand.Handler>()
+					.Handle(new PauseTournamentEvaluationCommand(), CancellationToken.None));
 			exception.Resource.ShouldBe(nameof(Tournament));
 		}
 
@@ -43,14 +39,14 @@ namespace OPCAIC.Application.Test.Handlers.Tournaments
 		{
 			repository
 				.Setup(r => r.FindByIdAsync(It.IsAny<long>(), CancellationToken.None))
-				.ReturnsAsync(new TournamentDetailDto {State = TournamentState.Paused});
+				.ReturnsAsync(new TournamentDetailDto {State = TournamentState.Running});
 
 			repository
 				.Setup(r => r.UpdateAsync(It.IsAny<ISpecification<Tournament>>(),
 					It.IsAny<TournamentStateUpdateDto>(), It.IsAny<CancellationToken>()));
 
-			await GetService<UnpauseTournamentEvaluationCommand.Handler>()
-				.Handle(new UnpauseTournamentEvaluationCommand(), CancellationToken.None);
+			await GetService<PauseTournamentEvaluationCommand.Handler>()
+				.Handle(new PauseTournamentEvaluationCommand(), CancellationToken.None);
 		}
 
 		[Fact]
@@ -58,13 +54,13 @@ namespace OPCAIC.Application.Test.Handlers.Tournaments
 		{
 			repository
 				.Setup(r => r.FindByIdAsync(It.IsAny<long>(), CancellationToken.None))
-				.ReturnsAsync(new TournamentDetailDto {State = TournamentState.Running});
+				.ReturnsAsync(new TournamentDetailDto {State = TournamentState.Finished});
 
 			var exception = await Should.ThrowAsync<BadTournamentStateException>(
-				GetService<UnpauseTournamentEvaluationCommand.Handler>()
-					.Handle(new UnpauseTournamentEvaluationCommand(), CancellationToken.None));
-			exception.ActualState.ShouldBe(nameof(TournamentState.Running));
-			exception.ExpectedState.ShouldBe(nameof(TournamentState.Paused));
+				GetService<PauseTournamentEvaluationCommand.Handler>()
+					.Handle(new PauseTournamentEvaluationCommand(), CancellationToken.None));
+			exception.ActualState.ShouldBe(nameof(TournamentState.Finished));
+			exception.ExpectedState.ShouldBe(nameof(TournamentState.Running));
 		}
 	}
 }

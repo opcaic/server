@@ -13,6 +13,7 @@ using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Submissions.Events;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Common;
@@ -35,12 +36,12 @@ namespace OPCAIC.Application.Submissions.Commands
 			private readonly IStorageService storage;
 			private readonly ITimeService time;
 			private readonly ITournamentRepository tournamentRepository;
-			private readonly ITournamentParticipationsRepository tournamentParticipationsRepository;
+			private readonly IRepository<TournamentParticipation> tournamentParticipationsRepository;
 
 			/// <inheritdoc />
 			public Handler(IMediator mediator, ILogger<SubmitSubmissionCommand> logger,
 				ITimeService time, IStorageService storage,
-				ISubmissionRepository repository, ITournamentRepository tournamentRepository, ITournamentParticipationsRepository tournamentParticipationsRepository)
+				ISubmissionRepository repository, ITournamentRepository tournamentRepository, IRepository<TournamentParticipation> tournamentParticipationsRepository)
 			{
 				this.storage = storage;
 				this.repository = repository;

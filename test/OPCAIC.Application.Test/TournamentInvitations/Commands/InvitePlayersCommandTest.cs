@@ -22,7 +22,7 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 		private readonly Mock<IFrontendUrlGenerator> urlGenerator;
 		private readonly Mock<ITournamentRepository> tournamentRepository;
 		private readonly Mock<ITournamentInvitationRepository> repository;
-		private readonly Mock<ITournamentParticipationsRepository> participationsRepository;
+		private readonly Mock<IRepository<TournamentParticipation>> participationsRepository;
 		private readonly Mock<IUserRepository> userRepository;
 		/// <inheritdoc />
 		public InvitePlayersCommandTest(ITestOutputHelper output) : base(output)
@@ -32,7 +32,7 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 			tournamentRepository = Services.Mock<ITournamentRepository>(MockBehavior.Strict);
 			repository = Services.Mock<ITournamentInvitationRepository>(MockBehavior.Strict);
 			participationsRepository =
-				Services.Mock<ITournamentParticipationsRepository>(MockBehavior.Strict);
+				Services.Mock<IRepository<TournamentParticipation>>(MockBehavior.Strict);
 			userRepository = Services.Mock<IUserRepository>(MockBehavior.Strict);
 		}
 

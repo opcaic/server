@@ -5,11 +5,11 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.Application.Test.Tournaments
 {
-	public class TournamentCommandHandlerTestBase : ServiceTestBase
+	public class TournamentHandlerTestBase : ServiceTestBase
 	{
 		protected readonly Mock<ITournamentRepository> repository;
 
-		public TournamentCommandHandlerTestBase(ITestOutputHelper output) : base(output)
+		public TournamentHandlerTestBase(ITestOutputHelper output) : base(output)
 		{
 			repository = Services.Mock<ITournamentRepository>();
 		}

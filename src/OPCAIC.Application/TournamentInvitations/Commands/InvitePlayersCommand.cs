@@ -10,6 +10,7 @@ using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.TournamentInvitations.Commands
@@ -34,10 +35,10 @@ namespace OPCAIC.Application.TournamentInvitations.Commands
 			private readonly IFrontendUrlGenerator urlGenerator;
 			private readonly ITournamentRepository tournamentRepository;
 			private readonly ITournamentInvitationRepository repository;
-			private readonly ITournamentParticipationsRepository participationsRepository;
+			private readonly IRepository<TournamentParticipation> participationsRepository;
 			private readonly IUserRepository userRepository;
 
-			public Handler(ITournamentInvitationRepository repository, ITournamentRepository tournamentRepository, IFrontendUrlGenerator urlGenerator, IEmailService emailService, ITournamentParticipationsRepository participationsRepository, IUserRepository userRepository)
+			public Handler(ITournamentInvitationRepository repository, ITournamentRepository tournamentRepository, IFrontendUrlGenerator urlGenerator, IEmailService emailService, IRepository<TournamentParticipation> participationsRepository, IUserRepository userRepository)
 			{
 				this.repository = repository;
 				this.tournamentRepository = tournamentRepository;
@@ -62,11 +63,10 @@ namespace OPCAIC.Application.TournamentInvitations.Commands
 				// add only those addresses, which are not already added
 				var toSend = request.Emails.Where(invite => !invitations.Contains(invite)).ToList();
 
-				var mailDto = new TournamentInvitationEmailDto
-				{
-					TournamentUrl = urlGenerator.TournamentPageLink(request.TournamentId),
-					TournamentName = tournamentName
-				};
+				var mailDto = new TournamentInvitationEmailDto(
+					urlGenerator.TournamentPageLink(request.TournamentId),
+					tournamentName
+				);
 
 				foreach (var email in toSend)
 				{

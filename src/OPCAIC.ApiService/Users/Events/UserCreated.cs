@@ -7,6 +7,7 @@ using OPCAIC.Application.Emails;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.ApiService.Users.Events
@@ -25,11 +26,11 @@ namespace OPCAIC.ApiService.Users.Events
 			private readonly IUserManager userManager;
 			private readonly IFrontendUrlGenerator urlGenerator;
 			private readonly IEmailService emailService;
-			private readonly ITournamentParticipationsRepository participationsRepository;
+			private readonly IRepository<TournamentParticipation> participationsRepository;
 			private readonly ITournamentInvitationRepository invitationRepository;
 
 			/// <inheritdoc />
-			public Handler(IUserManager userManager, IFrontendUrlGenerator urlGenerator, IEmailService emailService, ITournamentParticipationsRepository participationsRepository, ITournamentInvitationRepository invitationRepository)
+			public Handler(IUserManager userManager, IFrontendUrlGenerator urlGenerator, IEmailService emailService, IRepository<TournamentParticipation> participationsRepository, ITournamentInvitationRepository invitationRepository)
 			{
 				this.userManager = userManager;
 				this.urlGenerator = urlGenerator;
@@ -74,7 +75,7 @@ namespace OPCAIC.ApiService.Users.Events
 				var url = urlGenerator.EmailConfirmLink(notification.User.Email, token);
 
 				await emailService.EnqueueEmailAsync(
-					new UserVerificationEmailDto {VerificationUrl = url}, notification.User.Email,
+					new UserVerificationEmailDto(url), notification.User.Email,
 					cancellationToken);
 			}
 		}

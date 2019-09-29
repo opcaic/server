@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using HandlebarsDotNet;
 using OPCAIC.Application.Dtos.Emails;
 using OPCAIC.Application.Dtos.EmailTemplates;
+using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Emails;
+using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces.Repositories;
 
 namespace OPCAIC.Infrastructure.Emails
@@ -27,7 +29,12 @@ namespace OPCAIC.Infrastructure.Emails
 		public async Task EnqueueEmailAsync(EmailDtoBase dto, string recipientEmail,
 			CancellationToken cancellationToken)
 		{
-			var user = await userRepository.FindRecipientAsync(recipientEmail, cancellationToken);
+			var user = await userRepository.GetAsync(r => r.Email == recipientEmail,
+				p => new EmailRecipientDto
+				{
+					Email = p.Email,
+					LocalizationLanguage = p.LocalizationLanguage
+				}, cancellationToken);
 
 #warning Default language code needs to be placed somewhere to configuration or to constant
 			await EnqueueEmailAsync(dto, recipientEmail, user?.LocalizationLanguage ?? "en",

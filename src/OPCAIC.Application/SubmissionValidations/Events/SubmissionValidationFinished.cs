@@ -5,13 +5,10 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Application.Dtos.Submissions;
-using OPCAIC.Application.Dtos.TournamentParticipations;
 using OPCAIC.Application.Extensions;
-using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
-using OPCAIC.Application.Specifications;
-using OPCAIC.Domain.Entities;
+using OPCAIC.Application.Submissions.Events;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.SubmissionValidations.Events
@@ -28,18 +25,18 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 		public class Handler : INotificationHandler<SubmissionValidationFinished>
 		{
 			private readonly ILogger<SubmissionValidationFinished> logger;
-			private readonly ITournamentParticipationsRepository participationsRepository;
+			private readonly IMediator mediator;
 			private readonly ISubmissionValidationRepository repository;
 			private readonly ISubmissionRepository submissionRepository;
 
 			public Handler(ISubmissionValidationRepository repository,
 				ILogger<SubmissionValidationFinished> logger,
-				ITournamentParticipationsRepository participationsRepository, ISubmissionRepository submissionRepository)
+				ISubmissionRepository submissionRepository, IMediator mediator)
 			{
 				this.repository = repository;
 				this.logger = logger;
-				this.participationsRepository = participationsRepository;
 				this.submissionRepository = submissionRepository;
+				this.mediator = mediator;
 			}
 
 			/// <inheritdoc />
@@ -47,51 +44,35 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 				CancellationToken cancellationToken)
 			{
 				// update in database
-				await repository.UpdateFromJobAsync(notification.JobId, notification,
+				await repository.UpdateAsync(v => v.JobId == notification.JobId, notification,
 					cancellationToken);
-				
+
 				logger.SubmissionValidationUpdated(notification);
 
-				// check whether this is last validation of the submission
-				var spec = ProjectingSpecification<SubmissionValidation>.Create(
-					v => new
+				var data = await repository.GetAsync(v => v.JobId == notification.JobId, v
+					=> new Data
 					{
-						v.Submission.TournamentId,
+						TournamentId = v.Submission.TournamentId,
 						UserId = v.Submission.AuthorId,
-						v.SubmissionId,
-						LastSubmissionId = v.Submission.TournamentParticipation.Submissions
-							.OrderByDescending(s => s.Created).First().Id,
+						SubmissionId = v.SubmissionId,
 						ValidationId = v.Id,
 						LastValidationId = v.Submission.Validations
 							.OrderByDescending(vv => vv.Created)
 							.First().Id
-					});
-
-				spec.AddCriteria(v => v.JobId == notification.JobId);
-
-				var data = await repository.FindAsync(spec, cancellationToken);
+					}, cancellationToken);
 
 				if (data.ValidationId != data.LastValidationId)
 				{
 					return; // newer validation exists
 				}
 
+				var validationState = SelectValidationState(notification);
 				await submissionRepository.UpdateAsync(data.SubmissionId,
-					new UpdateValidationStateDto(SelectValidationState(notification)), cancellationToken);
+					new UpdateValidationStateDto(validationState), cancellationToken);
 
-				if (notification.ValidatorResult != EntryPointResult.Success)
-				{
-					return; // invalid submission cannot be set to active
-				}
-
-				if (data.SubmissionId != data.LastSubmissionId)
-				{
-					return; // newer submission exists
-				}
-
-				await participationsRepository.SetActiveSubmission(data.TournamentId, data.UserId,
-					new UpdateTournamentParticipationDto {ActiveSubmissionId = data.SubmissionId},
-					cancellationToken);
+				await mediator.Publish(
+					new SubmissionValidationStateChanged(data.SubmissionId, data.TournamentId,
+						data.ValidationId, data.UserId, validationState), cancellationToken);
 			}
 
 			public SubmissionValidationState SelectValidationState(
@@ -121,6 +102,15 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 					default:
 						throw new ArgumentOutOfRangeException();
 				}
+			}
+
+			public class Data
+			{
+				public long TournamentId { get; set; }
+				public long UserId { get; set; }
+				public long SubmissionId { get; set; }
+				public long ValidationId { get; set; }
+				public long LastValidationId { get; set; }
 			}
 		}
 	}

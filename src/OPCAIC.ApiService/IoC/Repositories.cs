@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Persistence.Repositories;
 using OPCAIC.Persistence.Repositories.Emails;
 
@@ -17,7 +18,7 @@ namespace OPCAIC.ApiService.IoC
 				.AddTransient<IMatchRepository, MatchRepository>()
 				.AddTransient<ITournamentRepository, TournamentRepository>()
 				.AddTransient<ITournamentInvitationRepository, TournamentInvitationRepository>()
-				.AddTransient<ITournamentParticipationsRepository, TournamentParticipationsRepository>()
+				.AddTransient<IRepository<TournamentParticipation>, TournamentParticipationsRepository>()
 				.AddTransient<ISubmissionRepository, SubmissionRepository>()
 				.AddTransient<ISubmissionValidationRepository, SubmissionValidationRepository>()
 				.AddTransient<IMatchExecutionRepository, MatchExecutionRepository>()

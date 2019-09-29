@@ -4,6 +4,11 @@ namespace OPCAIC.Application.Dtos.TournamentParticipations
 {
 	public class UpdateTournamentParticipationDto
 	{
-		public long ActiveSubmissionId { get; set; }
+		public UpdateTournamentParticipationDto(long activeSubmissionId)
+		{
+			ActiveSubmissionId = activeSubmissionId;
+		}
+
+		public long ActiveSubmissionId { get; }
 	}
 }

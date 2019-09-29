@@ -21,22 +21,6 @@ namespace OPCAIC.Persistence.Repositories
 		{
 		}
 
-		public Task<EmailRecipientDto> FindRecipientAsync(long id,
-			CancellationToken cancellationToken)
-		{
-			return QueryById(id)
-				.ProjectTo<EmailRecipientDto>(Mapper.ConfigurationProvider)
-				.SingleOrDefaultAsync(cancellationToken);
-		}
-
-		public Task<EmailRecipientDto> FindRecipientAsync(string email,
-			CancellationToken cancellationToken)
-		{
-			return Query(row => row.Email == email)
-				.ProjectTo<EmailRecipientDto>(Mapper.ConfigurationProvider)
-				.SingleOrDefaultAsync(cancellationToken);
-		}
-
 		/// <inheritdoc />
 		public Task<List<UserReferenceDto>> GetSubscriberesByTournamentAsync(long tournamentId,
 			CancellationToken cancellationToken)
