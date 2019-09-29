@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Domain.Entities
 {
@@ -20,14 +21,9 @@ namespace OPCAIC.Domain.Entities
 		public string LastName { get; set; }
 
 		/// <summary>
-		///     Id of the role of this user.
-		/// </summary>
-		public long RoleId { get; set; }
-
-		/// <summary>
 		///     The role of this user.
 		/// </summary>
-		public virtual Role Role { get; set; }
+		public UserRole Role { get; set; }
 
 		/// <summary>
 		///     UI language to use for the user.

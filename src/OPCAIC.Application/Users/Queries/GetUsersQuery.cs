@@ -12,6 +12,7 @@ using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Users.Model;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Users.Queries
 {
@@ -25,7 +26,7 @@ namespace OPCAIC.Application.Users.Queries
 
 		public string Username { get; set; }
 
-		public int? UserRole { get; set; }
+		public UserRole? UserRole { get; set; }
 
 		public bool? EmailVerified { get; set; }
 
@@ -75,7 +76,7 @@ namespace OPCAIC.Application.Users.Queries
 
 				if (request.UserRole != null)
 				{
-					spec.AddCriteria(row => row.RoleId == request.UserRole.Value);
+					spec.AddCriteria(row => row.Role == request.UserRole.Value);
 				}
 
 				spec.Ordered(GetSortingKey(request.SortBy), request.Asc);

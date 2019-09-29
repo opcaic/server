@@ -124,11 +124,9 @@ namespace OPCAIC.ApiService.Utils
 			using (var context = new DataContext(
 				serviceProvider.GetRequiredService<DbContextOptions<DataContext>>()))
 			{
-				// Look for any board games.
-				if (context.Set<Tournament>().Any())
-				{
-					return; // Data was already seeded
-				}
+				// dev settings: delete the database
+				context.Database.EnsureDeleted();
+				context.Database.EnsureCreated();
 
 				// delete all existing files to prevent inconsistent state
 				var conf = serviceProvider.GetRequiredService<IOptions<StorageConfiguration>>()
@@ -141,11 +139,70 @@ namespace OPCAIC.ApiService.Utils
 				// recreates directory structure
 				var storage = serviceProvider.GetRequiredService<IStorageService>();
 
+				// start with users
+				var mgr = serviceProvider.GetRequiredService<UserManager>();
+				var userAdmin = new User
+				{
+					FirstName = "Admin",
+					LastName = "Opcaic",
+					UserName = "admin",
+					Role = UserRole.Admin,
+					Email = "admin@opcaic.com",
+					EmailConfirmed = true,
+					LocalizationLanguage = "cs"
+				};
+
+				var userOrganizer = new User
+				{
+					FirstName = "Organizer",
+					LastName = "Opcaic",
+					UserName = "organizer",
+					Role = UserRole.Organizer,
+					Email = "organizer@opcaic.com",
+					EmailConfirmed = true,
+					LocalizationLanguage = "en"
+				};
+
+				var user = new User
+				{
+					FirstName = "User",
+					LastName = "Opcaic",
+					UserName = "user",
+					Role = UserRole.User,
+					Email = "user@opcaic.com",
+					EmailConfirmed = true,
+					LocalizationLanguage = "cs"
+				};
+
+				var userB = new User
+				{
+					FirstName = "User B",
+					LastName = "Opcaic",
+					UserName = "userB",
+					Role = UserRole.User,
+					Email = "userB@opcaic.com",
+					EmailConfirmed = true,
+					LocalizationLanguage = "cs"
+				};
+
+				mgr.CreateAsync(userAdmin, "Password").Wait();
+				userAdmin = context.Users.Find(userAdmin.Id);
+				mgr.CreateAsync(userOrganizer, "Password").Wait();
+				userOrganizer = context.Users.Find(userOrganizer.Id);
+				mgr.CreateAsync(user, "Password").Wait();
+				user = context.Users.Find(user.Id);
+				mgr.CreateAsync(userB, "Password").Wait();
+				userB = context.Users.Find(userB.Id);
+
+				FakeUsers(mgr);
+
+				var users = context.Users.ToList();
 
 				var gameChess = new Game
 				{
 					Name = "Chess",
 					Key = "chess",
+					Type = GameType.TwoPlayer,
 					ImageUrl =
 						"https://images.chesscomfiles.com/uploads/v1/article/17623.87bb05cd.668x375o.47d81802f1eb@2x.jpeg",
 					DefaultTournamentImageOverlay = 0.7f,
@@ -211,6 +268,7 @@ namespace OPCAIC.ApiService.Utils
 
 				var tournamentChessElo = new Tournament
 				{
+					Owner = userAdmin,
 					Name = "Chess ELO tournament",
 					Game = gameChess,
 					Format = TournamentFormat.Elo,
@@ -225,6 +283,7 @@ namespace OPCAIC.ApiService.Utils
 				};
 				var tournamentChessTable = new Tournament
 				{
+					Owner = userAdmin,
 					Name = "Chess Table tournament",
 					Game = gameChess,
 					Format = TournamentFormat.Table,
@@ -237,6 +296,7 @@ namespace OPCAIC.ApiService.Utils
 				};
 				var tournamentChessDe = new Tournament
 				{
+					Owner = userAdmin,
 					Name = "Chess Double-elimination tournament",
 					Game = gameChess,
 					Format = TournamentFormat.DoubleElimination,
@@ -249,6 +309,7 @@ namespace OPCAIC.ApiService.Utils
 				};
 				var tournament2048 = new Tournament
 				{
+					Owner = userAdmin,
 					Name = "2048 single player",
 					Game = game2048,
 					Format = TournamentFormat.SinglePlayer,
@@ -261,6 +322,7 @@ namespace OPCAIC.ApiService.Utils
 				};
 				var tournamentDotaSe = new Tournament
 				{
+					Owner = userAdmin,
 					Name = "Summer Dota single elimination",
 					Game = gameDota,
 					Format = TournamentFormat.SingleElimination,
@@ -274,6 +336,7 @@ namespace OPCAIC.ApiService.Utils
 				};
 				var tournamentDotaDe = new Tournament
 				{
+					Owner = userAdmin,
 					Name = "Winter Dota double elimination",
 					Game = gameDota,
 					Format = TournamentFormat.DoubleElimination,
@@ -287,6 +350,7 @@ namespace OPCAIC.ApiService.Utils
 				};
 				var tournamentMario = new Tournament
 				{
+					Owner = userAdmin,
 					Name = "Super Mario Bros.",
 					Game = gameMario,
 					Format = TournamentFormat.SinglePlayer,
@@ -311,6 +375,7 @@ namespace OPCAIC.ApiService.Utils
 				};
 				var tournamentSokoban = new Tournament
 				{
+					Owner = userAdmin,
 					Name = "Sokoban",
 					Game = gameSokoban,
 					Format = TournamentFormat.SinglePlayer,
@@ -346,60 +411,6 @@ namespace OPCAIC.ApiService.Utils
 					tournamentMario,
 					tournamentSokoban
 				);
-
-				var mgr = serviceProvider.GetRequiredService<UserManager>();
-				var userAdmin = new User
-				{
-					FirstName = "Admin",
-					LastName = "Opcaic",
-					UserName = "admin",
-					RoleId = (long)UserRole.Admin,
-					Email = "admin@opcaic.com",
-					EmailConfirmed = true,
-					LocalizationLanguage = "cs"
-				};
-
-				var userOrganizer = new User
-				{
-					FirstName = "Organizer",
-					LastName = "Opcaic",
-					UserName = "organizer",
-					RoleId = (long)UserRole.Organizer,
-					Email = "organizer@opcaic.com",
-					EmailConfirmed = true,
-					LocalizationLanguage = "en"
-				};
-
-				var user = new User
-				{
-					FirstName = "User",
-					LastName = "Opcaic",
-					UserName = "user",
-					RoleId = (long)UserRole.User,
-					Email = "user@opcaic.com",
-					EmailConfirmed = true,
-					LocalizationLanguage = "cs"
-				};
-
-				var userB = new User
-				{
-					FirstName = "User B",
-					LastName = "Opcaic",
-					UserName = "userB",
-					RoleId = (long)UserRole.User,
-					Email = "userB@opcaic.com",
-					EmailConfirmed = true,
-					LocalizationLanguage = "cs"
-				};
-
-				mgr.CreateAsync(userAdmin, "Password").Wait();
-				userAdmin = context.Users.Find(userAdmin.Id);
-				mgr.CreateAsync(userOrganizer, "Password").Wait();
-				userOrganizer = context.Users.Find(userOrganizer.Id);
-				mgr.CreateAsync(user, "Password").Wait();
-				user = context.Users.Find(user.Id);
-
-				FakeUsers(mgr);
 
 				AddEmailTemplates(context);
 
@@ -448,19 +459,16 @@ namespace OPCAIC.ApiService.Utils
 							"All entries received before the soft deadline will automatically be entered into a Sokoban tournament. In the tournament, I will run your solver on a series of Sokoban levels of increasing difficulty. Your solver will have 10 seconds to solve each level in a process with 2 Gb of RAM (specified with the -Xmx Java flag), on a machine with a 2.8 Ghz Intel CPU.\r\n\r\nAs soon as a program fails to solve 3 levels, its evaluation ends. Your solver's score will be the number of levels that it successfully solved before it reached the third unsolvable level.\r\n\r\nNote that solutions in the tournament need not be optimal! I will, however, resolve ties by choosing the solver that found a shorter solution.\r\n\r\nI will use the levels in Evaluate.java or a similar set of levels for the tournament. If you want to replicate the tournament conditions on your own machine, change the maxFail constant in main() in that file to 3 so the evalulation will continue until the 3rd unsolved level."
 					});
 
-
-				var submissionChessAdmin = CreateSubmission(userAdmin, tournamentChessElo,
-					Randomizer.Seed.NextDouble() * 1500);
-				var submissionChessOrganizer = CreateSubmission(userOrganizer, tournamentChessElo,
-					Randomizer.Seed.NextDouble() * 1500);
-				context.Submissions.AddRange(submissionChessAdmin, submissionChessOrganizer);
-				context.Submissions.AddRange(
-					CreateSubmissions(context.Users.OrderBy(u => u.Id).Skip(3),
-						tournamentChessElo));
-				context.Submissions.AddRange(CreateSubmissions(context.Users,
-					tournamentChessTable));
-				context.Submissions.AddRange(CreateSubmissions(context.Users, tournamentChessDe));
 				context.SaveChanges();
+
+				var submissionChessAdmin = CreateSubmission(context, userAdmin, tournamentChessElo,
+					Randomizer.Seed.NextDouble() * 1500);
+				var submissionChessOrganizer = CreateSubmission(context, userOrganizer, tournamentChessElo,
+					Randomizer.Seed.NextDouble() * 1500);
+				context.SaveChanges();
+				CreateSubmissions(context, users.OrderBy(u => u.Id).Skip(3).ToList(), tournamentChessElo);
+				CreateSubmissions(context, users, tournamentChessTable);
+				CreateSubmissions(context, users, tournamentChessDe);
 
 				var matchChessAdminOrganizerSuccess = CreateMatch(tournamentChessElo, 1,
 					submissionChessAdmin, submissionChessOrganizer);
@@ -482,12 +490,10 @@ namespace OPCAIC.ApiService.Utils
 					matchChessAdminOrganizerQueued, matchChessAdminOrganizerError);
 				context.SaveChanges();
 
-				var submissionDotaAdmin = CreateSubmission(userAdmin, tournamentDotaSe, 0);
-				var submissionDotaOrganizer = CreateSubmission(userOrganizer, tournamentDotaSe, 0);
-				var submissionDotaUser = CreateSubmission(user, tournamentDotaSe, 0);
-				var submissionDotaUserB = CreateSubmission(userB, tournamentDotaSe, 0);
-				context.Submissions.AddRange(submissionDotaAdmin, submissionDotaUser,
-					submissionDotaOrganizer, submissionDotaUserB);
+				var submissionDotaAdmin = CreateSubmission(context, userAdmin, tournamentDotaSe, 0);
+				var submissionDotaOrganizer = CreateSubmission(context, userOrganizer, tournamentDotaSe, 0);
+				var submissionDotaUser = CreateSubmission(context, user, tournamentDotaSe, 0);
+				var submissionDotaUserB = CreateSubmission(context, userB, tournamentDotaSe, 0);
 				context.SaveChanges();
 
 				var tree = MatchTreeGenerator.GenerateSingleElimination(4, false);
@@ -531,7 +537,7 @@ namespace OPCAIC.ApiService.Utils
 				.RuleFor(u => u.UserName, (f, u) => f.Internet.UserName(u.FirstName, u.LastName))
 				.RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
 				.RuleFor(u => u.EmailConfirmed, true)
-				.RuleFor(u => u.RoleId, (long) UserRole.User)
+				.RuleFor(u => u.Role, UserRole.User)
 				.RuleFor(u => u.LocalizationLanguage, f => f.PickRandomParam(null, "en", "cs"));
 
 			foreach (var user in userFaker.GenerateLazy(30))
@@ -540,7 +546,8 @@ namespace OPCAIC.ApiService.Utils
 			}
 		}
 
-		private static IEnumerable<Submission> CreateSubmissions(IEnumerable<User> users,
+		private static void CreateSubmissions(DataContext context,
+			IEnumerable<User> users,
 			Tournament tournament)
 		{
 			foreach (var user in users)
@@ -549,10 +556,12 @@ namespace OPCAIC.ApiService.Utils
 				{
 					// TO DO - submission score?
 					// score?? lets say it's elo
-					yield return CreateSubmission(user, tournament,
+					CreateSubmission(context, user, tournament,
 						Randomizer.Seed.NextDouble() * 1500);
 				}
 			}
+
+			context.SaveChanges();
 		}
 
 		private static Match CreateMatch(Tournament tournament, int index,
@@ -594,8 +603,31 @@ namespace OPCAIC.ApiService.Utils
 			return matchExecution;
 		}
 
-		private static Submission CreateSubmission(User author, Tournament tournament, double score)
+		private static Submission CreateSubmission(DataContext context, User author,
+			Tournament tournament, double score)
 		{
+			if (tournament.Participants == null)
+			{
+				tournament.Participants = new List<TournamentParticipation>();
+
+			}
+
+			var participation = tournament.Participants.SingleOrDefault(p => p.UserId == author.Id);
+
+			if (participation == null)
+			{
+				participation = new TournamentParticipation
+				{
+					Tournament = tournament,
+					User = author,
+					Submissions = new List<Submission>()
+				};
+
+				tournament.Participants.Add(participation);
+			}
+
+			context.SaveChanges();
+
 			var submission = new Submission
 			{
 				Author = author,
@@ -614,22 +646,8 @@ namespace OPCAIC.ApiService.Utils
 					}
 				}
 			};
-
-			if (tournament.Participants == null)
-			{
-				tournament.Participants = new List<TournamentParticipation>();
-			}
-
-			tournament.Participants.Add(new TournamentParticipation
-			{
-				Tournament = tournament,
-				User = author,
-				ActiveSubmission = submission,
-				Submissions = new List<Submission>
-				{
-					submission
-				}
-			});
+			participation.Submissions.Add(submission);
+			participation.ActiveSubmission = submission;
 
 			return submission;
 		}

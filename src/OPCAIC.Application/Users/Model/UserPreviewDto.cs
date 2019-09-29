@@ -2,6 +2,7 @@
 using AutoMapper;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Users.Model
 {
@@ -15,7 +16,7 @@ namespace OPCAIC.Application.Users.Model
 
 		public bool EmailVerified { get; set; }
 
-		public long UserRole { get; set; }
+		public UserRole UserRole { get; set; }
 
 		public DateTime Created { get; set; }
 
@@ -24,7 +25,7 @@ namespace OPCAIC.Application.Users.Model
 		{
 			configuration.CreateMap<User, UserPreviewDto>(MemberList.Destination)
 				.ForMember(usr => usr.UserRole,
-					opt => opt.MapFrom(usr => usr.RoleId))
+					opt => opt.MapFrom(usr => usr.Role))
 				.ForMember(u => u.EmailVerified,
 					opt => opt.MapFrom(u => u.EmailConfirmed))
 				.IncludeAllDerived();

@@ -66,7 +66,7 @@ namespace OPCAIC.ApiService.Users.Commands
 			public async Task<long> Handle(CreateUserCommand request, CancellationToken cancellationToken)
 			{
 				var user = mapper.Map<User>(request);
-				user.RoleId = (long)UserRole.User;
+				user.Role = UserRole.User;
 
 				var result = await userManager.CreateAsync(user, request.Password);
 				result.ThrowIfFailed();

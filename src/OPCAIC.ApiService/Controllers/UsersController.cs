@@ -106,7 +106,7 @@ namespace OPCAIC.ApiService.Controllers
 					{
 						Id = user.Id,
 						Email = user.Email,
-						Role = (UserRole)user.RoleId,
+						Role = user.Role,
 						RefreshToken = tokens.RefreshToken,
 						AccessToken = tokens.AccessToken,
 						LocalizationLanguage = user.LocalizationLanguage

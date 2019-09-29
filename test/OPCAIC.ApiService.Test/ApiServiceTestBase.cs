@@ -5,10 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.IoC;
@@ -18,7 +17,6 @@ using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Persistence;
 using OPCAIC.TestUtils;
 using Shouldly;
@@ -29,6 +27,10 @@ namespace OPCAIC.ApiService.Test
 {
 	public abstract class ApiServiceTestBase : ServiceTestBase
 	{
+		private readonly Lazy<DataContext> lazyDbContext;
+
+		private readonly Lazy<IMapper> lazyMapper;
+
 		/// <inheritdoc />
 		protected ApiServiceTestBase(ITestOutputHelper output) : base(output)
 		{
@@ -40,9 +42,18 @@ namespace OPCAIC.ApiService.Test
 			lazyMapper = GetLazyService<IMapper>();
 		}
 
+		protected IConfiguration Configuration { get; }
+		protected CancellationTokenSource CancellationTokenSource { get; }
+		protected CancellationToken CancellationToken => CancellationTokenSource.Token;
+
+		protected EntityFaker Faker { get; } = new EntityFaker();
+		protected DataContext DbContext => lazyDbContext.Value;
+		protected IMapper Mapper => lazyMapper.Value;
+
 		protected void ApiConfigureServices()
 		{
-			var startup = new Startup(Configuration);
+			var startup = new Startup(Configuration,
+				new HostingEnvironment {EnvironmentName = "Development"});
 			Services.ConfigureSecurity(Configuration);
 			startup.ConfigureOptions(Services);
 
@@ -51,20 +62,8 @@ namespace OPCAIC.ApiService.Test
 			Services.AddBroker();
 			Services.AddRepositories();
 			Services.AddMapper();
-
 		}
 
-		protected IConfiguration Configuration { get; }
-		protected CancellationTokenSource CancellationTokenSource { get; }
-		protected CancellationToken CancellationToken => CancellationTokenSource.Token;
-
-		protected EntityFaker Faker { get; } = new EntityFaker();
-
-		private readonly Lazy<DataContext> lazyDbContext;
-		protected DataContext DbContext => lazyDbContext.Value;
-
-		private readonly Lazy<IMapper> lazyMapper;
-		protected IMapper Mapper => lazyMapper.Value;
 		protected void TurnOffAuthorization()
 		{
 			var mock = Services.Mock<IAuthorizationService>();

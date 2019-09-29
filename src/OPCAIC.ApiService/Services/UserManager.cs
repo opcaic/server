@@ -60,7 +60,7 @@ namespace OPCAIC.ApiService.Services
 			claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString(), ClaimValueTypes.Integer64));
 			claims.Add(new Claim(ClaimTypes.Name, user.UserName, ClaimValueTypes.Integer64));
 			claims.Add(new Claim(ClaimTypes.Email, user.Email, ClaimValueTypes.Email));
-			claims.Add(new Claim(RolePolicy.UserRoleClaim, ((UserRole)user.RoleId).ToString()));
+			claims.Add(new Claim(RolePolicy.UserRoleClaim, (user.Role).ToString()));
 
 			return claims;
 		}

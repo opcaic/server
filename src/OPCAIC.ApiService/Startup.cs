@@ -32,12 +32,14 @@ namespace OPCAIC.ApiService
 	{
 		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-		public Startup(IConfiguration configuration)
+		public Startup(IConfiguration configuration, IHostingEnvironment environment)
 		{
 			Configuration = configuration;
+			Environment = environment;
 		}
 
 		public IConfiguration Configuration { get; }
+		public IHostingEnvironment Environment { get; }
 
 		public void ConfigureServices(IServiceCollection services)
 		{
@@ -78,9 +80,16 @@ namespace OPCAIC.ApiService
 					});
 			});
 
-			// TODO: replace with real database
-//			services.AddDbContext<DataContext>(options => options.UseNpgsql("Server=127.0.0.1;Port=5432;Database=opcaic_server_db_dev;User Id=opcaic;Password=opcaic2019;"));
-			services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("Dummy"));
+			var connectionString = Configuration.GetConnectionString(nameof(DataContext));
+			if (Environment.IsDevelopment() && connectionString == null)
+			{
+				// allow in-memory db in development
+				services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("Dummy"));
+			}
+			else
+			{
+				services.AddDbContext<DataContext>(options => options.UseNpgsql(connectionString));
+			}
 
 			services.AddMediatR(typeof(Startup).Assembly, typeof(TournamentFinished).Assembly);
 			services.AddSingleton(typeof(IRequestPreProcessor<>),
