@@ -139,7 +139,6 @@ namespace OPCAIC.ApiService
 			app.UseAuthentication();
 
 			app.UseMiddleware<ExceptionMiddleware>();
-			app.UseMiddleware<LoggingMiddleware>();
 			app.UseMiddleware<DbTransactionMiddleware>();
 
 			app.UseMvc();
