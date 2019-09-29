@@ -99,16 +99,18 @@ namespace OPCAIC.ApiService.Middlewares
 					new ApiException(ex.StatusCode, ex.Message, null));
 			}
 			catch (Exception ex)
-				when (Log(context, 500, GetElapsedMs(start), null) &&
+				when (Log(context, 500, GetElapsedMs(start), ex) &&
 					env.IsDevelopment())
 			{
-				await WriteResponseAsync(context, 500, ex);
-			}
-			catch
-				when (Log(context, 500, GetElapsedMs(start), null))
-			{
-				await WriteResponseAsync(context,
-					new ApiException(500, "Internal server error", null));
+				if (env.IsDevelopment())
+				{
+					await WriteResponseAsync(context, 500, ex);
+				}
+				else
+				{
+					await WriteResponseAsync(context,
+						new ApiException(500, "Internal server error", null));
+				}
 			}
 		}
 

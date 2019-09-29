@@ -13,15 +13,15 @@ namespace OPCAIC.ApiService.Services
 		protected ILogger Logger { get; }
 		protected TimeSpan Delay { get; set;  }
 
-		private readonly IServiceProvider serviceProvider;
+		private readonly IServiceScopeFactory scopeFactory;
 		private Task executionTask;
 		private readonly Task stopTask;
 		private readonly TaskCompletionSource<object> stopTaskSource;
 
-		public HostedJob(IServiceProvider serviceProvider, ILogger logger, TimeSpan delay)
+		protected HostedJob(IServiceScopeFactory scopeFactory, ILogger logger, TimeSpan delay)
 		{
+			this.scopeFactory = scopeFactory;
 			cancellationTokenSource = new CancellationTokenSource();
-			this.serviceProvider = serviceProvider;
 			Delay = delay;
 			stopTaskSource = new TaskCompletionSource<object>();
 			stopTask = stopTaskSource.Task;
@@ -59,7 +59,7 @@ namespace OPCAIC.ApiService.Services
 
 		protected async Task ScopeExecute(Func<IServiceProvider, CancellationToken, Task> action, CancellationToken cancellationToken = default)
 		{
-			var scope = serviceProvider.CreateScope();
+			var scope = scopeFactory.CreateScope();
 			try
 			{
 				await action(scope.ServiceProvider, cancellationToken);

@@ -12,20 +12,20 @@ namespace OPCAIC.ApiService.IoC
 		public static void AddRepositories(this IServiceCollection serviceCollection)
 		{
 			serviceCollection
-				.AddTransient<IEmailRepository, EmailRepository>()
-				.AddTransient<IEmailTemplateRepository, EmailTemplateRepository>()
-				.AddTransient<IUserRepository, UserRepository>()
-				.AddTransient<IMatchRepository, MatchRepository>()
-				.AddTransient<ITournamentRepository, TournamentRepository>()
-				.AddTransient<ITournamentInvitationRepository, TournamentInvitationRepository>()
-				.AddTransient<IRepository<TournamentParticipation>, TournamentParticipationsRepository>()
-				.AddTransient<ISubmissionRepository, SubmissionRepository>()
-				.AddTransient<ISubmissionValidationRepository, SubmissionValidationRepository>()
-				.AddTransient<IMatchExecutionRepository, MatchExecutionRepository>()
-				.AddTransient<IUserTournamentRepository, UserTournamentRepository>()
-				.AddTransient<IGameRepository, GameRepository>()
-				.AddTransient<IDocumentRepository, DocumentRepository>()
-				.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+				.AddScoped<IEmailRepository, EmailRepository>()
+				.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>()
+				.AddScoped<IUserRepository, UserRepository>()
+				.AddScoped<IMatchRepository, MatchRepository>()
+				.AddScoped<ITournamentRepository, TournamentRepository>()
+				.AddScoped<ITournamentInvitationRepository, TournamentInvitationRepository>()
+				.AddScoped<IRepository<TournamentParticipation>, TournamentParticipationsRepository>()
+				.AddScoped<ISubmissionRepository, SubmissionRepository>()
+				.AddScoped<ISubmissionValidationRepository, SubmissionValidationRepository>()
+				.AddScoped<IMatchExecutionRepository, MatchExecutionRepository>()
+				.AddScoped<IUserTournamentRepository, UserTournamentRepository>()
+				.AddScoped<IGameRepository, GameRepository>()
+				.AddScoped<IDocumentRepository, DocumentRepository>()
+				.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 		}
 	}
 }

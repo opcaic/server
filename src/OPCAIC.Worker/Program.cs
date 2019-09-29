@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 [assembly: InternalsVisibleTo("OPCAIC.Worker.Test")]
 
@@ -26,7 +27,13 @@ namespace OPCAIC.Worker
 						.AddEnvironmentVariables()
 						.AddCommandLine(args);
 				})
-				.ConfigureLogging(Startup.ConfigureLogging)
+				.UseSerilog()
+				.ConfigureLogging((context, builder) =>
+				{
+					Log.Logger = new LoggerConfiguration()
+						.ReadFrom.Configuration(context.Configuration)
+						.CreateLogger();
+				})
 				.ConfigureServices(Startup.ConfigureServices)
 				.UseConsoleLifetime();
 		}

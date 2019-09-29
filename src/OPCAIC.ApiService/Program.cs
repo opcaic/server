@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using Gelf.Extensions.Logging;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +9,10 @@ using OPCAIC.ApiService.Utils;
 using OPCAIC.Common;
 using OPCAIC.Persistence;
 using OPCAIC.Utils;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.Graylog;
+using Serilog.Sinks.Graylog.Core.Transport;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("OPCAIC.ApiService.Test")]
 
@@ -37,29 +40,13 @@ namespace OPCAIC.ApiService
 		public static IWebHostBuilder CreateWebHostBuilder(string[] args)
 		{
 			return WebHost.CreateDefaultBuilder(args)
+				.UseSerilog()
 				.UseStartup<Startup>()
 				.ConfigureLogging((context, builder) =>
 				{
-					builder.AddConfiguration(context.Configuration.GetSection("Logging"))
-						.AddConsole()
-						.AddDebug();
-
-					// use Graylog logging if configured
-					if (context.Configuration.GetSection("Logging:GELF").Exists())
-					{
-						builder.AddGelf(options =>
-						{
-							// Optional customization applied on top of settings in Logging:GELF configuration section.
-							options.LogSource = options.LogSource ??
-								context.HostingEnvironment.ApplicationName;
-							options.AdditionalFields[LoggingTags.MachineName] =
-								Environment.MachineName;
-							options.AdditionalFields[LoggingTags.AppVersion] = Assembly
-								.GetEntryAssembly()
-								.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-								.InformationalVersion;
-						});
-					}
+					Log.Logger = new LoggerConfiguration()
+						.ReadFrom.Configuration(context.Configuration)
+						.CreateLogger();
 				});
 		}
 	}

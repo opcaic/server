@@ -22,9 +22,9 @@ namespace OPCAIC.ApiService.Services
 		private DateTime lastUpdated = DateTime.MinValue;
 
 		/// <inheritdoc />
-		public TournamentProcessor(IServiceProvider serviceProvider,
+		public TournamentProcessor(IServiceScopeFactory scopeFactory,
 			ILogger<TournamentProcessor> logger)
-			: base(serviceProvider, logger, TimeSpan.FromSeconds(5))
+			: base(scopeFactory, logger, TimeSpan.FromSeconds(5))
 		{
 		}
 

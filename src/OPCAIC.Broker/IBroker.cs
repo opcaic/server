@@ -70,6 +70,6 @@ namespace OPCAIC.Broker
 		/// </summary>
 		/// <typeparam name="TMessage">Type of the message</typeparam>
 		/// <param name="handler">The handler.</param>
-		void RegisterHandler<TMessage>(Action<TMessage> handler);
+		void RegisterHandler<TMessage>(Func<TMessage, Task> handler);
 	}
 }

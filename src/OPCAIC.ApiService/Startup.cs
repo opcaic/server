@@ -23,6 +23,7 @@ using OPCAIC.Broker;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Messaging.Config;
 using OPCAIC.Persistence;
+using Serilog;
 
 [assembly: ApiController]
 
@@ -74,7 +75,6 @@ namespace OPCAIC.ApiService
 					builder =>
 					{
 						builder.AllowAnyOrigin()
-							.AllowCredentials()
 							.AllowAnyHeader()
 							.AllowAnyMethod();
 					});
@@ -94,6 +94,8 @@ namespace OPCAIC.ApiService
 			services.AddMediatR(typeof(Startup).Assembly, typeof(TournamentFinished).Assembly);
 			services.AddSingleton(typeof(IRequestPreProcessor<>),
 				typeof(UserRequestPreprocessor<>));
+			services.AddSingleton(typeof(IPipelineBehavior<,>),
+				typeof(PerformancePipelineBehavior<,>));
 
 			services.AddServices();
 			services.AddBroker();

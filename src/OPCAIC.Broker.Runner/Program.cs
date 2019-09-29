@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace OPCAIC.Broker.Runner
 {
@@ -22,7 +23,13 @@ namespace OPCAIC.Broker.Runner
 						.AddEnvironmentVariables()
 						.AddCommandLine(args);
 				})
-				.ConfigureLogging(Startup.ConfigureLogging)
+				.UseSerilog()
+				.ConfigureLogging((context, builder) =>
+				{
+					Log.Logger = new LoggerConfiguration()
+						.ReadFrom.Configuration(context.Configuration)
+						.CreateLogger();
+				})
 				.ConfigureServices(Startup.ConfigureServices)
 				.UseConsoleLifetime();
 		}

@@ -92,13 +92,13 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
-		public Task UpdateFromMessage(MatchExecutionResult result)
+		public async Task UpdateFromMessage(MatchExecutionResult result)
 		{
 			var dto = mapper.Map<UpdateMatchExecutionDto>(result);
 			dto.Executed = DateTime.Now;
-			scoreService.UpdateSubmissionsScore(result, new CancellationToken());
+			await scoreService.UpdateSubmissionsScore(result, new CancellationToken());
 			logger.MatchExecutionUpdated(result.JobId, dto);
-			return repository.UpdateFromJobAsync(result.JobId, dto, CancellationToken.None);
+			await repository.UpdateFromJobAsync(result.JobId, dto, CancellationToken.None);
 		}
 
 		/// <inheritdoc />

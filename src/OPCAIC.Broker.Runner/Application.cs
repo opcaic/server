@@ -178,6 +178,7 @@ namespace OPCAIC.Broker.Runner
 			{
 				logger.LogInformation($"Finished: {a.JobId}");
 				results.Add(a);
+				return Task.CompletedTask;
 			});
 
 			while (!stop && i < 200)

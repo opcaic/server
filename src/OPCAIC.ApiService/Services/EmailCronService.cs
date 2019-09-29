@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using log4net;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Infrastructure.Emails;
@@ -10,10 +9,10 @@ namespace OPCAIC.ApiService.Services
 {
 	public class EmailCronService : HostedJob
 	{
-		private const int tickMilliseconds = 5000;
+		private const int TickMilliseconds = 5000;
 
-		public EmailCronService(IServiceProvider serviceProvider, ILogger<EmailCronService> logger) 
-			: base(serviceProvider, logger, TimeSpan.FromMilliseconds(tickMilliseconds))
+		public EmailCronService(IServiceScopeFactory scopeFactory, ILogger<EmailCronService> logger) 
+			: base(scopeFactory, logger, TimeSpan.FromMilliseconds(TickMilliseconds))
 		{
 		}
 

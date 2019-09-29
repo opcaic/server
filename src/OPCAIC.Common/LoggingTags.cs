@@ -50,5 +50,7 @@
 		public const string MatchExecutionId = "MatchExecutionId";
 
 		public const string SubmissionValidationId = "SubmissionValidationId";
+
+		public const string Payload = "Payload";
 	}
 }

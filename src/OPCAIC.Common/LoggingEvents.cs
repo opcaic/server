@@ -55,5 +55,7 @@ namespace OPCAIC.Common
 
 		public static readonly EventId MailSentSuccess = CreateEvent(8000);
 		public static readonly EventId MailSentFailed = CreateEvent(8001);
+
+		public static readonly EventId RequestTooLong = CreateEvent(9000);
 	}
 }

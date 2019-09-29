@@ -132,7 +132,7 @@ namespace OPCAIC.Broker
 		}
 
 		/// <inheritdoc />
-		public void RegisterHandler<TMessage>(Action<TMessage> handler)
+		public void RegisterHandler<TMessage>(Func<TMessage, Task> handler)
 		{
 			RegisterInternalHandler<TMessage>((_, msg) => handler(msg));
 		}
@@ -343,9 +343,10 @@ namespace OPCAIC.Broker
 			RegisterInternalHandler<WorkerStatsReport>(OnWorkerStatsReport);
 		}
 
-		private void OnWorkerStatsReport(WorkerEntry worker, WorkerStatsReport stats)
+		private Task OnWorkerStatsReport(WorkerEntry worker, WorkerStatsReport stats)
 		{
 			worker.Stats = stats;
+			return Task.CompletedTask;
 		}
 
 		private void OnMessageReceived(string sender, object message)
@@ -378,9 +379,9 @@ namespace OPCAIC.Broker
 			DispatchWork(worker);
 		}
 
-		private void RegisterInternalHandler<TMessage>(Action<WorkerEntry, TMessage> handler)
+		private void RegisterInternalHandler<TMessage>(Func<WorkerEntry, TMessage, Task> handler)
 		{
-			connector.RegisterAsyncHandler<TMessage>((identity, message) =>
+			connector.RegisterAsyncHandler<TMessage>(async (identity, message) =>
 			{
 				if (!workers.TryGetValue(identity, out var worker))
 				{
@@ -389,7 +390,7 @@ namespace OPCAIC.Broker
 
 				try
 				{
-					handler(worker, message);
+					await handler(worker, message);
 				}
 				catch (Exception e)
 				{
@@ -399,12 +400,13 @@ namespace OPCAIC.Broker
 			});
 		}
 
-		private void OnWorkerConnected(WorkerEntry worker, WorkerConnectMessage msg)
+		private Task OnWorkerConnected(WorkerEntry worker, WorkerConnectMessage msg)
 		{
 			logger.LogInformation($"Worker capabilities received from '{worker.Identity}'");
 			worker.Capabilities = msg.Capabilities;
 
 			DispatchWork(worker);
+			return Task.CompletedTask;
 		}
 
 		private void OnWorkerConnected(string identity)
