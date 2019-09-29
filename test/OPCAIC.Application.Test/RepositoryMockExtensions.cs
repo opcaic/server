@@ -16,7 +16,7 @@ namespace OPCAIC.Application.Test
 				.ReturnsAsync(value);
 		}
 
-		public static IReturnsResult<IRepository<TEntity>> SetupFind<TEntity, TDto>(this Mock<IRepository<TEntity>> mock, TDto value, CancellationToken cancellationToken)
+		public static IReturnsResult<IRepository<TEntity>> SetupProject<TEntity, TDto>(this Mock<IRepository<TEntity>> mock, TDto value, CancellationToken cancellationToken)
 		{
 			return mock.Setup(s => s.FindAsync(It.IsAny<IProjectingSpecification<TEntity, TDto>>(), cancellationToken))
 				.ReturnsAsync(value);
@@ -29,6 +29,29 @@ namespace OPCAIC.Application.Test
 			return mock
 				.Setup(s => s.UpdateAsync(It.IsAny<ISpecification<TEntity>>(), It.Is(match),
 					cancellationToken)).ReturnsAsync(success);
+		}
+
+		public static IReturnsResult<IRepository<TEntity>> SetupDelete<TEntity>(
+			this Mock<IRepository<TEntity>> mock, CancellationToken cancellationToken,
+			bool success = true)
+		{
+			return mock
+				.Setup(s => s.DeleteAsync(It.IsAny<ISpecification<TEntity>>(),
+					cancellationToken)).ReturnsAsync(success);
+		}
+
+		public static ISetup<IRepository<TEntity>> SetupDelete<TEntity>(
+			this Mock<IRepository<TEntity>> mock, TEntity entity)
+		{
+			return mock .Setup(s => s.Delete(entity));
+		}
+
+		public static ISetup<IRepository<TEntity>> SetupDelete<TEntity>(
+			this Mock<IRepository<TEntity>> mock, Expression<Func<TEntity, bool>> match, CancellationToken cancellationToken,
+			bool success = true)
+		{
+			return mock
+				.Setup(s => s.Delete(It.Is(match)));
 		}
 	}
 }

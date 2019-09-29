@@ -34,11 +34,11 @@ namespace OPCAIC.Application.TournamentInvitations.Commands
 			private readonly IEmailService emailService;
 			private readonly IFrontendUrlGenerator urlGenerator;
 			private readonly ITournamentRepository tournamentRepository;
-			private readonly ITournamentInvitationRepository repository;
+			private readonly IRepository<TournamentInvitation> repository;
 			private readonly IRepository<TournamentParticipation> participationsRepository;
 			private readonly IUserRepository userRepository;
 
-			public Handler(ITournamentInvitationRepository repository, ITournamentRepository tournamentRepository, IFrontendUrlGenerator urlGenerator, IEmailService emailService, IRepository<TournamentParticipation> participationsRepository, IUserRepository userRepository)
+			public Handler(IRepository<TournamentInvitation> repository, ITournamentRepository tournamentRepository, IFrontendUrlGenerator urlGenerator, IEmailService emailService, IRepository<TournamentParticipation> participationsRepository, IUserRepository userRepository)
 			{
 				this.repository = repository;
 				this.tournamentRepository = tournamentRepository;

@@ -6,7 +6,6 @@ using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Emails;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 
@@ -27,10 +26,10 @@ namespace OPCAIC.ApiService.Users.Events
 			private readonly IFrontendUrlGenerator urlGenerator;
 			private readonly IEmailService emailService;
 			private readonly IRepository<TournamentParticipation> participationsRepository;
-			private readonly ITournamentInvitationRepository invitationRepository;
+			private readonly IRepository<TournamentInvitation> invitationRepository;
 
 			/// <inheritdoc />
-			public Handler(IUserManager userManager, IFrontendUrlGenerator urlGenerator, IEmailService emailService, IRepository<TournamentParticipation> participationsRepository, ITournamentInvitationRepository invitationRepository)
+			public Handler(IUserManager userManager, IFrontendUrlGenerator urlGenerator, IEmailService emailService, IRepository<TournamentParticipation> participationsRepository, IRepository<TournamentInvitation> invitationRepository)
 			{
 				this.userManager = userManager;
 				this.urlGenerator = urlGenerator;

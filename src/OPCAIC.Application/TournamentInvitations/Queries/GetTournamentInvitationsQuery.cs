@@ -5,7 +5,6 @@ using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.TournamentInvitations.Models;
 using OPCAIC.Domain.Entities;
@@ -28,7 +27,7 @@ namespace OPCAIC.Application.TournamentInvitations.Queries
 				TournamentInvitationDto>
 		{
 			/// <inheritdoc />
-			public Handler(IMapper mapper, ITournamentInvitationRepository repository) : base(
+			public Handler(IMapper mapper, IRepository<TournamentInvitation> repository) : base(
 				mapper, repository)
 			{
 			}

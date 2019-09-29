@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Moq;
 using OPCAIC.Application.Infrastructure;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.TournamentInvitations.Models;
 using OPCAIC.Application.TournamentInvitations.Queries;
@@ -18,10 +17,10 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Queries
 		/// <inheritdoc />
 		public GetTournamentInvitationsQueryTest(ITestOutputHelper output) : base(output)
 		{
-			repository = Services.Mock<ITournamentInvitationRepository>();
+			repository = Services.Mock<IRepository<TournamentInvitation>>();
 		}
 
-		private readonly Mock<ITournamentInvitationRepository> repository;
+		private readonly Mock<IRepository<TournamentInvitation>> repository;
 
 		[Fact]
 		public async Task Success()

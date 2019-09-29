@@ -1,9 +1,12 @@
-﻿using System.Threading;
+﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
 using MediatR;
 using OPCAIC.Application.Infrastructure.Validation;
-using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Application.Extensions;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.TournamentInvitations.Commands
 {
@@ -30,17 +33,27 @@ namespace OPCAIC.Application.TournamentInvitations.Commands
 
 		public class Handler : IRequestHandler<DeleteInvitationCommand>
 		{
-			private readonly ITournamentInvitationRepository repository;
+			private readonly IRepository<TournamentInvitation> repository;
+			private readonly IRepository<TournamentParticipation> participationRepository;
 
-			public Handler(ITournamentInvitationRepository repository)
+			public Handler(IRepository<TournamentInvitation> repository, IRepository<TournamentParticipation> participationRepository)
 			{
 				this.repository = repository;
+				this.participationRepository = participationRepository;
 			}
 
 			/// <inheritdoc />
 			public async Task<Unit> Handle(DeleteInvitationCommand request, CancellationToken cancellationToken)
 			{
-				await repository.DeleteAsync(request.TournamentId, request.Email, cancellationToken);
+				var invitation = await repository.GetAsync(i => i.TournamentId == request.TournamentId && i.Email == request.Email, cancellationToken);
+
+				if (invitation.UserId != null) // user exists, delete him if he has not already submitted something
+				{
+					await participationRepository.DeleteAsync(p
+						=> p.TournamentId == request.TournamentId &&
+						p.UserId == invitation.UserId &&
+						!p.Submissions.Any(), cancellationToken);
+				}
 
 				return Unit.Value;
 			}

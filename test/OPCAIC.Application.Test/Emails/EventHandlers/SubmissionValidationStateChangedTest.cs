@@ -51,7 +51,7 @@ namespace OPCAIC.Application.Test.Emails.EventHandlers
 				WantsEmailNotifications = false
 			};
 
-			userRepository.SetupFind(data, CancellationToken);
+			userRepository.SetupProject(data, CancellationToken);
 
 			// nothing more
 
@@ -67,7 +67,7 @@ namespace OPCAIC.Application.Test.Emails.EventHandlers
 				WantsEmailNotifications = true
 			};
 
-			userRepository.SetupFind(data, CancellationToken);
+			userRepository.SetupProject(data, CancellationToken);
 
 			urlGenerator.Setup(g => g.SubmissionPageLink(Notification.TournamentId, Notification.SubmissionId)).Returns("url");
 

@@ -35,7 +35,7 @@ namespace OPCAIC.Application.Test.Submissions.Events
 		{
 			Data.LastSubmissionId = Notification.SubmissionId + 1; // newer submission
 
-			repository.SetupFind(Data, CancellationToken);
+			repository.SetupProject(Data, CancellationToken);
 
 			// nothing more
 
@@ -56,7 +56,7 @@ namespace OPCAIC.Application.Test.Submissions.Events
 		{
 			Data.LastSubmissionId = Notification.SubmissionId;
 
-			repository.SetupFind(Data, CancellationToken);
+			repository.SetupProject(Data, CancellationToken);
 			pariticipationsRepository.SetupUpdate((UpdateTournamentParticipationDto dto) =>
 				dto.ActiveSubmissionId == Notification.SubmissionId, CancellationToken);
 

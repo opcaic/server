@@ -21,7 +21,7 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 		private readonly Mock<IEmailService> emailService;
 		private readonly Mock<IFrontendUrlGenerator> urlGenerator;
 		private readonly Mock<ITournamentRepository> tournamentRepository;
-		private readonly Mock<ITournamentInvitationRepository> repository;
+		private readonly Mock<IRepository<TournamentInvitation>> repository;
 		private readonly Mock<IRepository<TournamentParticipation>> participationsRepository;
 		private readonly Mock<IUserRepository> userRepository;
 		/// <inheritdoc />
@@ -30,7 +30,7 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 			emailService = Services.Mock<IEmailService>(MockBehavior.Strict);
 			urlGenerator = Services.Mock<IFrontendUrlGenerator>(MockBehavior.Strict);
 			tournamentRepository = Services.Mock<ITournamentRepository>(MockBehavior.Strict);
-			repository = Services.Mock<ITournamentInvitationRepository>(MockBehavior.Strict);
+			repository = Services.Mock<IRepository<TournamentInvitation>>(MockBehavior.Strict);
 			participationsRepository =
 				Services.Mock<IRepository<TournamentParticipation>>(MockBehavior.Strict);
 			userRepository = Services.Mock<IUserRepository>(MockBehavior.Strict);

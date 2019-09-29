@@ -17,8 +17,6 @@ namespace OPCAIC.ApiService.IoC
 				.AddScoped<IUserRepository, UserRepository>()
 				.AddScoped<IMatchRepository, MatchRepository>()
 				.AddScoped<ITournamentRepository, TournamentRepository>()
-				.AddScoped<ITournamentInvitationRepository, TournamentInvitationRepository>()
-				.AddScoped<IRepository<TournamentParticipation>, TournamentParticipationsRepository>()
 				.AddScoped<ISubmissionRepository, SubmissionRepository>()
 				.AddScoped<ISubmissionValidationRepository, SubmissionValidationRepository>()
 				.AddScoped<IMatchExecutionRepository, MatchExecutionRepository>()

@@ -81,15 +81,15 @@ namespace OPCAIC.ApiService
 			});
 
 			var connectionString = Configuration.GetConnectionString(nameof(DataContext));
-//			if (Environment.IsDevelopment() && connectionString == null)
-//			{
+			if (Environment.IsDevelopment() && connectionString == null)
+			{
 				// allow in-memory db in development
 				services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("Dummy"));
-//			}
-//			else
-//			{
-//				services.AddDbContext<DataContext>(options => options.UseNpgsql(connectionString));
-//			}
+			}
+			else
+			{
+				services.AddDbContext<DataContext>(options => options.UseNpgsql(connectionString));
+			}
 
 			services.AddMediatR(typeof(Startup).Assembly, typeof(TournamentFinished).Assembly);
 			services.AddSingleton(typeof(IRequestPreProcessor<>),

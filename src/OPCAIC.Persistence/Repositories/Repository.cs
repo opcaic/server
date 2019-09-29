@@ -140,6 +140,24 @@ namespace OPCAIC.Persistence.Repositories
 			DbSet.Add(entity);
 		}
 
+		/// <inheritdoc />
+		public async Task<bool> DeleteAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken)
+		{
+			var entity = await FindAsync(specification, cancellationToken);
+			if (entity == null)
+				return false;
+
+			DbSet.Remove(entity);
+			await SaveChangesAsync(cancellationToken);
+			return true;
+		}
+
+		/// <inheritdoc />
+		public void Delete(TEntity entity)
+		{
+			DbSet.Remove(entity);
+		}
+
 		public Task SaveChangesAsync(CancellationToken cancellationToken)
 		{
 			return Context.SaveChangesAsync(cancellationToken);
