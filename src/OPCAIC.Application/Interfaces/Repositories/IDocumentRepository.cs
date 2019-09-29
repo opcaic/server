@@ -8,7 +8,6 @@ namespace OPCAIC.Application.Interfaces.Repositories
 	public interface IDocumentRepository
 		: IGenericRepository<DocumentDto, NewDocumentDto, UpdateDocumentDto>,
 			IDeleteRepository,
-			IAuthDataRepository<DocumentAuthDto>,
 			IRepository<Document>
 	{
 	}

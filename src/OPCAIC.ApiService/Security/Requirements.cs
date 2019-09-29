@@ -7,23 +7,11 @@ namespace OPCAIC.ApiService.Security
 	public class PermissionRequirement<TEnum> : IAuthorizationRequirement
 		where TEnum : Enum
 	{
-		public PermissionRequirement(params TEnum[] requiredPermissions)
+		public PermissionRequirement(TEnum requiredPermission)
 		{
-			RequiredPermissions = requiredPermissions;
+			RequiredPermission = requiredPermission;
 		}
 
-		public IEnumerable<TEnum> RequiredPermissions { get; }
-	}
-
-	public class TournamentManagerRequirement : IAuthorizationRequirement
-	{
-	}
-
-	public class OwnerRequirement : IAuthorizationRequirement
-	{
-	}
-
-	public class TournamentAccessRequirement : IAuthorizationRequirement
-	{
+		public TEnum RequiredPermission { get; }
 	}
 }

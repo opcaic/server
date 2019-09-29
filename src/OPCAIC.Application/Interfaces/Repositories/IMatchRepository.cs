@@ -10,7 +10,6 @@ namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IMatchRepository
 		: ILookupRepository<MatchDetailDto>,
-			IAuthDataRepository<MatchAuthDto>,
 			IRepository<Match>
 	{
 		Task CreateMatchesAsync(List<NewMatchDto> matches, CancellationToken cancellationToken);

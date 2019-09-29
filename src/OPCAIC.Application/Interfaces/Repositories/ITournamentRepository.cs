@@ -13,7 +13,6 @@ namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface ITournamentRepository
 		: IGenericRepository<TournamentDetailDto, CreateTournamentCommand, object>,
-			IAuthDataRepository<TournamentAuthDto>,
 			IRepository<Tournament>
 	{
 		/// <summary>

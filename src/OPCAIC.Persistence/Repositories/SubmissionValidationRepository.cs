@@ -67,11 +67,5 @@ namespace OPCAIC.Persistence.Repositories
 		{
 			return GetDtoByIdAsync<SubmissionValidationDto>(id, cancellationToken);
 		}
-
-		/// <inheritdoc />
-		public Task<SubmissionValidationAuthDto> GetAuthorizationData(long id, CancellationToken cancellationToken = default)
-		{
-			return GetDtoByIdAsync<SubmissionValidationAuthDto>(id, cancellationToken);
-		}
 	}
 }

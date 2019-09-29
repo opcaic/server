@@ -35,12 +35,5 @@ namespace OPCAIC.Persistence.Repositories
 				.ProjectTo<SubmissionDetailDto>(Mapper.ConfigurationProvider)
 				.ToListAsync(cancellationToken);
 		}
-
-		/// <inheritdoc />
-		public Task<SubmissionAuthDto> GetAuthorizationData(long id,
-			CancellationToken cancellationToken = default)
-		{
-			return GetDtoByIdAsync<SubmissionAuthDto>(id, cancellationToken);
-		}
 	}
 }

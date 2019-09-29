@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Domain.Entities;
 using Xunit;
@@ -14,31 +14,9 @@ namespace OPCAIC.ApiService.Test.Security
 		/// <inheritdoc />
 		public TournamentAuthorizationTest(ITestOutputHelper output) : base(output)
 		{
-		}
-
-		[Fact]
-		public void AllowTournamentManagersUpdate()
-		{
-			var game = NewTrackedEntity<Game>();
-			var manager = NewUser();
-			var owner = NewUser();
-			var tournament = NewTrackedEntity<Tournament>();
-
-			tournament.Game = game;
-			tournament.Owner = owner;
-			tournament.Managers = new List<TournamentManager>
-			{
-				new TournamentManager
-				{
-					User = manager,
-					Tournament = tournament
-				}
-			};
-
-			DbContext.SaveChanges();
-
-			AuthorizationService.CheckPermissions(GetClaimsPrincipal(manager), tournament.Id,
-				TournamentPermission.Update);
+			Services.AddMapper();
+			Services.AddRepositories();
+			UseDatabase();
 		}
 
 		[Fact]
@@ -55,6 +33,27 @@ namespace OPCAIC.ApiService.Test.Security
 			DbContext.SaveChanges();
 
 			AuthorizationService.CheckPermissions(new ClaimsPrincipal(),
+				TournamentPermission.Update);
+		}
+
+		[Fact]
+		public void AllowTournamentManagersUpdate()
+		{
+			var game = NewTrackedEntity<Game>();
+			var manager = NewUser();
+			var owner = NewUser();
+			var tournament = NewTrackedEntity<Tournament>();
+
+			tournament.Game = game;
+			tournament.Owner = owner;
+			tournament.Managers = new List<TournamentManager>
+			{
+				new TournamentManager {User = manager, Tournament = tournament}
+			};
+
+			DbContext.SaveChanges();
+
+			AuthorizationService.CheckPermissions(GetClaimsPrincipal(manager), tournament.Id,
 				TournamentPermission.Update);
 		}
 	}

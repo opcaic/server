@@ -1,36 +1,30 @@
 ﻿using System;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Extensions;
-using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {
 	public class TournamentPermissionHandler
-		: ResourcePermissionAuthorizationHandler<TournamentPermission, TournamentAuthDto>
+		: ResourcePermissionAuthorizationHandler<TournamentPermission>
 	{
-		private readonly ITournamentRepository tournamentRepository;
+		private readonly IRepository<Tournament> repository;
 
-		public TournamentPermissionHandler(ITournamentRepository tournamentRepository)
+		public TournamentPermissionHandler(IRepository<Tournament> repository)
 		{
-			this.tournamentRepository = tournamentRepository;
+			this.repository = repository;
 		}
 
 		/// <inheritdoc />
-		protected override Task<TournamentAuthDto> GetAuthorizationData(long resourceId,
-			CancellationToken cancellationToken = default)
-		{
-			return tournamentRepository.GetAuthorizationData(resourceId, cancellationToken);
-		}
-
-		/// <inheritdoc />
-		protected override bool HandlePermissionAsync(ClaimsPrincipal user,
+		protected override Task<bool> HandlePermissionAsync(ClaimsPrincipal user,
 			TournamentPermission permission,
-			TournamentAuthDto authData)
+			long? id)
 		{
 			var userId = user.TryGetId();
 
@@ -38,7 +32,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 			{
 				case TournamentPermission.Create:
 					// only organizers
-					return user.GetUserRole() == UserRole.Organizer;
+					return Task.FromResult(user.GetUserRole() == UserRole.Organizer);
 
 				case TournamentPermission.UploadAdditionalFiles:
 				case TournamentPermission.StartEvaluation:
@@ -50,48 +44,82 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case TournamentPermission.UnpauseEvaluation:
 				case TournamentPermission.Publish:
 					// only owner and managers
-					return IsOwnerOrManager(userId, authData);
+					return IsOwnerOrManager(userId, id);
 
 				case TournamentPermission.Delete:
 					// only owner
-					return userId == authData.OwnerId;
+					return IsOwner(userId, id);
 
 				case TournamentPermission.Read:
 				case TournamentPermission.Search:
 					// everyone
-					return true; // TODO: verify this
+					return Task.FromResult(true);
 
 				case TournamentPermission.Submit:
 				case TournamentPermission.Join:
 				case TournamentPermission.ViewLeaderboard:
-					switch (authData.Availability)
-					{
-						case TournamentAvailability.Public:
-							// everyone
-							return true;
+					return IsVisible(userId, id);
 
-						case TournamentAvailability.Private:
-							// only invited people and managers
-							return authData.ParticipantIds.Contains(userId) ||
-								IsOwnerOrManager(userId, authData);
-
-						default:
-							throw new ArgumentOutOfRangeException();
-					}
-					
 				case TournamentPermission.DownloadAdditionalFiles:
-					return
-						user.HasClaim(WorkerClaimTypes.TournamentId, authData.Id.ToString()) ||
-						IsOwnerOrManager(userId, authData);
+					if (user.HasClaim(WorkerClaimTypes.TournamentId, id.ToString()))
+					{
+						return Task.FromResult(true);
+					}
 
-						default:
+					return IsOwnerOrManager(userId, id);
+
+				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
 			}
 		}
 
-		private bool IsOwnerOrManager(long userId, TournamentAuthDto authData)
+		private Task<bool> IsOwner(long userId, long? tournamentId)
 		{
-			return userId == authData.OwnerId || authData.ManagerIds.Contains(userId);
+			return repository.GetStructAsync(tournamentId.Value, t =>
+				t.OwnerId == userId);
+		}
+
+		private Task<bool> IsOwnerOrManager(long userId, long? tournamentId)
+		{
+			return repository.GetStructAsync(tournamentId.Value, t =>
+				t.OwnerId == userId ||
+				t.Managers.Any(m => m.UserId == userId));
+		}
+
+		public class VisibilityData
+		{
+			public long OwnerId { get; set; }
+			public TournamentAvailability Availability { get; set; }
+			public long[] ManagerIds { get; set; }
+			public long[] ParticipantIds { get; set; }
+		}
+
+		private async Task<bool> IsVisible(long userId, long? tournamentId)
+		{
+			var data = await repository.GetAsync(tournamentId.Value,
+				t => new VisibilityData
+				{
+					OwnerId = t.OwnerId, 
+					Availability = t.Availability, 
+					ManagerIds = t.Managers.Select(m => m.UserId).ToArray(),
+					ParticipantIds = t.Participants.Select(m => m.UserId).ToArray()
+				});
+
+			switch (data.Availability)
+			{
+				case TournamentAvailability.Public:
+					// everyone
+					return true;
+
+				case TournamentAvailability.Private:
+					// only invited people and managers
+					return data.ParticipantIds.Contains(userId) ||
+						data.OwnerId == userId ||
+						data.ManagerIds.Contains(userId);
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 	}
 }

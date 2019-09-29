@@ -173,13 +173,6 @@ namespace OPCAIC.ApiService
 
 			CreateMap<SubmissionValidationLogsDto, SubmissionValidationDetailModel>(MemberList
 				.Source);
-
-			CreateMap<SubmissionValidation, SubmissionValidationAuthDto>(MemberList.Destination)
-				.ForMember(v => v.TournamentOwnerId,
-					opt => opt.MapFrom(v => v.Submission.Tournament.OwnerId))
-				.ForMember(v => v.TournamentManagersIds,
-					opt => opt.MapFrom(v
-						=> v.Submission.Tournament.Managers.Select(m => m.UserId)));
 		}
 
 		private void AddEmailMapping()
@@ -205,14 +198,6 @@ namespace OPCAIC.ApiService
 		private void AddMatchExecutionMapping()
 		{
 			CreateMap<NewMatchExecutionDto, MatchExecution>(MemberList.Source);
-			CreateMap<MatchExecution, MatchExecutionAuthDto>(MemberList.Destination)
-				.ForMember(d => d.TournamentManagersIds,
-					opt => opt.MapFrom(e => e.Match.Tournament.Managers.Select(m => m.UserId)))
-				.ForMember(d => d.TournamentOwnerId,
-					opt => opt.MapFrom(e => e.Match.Tournament.OwnerId))
-				.ForMember(d => d.MatchParticipantsUserIds,
-					opt => opt.MapFrom(e
-						=> e.Match.Participations.Select(p => p.Submission.AuthorId)));
 
 			CreateMap<MatchExecution, MatchExecutionStorageDto>(MemberList.Destination);
 			CreateMap<MatchExecutionDto, MatchExecutionStorageDto>(MemberList.Destination);

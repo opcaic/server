@@ -20,11 +20,17 @@ namespace OPCAIC.Persistence.Repositories
 			return query;
 		}
 
-		public static IQueryable<T> ApplyPaging<T, V>(this IQueryable<T> query, ISpecification<V> spec)
+		public static IQueryable<T> ApplyPaging<T, V>(this IQueryable<T> query, ISpecification<V> spec, bool required = true)
 		{
-			Require.That<InvalidOperationException>(spec.PagingInfo.HasValue, "Specification does not contain paging info.");
-			var (offset, count) = spec.PagingInfo.Value;
-			return query.Skip(offset).Take(count);
+			Require.That<InvalidOperationException>(!required || spec.PagingInfo.HasValue, "Specification does not contain paging info.");
+
+			if (spec.PagingInfo.HasValue)
+			{
+				var (offset, count) = spec.PagingInfo.Value;
+				query = query.Skip(offset).Take(count);
+			}
+
+			return query;
 		}
 
 		public static IQueryable<T> ApplyOrdering<T>(this IQueryable<T> query, IEnumerable<Ordering<T>> ordering)

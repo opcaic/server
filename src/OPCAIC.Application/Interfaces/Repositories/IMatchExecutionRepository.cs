@@ -9,7 +9,7 @@ using OPCAIC.Domain.Enums;
 namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IMatchExecutionRepository
-		: ICreateRepository<NewMatchExecutionDto>, IAuthDataRepository<MatchExecutionAuthDto>, ILookupRepository<MatchExecutionDto>
+		: ICreateRepository<NewMatchExecutionDto>, ILookupRepository<MatchExecutionDto>
 	{
 		/// <summary>
 		///     Returns data needed to find where the archive with results of match execution with given id is stored.

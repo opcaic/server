@@ -28,12 +28,6 @@ namespace OPCAIC.Persistence.Repositories
 		}
 
 		/// <inheritdoc />
-		public Task<TournamentAuthDto> GetAuthorizationData(long id,
-			CancellationToken cancellationToken)
-		{
-			return GetDtoByIdAsync<TournamentAuthDto>(id, cancellationToken);
-		}
-
 		public Task<TournamentOngoingGenerationDto> GetForOngoingMatchGenerationAsync(long id,
 			CancellationToken cancellationToken)
 		{

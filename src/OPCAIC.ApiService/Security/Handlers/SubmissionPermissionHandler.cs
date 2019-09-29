@@ -1,35 +1,27 @@
 ﻿using System;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Extensions;
-using OPCAIC.Application.Dtos.Submissions;
-using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Extensions;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {
 	public class SubmissionPermissionHandler
-		: ResourcePermissionAuthorizationHandler<SubmissionPermission, SubmissionAuthDto>
+		: ResourcePermissionAuthorizationHandler<SubmissionPermission>
 	{
-		private readonly ISubmissionRepository submissionRepository;
+		private readonly IRepository<Submission> repository;
 
-		public SubmissionPermissionHandler(ISubmissionRepository submissionRepository)
+		public SubmissionPermissionHandler(IRepository<Submission> repository)
 		{
-			this.submissionRepository = submissionRepository;
+			this.repository = repository;
 		}
 
 		/// <inheritdoc />
-		protected override Task<SubmissionAuthDto> GetAuthorizationData(long resourceId,
-			CancellationToken cancellationToken = default)
-		{
-			return submissionRepository.GetAuthorizationData(resourceId, cancellationToken);
-		}
-
-		/// <inheritdoc />
-		protected override bool HandlePermissionAsync(ClaimsPrincipal user,
-			SubmissionPermission permission,
-			SubmissionAuthDto authData)
+		protected override Task<bool> HandlePermissionAsync(ClaimsPrincipal user,
+			SubmissionPermission permission, long? id)
 		{
 			var userId = user.TryGetId();
 
@@ -38,21 +30,26 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case SubmissionPermission.Read:
 				case SubmissionPermission.Download:
 					// Authors tournament managers and workers
-					return
-						user.HasClaim(WorkerClaimTypes.SubmissionId, authData.Id.ToString()) ||
-						authData.AuthorId == userId ||
-						authData.TournamentOwnerId == userId ||
-						authData.TournamentManagersIds.Contains(userId);
+					if (user.HasClaim(WorkerClaimTypes.SubmissionId, id.ToString()))
+					{
+						return Task.FromResult(true);
+					}
+
+					return repository.GetStructAsync(id.Value, s =>
+						s.AuthorId == userId ||
+						s.Tournament.OwnerId == userId ||
+						s.Tournament.Managers.Any(m => m.UserId == userId));
 
 				case SubmissionPermission.Update:
 					// authors only
-					return authData.AuthorId == userId;
+					return repository.GetStructAsync(id.Value, s =>
+						s.AuthorId == userId);
 
 				case SubmissionPermission.Search:
-					return true; // TODO: More granular?
+					return Task.FromResult(true);
 
 				case SubmissionPermission.QueueValidation:
-					return false; // admin only
+					return Task.FromResult(false); // admin only
 
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);

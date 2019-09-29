@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Specifications;
 
@@ -151,6 +152,7 @@ namespace OPCAIC.Persistence.Repositories
 			return Queryable
 				.ApplyFilter(specification)
 				.ApplyOrdering(specification.OrderBy)
+				.ApplyPaging(specification, false)
 				.ToListAsync(cancellationToken);
 		}
 
@@ -164,6 +166,7 @@ namespace OPCAIC.Persistence.Repositories
 				.ApplyOrdering(specification.OrderBy)
 				.Select(specification.Projection)
 				.ApplyOrdering(specification.OrderByProjected)
+				.ApplyPaging(specification, false)
 				.ToListAsync(cancellationToken);
 		}
 

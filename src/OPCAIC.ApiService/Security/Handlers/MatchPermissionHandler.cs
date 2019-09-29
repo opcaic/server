@@ -1,51 +1,44 @@
 ﻿using System;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Extensions;
-using OPCAIC.Application.Dtos.Matches;
-using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Extensions;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {
 	public class MatchPermissionHandler
-		: ResourcePermissionAuthorizationHandler<MatchPermission, MatchAuthDto>
+		: ResourcePermissionAuthorizationHandler<MatchPermission>
 	{
-		private readonly IMatchRepository matchRepository;
+		private readonly IRepository<Match> repository;
 
-		public MatchPermissionHandler(IMatchRepository matchRepository)
+		public MatchPermissionHandler(IRepository<Match> repository)
 		{
-			this.matchRepository = matchRepository;
+			this.repository = repository;
 		}
 
 		/// <inheritdoc />
-		protected override Task<MatchAuthDto> GetAuthorizationData(long resourceId,
-			CancellationToken cancellationToken = default)
-		{
-			return matchRepository.GetAuthorizationData(resourceId, cancellationToken);
-		}
-
-		/// <inheritdoc />
-		protected override bool HandlePermissionAsync(ClaimsPrincipal user,
-			MatchPermission permission,
-			MatchAuthDto authData)
+		protected override Task<bool> HandlePermissionAsync(ClaimsPrincipal user,
+			MatchPermission permission, long? id)
 		{
 			switch (permission)
 			{
 				case MatchPermission.Read:
 					// authors of participated submissions and tournament managers
 					var userId = user.TryGetId();
-					return !authData.TournamentPrivateMatchlog ||
-						authData.ParticipantsIds.Contains(userId) ||
-						authData.TournamentManagersIds.Contains(userId) ||
-						authData.TournamentOwnerId == userId;
+					return repository.GetStructAsync(id.Value, m =>
+						!m.Tournament.PrivateMatchlog ||
+						m.Participations.Any(s => s.Submission.AuthorId == userId) ||
+						m.Tournament.OwnerId == userId ||
+						m.Tournament.Managers.Any(mm => mm.UserId == userId));
 
 				case MatchPermission.QueueMatchExecution:
-					return false; // only admin //TODO: not tournament managers?
+					return Task.FromResult(false); // only admin //TODO: not tournament managers?
 
 				case MatchPermission.Search:
-					return true; // TODO: maybe more granular.
+					return Task.FromResult(true);
 
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);

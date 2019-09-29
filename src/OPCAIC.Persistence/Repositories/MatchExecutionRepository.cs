@@ -68,13 +68,6 @@ namespace OPCAIC.Persistence.Repositories
 		}
 
 		/// <inheritdoc />
-		public Task<MatchExecutionAuthDto> GetAuthorizationData(long id,
-			CancellationToken cancellationToken = default)
-		{
-			return GetDtoByIdAsync<MatchExecutionAuthDto>(id, cancellationToken);
-		}
-
-		/// <inheritdoc />
 		public Task<MatchExecutionDto> FindByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return GetDtoByIdAsync<MatchExecutionDto>(id, cancellationToken);

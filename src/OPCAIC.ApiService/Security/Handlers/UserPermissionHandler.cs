@@ -6,31 +6,12 @@ using OPCAIC.ApiService.Extensions;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {
-	public class ResourceIdAuth
-	{
-		/// <inheritdoc />
-		public ResourceIdAuth(long id)
-		{
-			Id = id;
-		}
-
-		public long Id { get; }
-	}
-
 	public class UserPermissionHandler
-		: ResourcePermissionAuthorizationHandler<UserPermission, ResourceIdAuth>
+		: ResourcePermissionAuthorizationHandler<UserPermission>
 	{
 		/// <inheritdoc />
-		protected override Task<ResourceIdAuth> GetAuthorizationData(long resourceId,
-			CancellationToken cancellationToken = default)
-		{
-			return Task.FromResult(new ResourceIdAuth(resourceId));
-		}
-
-		/// <inheritdoc />
-		protected override bool HandlePermissionAsync(ClaimsPrincipal user,
-			UserPermission permission,
-			ResourceIdAuth authData)
+		protected override Task<bool> HandlePermissionAsync(ClaimsPrincipal user,
+			UserPermission permission, long? id)
 		{
 			switch (permission)
 			{
@@ -38,11 +19,11 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case UserPermission.Update:
 					// user can do anything to themselves
 					var userId = user.TryGetId();
-					return userId == authData.Id;
+					return Task.FromResult(userId == id.Value);
 
 				case UserPermission.Search:
 					// no search for non-admin user's
-					return false;
+					return Task.FromResult(false);
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
 			}

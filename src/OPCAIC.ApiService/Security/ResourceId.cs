@@ -12,7 +12,7 @@ namespace OPCAIC.ApiService.Security
 		/// </summary>
 		public static readonly ResourceId Null = new ResourceId();
 
-		private readonly long? id;
+		public long? Id { get; }
 
 		private ResourceId()
 		{
@@ -20,17 +20,7 @@ namespace OPCAIC.ApiService.Security
 
 		public ResourceId(long id)
 		{
-			this.id = id;
+			Id = id;
 		}
-
-		/// <summary>
-		///     Returns true if this id represent a concrete, non-null resource id.
-		/// </summary>
-		public bool HasValue => id.HasValue;
-
-		/// <summary>
-		///     If <see cref="HasValue"/>, returns the resource id.
-		/// </summary>
-		public long Value => id.Value;
 	}
 }

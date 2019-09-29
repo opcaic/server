@@ -1,61 +1,38 @@
 ﻿using System;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using OPCAIC.ApiService.Extensions;
-using OPCAIC.Application.Exceptions;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {
-	public abstract class ResourcePermissionAuthorizationHandler<TPermission, TAuthData>
+	public abstract class ResourcePermissionAuthorizationHandler<TPermission>
 		: AuthorizationHandler<PermissionRequirement<TPermission>, ResourceId>
 		where TPermission : Enum
-		where TAuthData : class
 	{
 		/// <inheritdoc />
 		protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context,
 			PermissionRequirement<TPermission> requirement,
 			ResourceId resourceId)
 		{
-			TAuthData authData = default;
-			if (resourceId.HasValue)
+			if (await HandlePermissionAsync(context.User, requirement.RequiredPermission,
+				resourceId.Id))
 			{
-				authData = await GetAuthorizationData(resourceId.Value);
-
-				if (authData == default(TAuthData))
-				{
-					throw new NotFoundException(typeof(TPermission).Name.Replace("Permission", ""),
-						resourceId.Value);
-				}
+				context.Succeed(requirement);
 			}
-
-			foreach (var permission in requirement.RequiredPermissions)
-			{
-				if (!HandlePermissionAsync(context.User, permission, authData))
-				{
-					return;
-				}
-			}
-
-			context.Succeed(requirement);
 		}
-
-		protected abstract Task<TAuthData> GetAuthorizationData(long resourceId,
-			CancellationToken cancellationToken = default);
 
 		/// <summary>
 		///     Handles the authorization for the given permission.
 		/// </summary>
 		/// <param name="user">Instance of <see cref="ClaimsPrincipal" /> containing further claims.</param>
 		/// <param name="permission">The permission to be verified.</param>
-		/// <param name="authData">
+		/// <param name="id">
 		///     If the permission is instance-based, contains the data needed for authorization decision.
 		///     Otherwise null.
 		/// </param>
 		/// <returns></returns>
-		protected abstract bool HandlePermissionAsync(ClaimsPrincipal user,
+		protected abstract Task<bool> HandlePermissionAsync(ClaimsPrincipal user,
 			TPermission permission,
-			TAuthData authData);
+			long? id);
 	}
 }

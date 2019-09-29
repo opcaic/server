@@ -13,7 +13,6 @@ namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface ISubmissionValidationRepository
 		: ICreateRepository<NewSubmissionValidationDto>,
-			IAuthDataRepository<SubmissionValidationAuthDto>,
 			ILookupRepository<SubmissionValidationDto>,
 			IRepository<SubmissionValidation>
 	{
