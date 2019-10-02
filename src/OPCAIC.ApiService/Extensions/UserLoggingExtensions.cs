@@ -35,7 +35,7 @@ namespace OPCAIC.ApiService.Extensions
 
 		public static void UserCreated(this ILogger logger, User user)
 		{
-			logger.LogInformation(LoggingEvents.UserCreate, $"User {{{LoggingTags.UserEmail}}} created with id {{{LoggingTags.UserId}}}", user.Email, user.Id);
+			logger.LogInformation(LoggingEvents.UserCreated, $"User {{{LoggingTags.UserEmail}}} created with id {{{LoggingTags.UserId}}}", user.Email, user.Id);
 		}
 
 		public static void UserForgotPassword(this ILogger logger, User user)

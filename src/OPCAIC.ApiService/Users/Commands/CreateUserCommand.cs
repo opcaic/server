@@ -12,6 +12,7 @@ using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enumerations;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Users.Commands
@@ -39,8 +40,8 @@ namespace OPCAIC.ApiService.Users.Commands
 				RuleFor(m => m.Username).Required();
 				RuleFor(m => m.Organization).MinLength(1);
 
-				// TODO: choice from available localizations
-				RuleFor(m => m.LocalizationLanguage).Required().MinLength(2).MaxLength(2);
+				RuleFor(m => m.LocalizationLanguage)
+					.IsEnumeration<CreateUserCommand, LocalizationLanguage>().Required();
 
 				RuleFor(m => m.Password).Required();
 			}

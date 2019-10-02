@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +21,7 @@ using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Users.Commands;
 using OPCAIC.Application.Users.Model;
 using OPCAIC.Application.Users.Queries;
 using OPCAIC.Domain.Entities;
@@ -37,7 +37,6 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly IAuthorizationService authorizationService;
 		private readonly IEmailService emailService;
 		private readonly ILogger<UsersController> logger;
-		private readonly IMapper mapper;
 		private readonly SignInManager signInManager;
 		private readonly IFrontendUrlGenerator urlGenerator;
 		private readonly IUserManager userManager;
@@ -45,8 +44,7 @@ namespace OPCAIC.ApiService.Controllers
 
 		public UsersController(ILogger<UsersController> logger, IEmailService emailService,
 			SignInManager signInManager, IUserManager userManager,
-			IFrontendUrlGenerator urlGenerator, IAuthorizationService authorizationService,
-			IMapper mapper, IMediator mediator)
+			IFrontendUrlGenerator urlGenerator, IAuthorizationService authorizationService, IMediator mediator)
 		{
 			this.logger = logger;
 			this.emailService = emailService;
@@ -54,7 +52,6 @@ namespace OPCAIC.ApiService.Controllers
 			this.userManager = userManager;
 			this.urlGenerator = urlGenerator;
 			this.authorizationService = authorizationService;
-			this.mapper = mapper;
 			this.mediator = mediator;
 			this.logger = logger;
 		}
@@ -167,7 +164,7 @@ namespace OPCAIC.ApiService.Controllers
 
 			return await userManager.GenerateUserTokensAsync(user);
 		}
-
+		
 		/// <summary>
 		///     Creates new user and returns his id.
 		/// </summary>
@@ -229,6 +226,23 @@ namespace OPCAIC.ApiService.Controllers
 		{
 			await authorizationService.CheckPermissions(User, id, UserPermission.Update);
 			await userManager.UpdateAsync(id, model, cancellationToken);
+		}
+
+		/// <summary>
+		///     Switches localization language for current user.
+		/// </summary>
+		/// <param name="command">The localization language to change.</param>
+		/// <param name="cancellationToken"></param>
+		/// <response code="200">Language was successfully updated.</response>
+		/// <response code="401">User is not authenticated.</response>
+		[HttpPost("language/{Language}")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task ChangeLanguage([FromRoute]ChangeLanguageCommand command, CancellationToken cancellationToken)
+		{
+			await mediator.Send(command, cancellationToken);
 		}
 
 		/// <summary>

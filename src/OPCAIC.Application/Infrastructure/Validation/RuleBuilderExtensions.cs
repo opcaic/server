@@ -12,6 +12,7 @@ using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Infrastructure;
 
 namespace OPCAIC.Application.Infrastructure.Validation
 {
@@ -187,6 +188,14 @@ namespace OPCAIC.Application.Infrastructure.Validation
 							CustomState = new Dictionary<string, object> {["errors"] = errors}
 						});
 				}
+		}
+
+		public static IRuleBuilderOptions<T, string> IsEnumeration<T, TEnum>(
+			this IRuleBuilder<T, string> rule)
+			where TEnum : Enumeration<TEnum>, new()
+		{
+			return rule.Must(f => Enumeration<TEnum>.TryFromName(f, out _))
+				.WithMessage("'{PropertyValue}' is not valid value for {PropertyName}.");
 		}
 	}
 }

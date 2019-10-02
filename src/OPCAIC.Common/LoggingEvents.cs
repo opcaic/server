@@ -16,7 +16,8 @@ namespace OPCAIC.Common
 		public static readonly EventId LoginNotAllowed = CreateEvent(103);
 		public static readonly EventId LoginLockout = CreateEvent(104);
 
-		public static readonly EventId UserCreate = CreateEvent(200);
+		public static readonly EventId UserCreated = CreateEvent(200);
+		public static readonly EventId UserUpdated = CreateEvent(201);
 
 		public static readonly EventId UserForgotPassword = CreateEvent(300);
 		public static readonly EventId UserPasswordReset = CreateEvent(301);
