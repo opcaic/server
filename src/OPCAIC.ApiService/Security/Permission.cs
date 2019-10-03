@@ -18,7 +18,8 @@
         PauseEvaluation,
         UnpauseEvaluation,
         StopEvaluation,
-        Publish
+        Publish,
+		ManageManagers
 	}
 
 	public enum UserPermission

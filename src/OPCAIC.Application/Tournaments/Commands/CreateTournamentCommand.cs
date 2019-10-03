@@ -1,6 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -8,11 +6,13 @@ using Newtonsoft.Json.Linq;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Application.Infrastructure.Validation;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OPCAIC.Application.Tournaments.Commands
 {
@@ -57,7 +57,8 @@ namespace OPCAIC.Application.Tournaments.Commands
 					.WithMessage("Only ELO format is supported for ongoing tournaments");
 
 				RuleFor(m => m.Scope).IsInEnum().NotEqual(TournamentScope.Unknown);
-				RuleFor(m => m.RankingStrategy).IsInEnum().NotEqual(TournamentRankingStrategy.Unknown);
+				RuleFor(m => m.RankingStrategy).IsInEnum()
+					.NotEqual(TournamentRankingStrategy.Unknown);
 
 				RuleFor(m => m.MatchesPerDay)
 					.Null().When(m => m.Scope == TournamentScope.Deadline)
@@ -69,11 +70,12 @@ namespace OPCAIC.Application.Tournaments.Commands
 
 		public class Handler : IRequestHandler<CreateTournamentCommand, long>
 		{
-			private readonly IMapper mapper;
 			private readonly ILogger<CreateTournamentCommand> logger;
-			private readonly ITournamentRepository repository;
+			private readonly IMapper mapper;
+			private readonly IRepository<Tournament> repository;
 
-			public Handler(IMapper mapper, ILogger<CreateTournamentCommand> logger, ITournamentRepository repository)
+			public Handler(IMapper mapper, ILogger<CreateTournamentCommand> logger,
+				IRepository<Tournament> repository)
 			{
 				this.mapper = mapper;
 				this.logger = logger;
@@ -81,7 +83,8 @@ namespace OPCAIC.Application.Tournaments.Commands
 			}
 
 			/// <inheritdoc />
-			public async Task<long> Handle(CreateTournamentCommand request, CancellationToken cancellationToken)
+			public async Task<long> Handle(CreateTournamentCommand request,
+				CancellationToken cancellationToken)
 			{
 				var tournament = mapper.Map<Tournament>(request);
 

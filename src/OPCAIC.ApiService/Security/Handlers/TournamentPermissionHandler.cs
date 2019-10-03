@@ -47,6 +47,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 					return IsOwnerOrManager(userId, id);
 
 				case TournamentPermission.Delete:
+				case TournamentPermission.ManageManagers:
 					// only owner
 					return IsOwner(userId, id);
 

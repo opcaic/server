@@ -38,6 +38,12 @@
 
 		public static string TournamentHasBadScope => "tournament-in-bad-scope";
 
+		public static string PublishedTournamentBadUpdate
+			=> "uneditable-property-of-a-published-tournament";
+
+		public static string UserIsAlreadyManagerOfTournament => "user-is-already-manager-of-tournament";
+
+		public static string UserIsNotManagerOfTournament => "user-is-not-manager-of-tournament";
 
 		public static string DeadlineTournamentsCannotBeStopped
 			=> "deadline-tournaments-evaluation-cannot-be-stopped";
@@ -95,7 +101,7 @@
 		public static string InvalidConfiguration => "invalid-configuration";
 
 		public static string InvalidContentType => "invalid-content-type";
-		
+
 		public static string InvalidZipSize => "invalid-archive-size";
 	}
 }

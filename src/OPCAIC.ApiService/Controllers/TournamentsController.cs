@@ -14,6 +14,7 @@ using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Interfaces;
+using OPCAIC.Application.Tournaments.Command;
 using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Application.Tournaments.Queries;
@@ -313,6 +314,50 @@ namespace OPCAIC.ApiService.Controllers
 
 			await mediator.Send(new PublishTournamentCommand {TournamentId = id},
 				cancellationToken);
+		}
+
+		/// <summary>
+		/// Adds a manager to a given tournament.
+		/// </summary>
+		/// <param name="userId"></param>
+		/// <param name="managerEmail"></param>
+		/// <param name="tournamentId"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpPost("{tournamentId}/managers/{managerEmail}")]
+		public async Task AddTournamentManagerAsync(string managerEmail, long tournamentId,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageManagers);
+
+			await mediator.Send(new AddTournamentManagerCommand { Email = managerEmail, TournamentId = tournamentId}, cancellationToken);
+		}
+
+		/// <summary>
+		/// Deletes a manager of a given tournament.
+		/// </summary>
+		/// <param name="userId"></param>
+		/// <param name="managerEmail"></param>
+		/// <param name="tournamentId"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpDelete("{tournamentId}/managers/{managerEmail}")]
+		public async Task DeleteTournamentManagerAsync(string managerEmail, long tournamentId,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageManagers);
+
+			await mediator.Send(new DeleteTournamentManagerCommand { Email = managerEmail, TournamentId = tournamentId }, cancellationToken);
 		}
 	}
 }

@@ -1,16 +1,15 @@
-﻿using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Newtonsoft.Json.Linq;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.Application.Infrastructure.Validation;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using Shouldly;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,16 +20,16 @@ namespace OPCAIC.Application.Test.Tournaments
 		/// <inheritdoc />
 		public CreateTournamentCommandTest(ITestOutputHelper output) : base(output)
 		{
-			tournamentRepository = Services.Mock<ITournamentRepository>(MockBehavior.Strict);
-			gameRepository = Services.Mock<IGameRepository>(MockBehavior.Strict);
-			Services.AddSingleton<IRepository<Game>>(gameRepository.Object);
+			tournamentRepository = Services.Mock<IRepository<Tournament>>(MockBehavior.Strict);
+			gameRepository = Services.Mock<IRepository<Game>>(MockBehavior.Strict);
+			Services.AddSingleton(gameRepository.Object);
 
 			Services.AddMapper();
 			Services.AddValidatorsFromAssembly(typeof(CreateTournamentCommand).Assembly);
 		}
 
-		private readonly Mock<ITournamentRepository> tournamentRepository;
-		private readonly Mock<IGameRepository> gameRepository;
+		private readonly Mock<IRepository<Tournament>> tournamentRepository;
+		private readonly Mock<IRepository<Game>> gameRepository;
 
 		private const string SomeSchema = @"{
   'title': 'A registration form',
@@ -62,7 +61,10 @@ namespace OPCAIC.Application.Test.Tournaments
 		public async Task Create_InvalidConfiguration()
 		{
 			const long gameId = 1;
-			gameRepository.Setup(r => r.FindAsync(It.IsAny<ProjectingSpecification<Game, string>>(), CancellationToken))
+
+			gameRepository.Setup(r
+					=> r.FindAsync(It.IsAny<ProjectingSpecification<Game, string>>(),
+						CancellationToken))
 				.ReturnsAsync(SomeSchema);
 
 			gameRepository
@@ -94,7 +96,9 @@ namespace OPCAIC.Application.Test.Tournaments
 		{
 			const long gameId = 1;
 
-			gameRepository.Setup(r => r.FindAsync(It.IsAny<ProjectingSpecification<Game, string>>(), CancellationToken))
+			gameRepository.Setup(r
+					=> r.FindAsync(It.IsAny<ProjectingSpecification<Game, string>>(),
+						CancellationToken))
 				.ReturnsAsync(SomeSchema);
 
 			gameRepository

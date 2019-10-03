@@ -1,67 +1,50 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Moq;
+﻿using Moq;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Tournaments.Commands;
-using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using Shouldly;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace OPCAIC.Application.Test.Tournaments.Commands
 {
-	public class StartTournamentEvaluationCommandTest : TournamentHandlerTestBase
+	public class StartTournamentEvaluationCommandTest : HandlerTest<StartTournamentEvaluationCommand.Handler>
 	{
 		/// <inheritdoc />
 		public StartTournamentEvaluationCommandTest(ITestOutputHelper output) : base(output)
 		{
 			Services.Mock<ITimeService>();
+			repository = Services.Mock<IRepository<Tournament>>(MockBehavior.Strict);
 		}
 
-		[Fact]
-		public async Task Handle_NonExistingIDs()
-		{
-			repository
-				.Setup(r => r.FindByIdAsync(It.IsAny<long>(), CancellationToken.None))
-				.ReturnsAsync(default(TournamentDetailDto));
-
-			var exception = await Should.ThrowAsync<NotFoundException>(
-				GetService<StartTournamentEvaluationCommand.Handler>()
-					.Handle(new StartTournamentEvaluationCommand(), CancellationToken.None));
-			exception.Resource.ShouldBe(nameof(Tournament));
-		}
+		private readonly Mock<IRepository<Tournament>> repository;
 
 		[Fact]
 		public async Task Handle_Success()
 		{
 			repository
-				.Setup(r => r.FindByIdAsync(It.IsAny<long>(), CancellationToken.None))
-				.ReturnsAsync(new TournamentDetailDto {State = TournamentState.Published});
+				.SetupFind(new Tournament { State = TournamentState.Published }, CancellationToken);
 
 			repository
-				.Setup(r => r.UpdateAsync(It.IsAny<ISpecification<Tournament>>(),
-					It.IsAny<TournamentStateUpdateDto>(), It.IsAny<CancellationToken>()));
+				.SetupUpdate((TournamentStartedUpdateDto dto)
+					=> dto.State == TournamentState.Running, CancellationToken);
 
-			await GetService<StartTournamentEvaluationCommand.Handler>()
-				.Handle(new StartTournamentEvaluationCommand(), CancellationToken.None);
+			await Handler.Handle(new StartTournamentEvaluationCommand(), CancellationToken);
 		}
 
 		[Fact]
 		public async Task Handle_TournamentBadState()
 		{
 			repository
-				.Setup(r => r.FindByIdAsync(It.IsAny<long>(), CancellationToken.None))
-				.ReturnsAsync(new TournamentDetailDto {State = TournamentState.Running});
+				.SetupFind(new Tournament { State = TournamentState.Finished }, CancellationToken);
 
-			var exception = await Should.ThrowAsync<BadTournamentStateException>(
-				GetService<StartTournamentEvaluationCommand.Handler>()
-					.Handle(new StartTournamentEvaluationCommand(), CancellationToken.None));
-			exception.ActualState.ShouldBe(nameof(TournamentState.Running));
+			var exception = await Should.ThrowAsync<BadTournamentStateException>(Handler.Handle(new StartTournamentEvaluationCommand(), CancellationToken));
+			exception.ActualState.ShouldBe(nameof(TournamentState.Finished));
 			exception.ExpectedState.ShouldBe(nameof(TournamentState.Published));
 		}
 	}

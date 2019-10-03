@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using OPCAIC.Application.Dtos.Tournaments;
+﻿using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OPCAIC.Application.Interfaces.Repositories
 {

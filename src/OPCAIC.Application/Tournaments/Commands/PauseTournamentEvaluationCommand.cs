@@ -1,14 +1,14 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Extensions;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OPCAIC.Application.Tournaments.Commands
 {
@@ -19,10 +19,10 @@ namespace OPCAIC.Application.Tournaments.Commands
 		public class Handler : IRequestHandler<PauseTournamentEvaluationCommand>
 		{
 			private readonly ILogger<PauseTournamentEvaluationCommand> logger;
-			private readonly ITournamentRepository repository;
+			private readonly IRepository<Tournament> repository;
 
 			public Handler(ILogger<PauseTournamentEvaluationCommand> logger,
-				ITournamentRepository repository)
+				IRepository<Tournament> repository)
 			{
 				this.repository = repository;
 				this.logger = logger;
@@ -31,12 +31,7 @@ namespace OPCAIC.Application.Tournaments.Commands
 			/// <inheritdoc />
 			public async Task<Unit> Handle(PauseTournamentEvaluationCommand request, CancellationToken cancellationToken)
 			{
-				var tournament = await repository.FindByIdAsync(request.TournamentId, cancellationToken);
-
-				if (tournament == null)
-				{
-					throw new NotFoundException(nameof(Tournament), request.TournamentId);
-				}
+				var tournament = await repository.GetAsync(request.TournamentId, cancellationToken);
 
 				if (tournament.State != TournamentState.Running)
 				{
