@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Persistence;
+using Serilog;
 using Xunit.Abstractions;
 
 namespace OPCAIC.TestUtils
@@ -16,7 +17,6 @@ namespace OPCAIC.TestUtils
 	public abstract class ServiceTestBase : IDisposable
 	{
 		private readonly TestDirectoryManager directoryManager;
-		protected readonly ILoggerFactory LoggerFactory;
 		protected readonly ITestOutputHelper Output;
 		private ServiceProvider provider;
 		private MockingServiceCollection services;
@@ -31,12 +31,8 @@ namespace OPCAIC.TestUtils
 
 			services = new MockingServiceCollection(output);
 			services
-				.AddXUnitLogging(output);
-
-			// some services want custom logger factory
-			LoggerFactory = new LoggerFactory();
-			LoggerFactory.AddProvider(new XUnitLoggerProvider(output));
-			services.AddSingleton(LoggerFactory);
+				.AddLogging(builder => builder.AddSerilog(new LoggerConfiguration()
+					.WriteTo.XunitTestOutput(output).CreateLogger()));
 		}
 
 		protected MockingServiceCollection Services

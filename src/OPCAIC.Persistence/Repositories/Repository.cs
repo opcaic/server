@@ -191,42 +191,30 @@ namespace OPCAIC.Persistence.Repositories
 		/// <inheritdoc />
 		public async Task<PagedResult<TEntity>> ListPagedAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken)
 		{
-			// fetch items and count in one query
+			// TODO: fetch items and count in one query
 			var query = Queryable.ApplyFilter(specification);
 			var result = await query
 				.ApplyOrdering(specification.OrderBy)
 				.ApplyPaging(specification)
-				.Select(e => new { Total = query.Count(), Item = e })
 				.ToListAsync(cancellationToken);
 
-			if (result.Count > 0)
-			{
-				return new PagedResult<TEntity>(result[0].Total, result.Select(s => s.Item).ToList());
-			}
-
-			return new PagedResult<TEntity>(0, new List<TEntity>());
+			return new PagedResult<TEntity>(query.Count(), result);
 		}
 
 		/// <inheritdoc />
 		public async Task<PagedResult<TDestination>> ListPagedAsync<TDestination>(IProjectingSpecification<TEntity, TDestination> specification,
 			CancellationToken cancellationToken)
 		{
-			// fetch items and count in one query
+			// TODO: fetch items and count in one query
 			var query = Queryable.ApplyFilter(specification);
 			var result = await query
 				.ApplyOrdering(specification.OrderBy)
 				.Select(specification.Projection)
 				.ApplyOrdering(specification.OrderByProjected)
 				.ApplyPaging(specification)
-				.Select(e => new { Total = query.Count(), Item = e })
 				.ToListAsync(cancellationToken);
 
-			if (result.Count > 0)
-			{
-				return new PagedResult<TDestination>(result[0].Total, result.Select(s => s.Item).ToList());
-			}
-
-			return new PagedResult<TDestination>(0, new List<TDestination>());
+			return new PagedResult<TDestination>(query.Count(), result);
 		}
 
 		/// <inheritdoc />

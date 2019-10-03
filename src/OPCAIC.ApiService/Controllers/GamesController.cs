@@ -1,23 +1,17 @@
-﻿using System.Net;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using HybridModelBinding;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
 using OPCAIC.ApiService.Extensions;
-using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
-using OPCAIC.ApiService.Models.Games;
 using OPCAIC.ApiService.Security;
-using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Games.Commands;
 using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Games.Queries;
 using OPCAIC.Application.Infrastructure;
-using OPCAIC.Application.Specifications;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -25,13 +19,11 @@ namespace OPCAIC.ApiService.Controllers
 	[Route("api/games")]
 	public class GamesController : ControllerBase
 	{
-		private readonly IGamesService gamesService;
 		private readonly IAuthorizationService authorizationService;
 		private readonly IMediator mediator;
 
-		public GamesController(IGamesService gamesService, IAuthorizationService authorizationService, IMediator mediator)
+		public GamesController(IAuthorizationService authorizationService, IMediator mediator)
 		{
-			this.gamesService = gamesService;
 			this.authorizationService = authorizationService;
 			this.mediator = mediator;
 		}
@@ -42,12 +34,12 @@ namespace OPCAIC.ApiService.Controllers
 		/// <returns>array of all games</returns>
 		[HttpGet]
 		[AllowAnonymous]
-		[ProducesResponseType(typeof(PagedResult<GamePreviewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PagedResult<GamePreviewDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[RequiresPermission(GamePermission.Search)]
-		public Task<PagedResult<GamePreviewModel>> GetGamesAsync([FromQuery] GetGamesQuery filter,
+		public Task<PagedResult<GamePreviewDto>> GetGamesAsync([FromQuery] GetGamesQuery filter,
 			CancellationToken cancellationToken)
 		{
 			return mediator.Send(filter, cancellationToken);
@@ -67,11 +59,11 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status409Conflict)]
 		[RequiresPermission(GamePermission.Create)]
-		public async Task<IActionResult> PostAsync([FromBody] NewGameModel model,
+		public async Task<IActionResult> PostAsync([FromBody] CreateGameCommand model,
 			CancellationToken cancellationToken)
 		{
-			var id = await gamesService.CreateAsync(model, cancellationToken);
-			return CreatedAtRoute(nameof(GetGameByIdAsync), new { id }, new IdModel {Id = id});
+			var id = await mediator.Send(model, cancellationToken);
+			return CreatedAtRoute(nameof(GetGameByIdAsync), new {id}, new IdModel {Id = id});
 		}
 
 		/// <summary>
@@ -86,14 +78,15 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="404">Resource was not found.</response>
 		[HttpGet("{id}", Name = nameof(GetGameByIdAsync))]
 		[AllowAnonymous]
-		[ProducesResponseType(typeof(GameDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(GameDetailDto), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<GameDetailModel> GetGameByIdAsync(long id, CancellationToken cancellationToken)
+		public async Task<GameDetailDto> GetGameByIdAsync(long id,
+			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id, GamePermission.Read);
-			return await gamesService.GetByIdAsync(id, cancellationToken);
+			return await mediator.Send(new GetGameQuery(id), cancellationToken);
 		}
 
 		/// <summary>
@@ -107,16 +100,16 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
 		[HttpPut("{id}")]
-		[ProducesResponseType(typeof(GameDetailModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task UpdateAsync(long id, [FromBody] UpdateGameModel model,
+		public async Task UpdateAsync([FromHybrid] UpdateGameCommand model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, GamePermission.Update);
-			await gamesService.UpdateAsync(id, model, cancellationToken);
+			await authorizationService.CheckPermissions(User, model.Id, GamePermission.Update);
+			await mediator.Send(model, cancellationToken);
 		}
 	}
 }

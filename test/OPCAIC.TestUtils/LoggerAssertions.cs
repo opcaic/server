@@ -6,7 +6,7 @@ namespace OPCAIC.TestUtils
 {
 	public static class LoggerAssertions
 	{
-		public static void VerifyLogException<TException>(this Mock<ILogger> logger, LogLevel level)
+		public static void VerifyLogException<T,TException>(this Mock<ILogger<T>> logger, LogLevel level)
 			where TException : Exception
 		{
 			logger.Verify(l => l.Log(

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using AutoMapper;
-using OPCAIC.Application.Dtos.Games;
+using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
@@ -39,6 +39,8 @@ namespace OPCAIC.Application.Tournaments.Models
 		public string ThemeColor { get; set; }
 
 		public DateTime? Deadline { get; set; }
+
+		public DateTime? Published { get; set; }
 
 		public TournamentAvailability Availability { get; set; }
 

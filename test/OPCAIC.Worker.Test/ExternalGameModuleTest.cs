@@ -1,13 +1,16 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GameModuleMock;
+using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.GameModules.Interface;
 using OPCAIC.TestUtils;
 using OPCAIC.Worker.GameModules;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace OPCAIC.Worker.Test
 {
@@ -18,11 +21,14 @@ namespace OPCAIC.Worker.Test
 		/// <inheritdoc />
 		protected ExternalGameModuleTest(ITestOutputHelper output) : base(output)
 		{
-			var logger = new XUnitLogger<ExternalGameModule>(output);
 			GameModuleConfiguration = new ExternalGameModuleConfiguration();
-			ExternalGameModule = new ExternalGameModule(logger, GameModuleConfiguration,
-				"GameModuleMock",
-				Directory.GetCurrentDirectory());
+
+			externalGameModuleLazy = GetLazyService<ExternalGameModule>();
+			Services.AddTransient(sp 
+					=> new ExternalGameModule(sp.GetRequiredService<ILogger<ExternalGameModule>>(),
+						GameModuleConfiguration,
+						"GameModuleMock",
+						Directory.GetCurrentDirectory()));
 			Bot = new BotInfo {SourceDirectory = NewDirectory(), BinaryDirectory = NewDirectory()};
 			OutputDir = NewDirectory();
 			config = new EntryPointConfiguration {AdditionalFiles = NewDirectory()};
@@ -30,7 +36,8 @@ namespace OPCAIC.Worker.Test
 
 		protected ExternalGameModuleConfiguration GameModuleConfiguration { get; }
 
-		protected ExternalGameModule ExternalGameModule { get; }
+		private readonly Lazy<ExternalGameModule> externalGameModuleLazy;
+		protected ExternalGameModule ExternalGameModule => externalGameModuleLazy.Value;
 
 		protected BotInfo Bot { get; }
 

@@ -17,13 +17,12 @@ namespace OPCAIC.Worker.Test
 		public GameModuleLoaderTest(ITestOutputHelper output) : base(output)
 		{
 			// hook to logger to know when exception has been logged
-			loggerMock = Services.MockLogger<GameModuleLoader>();
-			Services.Mock<ILoggerFactory>();
+			loggerMock = Services.Mock<ILogger<GameModuleLoader>>();
 			moduleDir = NewDirectory().CreateSubdirectory(moduleName);
 			Services.Configure<Configuration>(cfg => cfg.ModulePath = moduleDir.Parent.FullName);
 		}
 
-		private readonly Mock<ILogger> loggerMock;
+		private readonly Mock<ILogger<GameModuleLoader>> loggerMock;
 		private readonly DirectoryInfo moduleDir;
 		private static readonly string moduleName = "GameModule";
 
@@ -44,7 +43,7 @@ namespace OPCAIC.Worker.Test
 
 			// none should be loaded
 			Assert.Empty(loader.GetAllModules());
-			loggerMock.VerifyLogException<JsonException>(LogLevel.Error);
+			loggerMock.VerifyLogException<GameModuleLoader, JsonException>(LogLevel.Error);
 		}
 
 		private static class Configs
@@ -122,7 +121,7 @@ namespace OPCAIC.Worker.Test
 
 			// none should be loaded
 			Assert.Empty(loader.GetAllModules());
-			loggerMock.VerifyLogException<FileNotFoundException>(LogLevel.Error);
+			loggerMock.VerifyLogException<GameModuleLoader, FileNotFoundException>(LogLevel.Error);
 		}
 
 		[Fact]

@@ -16,6 +16,12 @@ namespace OPCAIC.Application.Test
 				.ReturnsAsync(value);
 		}
 
+		public static IReturnsResult<IRepository<TEntity>> SetupExists<TEntity>(this Mock<IRepository<TEntity>> mock, bool value, CancellationToken cancellationToken)
+		{
+			return mock.Setup(s => s.ExistsAsync(It.IsAny<ISpecification<TEntity>>(), cancellationToken))
+				.ReturnsAsync(value);
+		}
+
 		public static IReturnsResult<IRepository<TEntity>> SetupProject<TEntity, TDto>(this Mock<IRepository<TEntity>> mock, TDto value, CancellationToken cancellationToken)
 		{
 			return mock.Setup(s => s.FindAsync(It.IsAny<IProjectingSpecification<TEntity, TDto>>(), cancellationToken))

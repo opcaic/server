@@ -101,14 +101,5 @@ namespace OPCAIC.TestUtils
 			serviceCollection.AddSingleton(mock.Object);
 			return mock;
 		}
-
-		public Mock<ILogger> MockLogger<T>(MockBehavior behavior = MockBehavior.Default)
-			where T : class
-		{
-			var mock = new Mock<ILogger>(behavior);
-			serviceCollection.RemoveAll(typeof(ILogger<T>));
-			serviceCollection.AddSingleton<ILogger<T>>(new XUnitLogger<T>(output, mock.Object));
-			return mock;
-		}
 	}
 }

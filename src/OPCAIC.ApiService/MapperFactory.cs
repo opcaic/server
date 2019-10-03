@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using AutoMapper;
@@ -7,20 +6,16 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OPCAIC.ApiService.Models.Broker;
 using OPCAIC.ApiService.Models.Documents;
-using OPCAIC.ApiService.Models.Games;
-using OPCAIC.ApiService.Models.Leaderboards;
 using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
-using OPCAIC.Application.Documents.Queries;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.Broker;
 using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Application.Dtos.Emails;
 using OPCAIC.Application.Dtos.EmailTemplates;
-using OPCAIC.Application.Dtos.Games;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.Submissions;
@@ -28,32 +23,23 @@ using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Dtos.TournamentParticipations;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
-using OPCAIC.Application.Games.Models;
-using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.AutoMapper;
-using OPCAIC.Application.Submissions.Models;
-using OPCAIC.Application.Submissions.Queries;
 using OPCAIC.Application.SubmissionValidations.Events;
-using OPCAIC.Application.TournamentInvitations.Models;
-using OPCAIC.Application.TournamentInvitations.Queries;
 using OPCAIC.Application.Tournaments.Models;
-using OPCAIC.Application.Users.Model;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
-using OPCAIC.Domain.Enums;
 using OPCAIC.Messaging.Messages;
-using OPCAIC.Persistence.Repositories;
 
 namespace OPCAIC.ApiService
 {
-	// TODO: Split to separate profiles and gradually move to Application project
 	public class DynamicProfile : AutoMapperProfile
 	{
 		public DynamicProfile()
-			:base(Assembly.GetExecutingAssembly())
+			: base(Assembly.GetExecutingAssembly())
 		{
 		}
 	}
+
 	public class AutomapperProfile : Profile
 	{
 		public AutomapperProfile()
@@ -68,7 +54,6 @@ namespace OPCAIC.ApiService
 			AddMatchExecutionMapping();
 			AddEmailMapping();
 			AddEmailTemplateMapping();
-			AddGameMapping();
 			AddBrokerMapping();
 			AddOther();
 		}
@@ -99,19 +84,6 @@ namespace OPCAIC.ApiService
 		{
 			CreateMap<UserProfileModel, UserProfileDto, User>(MemberList.Source);
 			CreateMap<User, UserReferenceDto, UserReferenceModel>(MemberList.Destination);
-		}
-
-		private void AddGameMapping()
-		{
-			CreateMap<NewGameModel, NewGameDto, Game>(MemberList.Source);
-
-			CreateMap<Game, GamePreviewModel>(MemberList.Destination)
-				.ForMember(d => d.ActiveTournamentsCount,
-					opt => opt.MapFrom(Game.ActiveTournamentCountExpression))
-				.IncludeAllDerived();
-
-			CreateMap<Game, GameReferenceDto, GameReferenceModel>(MemberList.Destination);
-			CreateMap<UpdateGameModel, UpdateGameDto, Game>(MemberList.Source);
 		}
 
 		private void AddTournamentMapping()

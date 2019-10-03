@@ -17,6 +17,7 @@ using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Common;
 using OPCAIC.Utils;
+using ConflictException = OPCAIC.Application.Exceptions.ConflictException;
 
 namespace OPCAIC.ApiService.Middlewares
 {
@@ -80,6 +81,11 @@ namespace OPCAIC.ApiService.Middlewares
 				when (Log(context, ex.StatusCode, GetElapsedMs(start), null))
 			{
 				await WriteResponseAsync(context, ex);
+			}
+			catch (ConflictException ex)
+				when (Log(context, StatusCodes.Status409Conflict, GetElapsedMs(start), null))
+			{
+				await WriteResponseAsync(context, StatusCodes.Status409Conflict, ex.Error);
 			}
 			catch (NotFoundException ex)
 				when (Log(context, StatusCodes.Status404NotFound, GetElapsedMs(start), null))

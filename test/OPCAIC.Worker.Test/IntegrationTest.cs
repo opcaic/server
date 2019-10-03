@@ -55,8 +55,8 @@ namespace OPCAIC.Worker.Test
 				.Returns(downloadServiceMock.Object);
 
 			var reg = Services.Mock<IGameModuleRegistry>();
-			reg.Setup(r => r.FindGameModule(It.IsAny<string>())).Returns(ExternalGameModule);
-			reg.Setup(r => r.GetAllModules()).Returns(new[] {ExternalGameModule});
+			reg.Setup(r => r.FindGameModule(It.IsAny<string>())).Returns(() => ExternalGameModule);
+			reg.Setup(r => r.GetAllModules()).Returns(() => new[] {ExternalGameModule});
 		}
 
 		private DirectoryInfo ArchiveDirectory { get; }

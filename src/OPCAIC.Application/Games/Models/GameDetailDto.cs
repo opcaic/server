@@ -1,13 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
-using OPCAIC.Application.Dtos.Games;
-using OPCAIC.Application.Games.Models;
-using OPCAIC.Application.Games.Queries;
 using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.ApiService.Models.Games
+namespace OPCAIC.Application.Games.Models
 {
-	public class GameDetailModel : GamePreviewModel, IMapFrom<GameDetailDto>
+	public class GameDetailDto : GamePreviewDto, IMapFrom<Game>
 	{
 		public string Key { get; set; }
 

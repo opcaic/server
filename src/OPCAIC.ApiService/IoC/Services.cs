@@ -27,7 +27,6 @@ namespace OPCAIC.ApiService.IoC
 				.AddSingleton<ITimeService, MachineTimeService>()
 				.AddScoped<IEmailService, EmailService>()
 				.AddScoped<IUserManager, UserManager>()
-				.AddScoped<IGamesService, GamesService>()
 				.AddScoped<IDocumentService, DocumentService>()
 				.AddScoped<ISubmissionService, SubmissionService>()
 				.AddScoped<IFrontendUrlGenerator, UrlGenerator>()

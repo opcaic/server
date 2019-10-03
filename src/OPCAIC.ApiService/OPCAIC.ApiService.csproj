@@ -46,4 +46,8 @@
     <ProjectReference Include="..\OPCAIC.Utils\OPCAIC.Utils.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ModelValidationHandling\Validators\Games\" />
+  </ItemGroup>
+
 </Project>

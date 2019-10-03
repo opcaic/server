@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
-using OPCAIC.Domain.Entities;
 using OPCAIC.Persistence.Repositories;
 using OPCAIC.Persistence.Repositories.Emails;
 
@@ -21,7 +20,6 @@ namespace OPCAIC.ApiService.IoC
 				.AddScoped<ISubmissionValidationRepository, SubmissionValidationRepository>()
 				.AddScoped<IMatchExecutionRepository, MatchExecutionRepository>()
 				.AddScoped<IUserTournamentRepository, UserTournamentRepository>()
-				.AddScoped<IGameRepository, GameRepository>()
 				.AddScoped<IDocumentRepository, DocumentRepository>()
 				.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 		}

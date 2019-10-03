@@ -114,10 +114,13 @@ namespace OPCAIC.ApiService.Test
 				StatusCodes.Status400BadRequest, errorCode, field, testCode);
 		}
 
-		protected Task AssertConflict(string errorCode, string field, Func<Task> testCode)
+		protected async Task AssertConflict(string errorCode, string field, Func<Task> testCode)
 		{
-			return AssertModelValidationException<ConflictException>(
-				StatusCodes.Status409Conflict, errorCode, field, testCode);
+			var ex = await Assert.ThrowsAsync<ConflictException>(testCode);
+
+			var valError = ex.Error.ShouldBeOfType<ConflictException.ConflictError>();
+			valError.Code.ShouldBe(errorCode);
+			valError.Field.ShouldBe(field);
 		}
 
 		protected T NewTrackedEntity<T>() where T : class

@@ -12,19 +12,25 @@ namespace OPCAIC.Application.Extensions
 {
 	public static class RepositoryExtensions
 	{
-		public static Task<bool> UpdateAsync<TEntity, TDto>(this IRepository<TEntity> repository,
+		public static async Task UpdateAsync<TEntity, TDto>(this IRepository<TEntity> repository,
 			long id, TDto dto, CancellationToken cancellationToken = default)
 			where TEntity : IEntity
 		{
-			return repository.UpdateAsync(
-				new BaseSpecification<TEntity>().AddCriteria(e => e.Id == id), dto, cancellationToken);
+			if (!await repository.UpdateAsync(
+				new BaseSpecification<TEntity>().AddCriteria(e => e.Id == id), dto, cancellationToken))
+			{
+				throw new NotFoundException(typeof(TEntity).Name, id);
+			}
 		}
 
-		public static Task<bool> UpdateAsync<TEntity, TDto>(this IRepository<TEntity> repository,
+		public static async Task UpdateAsync<TEntity, TDto>(this IRepository<TEntity> repository,
 			Expression<Func<TEntity, bool>> criteria, TDto dto, CancellationToken cancellationToken = default)
 		{
-			return repository.UpdateAsync(
-				new BaseSpecification<TEntity>().AddCriteria(criteria), dto, cancellationToken);
+			if (!await repository.UpdateAsync(
+				new BaseSpecification<TEntity>().AddCriteria(criteria), dto, cancellationToken))
+			{
+				throw new NotFoundException(typeof(TEntity).Name);
+			}
 		}
 
 		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken)

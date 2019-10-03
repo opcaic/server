@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -8,17 +7,16 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.Messaging.Test
 {
-	public class BrokerWorkerConnectorTestBase : IDisposable
+	public class BrokerWorkerConnectorTestBase : ServiceTestBase
 	{
 		protected static readonly double Timeout = 5000;
 
-		private readonly XUnitLoggerProvider loggerProvider;
 		public string ConnectionString = TestConnectionStringFactory.GetConnectionString();
 
 		public BrokerWorkerConnectorTestBase(ITestOutputHelper output)
+			: base(output)
 		{
 			output.WriteLine(ConnectionString);
-			loggerProvider = new XUnitLoggerProvider(output);
 			HeartbeatConfig = HeartbeatConfig.Default;
 			BrokerConsumerThread = new ThreadHelper(output, "BrokerConsumer");
 			BrokerSocketThread = new ThreadHelper(output, "BrokerSocket");
@@ -34,14 +32,16 @@ namespace OPCAIC.Messaging.Test
 		private ThreadHelper WorkerSocketThread { get; }
 		protected HeartbeatConfig HeartbeatConfig { get; }
 
-		public void Dispose()
+		/// <inheritdoc />
+		protected override void Dispose(bool disposing)
 		{
+			base.Dispose(disposing);
 			KillAll();
 		}
 
 		private ILogger<T> GetLogger<T>()
 		{
-			return loggerProvider.CreateLogger<T>();
+			return GetService<ILogger<T>>();
 		}
 
 		protected void CreateBroker()
