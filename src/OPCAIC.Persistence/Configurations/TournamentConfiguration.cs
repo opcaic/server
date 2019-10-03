@@ -18,6 +18,7 @@ namespace OPCAIC.Persistence.Configurations
 				b.Property<long>("Id");
 				b.HasKey("Id");
 			});
+			builder.HasMany(e => e.Submissions).WithOne(e => e.Tournament);
 		}
 	}
 

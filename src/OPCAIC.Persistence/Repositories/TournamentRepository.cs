@@ -72,17 +72,5 @@ namespace OPCAIC.Persistence.Repositories
 				.ProjectTo<TournamentBracketsGenerationDto>(Mapper.ConfigurationProvider)
 				.ToListAsync(cancellationToken);
 		}
-
-		public Task<List<TournamentReferenceDto>> GetTournamentsForFinishing(
-			CancellationToken cancellationToken)
-		{
-			return Query(t => t.Scope == TournamentScope.Deadline &&
-					t.State == TournamentState.WaitingForFinish &&
-					t.Matches.All(m
-						=> m.Executions.OrderByDescending(e => e.Id).First().ExecutorResult ==
-						EntryPointResult.Success))
-				.ProjectTo<TournamentReferenceDto>(Mapper.ConfigurationProvider)
-				.ToListAsync(cancellationToken);
-		}
 	}
 }

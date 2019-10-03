@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Persistence
@@ -32,6 +33,10 @@ namespace OPCAIC.Persistence
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
 			optionsBuilder.UseLazyLoadingProxies();
+
+			// Uncomment to make client-side query evaluation throw (for debug purposes)
+//			optionsBuilder.ConfigureWarnings(w
+//				=> w.Throw(RelationalEventId.QueryClientEvaluationWarning));
 		}
 
 		/// <inheritdoc />

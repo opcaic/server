@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OPCAIC.ApiService.Extensions;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Extensions;
@@ -47,18 +47,19 @@ namespace OPCAIC.ApiService.Services
 
 		internal class Job
 		{
+			private readonly DateTime lastRun;
 			private readonly ILogger logger;
-			private readonly IMediator mediator;
 			private readonly IMatchGenerator matchGenerator;
 			private readonly IMatchRepository matchRepository;
+			private readonly IMediator mediator;
+			private readonly DateTime now;
 			private readonly ITournamentRepository tournamentRepository;
 
-			private readonly DateTime lastRun;
-			private readonly DateTime now;
-
 			/// <inheritdoc />
-			public Job(ILogger logger, IMediator mediator, ITournamentRepository tournamentRepository,
-				IMatchRepository matchRepository, IMatchGenerator matchGenerator, DateTime lastRun, DateTime now)
+			public Job(ILogger logger, IMediator mediator,
+				ITournamentRepository tournamentRepository,
+				IMatchRepository matchRepository, IMatchGenerator matchGenerator, DateTime lastRun,
+				DateTime now)
 			{
 				this.logger = logger;
 				this.tournamentRepository = tournamentRepository;
@@ -81,7 +82,8 @@ namespace OPCAIC.ApiService.Services
 				// brackets
 				{
 					var tournaments =
-						await tournamentRepository.GetBracketTournamentsForMatchGenerationAsync(lastRun,
+						await tournamentRepository.GetBracketTournamentsForMatchGenerationAsync(
+							lastRun,
 							cancellationToken);
 
 					foreach (var tournament in tournaments)
@@ -128,7 +130,7 @@ namespace OPCAIC.ApiService.Services
 							continue;
 						}
 
-						var matches = matchGenerator.GenerateOngoing(tournament, (int) toGenerate);
+						var matches = matchGenerator.GenerateOngoing(tournament, (int)toGenerate);
 						await CreateMatches(cancellationToken, tournament.Id, matches);
 					}
 				}
@@ -153,7 +155,7 @@ namespace OPCAIC.ApiService.Services
 			private async Task TransferTournamentsToRunning(CancellationToken cancellationToken)
 			{
 				var tournaments = await tournamentRepository.GetTournamentsStateInfoAsync(
-					new[] { TournamentState.Published },
+					new[] {TournamentState.Published},
 					cancellationToken);
 
 				var updateDto = new TournamentStartedUpdateDto(now);
@@ -172,15 +174,22 @@ namespace OPCAIC.ApiService.Services
 
 			private async Task TransferTournamentsToFinished(CancellationToken cancellationToken)
 			{
-				var tournaments = await tournamentRepository.GetTournamentsForFinishing(cancellationToken);
+				var events = await tournamentRepository.ListAsync(
+					t => t.Scope == TournamentScope.Deadline &&
+						t.State == TournamentState.WaitingForFinish &&
+						t.Matches.All(m
+							=> m.LastExecution.ExecutorResult == EntryPointResult.Success),
+					t => new TournamentFinished(t.Id, t.Name), cancellationToken);
+
 				var updateDto = new TournamentFinishedUpdateDto(now);
 
-				foreach (var tournament in tournaments)
+				foreach (var e in events)
 				{
-					await mediator.Publish(new TournamentFinished(tournament.Id, tournament.Name), cancellationToken);
-					await tournamentRepository.UpdateAsync(tournament.Id, updateDto, cancellationToken);
+					await mediator.Publish(e, cancellationToken);
+					await tournamentRepository.UpdateAsync(e.TournamentId, updateDto,
+						cancellationToken);
 
-					logger.TournamentStateChanged(tournament.Id, updateDto.State);
+					logger.TournamentStateChanged(e.TournamentId, updateDto.State);
 				}
 			}
 		}

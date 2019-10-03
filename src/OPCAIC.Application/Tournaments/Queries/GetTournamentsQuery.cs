@@ -82,21 +82,19 @@ namespace OPCAIC.Application.Tournaments.Queries
 				var tournamentMap = mapper.GetMapExpression<Tournament, TournamentPreviewDto>();
 
 				var spec = ProjectingSpecification.Create(
-					request.UserId
-						.HasValue // we cannot use conditionals inside the query, as the conditional would get compiled to SQL
-						? Rebind.Map((Tournament t) => new TournamentPreviewAndSubmissionDate
-						{
-							Tournament = Rebind.Invoke(t, tournamentMap),
-							LastUserSubmission = t.Participants
-								.Where(p => p.ActiveSubmissionId == request.UserId)
-								.Select(s => s.ActiveSubmission.Created)
-								.SingleOrDefault()
-						})
-						: Rebind.Map((Tournament t) => new TournamentPreviewAndSubmissionDate
-						{
-							Tournament = Rebind.Invoke(t, tournamentMap),
-							LastUserSubmission = null // we did not ask for a user
-						})
+					Rebind.Map((Tournament t) => new TournamentPreviewAndSubmissionDate
+					{
+						Tournament = Rebind.Invoke(t, tournamentMap),
+						LastUserSubmission = t.Submissions
+							.Where(s => s.AuthorId == request.UserId &&
+								// select the active submission
+								s.TournamentParticipation.ActiveSubmissionId == s.Id)
+							// Select + SingleOrDefault would cause client-side evaluation there
+							// should anyway be at most one submission so the Max() here is fine
+							// Moreover, allow nullable so null is returned when there is no
+							// active submission
+							.Max(s => (DateTime?)s.Created)
+					})
 				);
 
 				// admins must be able to see everything
@@ -112,7 +110,6 @@ namespace OPCAIC.Application.Tournaments.Queries
 					spec.AddCriteria(row => row.Name.ToUpper().StartsWith(request.Name.ToUpper()));
 				}
 
-				// TODO(ON): check how sql queries are generated and whether it is optimal or not (comparing nullable types instead of using .Value)
 				if (request.GameId != null)
 				{
 					spec.AddCriteria(row => row.GameId == request.GameId);

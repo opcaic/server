@@ -42,6 +42,10 @@ namespace OPCAIC.Application.Tournaments.Models
 
 		public DateTime? Published { get; set; }
 
+		public DateTime? EvaluationStarted { get; set; }
+
+		public DateTime? EvaluationFinished { get; set; }
+
 		public TournamentAvailability Availability { get; set; }
 
 		/// <inheritdoc />
@@ -64,8 +68,6 @@ namespace OPCAIC.Application.Tournaments.Models
 				.ForMember(d => d.ThemeColor,
 					opt => opt.MapFrom(s
 						=> s.ThemeColor ?? s.Game.DefaultTournamentThemeColor))
-				.ForMember(d => d.SubmissionsCount,
-					opt => opt.MapFrom(s => s.Participants.Sum(p => p.Submissions.Count)))
 				.IncludeAllDerived();
 		}
 	}

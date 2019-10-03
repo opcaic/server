@@ -44,7 +44,8 @@ namespace OPCAIC.Application.Matches.Queries
 			}
 
 			/// <inheritdoc />
-			protected override void ApplyUserFilter(ProjectingSpecification<Match, MatchDetailDto> spec, long? userId)
+			protected override void ApplyUserFilter(
+				ProjectingSpecification<Match, MatchDetailDto> spec, long? userId)
 			{
 				// only matches from tournaments visible by the user (includes matches with user's submissions)
 				var tournamentCriteria = GetTournamentsQuery.Handler.GetUserFilter(userId);
@@ -87,23 +88,19 @@ namespace OPCAIC.Application.Matches.Queries
 					case null:
 						break; // nothing
 					case MatchState.Queued:
-						spec.AddCriteria(row => !row.Executions
-							.OrderByDescending(e => e.Created).First().Executed.HasValue);
+						spec.AddCriteria(row => !row.LastExecution.Executed.HasValue);
 						break;
 					case MatchState.Executed:
-						spec.AddCriteria(row => row.Executions
-								.OrderByDescending(e => e.Created).First().ExecutorResult ==
-							EntryPointResult.Success);
+						spec.AddCriteria(row
+							=> row.LastExecution.ExecutorResult == EntryPointResult.Success);
 						break;
 					case MatchState.Failed:
-						spec.AddCriteria(row => row.Executions
-								.OrderByDescending(e => e.Created).First().ExecutorResult >=
-							EntryPointResult.UserError);
+						spec.AddCriteria(row
+							=> row.LastExecution.ExecutorResult >= EntryPointResult.UserError);
 						break;
 					case MatchState.Cancelled:
 						spec.AddCriteria(row
-							=> row.Executions.OrderByDescending(e => e.Created).First().State ==
-							WorkerJobState.Cancelled);
+							=> row.LastExecution.State == WorkerJobState.Cancelled);
 						break;
 					default:
 

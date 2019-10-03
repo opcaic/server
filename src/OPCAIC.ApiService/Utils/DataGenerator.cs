@@ -470,25 +470,21 @@ namespace OPCAIC.ApiService.Utils
 				CreateSubmissions(context, users, tournamentChessTable);
 				CreateSubmissions(context, users, tournamentChessDe);
 
-				var matchChessAdminOrganizerSuccess = CreateMatch(tournamentChessElo, 1,
+				var matchChessAdminOrganizerSuccess = CreateMatch(context, tournamentChessElo, 1,
 					submissionChessAdmin, submissionChessOrganizer);
-				AddExecution(matchChessAdminOrganizerSuccess, EntryPointResult.Success,
+				AddExecution(context, matchChessAdminOrganizerSuccess, EntryPointResult.Success,
 					DateTime.Now);
 
-				var matchChessAdminOrganizerQueued = CreateMatch(tournamentChessElo, 2,
+				var matchChessAdminOrganizerQueued = CreateMatch(context, tournamentChessElo, 2,
 					submissionChessAdmin, submissionChessOrganizer);
-				AddExecution(matchChessAdminOrganizerQueued);
+				AddExecution(context, matchChessAdminOrganizerQueued);
 
-				var matchChessAdminOrganizerError = CreateMatch(tournamentChessElo, 3,
+				var matchChessAdminOrganizerError = CreateMatch(context, tournamentChessElo, 3,
 					submissionChessAdmin, submissionChessOrganizer);
-				AddExecution(matchChessAdminOrganizerError, EntryPointResult.PlatformError,
+				AddExecution(context, matchChessAdminOrganizerError, EntryPointResult.PlatformError,
 					DateTime.Now.AddDays(-2));
-				AddExecution(matchChessAdminOrganizerError, EntryPointResult.UserError,
+				AddExecution(context, matchChessAdminOrganizerError, EntryPointResult.UserError,
 					DateTime.Now.AddDays(-1));
-
-				context.Set<Match>().AddRange(matchChessAdminOrganizerSuccess,
-					matchChessAdminOrganizerQueued, matchChessAdminOrganizerError);
-				context.SaveChanges();
 
 				var submissionDotaAdmin = CreateSubmission(context, userAdmin, tournamentDotaSe, 0);
 				var submissionDotaOrganizer = CreateSubmission(context, userOrganizer, tournamentDotaSe, 0);
@@ -497,17 +493,15 @@ namespace OPCAIC.ApiService.Utils
 				context.SaveChanges();
 
 				var tree = MatchTreeGenerator.GenerateSingleElimination(4, false);
-				var matchAdminOrganizer = CreateMatch(tournamentDotaSe, 0, submissionDotaAdmin,
+				var matchAdminOrganizer = CreateMatch(context, tournamentDotaSe, 0, submissionDotaAdmin,
 					submissionDotaOrganizer);
-				AddExecution(matchAdminOrganizer, EntryPointResult.Success);
-				var matchUsers = CreateMatch(tournamentDotaSe, 1, submissionDotaUser,
+				AddExecution(context, matchAdminOrganizer, EntryPointResult.Success);
+				var matchUsers = CreateMatch(context, tournamentDotaSe, 1, submissionDotaUser,
 					submissionDotaUserB);
-				AddExecution(matchUsers, EntryPointResult.Success);
-				var final = CreateMatch(tournamentDotaSe, 2, submissionDotaOrganizer,
+				AddExecution(context, matchUsers, EntryPointResult.Success);
+				var final = CreateMatch(context, tournamentDotaSe, 2, submissionDotaOrganizer,
 					submissionDotaUserB);
-				AddExecution(final, EntryPointResult.Success);
-				context.Matches.AddRange(matchAdminOrganizer, matchUsers, final);
-				context.SaveChanges();
+				AddExecution(context, final, EntryPointResult.Success);
 
 				// add necessary files
 				foreach (var submission in context.Submissions)
@@ -564,10 +558,10 @@ namespace OPCAIC.ApiService.Utils
 			context.SaveChanges();
 		}
 
-		private static Match CreateMatch(Tournament tournament, int index,
+		private static Match CreateMatch(DataContext context, Tournament tournament, int index,
 			params Submission[] participants)
 		{
-			return new Match
+			var match = new Match
 			{
 				Tournament = tournament,
 				Index = index,
@@ -576,9 +570,12 @@ namespace OPCAIC.ApiService.Utils
 						.ToList(),
 				Executions = new List<MatchExecution>() // executions to be added separately.
 			};
+			context.Add(match);
+			context.SaveChanges();
+			return match;
 		}
 
-		private static MatchExecution AddExecution(Match match,
+		private static MatchExecution AddExecution(DataContext context, Match match,
 			EntryPointResult executorResult = EntryPointResult.NotExecuted,
 			DateTime? executed = null)
 		{
@@ -600,6 +597,8 @@ namespace OPCAIC.ApiService.Utils
 				Executed = executed
 			};
 			match.Executions.Add(matchExecution);
+			context.SaveChanges();
+			match.LastExecution = matchExecution;
 			return matchExecution;
 		}
 

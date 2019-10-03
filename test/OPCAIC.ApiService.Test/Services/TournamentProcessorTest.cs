@@ -66,7 +66,13 @@ namespace OPCAIC.ApiService.Test.Services
 		{
 			Faker.Configure<Match>()
 				.RuleFor(m => m.Participations,
-					f => Faker.Entities<SubmissionParticipation>(2));
+					f => Faker.Entities<SubmissionParticipation>(2))
+				.RuleFor(m => m.Executions,
+					f => new List<MatchExecution>
+					{
+						new MatchExecution {ExecutorResult = EntryPointResult.Success}
+					})
+				.RuleFor(m => m.LastExecution, (f, m) => m.LastExecution = m.Executions.Single());
 
 
 			var tournament = NewTrackedEntity<Tournament>();
@@ -91,7 +97,8 @@ namespace OPCAIC.ApiService.Test.Services
 					f => new List<MatchExecution>
 					{
 						new MatchExecution {ExecutorResult = EntryPointResult.UserError}
-					});
+					})
+				.RuleFor(m => m.LastExecution, (f, m) => m.LastExecution = m.Executions.Single());
 
 
 			var tournament = NewTrackedEntity<Tournament>();

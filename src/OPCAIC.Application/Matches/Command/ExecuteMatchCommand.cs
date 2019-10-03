@@ -4,8 +4,11 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.Matches.Command
 {
@@ -22,10 +25,10 @@ namespace OPCAIC.Application.Matches.Command
 		public class Handler : IRequestHandler<ExecuteMatchCommand, long>
 		{
 			private readonly ILogger<ExecuteMatchCommand> logger;
-			private readonly IMatchExecutionRepository repository;
+			private readonly IRepository<Match> repository;
 
 			public Handler(ILogger<ExecuteMatchCommand> logger,
-				IMatchExecutionRepository repository)
+				IRepository<Match> repository)
 			{
 				this.repository = repository;
 				this.logger = logger;
@@ -35,11 +38,15 @@ namespace OPCAIC.Application.Matches.Command
 			public async Task<long> Handle(ExecuteMatchCommand request,
 				CancellationToken cancellationToken)
 			{
-				var execution =
-					new NewMatchExecutionDto {MatchId = request.MatchId, JobId = Guid.NewGuid()};
-				var id = await repository.CreateAsync(execution, cancellationToken);
-				logger.MatchExecutionQueued(id, request.MatchId, execution.JobId);
-				return id;
+				var match = await repository.GetAsync(request.MatchId, cancellationToken);
+
+				// Add the execution
+				var execution = new MatchExecution { MatchId = request.MatchId, JobId = Guid.NewGuid() };
+				match.LastExecution = execution;
+				await repository.SaveChangesAsync(cancellationToken);
+
+				logger.MatchExecutionQueued(execution.Id, request.MatchId, execution.JobId);
+				return execution.Id;
 			}
 		}
 	}

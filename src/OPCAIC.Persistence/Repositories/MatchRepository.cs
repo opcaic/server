@@ -22,7 +22,7 @@ namespace OPCAIC.Persistence.Repositories
 		{
 		}
 
-		public Task CreateMatchesAsync(List<NewMatchDto> matches,
+		public async Task CreateMatchesAsync(List<NewMatchDto> matches,
 			CancellationToken cancellationToken)
 		{
 			var entities = Mapper.Map<List<Match>>(matches);
@@ -48,7 +48,15 @@ namespace OPCAIC.Persistence.Repositories
 			}
 
 			DbSet.AddRange(entities);
-			return SaveChangesAsync(cancellationToken);
+			await SaveChangesAsync(cancellationToken);
+
+			// set LastExecution to newly created (cannot be done before because of circular
+			// dependency
+			foreach (var e in entities)
+			{
+				e.LastExecution = e.Executions.Single();
+			}
+			await SaveChangesAsync(cancellationToken);
 		}
 
 		/// <inheritdoc />

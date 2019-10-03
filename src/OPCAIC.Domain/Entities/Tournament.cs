@@ -151,6 +151,11 @@ namespace OPCAIC.Domain.Entities
 		/// </summary>
 		public long MaxSubmissionSize { get; set; }
 
+		/// <summary>
+		///     All submissions posted to this tournament, note that the not all of these are active. for active submissions see Participants->ActiveSubmission
+		/// </summary>
+		public virtual IList<Submission> Submissions { get; set; }
+
 		public static readonly Expression<Func<Tournament, bool>> AcceptsSubmissionExpression =
 			t => t.State == TournamentState.Published &&
 				(t.Deadline == null || t.Deadline > DateTime.Now) ||

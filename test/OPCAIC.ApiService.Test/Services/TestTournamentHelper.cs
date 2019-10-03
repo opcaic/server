@@ -75,6 +75,24 @@ namespace OPCAIC.ApiService.Test.Services
 				var order = 0;
 				var score = rand.Next(2);
 
+				var execution = new MatchExecution
+				{
+					AdditionalData = "{}",
+					ExecutorResult = EntryPointResult.Success,
+					JobId = Guid.NewGuid(),
+					State = WorkerJobState.Finished,
+					Executed = now,
+					BotResults = matchDto.Submissions.Select(s => new SubmissionMatchResult
+					{
+						AdditionalData = "{}",
+						SubmissionId = s,
+						Submission = tournament.Participants.Select(p => p.ActiveSubmission).Single(sub => sub.Id == s),
+						CompilerResult = EntryPointResult.Success,
+						Crashed = false,
+						Score = (score = (score + 1 % 2))
+					}).ToList()
+				};
+
 				tournament.Matches.Add(new Match
 				{
 					Participations = matchDto.Submissions
@@ -87,24 +105,9 @@ namespace OPCAIC.ApiService.Test.Services
 					Index = matchDto.Index,
 					Executions = new List<MatchExecution>
 					{
-						new MatchExecution
-						{
-							AdditionalData = "{}",
-							ExecutorResult = EntryPointResult.Success,
-							JobId = Guid.NewGuid(),
-							State = WorkerJobState.Finished,
-							Executed = now,
-							BotResults = matchDto.Submissions.Select(s => new SubmissionMatchResult
-							{
-								AdditionalData = "{}",
-								SubmissionId = s,
-								Submission = tournament.Participants.Select(p => p.ActiveSubmission).Single(sub => sub.Id == s),
-								CompilerResult = EntryPointResult.Success,
-								Crashed = false,
-								Score = (score = (score + 1 % 2))
-							}).ToList()
-						}
-					}
+						execution
+					},
+					LastExecution = execution
 				});
 			}
 		}
