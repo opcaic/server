@@ -87,6 +87,7 @@ namespace OPCAIC.Application.Tournaments.Commands
 				CancellationToken cancellationToken)
 			{
 				var tournament = mapper.Map<Tournament>(request);
+				tournament.OwnerId = request.RequestingUserId;
 
 				await repository.CreateAsync(tournament, cancellationToken);
 				logger.TournamentCreated(tournament.Id, request);
