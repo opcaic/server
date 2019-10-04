@@ -1,44 +1,45 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using OPCAIC.Application.Dtos.Emails;
-using OPCAIC.Application.Emails;
-using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Common;
-using OPCAIC.Utils;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Infrastructure.Emails
 {
 	public class EmailSender
 	{
 		private readonly EmailsConfiguration configuration;
-		private readonly IEmailRepository emailRepository;
+		private readonly IRepository<Email> emailRepository;
 		private readonly ILogger logger;
+		private readonly ITimeService time;
 
-		public EmailSender(IOptions<EmailsConfiguration> options, IEmailRepository emailRepository,
-			ILogger<EmailSender> logger)
+		public EmailSender(IOptions<EmailsConfiguration> options,
+			IRepository<Email> emailRepository,
+			ILogger<EmailSender> logger, ITimeService time)
 		{
 			configuration = options.Value;
 			this.emailRepository = emailRepository;
 			this.logger = logger;
+			this.time = time;
 		}
 
 		public async Task TickAsync(CancellationToken cancellationToken)
 		{
 			var totalSent = 0;
-			EmailPreviewDto[] emails;
-			do
-			{
-				emails = await emailRepository.GetEmailsToSendAsync(cancellationToken);
-				if (emails.Length == 0)
-				{
-					break;
-				}
 
+			var spec = new BaseSpecification<Email>()
+				.AddCriteria(e => e.RemainingAttempts > 0)
+				.Ordered(e => e.Created);
+
+			List<Email> emails;
+			while ((emails = await emailRepository.ListAsync(spec, cancellationToken)).Count > 0)
+			{
 				using (var client = new SmtpClient())
 				{
 					try
@@ -71,19 +72,18 @@ namespace OPCAIC.Infrastructure.Emails
 							await client.SendAsync(mail, cancellationToken);
 
 							logger.LogInformation(LoggingEvents.MailSentSuccess,
-								$"Email with id '{{{LoggingTags.MailId}}}' succesfully sent to '{{{LoggingTags.UserEmail}}}'",
+								$"Email with id '{{{LoggingTags.MailId}}}' successfully sent to '{{{LoggingTags.UserEmail}}}'",
 								email.Id, email.RecipientEmail);
-							await emailRepository.UpdateResultAsync(email.Id,
-								new EmailResultDto {SentAt = DateTime.Now}, cancellationToken);
+
+							email.SentAt = time.Now;
+							await emailRepository.SaveChangesAsync(cancellationToken);
+
+							totalSent++;
 						}
 						catch (Exception ex)
 						{
-							var result = new EmailResultDto
-							{
-								RemainingAttempts = email.RemainingAttempts - 1
-							};
-							await emailRepository.UpdateResultAsync(email.Id, result,
-								cancellationToken);
+							email.RemainingAttempts--;
+							await emailRepository.SaveChangesAsync(cancellationToken);
 
 							logger.LogWarning(LoggingEvents.MailSentFailed, ex,
 								$"Sending email with id '{{{LoggingTags.MailId}}}' to user '{{{LoggingTags.UserEmail}}}' failed.",
@@ -91,9 +91,7 @@ namespace OPCAIC.Infrastructure.Emails
 						}
 					}
 				}
-
-				totalSent += emails.Length;
-			} while (emails.Length > 0);
+			}
 
 			if (totalSent > 0)
 			{

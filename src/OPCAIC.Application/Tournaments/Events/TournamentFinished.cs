@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
-using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Emails;
+using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Extensions;
@@ -44,8 +44,7 @@ namespace OPCAIC.Application.Tournaments.Events
 			/// <inheritdoc />
 			public async Task Handle(TournamentFinished notification, CancellationToken cancellationToken)
 			{
-				var mail = new TournamentFinishedEmailDto
-				(
+				var mail = EmailType.TournamentFinished.CreateEmail(
 					 urlGenerator.TournamentPageLink(notification.TournamentId),
 					 notification.TournamentName
 				);

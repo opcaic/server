@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Users.Events;
-using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;

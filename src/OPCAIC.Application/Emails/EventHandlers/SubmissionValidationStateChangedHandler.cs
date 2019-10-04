@@ -1,10 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using OPCAIC.Application.Dtos.EmailTemplates;
+using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Submissions.Events;
 using OPCAIC.Domain.Entities;
@@ -48,10 +47,9 @@ namespace OPCAIC.Application.Emails.EventHandlers
 				return;
 			}
 
-			var emailDto =
-				new SubmissionValidationFailedEmailDto(
-					urlGenerator.SubmissionPageLink(notification.TournamentId,
-						notification.SubmissionId));
+			var emailDto = EmailType.SubmissionValidationFailed.CreateEmail(
+				urlGenerator.SubmissionPageLink(notification.TournamentId,
+					notification.SubmissionId));
 
 			await emailService.EnqueueEmailAsync(emailDto, data.Email, cancellationToken);
 		}

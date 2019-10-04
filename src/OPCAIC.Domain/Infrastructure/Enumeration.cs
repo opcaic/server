@@ -68,17 +68,29 @@ namespace OPCAIC.Domain.Infrastructure
 
 		protected static T Create([CallerMemberName] string name = null)
 		{
-			return Create(GetNextId(), name);
+			return Create<T>(name);
 		}
 
 		protected static T Create(int id, [CallerMemberName] string name = null)
+		{
+			return Create<T>(id, name);
+		}
+
+		protected static U Create<U>([CallerMemberName] string name = null)
+			where U : T, new()
+		{
+			return Create<U>(GetNextId(), name);
+		}
+
+		protected static U Create<U>(int id, [CallerMemberName] string name = null)
+			where U : T, new()
 		{
 			Require.That<EnumerationException>(!lookupFromName.ContainsKey(name),
 				$"Enumeration {typeof(T).Name} already defines value with name '{name}'");
 			Require.That<EnumerationException>(!lookupFromId.ContainsKey(id),
 				$"Enumeration {typeof(T).Name} already defines value with id '{id}'");
 
-			var enumeration = new T {Id = id, Name = name};
+			var enumeration = new U {Id = id, Name = name};
 			allValues.Add(enumeration);
 			lookupFromName[name] = enumeration;
 			lookupFromId[id] = enumeration;

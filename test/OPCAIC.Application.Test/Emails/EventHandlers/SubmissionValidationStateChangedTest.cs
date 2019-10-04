@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Moq;
-using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Emails;
 using OPCAIC.Application.Emails.EventHandlers;
+using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Interfaces;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Submissions.Events;
 using OPCAIC.Domain.Entities;
@@ -73,7 +72,7 @@ namespace OPCAIC.Application.Test.Emails.EventHandlers
 
 			emailService.Setup(s
 				=> s.EnqueueEmailAsync(
-					It.Is<SubmissionValidationFailedEmailDto>(d => d.SubmissionUrl == "url"),
+					It.Is<EmailType.SubmissionValidationFailedType.Email>(d => d.SubmissionUrl == "url"),
 					data.Email, CancellationToken)).Returns(Task.CompletedTask);
 
 			return Handler.Handle(Notification, CancellationToken);

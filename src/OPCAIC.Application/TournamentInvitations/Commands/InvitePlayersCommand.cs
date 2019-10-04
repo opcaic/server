@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
 using MediatR;
-using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Emails;
+using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
@@ -63,7 +63,7 @@ namespace OPCAIC.Application.TournamentInvitations.Commands
 				// add only those addresses, which are not already added
 				var toSend = request.Emails.Where(invite => !invitations.Contains(invite)).ToList();
 
-				var mailDto = new TournamentInvitationEmailDto(
+				var mailDto = EmailType.TournamentInvitation.CreateEmail(
 					urlGenerator.TournamentPageLink(request.TournamentId),
 					tournamentName
 				);

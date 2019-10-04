@@ -1,6 +1,6 @@
 ﻿namespace OPCAIC.Domain.Entities
 {
-	public class EmailTemplate : EntityBase
+	public class EmailTemplate : Entity
 	{
 		public string Name { get; set; }
 

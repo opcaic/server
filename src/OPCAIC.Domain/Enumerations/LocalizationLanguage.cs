@@ -6,5 +6,10 @@ namespace OPCAIC.Domain.Enumerations
 	{
 		public static readonly LocalizationLanguage EN = Create("en");
 		public static readonly LocalizationLanguage CZ = Create("cs");
+
+		public static implicit operator string(LocalizationLanguage lang)
+		{
+			return lang.Name;
+		}
 	}
 }

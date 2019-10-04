@@ -21,6 +21,7 @@ namespace OPCAIC.ApiService.Security
 			services
 				.AddSingleton<IAuthorizationHandler, SuperUserAuthorizationHandler>()
 				.AddScoped<IAuthorizationHandler, UserPermissionHandler>()
+				.AddScoped<IAuthorizationHandler, EmailPermissionHandler>()
 				.AddScoped<IAuthorizationHandler, TournamentPermissionHandler>()
 				.AddScoped<IAuthorizationHandler, DocumentPermissionHandler>()
 				.AddScoped<IAuthorizationHandler, SubmissionPermissionHandler>()

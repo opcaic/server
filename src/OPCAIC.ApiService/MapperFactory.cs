@@ -14,8 +14,6 @@ using OPCAIC.ApiService.Models.Users;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.Broker;
 using OPCAIC.Application.Dtos.Documents;
-using OPCAIC.Application.Dtos.Emails;
-using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.Submissions;
@@ -52,8 +50,6 @@ namespace OPCAIC.ApiService
 			AddDocumentMapping();
 			AddMatchMapping();
 			AddMatchExecutionMapping();
-			AddEmailMapping();
-			AddEmailTemplateMapping();
 			AddBrokerMapping();
 			AddOther();
 		}
@@ -145,17 +141,6 @@ namespace OPCAIC.ApiService
 
 			CreateMap<SubmissionValidationLogsDto, SubmissionValidationDetailModel>(MemberList
 				.Source);
-		}
-
-		private void AddEmailMapping()
-		{
-			CreateMap<Email, EmailPreviewDto>(MemberList.Destination);
-			CreateMap<NewEmailDto, Email>(MemberList.Source);
-		}
-
-		private void AddEmailTemplateMapping()
-		{
-			CreateMap<EmailTemplate, EmailTemplateDto>(MemberList.Destination);
 		}
 
 		private void AddMatchMapping()

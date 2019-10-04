@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Application.Dtos.EmailTemplates;
+using OPCAIC.Application.Emails.Templates;
 
 namespace OPCAIC.Application.Interfaces.Repositories
 {

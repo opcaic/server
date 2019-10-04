@@ -1,8 +1,10 @@
 ﻿using System;
+using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Domain.Entities;
 
-namespace OPCAIC.Application.Dtos.Emails
+namespace OPCAIC.Application.Emails.Models
 {
-	public class EmailPreviewDto
+	public class EmailDto : IMapFrom<Email>
 	{
 		public long Id { get; set; }
 

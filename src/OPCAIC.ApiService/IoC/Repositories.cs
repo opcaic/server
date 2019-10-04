@@ -11,7 +11,6 @@ namespace OPCAIC.ApiService.IoC
 		public static void AddRepositories(this IServiceCollection serviceCollection)
 		{
 			serviceCollection
-				.AddScoped<IEmailRepository, EmailRepository>()
 				.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>()
 				.AddScoped<IUserRepository, UserRepository>()
 				.AddScoped<IMatchRepository, MatchRepository>()

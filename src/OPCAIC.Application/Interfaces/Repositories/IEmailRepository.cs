@@ -1,14 +1,13 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Application.Dtos.Emails;
+using OPCAIC.Application.Emails.Models;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.Interfaces.Repositories
 {
-	public interface IEmailRepository
+	public interface IEmailRepository : IRepository<Email>
 	{
-		Task<long> EnqueueEmailAsync(NewEmailDto dto, CancellationToken cancellationToken);
-		Task<EmailPreviewDto[]> GetEmailsAsync(CancellationToken cancellationToken);
-		Task UpdateResultAsync(long id, EmailResultDto dto, CancellationToken cancellationToken);
-		Task<EmailPreviewDto[]> GetEmailsToSendAsync(CancellationToken cancellationToken);
+		Task<EmailDto[]> GetEmailsAsync(CancellationToken cancellationToken);
 	}
 }

@@ -1,10 +1,15 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Security;
-using OPCAIC.Application.Dtos.Emails;
+using OPCAIC.Application.Emails.Models;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Application.Extensions;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -12,11 +17,13 @@ namespace OPCAIC.ApiService.Controllers
 	[Route("api/emails")]
 	public class EmailsController : ControllerBase
 	{
-		private readonly IEmailRepository emailRepository;
+		private readonly IMapper mapper;
+		private readonly IRepository<Email> emailRepository;
 
-		public EmailsController(IEmailRepository emailRepository)
+		public EmailsController(IEmailRepository emailRepository, IMapper mapper)
 		{
 			this.emailRepository = emailRepository;
+			this.mapper = mapper;
 		}
 
 		/// <summary>
@@ -25,9 +32,9 @@ namespace OPCAIC.ApiService.Controllers
 		/// <returns></returns>
 		[HttpGet]
 		[RequiresPermission(EmailPermission.Read)]
-		public Task<EmailPreviewDto[]> GetEmailsAsync(CancellationToken cancellationToken)
+		public Task<List<EmailDto>> GetEmailsAsync(CancellationToken cancellationToken)
 		{
-			return emailRepository.GetEmailsAsync(cancellationToken);
+			return emailRepository.ListAsync<Email, EmailDto>(e => true, mapper, cancellationToken);
 		}
 	}
 }

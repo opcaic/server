@@ -2,9 +2,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Emails;
+using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
@@ -67,7 +67,7 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 				.Returns("url");
 
 			emailService
-				.Setup(r => r.EnqueueEmailAsync(It.IsAny<EmailDtoBase>(), newmail,
+				.Setup(r => r.EnqueueEmailAsync(It.IsAny<EmailData>(), newmail,
 					CancellationToken))
 				.Returns(Task.CompletedTask);
 
@@ -115,7 +115,7 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 				.Returns("url");
 
 			emailService
-				.Setup(r => r.EnqueueEmailAsync(It.IsAny<EmailDtoBase>(), email,
+				.Setup(r => r.EnqueueEmailAsync(It.IsAny<EmailData>(), email,
 					CancellationToken))
 				.Returns(Task.CompletedTask);
 

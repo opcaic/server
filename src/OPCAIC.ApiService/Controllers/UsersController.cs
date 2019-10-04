@@ -14,9 +14,9 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.ApiService.Users.Commands;
-using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Emails;
+using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
@@ -268,7 +268,7 @@ namespace OPCAIC.ApiService.Controllers
 			var token = await userManager.GeneratePasswordResetTokenAsync(user);
 			var url = urlGenerator.PasswordResetLink(user.Email, token);
 
-			await emailService.EnqueueEmailAsync(new PasswordResetEmailDto(url),
+			await emailService.EnqueueEmailAsync(EmailType.PasswordReset.CreateEmail(url),
 				model.Email, cancellationToken);
 		}
 

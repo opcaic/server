@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using OPCAIC.Application.Dtos.EmailTemplates;
+using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Interfaces.Repositories;
-using OPCAIC.Domain.Entities;
+using EmailTemplate = OPCAIC.Domain.Entities.EmailTemplate;
 
 namespace OPCAIC.Persistence.Repositories.Emails
 {

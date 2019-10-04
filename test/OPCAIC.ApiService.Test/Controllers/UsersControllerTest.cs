@@ -9,9 +9,9 @@ using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.ApiService.Users.Commands;
-using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Emails;
+using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Validation;
@@ -197,7 +197,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 
 			EmailServiceMock.Verify(
 				s => s.EnqueueEmailAsync(
-					It.IsAny<UserVerificationEmailDto>(), userModel.Email, CancellationToken));
+					It.IsAny<EmailType.UserVerificationType.Email>(), userModel.Email, CancellationToken));
 
 			var detail = await Controller.GetUserByIdAsync(idModel.Id, CancellationToken);
 			Assert.Equal(userModel.Email, detail.Email);

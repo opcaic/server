@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using MediatR;
 using OPCAIC.ApiService.Interfaces;
-using OPCAIC.Application.Dtos.EmailTemplates;
 using OPCAIC.Application.Emails;
+using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Specifications;
@@ -22,14 +22,17 @@ namespace OPCAIC.ApiService.Users.Events
 
 		public class Handler : INotificationHandler<UserCreated>
 		{
-			private readonly IUserManager userManager;
-			private readonly IFrontendUrlGenerator urlGenerator;
 			private readonly IEmailService emailService;
-			private readonly IRepository<TournamentParticipation> participationsRepository;
 			private readonly IRepository<TournamentInvitation> invitationRepository;
+			private readonly IRepository<TournamentParticipation> participationsRepository;
+			private readonly IFrontendUrlGenerator urlGenerator;
+			private readonly IUserManager userManager;
 
 			/// <inheritdoc />
-			public Handler(IUserManager userManager, IFrontendUrlGenerator urlGenerator, IEmailService emailService, IRepository<TournamentParticipation> participationsRepository, IRepository<TournamentInvitation> invitationRepository)
+			public Handler(IUserManager userManager, IFrontendUrlGenerator urlGenerator,
+				IEmailService emailService,
+				IRepository<TournamentParticipation> participationsRepository,
+				IRepository<TournamentInvitation> invitationRepository)
 			{
 				this.userManager = userManager;
 				this.urlGenerator = urlGenerator;
@@ -46,7 +49,8 @@ namespace OPCAIC.ApiService.Users.Events
 				await AcceptInvitations(notification, cancellationToken);
 			}
 
-			private async Task AcceptInvitations(UserCreated notification, CancellationToken cancellationToken)
+			private async Task AcceptInvitations(UserCreated notification,
+				CancellationToken cancellationToken)
 			{
 				var invitations =
 					await invitationRepository.ListAsync(i => i.Email == notification.User.Email,
@@ -58,8 +62,7 @@ namespace OPCAIC.ApiService.Users.Events
 
 					participationsRepository.Add(new TournamentParticipation
 					{
-						TournamentId = invitation.TournamentId,
-						UserId = notification.User.Id
+						TournamentId = invitation.TournamentId, UserId = notification.User.Id
 					});
 				}
 
@@ -70,12 +73,12 @@ namespace OPCAIC.ApiService.Users.Events
 			private async Task SendVerificationEmail(UserCreated notification,
 				CancellationToken cancellationToken)
 			{
-				var token = await userManager.GenerateEmailConfirmationTokenAsync(notification.User);
+				var token =
+					await userManager.GenerateEmailConfirmationTokenAsync(notification.User);
 				var url = urlGenerator.EmailConfirmLink(notification.User.Email, token);
 
-				await emailService.EnqueueEmailAsync(
-					new UserVerificationEmailDto(url), notification.User.Email,
-					cancellationToken);
+				await emailService.EnqueueEmailAsync(EmailType.UserVerification.CreateEmail(url),
+					notification.User.Email, cancellationToken);
 			}
 		}
 	}
