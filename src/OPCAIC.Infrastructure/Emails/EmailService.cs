@@ -20,7 +20,7 @@ namespace OPCAIC.Infrastructure.Emails
 		private readonly IHandlebars handlebars = Handlebars.Create();
 		private readonly IUserRepository userRepository;
 
-		public EmailService(IEmailRepository emailRepository,
+		public EmailService(IRepository<Email> emailRepository,
 			IEmailTemplateRepository emailTemplateRepository, IUserRepository userRepository)
 		{
 			this.emailRepository = emailRepository;

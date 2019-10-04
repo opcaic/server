@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Emails.Models;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Domain.Entities;
@@ -20,7 +19,7 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly IMapper mapper;
 		private readonly IRepository<Email> emailRepository;
 
-		public EmailsController(IEmailRepository emailRepository, IMapper mapper)
+		public EmailsController(IRepository<Email> emailRepository, IMapper mapper)
 		{
 			this.emailRepository = emailRepository;
 			this.mapper = mapper;
