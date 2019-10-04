@@ -7,10 +7,6 @@ namespace OPCAIC.Application.Games.Models
 {
 	public class GameDetailDto : GamePreviewDto, IMapFrom<Game>
 	{
-		public string Key { get; set; }
-
-		public GameType Type { get; set; }
-
 		public JObject ConfigurationSchema { get; set; }
 
 		public string DefaultTournamentImageUrl { get; set; }

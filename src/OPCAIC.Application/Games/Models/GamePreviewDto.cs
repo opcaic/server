@@ -2,6 +2,7 @@
 using AutoMapper;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Games.Models
 {
@@ -10,6 +11,10 @@ namespace OPCAIC.Application.Games.Models
 		public long Id { get; set; }
 
 		public string Name { get; set; }
+
+		public string Key { get; set; }
+
+		public GameType Type { get; set; }
 
 		public DateTime Created { get; set; }
 

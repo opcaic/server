@@ -74,6 +74,7 @@ namespace OPCAIC.Application.Games.Commands
 				}
 
 				var game = mapper.Map<Game>(request);
+				game.ConfigurationSchema = "{}";
 				await repository.CreateAsync(game, cancellationToken);
 				logger.GameCreated(game.Id, request);
 				return game.Id;
