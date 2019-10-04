@@ -6,13 +6,7 @@ using FluentValidation.Validators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.Tournaments;
-using OPCAIC.Application.Infrastructure.Validation;
-using OPCAIC.Common;
-using OPCAIC.Domain.Entities;
-using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure;
 using OPCAIC.Persistence;
 
 namespace OPCAIC.ApiService.ModelValidationHandling.Validators.Tournaments

@@ -1,4 +1,8 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using AutoMapper;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -8,11 +12,10 @@ using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Logging;
 using OPCAIC.Application.Specifications;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OPCAIC.Application.Tournaments.Commands
 {
@@ -36,6 +39,18 @@ namespace OPCAIC.Application.Tournaments.Commands
 
 		public long MaxSubmissionSize { get; set; }
 
+		public List<MenuItemDto> MenuItems { get; set; }
+
+		public string ImageUrl { get; set; }
+
+		public double? ImageOverlay { get; set; }
+
+		public string ThemeColor { get; set; }
+
+		public DateTime? Deadline { get; set; }
+
+		public TournamentAvailability Availability { get; set; }
+
 		public bool PrivateMatchlog { get; set; }
 
 		public class Validator : AbstractValidator<CreateTournamentCommand>
@@ -49,7 +64,7 @@ namespace OPCAIC.Application.Tournaments.Commands
 						RuleFor(m => m.Configuration).ValidGameConfiguration(g => g.GameId);
 					});
 
-				// keep these rules synchronized with UpdateTournamentModel
+				// keep these rules synchronized with UpdateTournamentCommand
 				RuleFor(m => m.Format).IsInEnum().NotEqual(TournamentFormat.Unknown)
 					.NotEqual(TournamentFormat.Elo).When(m => m.Scope == TournamentScope.Deadline)
 					.WithMessage("Deadline tournaments do not support ELO format.")
@@ -65,6 +80,16 @@ namespace OPCAIC.Application.Tournaments.Commands
 					.NotNull().When(m => m.Scope == TournamentScope.Ongoing);
 
 				RuleFor(m => m.MaxSubmissionSize).MinValue(1);
+
+				RuleFor(m => m.ImageUrl).Url().MaxLength(StringLengths.Url);
+				RuleFor(m => m.ImageOverlay).InRange(0, 1);
+				RuleFor(m => m.ThemeColor).MaxLength(StringLengths.ThemeColor);
+
+				RuleFor(m => m.Deadline)
+					.NotNull().GreaterThan(DateTime.Now).When(m => m.Scope == TournamentScope.Deadline)
+					.Null().When(m => m.Scope == TournamentScope.Ongoing);
+
+				RuleFor(m => m.Description).MaxLength(StringLengths.GameDescription);
 			}
 		}
 
