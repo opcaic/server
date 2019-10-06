@@ -497,13 +497,13 @@ namespace OPCAIC.ApiService.Utils
 				var tree = MatchTreeGenerator.GenerateSingleElimination(4, false);
 				var matchAdminOrganizer = CreateMatch(context, tournamentDotaSe, 0, submissionDotaAdmin,
 					submissionDotaOrganizer);
-				AddExecution(context, matchAdminOrganizer, EntryPointResult.Success);
+				AddExecution(context, matchAdminOrganizer, EntryPointResult.Success, DateTime.Now.AddDays(-1));
 				var matchUsers = CreateMatch(context, tournamentDotaSe, 1, submissionDotaUser,
 					submissionDotaUserB);
-				AddExecution(context, matchUsers, EntryPointResult.Success);
+				AddExecution(context, matchUsers, EntryPointResult.Success, DateTime.Now.AddDays(-2));
 				var final = CreateMatch(context, tournamentDotaSe, 2, submissionDotaOrganizer,
 					submissionDotaUserB);
-				AddExecution(context, final, EntryPointResult.Success);
+				AddExecution(context, final, EntryPointResult.Success, DateTime.Now.AddDays(-3));
 
 				// add necessary files
 				foreach (var submission in context.Submissions)
@@ -599,8 +599,8 @@ namespace OPCAIC.ApiService.Utils
 				Executed = executed
 			};
 			match.Executions.Add(matchExecution);
-			context.SaveChanges();
 			match.LastExecution = matchExecution;
+			context.SaveChanges();
 			return matchExecution;
 		}
 
