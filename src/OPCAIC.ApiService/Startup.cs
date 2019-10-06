@@ -50,7 +50,7 @@ namespace OPCAIC.ApiService
 					options.ModelMetadataDetailsProviders.Add(new ExcludeInterfaceMetadataProvider(typeof(IAuthenticatedRequest)));
 				})
 				.ConfigureJsonOptions()
-				.ConfigureHybridBinder()
+				.ConfigureCustomBinders()
 				.SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
 				.ConfigureApiBehaviorOptions(options =>
 				{

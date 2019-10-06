@@ -33,12 +33,12 @@ namespace OPCAIC.Application.Logging
 				count, tournamentId);
 		}
 
-		public static void TournamentUpdated(this ILogger logger, long tournamentId,
-			UpdateTournamentCommand dto)
+		public static void TournamentUpdated<TDto>(this ILogger logger, long tournamentId,
+			TDto dto)
 		{
 			logger.LogInformation(LoggingEvents.TournamentUpdated,
-				$"Tournament {{{LoggingTags.TournamentId}}} was updated: {{{LoggingTags.UpdateData}}}",
-				tournamentId, JsonConvert.SerializeObject(dto));
+				$"Tournament {{{LoggingTags.TournamentId}}} was updated: {{@{LoggingTags.UpdateData}}}",
+				tournamentId, dto);
 		}
 	}
 }

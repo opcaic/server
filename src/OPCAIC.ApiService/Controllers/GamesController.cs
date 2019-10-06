@@ -1,11 +1,11 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using HybridModelBinding;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.ModelBinding;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Games.Commands;
@@ -105,7 +105,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task UpdateAsync([FromHybrid] UpdateGameCommand model,
+		public async Task UpdateAsync([FromRouteAndBody] UpdateGameCommand model,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, model.Id, GamePermission.Update);

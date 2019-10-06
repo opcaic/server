@@ -1,17 +1,16 @@
 ﻿using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
-using HybridModelBinding;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Attributes;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.ModelBinding;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Security;
-using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Tournaments.Command;
@@ -116,7 +115,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task UpdateAsync([FromHybrid] UpdateTournamentCommand model,
+		public async Task UpdateAsync([FromRouteAndBody] UpdateTournamentCommand model,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, model.Id, TournamentPermission.Update);
