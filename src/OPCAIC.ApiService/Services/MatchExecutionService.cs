@@ -18,6 +18,7 @@ using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Broker;
+using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Messaging.Messages;
@@ -33,12 +34,13 @@ namespace OPCAIC.ApiService.Services
 		private readonly IWorkerService workerService;
 		private readonly ILogStorageService logStorage;
 		private readonly ISubmissionScoreService scoreService;
+		private readonly ITimeService time;
 
 		public MatchExecutionService(ILogger<MatchExecutionService> logger,
 			IMatchExecutionRepository repository,
 			IWorkerService workerService, 
 			ISubmissionScoreService scoreService,
-			IMapper mapper, ILogStorageService logStorage)
+			IMapper mapper, ILogStorageService logStorage, ITimeService time)
 		{
 			this.logger = logger;
 			this.repository = repository;
@@ -46,6 +48,7 @@ namespace OPCAIC.ApiService.Services
 			this.scoreService = scoreService;
 			this.mapper = mapper;
 			this.logStorage = logStorage;
+			this.time = time;
 		}
 
 		/// <inheritdoc />
@@ -95,7 +98,7 @@ namespace OPCAIC.ApiService.Services
 		public async Task UpdateFromMessage(MatchExecutionResult result)
 		{
 			var dto = mapper.Map<UpdateMatchExecutionDto>(result);
-			dto.Executed = DateTime.Now;
+			dto.Executed = time.Now;
 			await scoreService.UpdateSubmissionsScore(result, new CancellationToken());
 			logger.MatchExecutionUpdated(result.JobId, dto);
 			await repository.UpdateFromJobAsync(result.JobId, dto, CancellationToken.None);

@@ -6,9 +6,9 @@ namespace OPCAIC.Infrastructure
 	public class MachineTimeService : ITimeService
 	{
 		/// <inheritdoc />
-		public DateTime Today => DateTime.Today;
+		public DateTime Today => DateTime.Today.ToUniversalTime();
 
 		/// <inheritdoc />
-		public DateTime Now => DateTime.Now;
+		public DateTime Now => DateTime.UtcNow;
 	}
 }

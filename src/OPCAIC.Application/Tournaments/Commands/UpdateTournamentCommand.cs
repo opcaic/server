@@ -78,7 +78,7 @@ namespace OPCAIC.Application.Tournaments.Commands
 				}
 			}
 
-			public Validator(MenuItemValidator menuItemValidator)
+			public Validator(MenuItemValidator menuItemValidator, ITimeService time)
 			{
 				RuleFor(m => m.Name).Required().MaxLength(StringLengths.TournamentName);
 
@@ -105,7 +105,7 @@ namespace OPCAIC.Application.Tournaments.Commands
 				RuleFor(m => m.ThemeColor).MaxLength(StringLengths.ThemeColor);
 
 				RuleFor(m => m.Deadline)
-					.NotNull().GreaterThan(DateTime.Now).When(m => m.Scope == TournamentScope.Deadline)
+					.NotNull().GreaterThan(time.Now).When(m => m.Scope == TournamentScope.Deadline)
 					.Null().When(m => m.Scope == TournamentScope.Ongoing);
 
 				RuleFor(m => m.Description).MaxLength(StringLengths.GameDescription);

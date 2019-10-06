@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Persistence
@@ -111,7 +112,7 @@ namespace OPCAIC.Persistence
 
 		private void OnSavingChanges()
 		{
-			var now = DateTime.Now;
+			var now = DateTime.UtcNow;
 
 			foreach (var e in ChangeTracker.Entries())
 			{

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using OPCAIC.Common;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
@@ -16,6 +17,7 @@ namespace OPCAIC.Broker
 	/// <inheritdoc cref="IBroker" />
 	public class Broker : IBroker, IHostedService
 	{
+		private readonly ITimeService time;
 		private readonly IBrokerConnector connector;
 		private readonly Dictionary<string, WorkerEntry> workers;
 		private readonly ILogger logger;
@@ -26,12 +28,13 @@ namespace OPCAIC.Broker
 
 		private Thread socketThread;
 
-		public Broker(IBrokerConnector connector, ILogger<Broker> logger, IOptions<BrokerOptions> options)
+		public Broker(IBrokerConnector connector, ILogger<Broker> logger, IOptions<BrokerOptions> options, ITimeService time)
 		{
 			shuttingDown = false;
 			this.options = options.Value;
 			this.connector = connector;
 			this.logger = logger;
+			this.time = time;
 			workers = new Dictionary<string, WorkerEntry>();
 			taskQueue = new SortedSet<WorkItem>();
 			connector.RegisterTimer(new TimedCallback(CleanupQueue, TimeSpan.FromSeconds(1)));
@@ -79,7 +82,7 @@ namespace OPCAIC.Broker
 		/// <inheritdoc />
 		public Task EnqueueWork(WorkMessageBase msg)
 		{
-			return EnqueueWork(msg, DateTime.Now);
+			return EnqueueWork(msg, time.Now);
 		}
 
 		/// <inheritdoc />
@@ -206,7 +209,7 @@ namespace OPCAIC.Broker
 				{
 					Payload = msg,
 					QueuedTime = queueTime,
-					ExpirationTime = DateTime.Now.AddSeconds(options.TaskRetentionSeconds)
+					ExpirationTime = time.Now.AddSeconds(options.TaskRetentionSeconds)
 				};
 
 				// dispatch if some worker is available
@@ -304,7 +307,7 @@ namespace OPCAIC.Broker
 
 		private void CleanupQueue()
 		{
-			var now = DateTime.Now;
+			var now = time.Now;
 
 			var games = GetGames();
 			var newExpire = now.AddSeconds(options.TaskRetentionSeconds);

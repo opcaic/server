@@ -5,16 +5,19 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Common;
 
 namespace OPCAIC.ApiService.Services
 {
 	public class JwtTokenService : IJwtTokenService
 	{
+		private readonly ITimeService time;
 		private readonly JwtIssuerOptions jwtOptions;
 		private readonly JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
 
-		public JwtTokenService(IOptions<JwtIssuerOptions> jwtOptions)
+		public JwtTokenService(IOptions<JwtIssuerOptions> jwtOptions, ITimeService time)
 		{
+			this.time = time;
 			this.jwtOptions = jwtOptions.Value;
 		}
 
@@ -49,7 +52,7 @@ namespace OPCAIC.ApiService.Services
 			{
 				Subject = identity,
 				Expires =
-					expiresIn != null ? DateTime.Now.Add(expiresIn.Value) : (DateTime?)null,
+					expiresIn != null ? time.Now.Add(expiresIn.Value) : (DateTime?)null,
 				Audience = jwtOptions.Audience,
 				Issuer = jwtOptions.Issuer,
 				SigningCredentials = jwtOptions.SigningCredentials

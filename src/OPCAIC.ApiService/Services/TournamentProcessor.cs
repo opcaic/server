@@ -13,6 +13,7 @@ using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Application.Tournaments.Events;
+using OPCAIC.Common;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Services
@@ -20,19 +21,21 @@ namespace OPCAIC.ApiService.Services
 	public class TournamentProcessor : HostedJob
 	{
 		private DateTime lastUpdated = DateTime.MinValue;
+		private readonly ITimeService time;
 
 		/// <inheritdoc />
 		public TournamentProcessor(IServiceScopeFactory scopeFactory,
-			ILogger<TournamentProcessor> logger)
+			ILogger<TournamentProcessor> logger, ITimeService time)
 			: base(scopeFactory, logger, TimeSpan.FromSeconds(5))
 		{
+			this.time = time;
 		}
 
 		/// <inheritdoc />
 		protected override Task ExecuteJob(IServiceProvider scopedProvider,
 			CancellationToken cancellationToken)
 		{
-			var now = DateTime.Now;
+			var now = time.Now;
 			var lastRun = lastUpdated;
 			lastUpdated = now;
 			return new Job(

@@ -119,10 +119,10 @@ namespace OPCAIC.Application.Submissions.Commands
 				return id;
 			}
 
-			public static bool CanTournamentAcceptSubmissions(TournamentDetailDto tournament)
+			public bool CanTournamentAcceptSubmissions(TournamentDetailDto tournament)
 			{
 				return tournament.State == TournamentState.Published &&
-					(tournament.Deadline == null || tournament.Deadline > DateTime.Now) ||
+					(tournament.Deadline == null || tournament.Deadline > time.Now) ||
 					tournament.State == TournamentState.Running &&
 					tournament.Scope == TournamentScope.Ongoing;
 			}

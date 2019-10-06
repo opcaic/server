@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Security;
+using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using Xunit;
 using Xunit.Abstractions;
@@ -16,6 +18,7 @@ namespace OPCAIC.ApiService.Test.Security
 		{
 			Services.AddMapper();
 			Services.AddRepositories();
+			Services.Mock<ITimeService>().SetupGet(g => g.Now).Returns(DateTime.UtcNow);
 			UseDatabase();
 		}
 

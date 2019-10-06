@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Common;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,6 +27,7 @@ namespace OPCAIC.ApiService.Test.Services
 		{
 			logStorageService = Services.Mock<ILogStorageService>(MockBehavior.Strict);
 			workerService = Services.Mock<IWorkerService>(MockBehavior.Strict);
+			Services.Mock<ITimeService>().SetupGet(g => g.Now).Returns(DateTime.UtcNow);
 			matchExecutionRepository =
 				Services.Mock<IMatchExecutionRepository>(MockBehavior.Strict);
 			submissionScoreService = Services.Mock<ISubmissionScoreService>(MockBehavior.Strict);

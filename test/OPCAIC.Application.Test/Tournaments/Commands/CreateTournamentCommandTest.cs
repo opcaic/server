@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using System;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Newtonsoft.Json.Linq;
@@ -10,6 +11,7 @@ using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using Shouldly;
 using System.Threading.Tasks;
+using OPCAIC.Common;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,6 +24,8 @@ namespace OPCAIC.Application.Test.Tournaments
 		{
 			tournamentRepository = Services.Mock<IRepository<Tournament>>(MockBehavior.Strict);
 			gameRepository = Services.Mock<IRepository<Game>>(MockBehavior.Strict);
+			Services.Mock<ITimeService>().SetupGet(g => g.Now).Returns(DateTime.UtcNow);
+
 			Services.AddSingleton(gameRepository.Object);
 
 			Services.AddMapper();

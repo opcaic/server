@@ -49,7 +49,7 @@ namespace OPCAIC.ApiService
 					options.ModelMetadataDetailsProviders.Add(new ExcludeInterfaceMetadataProvider(typeof(IPublicRequest)));
 					options.ModelMetadataDetailsProviders.Add(new ExcludeInterfaceMetadataProvider(typeof(IAuthenticatedRequest)));
 				})
-				.AddCustomJsonConverters()
+				.ConfigureJsonOptions()
 				.ConfigureHybridBinder()
 				.SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
 				.ConfigureApiBehaviorOptions(options =>
