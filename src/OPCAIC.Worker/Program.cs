@@ -7,11 +7,20 @@ using Serilog;
 
 namespace OPCAIC.Worker
 {
-	internal class Program
+	public class Program
 	{
 		public static void Main(string[] args)
 		{
-			var host = CreateHostBuilder(args).Build();
+			var host = CreateHostBuilder(args)
+				.UseSerilog()
+				.ConfigureLogging((context, builder) =>
+				{
+					Log.Logger = new LoggerConfiguration()
+						.ReadFrom.Configuration(context.Configuration)
+						.CreateLogger();
+				})
+				.UseConsoleLifetime()
+				.Build();
 			host.Run();
 		}
 
@@ -27,15 +36,7 @@ namespace OPCAIC.Worker
 						.AddEnvironmentVariables()
 						.AddCommandLine(args);
 				})
-				.UseSerilog()
-				.ConfigureLogging((context, builder) =>
-				{
-					Log.Logger = new LoggerConfiguration()
-						.ReadFrom.Configuration(context.Configuration)
-						.CreateLogger();
-				})
-				.ConfigureServices(Startup.ConfigureServices)
-				.UseConsoleLifetime();
+				.ConfigureServices(Startup.ConfigureServices);
 		}
 	}
 }

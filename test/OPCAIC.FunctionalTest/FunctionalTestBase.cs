@@ -1,0 +1,167 @@
+﻿using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using OPCAIC.ApiService.Models.Users;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace OPCAIC.FunctionalTest
+{
+	[Collection("ServerContext")]
+	public class FunctionalTestBase
+	{
+		protected readonly HttpClient Client;
+		protected readonly FunctionalTestFixture Fixture;
+		protected readonly ITestOutputHelper Output;
+		private readonly JsonSerializerSettings serializerSettings;
+		private AuthenticationHeaderValue authHeader;
+
+		public FunctionalTestBase(ITestOutputHelper output, FunctionalTestFixture fixture)
+		{
+			this.Fixture = fixture;
+			this.Output = output;
+			Client = fixture.ClientFactory.CreateClient();
+			serializerSettings = GetJsonSeerializerOptions(fixture);
+		}
+
+		protected WebServerFactory ClientFactory => Fixture.ClientFactory;
+
+		protected async Task LoginAs(string email, string password)
+		{
+			var tokens = await PostAsync<UserTokens>("api/users/login",
+				new UserCredentialsModel {Email = email, Password = password}, false);
+
+			UseAccessToken(tokens.AccessToken);
+		}
+
+		private JsonSerializerSettings GetJsonSeerializerOptions(FunctionalTestFixture fixture)
+		{
+			// HACK: reach deep into running server services and get the instance of serializer
+			// settings used
+			return fixture.ClientFactory.Server.Host.Services
+				.GetRequiredService<IOptions<MvcJsonOptions>>().Value.SerializerSettings;
+		}
+
+		protected Task<HttpResponseMessage> GetAsync(string url)
+		{
+			return SendAsync(HttpMethod.Get, url);
+		}
+
+		protected async Task<T> GetAsync<T>(string url)
+		{
+			var response = await GetAsync(url);
+			return Deserialize<T>(await response.Content.ReadAsStringAsync());
+		}
+
+		protected void UseAccessToken(string token)
+		{
+			authHeader = new AuthenticationHeaderValue("Bearer", token);
+		}
+
+		private string Serialize(object o)
+		{
+			return JsonConvert.SerializeObject(o, serializerSettings);
+		}
+
+		private T Deserialize<T>(string json)
+		{
+			return JsonConvert.DeserializeObject<T>(json, serializerSettings);
+		}
+
+		protected Task<HttpResponseMessage> PostAsync(string url, object body, bool dump = true)
+		{
+			return SendAsync(HttpMethod.Post, url, JsonContent(body), dump);
+		}
+
+		protected Task<T> PostAsync<T>(string url, object body, bool dump = true)
+		{
+			return SendAsync<T>(HttpMethod.Post, url, JsonContent(body), dump);
+		}
+
+		private HttpRequestMessage CreateRequest(HttpMethod method, string url,
+			HttpContent content = null)
+		{
+			var msg = new HttpRequestMessage(method, url) {Content = content};
+
+			if (authHeader != null)
+			{
+				msg.Headers.Authorization = authHeader;
+			}
+
+			return msg;
+		}
+
+		private StringContent JsonContent(object o)
+		{
+			return new StringContent(Serialize(o), Encoding.Default, "application/json");
+		}
+
+		protected async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url,
+			HttpContent content = null, bool dump = true)
+		{
+			var request = CreateRequest(method, url, content);
+
+			if (dump)
+			{
+				DumpRequest(request);
+			}
+
+			var response = await Client.SendAsync(request);
+
+			if (dump)
+			{
+				DumpResponse(response);
+			}
+
+			return response;
+		}
+
+		protected async Task<T> SendAsync<T>(HttpMethod method, string url,
+			HttpContent content = null, bool dump = true)
+		{
+			var response = await SendAsync(method, url, content, dump);
+			response.EnsureSuccessStatusCode();
+			return Deserialize<T>(await response.Content.ReadAsStringAsync());
+		}
+
+		protected void DumpRequest(HttpRequestMessage request)
+		{
+			Output.WriteLine($"Request: {request.Method} {request.RequestUri}");
+			Output.WriteLine($"Headers:\n{request.Headers}");
+			Output.WriteLine(
+				$"Body: {PrettifyJson(request.Content?.ReadAsStringAsync().GetAwaiter().GetResult())}");
+			Output.WriteLine("\n-----------------------------------------------------\n");
+		}
+
+		protected void DumpResponse(HttpResponseMessage response)
+		{
+			Output.WriteLine("Response:");
+			Output.WriteLine($"Status code: {response.StatusCode}");
+			Output.WriteLine($"Headers:\n{response.Headers}");
+			Output.WriteLine(
+				$"Body: {PrettifyJson(response.Content.ReadAsStringAsync().GetAwaiter().GetResult())}");
+			Output.WriteLine("\n#####################################################\n");
+		}
+
+		private string PrettifyJson(string json)
+		{
+			if (json == null) return string.Empty;
+
+			using (var reader = new StringReader(json))
+			using (var writer = new StringWriter())
+			using (var jsonReader = new JsonTextReader(reader))
+			using (var jsonWriter = new JsonTextWriter(writer))
+			{
+				jsonWriter.Formatting = Formatting.Indented;
+				jsonWriter.WriteToken(jsonReader);
+				return writer.ToString();
+			}
+		}
+	}
+}

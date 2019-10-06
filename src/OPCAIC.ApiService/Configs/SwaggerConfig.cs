@@ -28,7 +28,7 @@ namespace OPCAIC.ApiService.Configs
 		{
 			options.SwaggerDoc(DocumentName, new Info { Version = ApiVersion, Title = Title });
 			options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
-				$"{Assembly.GetEntryAssembly().GetName().Name}.xml"));
+				$"{typeof(SwaggerConfig).Assembly.GetName().Name}.xml"));
 			options.AddSecurityDefinition("Bearer", new ApiKeyScheme
 			{
 				Description =

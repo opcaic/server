@@ -34,7 +34,8 @@ namespace OPCAIC.Infrastructure.Emails
 			var totalSent = 0;
 
 			var spec = new BaseSpecification<Email>()
-				.AddCriteria(e => e.RemainingAttempts > 0)
+				.AddCriteria(e => e.RemainingAttempts > 0 &&
+					e.SentAt == null)
 				.Ordered(e => e.Created);
 
 			List<Email> emails;
