@@ -21,6 +21,7 @@ namespace OPCAIC.Application.Matches.Queries
 	{
 		public const string SortByUpdated = "updated";
 		public const string SortByCreated = "created";
+		public const string SortByExecuted = "executed";
 
 		public long? TournamentId { get; set; }
 		public long? UserId { get; set; }
@@ -121,6 +122,9 @@ namespace OPCAIC.Application.Matches.Queries
 						break;
 					case SortByUpdated:
 						spec.Ordered(row => row.Updated, request.Asc);
+						break;
+					case SortByExecuted:
+						spec.Ordered(row => row.LastExecution.Executed ?? DateTime.MaxValue, request.Asc);
 						break;
 					default:
 						spec.Ordered(row => row.Id, request.Asc);
