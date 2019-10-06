@@ -77,6 +77,28 @@ namespace OPCAIC.ApiService.Controllers
 		}
 
 		/// <summary>
+		///     Copies a tournament with given id.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="cancellationToken"></param>
+		/// <response code="201">Tournament created</response>
+		/// <response code="400">Data model is invalid.</response>
+		[HttpPost("{id}/clone")]
+		[ProducesResponseType(typeof(IdModel), StatusCodes.Status201Created)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status409Conflict)]
+		[RequiresPermission(TournamentPermission.Create)]
+		public async Task<IActionResult> CloneAsync(long id, CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, id, TournamentPermission.Read);
+			var cloneId = await mediator.Send(new CloneTournamentCommand(id),
+				cancellationToken);
+			return CreatedAtRoute(nameof(GetTournamentByIdAsync), new {id = cloneId}, new IdModel {Id = cloneId});
+		}
+
+		/// <summary>
 		///     Gets tournament by id.
 		/// </summary>
 		/// <param name="id">Id of the tournament.</param>

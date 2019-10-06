@@ -33,8 +33,6 @@ namespace OPCAIC.Persistence
 		/// <inheritdoc />
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
-			optionsBuilder.UseLazyLoadingProxies();
-
 			// Uncomment to make client-side query evaluation throw (for debug purposes)
 //			optionsBuilder.ConfigureWarnings(w
 //				=> w.Throw(RelationalEventId.QueryClientEvaluationWarning));

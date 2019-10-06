@@ -115,7 +115,7 @@ namespace OPCAIC.Application.Tournaments.Commands
 				tournament.OwnerId = request.RequestingUserId;
 
 				await repository.CreateAsync(tournament, cancellationToken);
-				logger.TournamentCreated(tournament.Id, request);
+				logger.TournamentCreated(tournament.Id, request.Name, request.GameId);
 				return tournament.Id;
 			}
 		}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Utils;
 
@@ -15,6 +16,22 @@ namespace OPCAIC.Persistence.Repositories
 			if (spec.Criteria != null)
 			{
 				query = query.Where(spec.Criteria);
+			}
+
+			return query;
+		}
+
+		public static IQueryable<T> ApplyEntityPreferences<T>(this IQueryable<T> query,
+			ISpecification<T> spec) where T : class
+		{
+			foreach (var expr in spec.Includes)
+			{
+				query = query.Include(expr);
+			}
+
+			if (spec.ReadOnly)
+			{
+				query = query.AsNoTracking();
 			}
 
 			return query;

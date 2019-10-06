@@ -9,9 +9,7 @@ namespace OPCAIC.Application.Specifications
 	public class BaseSpecification<T> : ISpecification<T>
 	{
 		private readonly List<Ordering<T>> orderBy = new List<Ordering<T>>();
-
-		/// <inheritdoc />
-		public bool OrderByDescending { get; set; }
+		private readonly List<string> includes = new List<string>();
 
 		/// <inheritdoc />
 		public Expression<Func<T, bool>> Criteria { get; private set; }
@@ -21,6 +19,24 @@ namespace OPCAIC.Application.Specifications
 
 		/// <inheritdoc />
 		public PagingInfo? PagingInfo { get; set; }
+
+		/// <inheritdoc />
+		public IEnumerable<string> Includes => includes;
+
+		/// <inheritdoc />
+		public bool ReadOnly { get; set; }
+
+		public BaseSpecification<T> AsReadOnly(bool readOnly = true)
+		{
+			ReadOnly = readOnly;
+			return this;
+		}
+
+		public BaseSpecification<T> Include(string path)
+		{
+			includes.Add(path);
+			return this;
+		}
 
 		public BaseSpecification<T> AddCriteria(Expression<Func<T, bool>> criteria)
 		{

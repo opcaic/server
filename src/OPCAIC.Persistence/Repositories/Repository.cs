@@ -168,6 +168,7 @@ namespace OPCAIC.Persistence.Repositories
 			CancellationToken cancellationToken)
 		{
 			return Queryable
+				.ApplyEntityPreferences(specification)
 				.ApplyFilter(specification)
 				.ApplyOrdering(specification.OrderBy)
 				.ApplyPaging(specification, false)
@@ -192,7 +193,9 @@ namespace OPCAIC.Persistence.Repositories
 		public async Task<PagedResult<TEntity>> ListPagedAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken)
 		{
 			// TODO: fetch items and count in one query
-			var query = Queryable.ApplyFilter(specification);
+			var query = Queryable
+				.ApplyEntityPreferences(specification)
+				.ApplyFilter(specification);
 			var result = await query
 				.ApplyOrdering(specification.OrderBy)
 				.ApplyPaging(specification)
@@ -222,6 +225,7 @@ namespace OPCAIC.Persistence.Repositories
 			CancellationToken cancellationToken)
 		{
 			return Queryable
+				.ApplyEntityPreferences(specification)
 				.ApplyFilter(specification)
 				.SingleOrDefaultAsync(cancellationToken);
 		}
@@ -231,8 +235,7 @@ namespace OPCAIC.Persistence.Repositories
 			IProjectingSpecification<TEntity, TDestination> specification,
 			CancellationToken cancellationToken)
 		{
-			return Queryable
-				.ApplyFilter(specification)
+			return Queryable.ApplyFilter(specification)
 				.Select(specification.Projection)
 				.SingleOrDefaultAsync(cancellationToken);
 		}

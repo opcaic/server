@@ -1,4 +1,5 @@
 ﻿using System;
+using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Domain.ValueObjects
 {
@@ -30,6 +31,11 @@ namespace OPCAIC.Domain.ValueObjects
 	{
 		/// <inheritdoc />
 		public override MenuItemType Type => MenuItemType.DocumentLink;
+
+		/// <summary>
+		///     Document linked by this menu item.
+		/// </summary>
+		public virtual Document Document { get; set; }
 
 		/// <summary>
 		///     Id of the document linked by this menu item.

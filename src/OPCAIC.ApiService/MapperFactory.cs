@@ -87,6 +87,7 @@ namespace OPCAIC.ApiService
 			CreateMap<Tournament, TournamentReferenceDto, TournamentReferenceModel>(MemberList
 				.Destination);
 			CreateMap<TournamentDetailDto, TournamentReferenceModel>(MemberList.Destination);
+			CreateMap<Tournament, Tournament>(MemberList.Destination);
 		}
 
 		private void AddTournamentParticipationMapping()

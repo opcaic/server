@@ -463,15 +463,16 @@ namespace OPCAIC.ApiService.Utils
 
 				context.SaveChanges();
 
+				CreateSubmissions(context, users, tournamentChessTable);
+
+				#region Chess elo
 				var submissionChessAdmin = CreateSubmission(context, userAdmin, tournamentChessElo,
 					Randomizer.Seed.NextDouble() * 1500);
 				var submissionChessOrganizer = CreateSubmission(context, userOrganizer, tournamentChessElo,
 					Randomizer.Seed.NextDouble() * 1500);
 				context.SaveChanges();
 				CreateSubmissions(context, users.OrderBy(u => u.Id).Skip(3).ToList(), tournamentChessElo);
-				CreateSubmissions(context, users, tournamentChessTable);
-				CreateSubmissions(context, users, tournamentChessDe);
-
+				
 				var matchChessAdminOrganizerSuccess = CreateMatch(context, tournamentChessElo, 1,
 					submissionChessAdmin, submissionChessOrganizer);
 				AddExecution(context, matchChessAdminOrganizerSuccess, EntryPointResult.Success,
@@ -487,14 +488,15 @@ namespace OPCAIC.ApiService.Utils
 					DateTime.Now.AddDays(-2));
 				AddExecution(context, matchChessAdminOrganizerError, EntryPointResult.UserError,
 					DateTime.Now.AddDays(-1));
+				#endregion
 
+				#region Dota single elimination
 				var submissionDotaAdmin = CreateSubmission(context, userAdmin, tournamentDotaSe, 0);
 				var submissionDotaOrganizer = CreateSubmission(context, userOrganizer, tournamentDotaSe, 0);
 				var submissionDotaUser = CreateSubmission(context, user, tournamentDotaSe, 0);
 				var submissionDotaUserB = CreateSubmission(context, userB, tournamentDotaSe, 0);
 				context.SaveChanges();
 
-				var tree = MatchTreeGenerator.GenerateSingleElimination(4, false);
 				var matchAdminOrganizer = CreateMatch(context, tournamentDotaSe, 0, submissionDotaAdmin,
 					submissionDotaOrganizer);
 				AddExecution(context, matchAdminOrganizer, EntryPointResult.Success, DateTime.Now.AddDays(-1));
@@ -503,7 +505,8 @@ namespace OPCAIC.ApiService.Utils
 				AddExecution(context, matchUsers, EntryPointResult.Success, DateTime.Now.AddDays(-2));
 				var final = CreateMatch(context, tournamentDotaSe, 2, submissionDotaOrganizer,
 					submissionDotaUserB);
-				AddExecution(context, final, EntryPointResult.Success, DateTime.Now.AddDays(-3));
+				AddExecution(context, final, EntryPointResult.Success);
+				#endregion
 
 				// add necessary files
 				foreach (var submission in context.Submissions)
@@ -541,7 +544,7 @@ namespace OPCAIC.ApiService.Utils
 				manager.CreateAsync(user, "Password").GetAwaiter().GetResult();
 			}
 		}
-
+		
 		private static void CreateSubmissions(DataContext context,
 			IEnumerable<User> users,
 			Tournament tournament)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -9,9 +8,7 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models.Leaderboards;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
-using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
-using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Matches.Models;
@@ -27,8 +24,8 @@ namespace OPCAIC.ApiService.Services
 		private readonly IMapper mapper;
 		private readonly IMatchTreeFactory matchFactory;
 		private readonly IMatchRepository matchRepository;
-		private readonly ITournamentRepository tournamentRepository;
 		private readonly ISubmissionRepository submissionRepository;
+		private readonly ITournamentRepository tournamentRepository;
 
 		public LeaderboardService(IMatchRepository matchRepository,
 			ITournamentRepository tournamentRepository,
@@ -80,10 +77,12 @@ namespace OPCAIC.ApiService.Services
 			TournamentDetailDto tournament, CancellationToken cancellationToken)
 		{
 			var model = CreateModel<LeaderboardModel>(tournament);
-			foreach (var submission in await submissionRepository.AllSubmissionsFromTournament(tournament.Id, cancellationToken))
+			foreach (var submission in await submissionRepository.AllSubmissionsFromTournament(
+				tournament.Id, cancellationToken))
 			{
 				model.Participations.Add(mapper.Map<LeaderboardParticipationModel>(submission));
 			}
+
 			DeterminePlacementFromScore(model);
 			return model;
 		}
@@ -99,9 +98,11 @@ namespace OPCAIC.ApiService.Services
 			if (!model.Finished) return model;
 
 			var tree = matchFactory.GetSingleEliminationTree(tournament.PlayersCount, false);
-			foreach (var submission in await submissionRepository.AllSubmissionsFromTournament(tournament.Id, cancellationToken))
+			foreach (var submission in await submissionRepository.AllSubmissionsFromTournament(
+				tournament.Id, cancellationToken))
 			{
-				model.Participations.Add(mapper.Map<LeaderboardParticipationModel>(submission)); ;
+				model.Participations.Add(mapper.Map<LeaderboardParticipationModel>(submission));
+				;
 			}
 
 			var final = DetermineSingleEliminationPlacement(matches, tree.Final, model, 1);
@@ -123,15 +124,14 @@ namespace OPCAIC.ApiService.Services
 			if (!model.Finished) return model;
 
 			var tree = matchFactory.GetDoubleEliminationTree(tournament.ActiveSubmissionsCount);
-			foreach (var submission in await submissionRepository.AllSubmissionsFromTournament(tournament.Id, cancellationToken))
+			foreach (var submission in await submissionRepository.AllSubmissionsFromTournament(
+				tournament.Id, cancellationToken))
 			{
 				model.Participations.Add(mapper.Map<LeaderboardParticipationModel>(submission));
 			}
 
-			var finalA =
-				DetermineDoubleEliminationPlacement(matches, tree.WinnersBracketFinal, model, 2);
-			var finalB =
-				DetermineDoubleEliminationPlacement(matches, tree.LosersBracketFinal, model, 2);
+			var finalA = ProcessWinnersBracket(matches, tree.WinnersBracketFinal, model);
+			var finalB = ProcessLosersBracket(matches, tree.LosersBracketFinal, model, 2);
 			model.WinnersBracketFinal = finalA;
 			model.LosersBracketFinal = finalB;
 
@@ -198,12 +198,14 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <summary>
-		///     Gets finished matches from tournament with given id and creates a lookup table by match index inside the tournament;
+		///     Gets finished matches from tournament with given id and creates a lookup table by match index inside the
+		///     tournament;
 		/// </summary>
 		/// <param name="tournamentId">Id of the tournament</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		private async Task<Dictionary<long, MatchDetailDto>> GetMatches(long tournamentId, CancellationToken cancellationToken)
+		private async Task<Dictionary<long, MatchDetailDto>> GetMatches(long tournamentId,
+			CancellationToken cancellationToken)
 		{
 			var matches =
 				await matchRepository.AllMatchesFromTournamentAsync(tournamentId,
@@ -231,7 +233,7 @@ namespace OPCAIC.ApiService.Services
 			for (int i = 0; i < model.Participations.Count; i++)
 			{
 				model.Participations[i].Place =
-					(i > 0 && model.Participations[i - 1].Score == model.Participations[i].Score)
+					i > 0 && model.Participations[i - 1].Score == model.Participations[i].Score
 						? model.Participations[i - 1].Place
 						: i + 1;
 			}
@@ -281,7 +283,37 @@ namespace OPCAIC.ApiService.Services
 			return current;
 		}
 
-		private BracketMatchModel DetermineDoubleEliminationPlacement(Dictionary<long, MatchDetailDto> matches,
+		private BracketMatchModel ProcessWinnersBracket(Dictionary<long, MatchDetailDto> matches,
+			MatchTreeNode node, DoubleEliminationTreeLeaderboardModel model)
+		{
+			if (node == null) return null;
+
+			var currentMatch = matches[node.MatchIndex];
+			var playerA = currentMatch.Submissions[0].Author;
+			var playerB = currentMatch.Submissions[1].Author;
+			var firstPlayerWon = currentMatch.Executions.Last().BotResults
+					.Single(br => br.Submission.Author.Id == playerA.Id).Score >
+				currentMatch.Executions.Last().BotResults
+					.Single(br => br.Submission.Author.Id != playerA.Id).Score;
+
+			// check whether we already processed that match (in a previously done winners bracket)
+			var current = new BracketMatchModel
+			{
+				MatchId = currentMatch.Id,
+				FirstPlayer = mapper.Map<UserLeaderboardViewModel>(playerA),
+				SecondPlayer = mapper.Map<UserLeaderboardViewModel>(playerB),
+				FirstPlayerWon = firstPlayerWon,
+				FirstPlayerOriginMatch =
+					ProcessWinnersBracket(matches, node.FirstPlayerLink.SourceNode, model),
+				SecondPlayerOriginMatch = ProcessWinnersBracket(matches,
+					node.SecondPlayerLink.SourceNode, model)
+			};
+			model.BracketMatches.Add(current);
+
+			return current;
+		}
+
+		private BracketMatchModel ProcessLosersBracket(Dictionary<long, MatchDetailDto> matches,
 			MatchTreeNode node, DoubleEliminationTreeLeaderboardModel model, int playersAbove)
 		{
 			if (node == null) return null;
@@ -296,32 +328,41 @@ namespace OPCAIC.ApiService.Services
 				currentMatch.Executions.Last().BotResults
 					.Single(br => br.Submission.Author.Id != playerA.Id).Score;
 
-			// check whether we already processed that match (in a previously done winners bracket)
-			var current = model.BracketMatches.SingleOrDefault(bm => bm.MatchId == currentMatch.Id);
-
-			if (current == null)
+			if (firstPlayerWon)
 			{
-				if (firstPlayerWon)
-				{
-					participationB.Place = playersAbove + 1;
-				}
-				else
-				{
-					participationA.Place = playersAbove + 1;
-				}
-
-				current = new BracketMatchModel
-				{
-					FirstPlayer = mapper.Map<UserLeaderboardViewModel>(playerA),
-					SecondPlayer = mapper.Map<UserLeaderboardViewModel>(playerB),
-					FirstPlayerWon = firstPlayerWon,
-					FirstPlayerOriginMatch = DetermineDoubleEliminationPlacement(matches,
-						node.FirstPlayerLink.SourceNode, model, playersAbove * 2),
-					SecondPlayerOriginMatch = DetermineDoubleEliminationPlacement(matches,
-						node.SecondPlayerLink.SourceNode, model, playersAbove * 2)
-				};
-				model.BracketMatches.Add(current);
+				participationB.Place = playersAbove + 1;
 			}
+			else
+			{
+				participationA.Place = playersAbove + 1;
+			}
+
+			// check for already processed matches in winners bracket
+			var firstPlayerOrigin = model.BracketMatches.SingleOrDefault(bm
+				=> bm.MatchId == matches[node.FirstPlayerLink.SourceNode.MatchIndex].Id);
+			var secondPlayerOrigin = model.BracketMatches.SingleOrDefault(bm
+				=> bm.MatchId == matches[node.SecondPlayerLink.SourceNode.MatchIndex].Id);
+
+			int playersToThisLevel =
+				firstPlayerOrigin == null
+					? playersAbove + 2
+					: playersAbove + 1;
+
+			var current = new BracketMatchModel
+			{
+				MatchId = currentMatch.Id,
+				FirstPlayer = mapper.Map<UserLeaderboardViewModel>(playerA),
+				SecondPlayer = mapper.Map<UserLeaderboardViewModel>(playerB),
+				FirstPlayerWon = firstPlayerWon,
+				FirstPlayerOriginMatch =
+					firstPlayerOrigin ??
+					ProcessLosersBracket(matches, node.FirstPlayerLink.SourceNode, model,
+						playersToThisLevel),
+				SecondPlayerOriginMatch = secondPlayerOrigin ??
+					ProcessLosersBracket(matches, node.SecondPlayerLink.SourceNode, model,
+						playersToThisLevel)
+			};
+			model.BracketMatches.Add(current);
 
 			return current;
 		}

@@ -122,6 +122,11 @@ namespace OPCAIC.Domain.Entities
 		public virtual ICollection<TournamentParticipation> Participants { get; set; }
 
 		/// <summary>
+		///     All documents associated with this tournament.
+		/// </summary>
+		public virtual ICollection<Document> Documents { get; set; }
+
+		/// <summary>
 		///     Image url that is used both in tournament list and tournament detail.
 		/// </summary>
 		public string ImageUrl { get; set; }

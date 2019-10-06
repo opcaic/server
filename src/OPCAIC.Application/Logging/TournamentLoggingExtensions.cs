@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Common;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Logging
@@ -10,13 +11,13 @@ namespace OPCAIC.Application.Logging
 	public static class TournamentLoggingExtensions
 	{
 		public static void TournamentCreated(this ILogger logger, long tournamentId,
-			CreateTournamentCommand command)
+			string tournamentName, long gameId)
 		{
 			logger.LogInformation(LoggingEvents.TournamentCreated,
-				$"New tournament '{command.Name}' for game with id {{{LoggingTags.Game}}} was created with id {{{LoggingTags.TournamentId}}}",
-				command.GameId, tournamentId);
+				$"New tournament '{tournamentName}' for game with id {{{LoggingTags.Game}}} was created with id {{{LoggingTags.TournamentId}}}",
+				gameId, tournamentId);
 		}
-
+		
 		public static void TournamentStateChanged(this ILogger logger, long tournamentId,
 			TournamentState state)
 		{
