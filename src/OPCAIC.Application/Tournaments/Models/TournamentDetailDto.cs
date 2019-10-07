@@ -7,7 +7,7 @@ namespace OPCAIC.Application.Tournaments.Models
 {
 	public class TournamentDetailDto : TournamentDtoBase, IMapFrom<Tournament>
 	{
-		public bool PrivateMatchlog { get; set; }
+		public bool PrivateMatchLog { get; set; }
 
 		public string Description { get; set; }
 

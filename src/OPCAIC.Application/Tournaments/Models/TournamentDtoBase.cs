@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using AutoMapper;
+using Newtonsoft.Json.Linq;
 using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Domain.Entities;
@@ -47,6 +48,10 @@ namespace OPCAIC.Application.Tournaments.Models
 		public DateTime? EvaluationFinished { get; set; }
 
 		public TournamentAvailability Availability { get; set; }
+
+		public int? MatchesPerDay { get; set; }
+
+		public JObject Configuration { get; set; }
 
 		/// <inheritdoc />
 		void ICustomMapping.CreateMapping(Profile configuration)
