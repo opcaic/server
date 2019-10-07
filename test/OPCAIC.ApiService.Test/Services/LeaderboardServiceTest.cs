@@ -50,7 +50,8 @@ namespace OPCAIC.ApiService.Test.Services
 		private void SetupTournament(TournamentScope scope, TournamentFormat format,
 			int submissionCount, int seed = 100)
 		{
-			var tournament = Faker.Entity<Tournament>();
+			var tournament = Faker.Configure<Tournament>()
+				.RuleFor(t => t.Game, Faker.Entity<Game>).Generate();
 			tournament.Id = tournamentId;
 			tournament.Scope = scope;
 			tournament.Format = format;
@@ -63,7 +64,6 @@ namespace OPCAIC.ApiService.Test.Services
 			{
 				Tournament = tournament,
 				User = s.Author,
-				ActiveSubmission = s,
 				Submissions = new List<Submission>
 				{
 					s
@@ -72,8 +72,15 @@ namespace OPCAIC.ApiService.Test.Services
 
 			DbContext.Add(tournament);
 			DbContext.SaveChanges();
+
+			foreach (var participation in tournament.Participants)
+			{
+				participation.ActiveSubmission = participation.Submissions.Single();
+			}
+			DbContext.SaveChanges();
+
 			var generator = GetService<IMatchGenerator>();
-			TestTournamentHelper.SimulateTournament(tournament, generator, seed);
+			TestTournamentHelper.SimulateTournament(DbContext, tournament, generator, seed);
 
 			tournamentRepository.Setup(r => r.ExistsByIdAsync(tournamentId, CancellationToken))
 				.ReturnsAsync(true);

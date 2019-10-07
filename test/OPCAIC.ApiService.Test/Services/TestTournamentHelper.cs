@@ -7,6 +7,7 @@ using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using OPCAIC.Persistence;
 using Shouldly;
 
 namespace OPCAIC.ApiService.Test.Services
@@ -28,7 +29,7 @@ namespace OPCAIC.ApiService.Test.Services
 			}
 		}
 
-		public static void SimulateTournament(Tournament tournament, IMatchGenerator generator, int seed = 100)
+		public static void SimulateTournament(DataContext context, Tournament tournament, IMatchGenerator generator, int seed = 100)
 		{
 			tournament.ShouldBeInValidState();
 
@@ -43,19 +44,19 @@ namespace OPCAIC.ApiService.Test.Services
 						(matches, done) =
 							generator.GenerateBrackets(
 								TestMapper.Mapper.Map<TournamentBracketsGenerationDto>(tournament));
-						ExecuteMatches(tournament, matches, DateTime.Now, seed + tournament.Matches.Count);
+						ExecuteMatches(context, tournament, matches, DateTime.Now, seed + tournament.Matches.Count);
 					} while (!done);
 					break;
 				case TournamentFormat.Table:
 				case TournamentFormat.SinglePlayer:
 					matches = generator.GenerateDeadline(
 						TestMapper.Mapper.Map<TournamentDeadlineGenerationDto>(tournament));
-					ExecuteMatches(tournament, matches, DateTime.Now, seed);
+					ExecuteMatches(context, tournament, matches, DateTime.Now, seed);
 					break;
 				case TournamentFormat.Elo:
 					matches = generator.GenerateOngoing(
 						TestMapper.Mapper.Map<TournamentOngoingGenerationDto>(tournament), tournament.Participants.Count * 3);
-					ExecuteMatches(tournament, matches, DateTime.Now, seed);
+					ExecuteMatches(context, tournament, matches, DateTime.Now, seed);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -64,7 +65,8 @@ namespace OPCAIC.ApiService.Test.Services
 			tournament.State = TournamentState.Finished;
 		}
 
-		public static void ExecuteMatches(Tournament tournament, List<NewMatchDto> matches,
+		public static void ExecuteMatches(DataContext context, Tournament tournament,
+			List<NewMatchDto> matches,
 			DateTime now, int seed = 100)
 		{
 			matches.ShouldAllBe(m => m.Submissions.Count == matches[0].Submissions.Count);
@@ -74,24 +76,6 @@ namespace OPCAIC.ApiService.Test.Services
 			{
 				var order = 0;
 				var score = rand.Next(2);
-
-				var execution = new MatchExecution
-				{
-					AdditionalData = "{}",
-					ExecutorResult = EntryPointResult.Success,
-					JobId = Guid.NewGuid(),
-					State = WorkerJobState.Finished,
-					Executed = now,
-					BotResults = matchDto.Submissions.Select(s => new SubmissionMatchResult
-					{
-						AdditionalData = "{}",
-						SubmissionId = s,
-						Submission = tournament.Participants.Select(p => p.ActiveSubmission).Single(sub => sub.Id == s),
-						CompilerResult = EntryPointResult.Success,
-						Crashed = false,
-						Score = (score = (score + 1 % 2))
-					}).ToList()
-				};
 
 				tournament.Matches.Add(new Match
 				{
@@ -105,10 +89,31 @@ namespace OPCAIC.ApiService.Test.Services
 					Index = matchDto.Index,
 					Executions = new List<MatchExecution>
 					{
-						execution
+						new MatchExecution
+						{
+							AdditionalData = "{}",
+							ExecutorResult = EntryPointResult.Success,
+							JobId = Guid.NewGuid(),
+							State = WorkerJobState.Finished,
+							Executed = now,
+							BotResults = matchDto.Submissions.Select(s => new SubmissionMatchResult
+							{
+								AdditionalData = "{}",
+								SubmissionId = s,
+								Submission = tournament.Participants.Select(p => p.ActiveSubmission).Single(sub => sub.Id == s),
+								CompilerResult = EntryPointResult.Success,
+								Crashed = false,
+								Score = (score = (score + 1 % 2))
+							}).ToList()
+						}
 					},
-					LastExecution = execution
 				});
+			}
+
+			context.SaveChanges();
+			foreach (var match in tournament.Matches)
+			{
+				match.LastExecution = match.Executions.Single();
 			}
 		}
 	}

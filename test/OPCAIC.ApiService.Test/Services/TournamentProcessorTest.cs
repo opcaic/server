@@ -34,6 +34,9 @@ namespace OPCAIC.ApiService.Test.Services
 			Services.AddMapper();
 			Services.AddRepositories();
 
+			Faker.Configure<Tournament>()
+				.RuleFor(t => t.Game, Faker.Entity<Game>);
+
 			LastUpdated = DateTime.MinValue;
 			Now = DateTime.Now;
 		}
@@ -64,21 +67,22 @@ namespace OPCAIC.ApiService.Test.Services
 		[Fact]
 		public async Task StateTransfer_Finished_Success()
 		{
-			Faker.Configure<Match>()
-				.RuleFor(m => m.Participations,
-					f => Faker.Entities<SubmissionParticipation>(2))
-				.RuleFor(m => m.Executions,
-					f => new List<MatchExecution>
-					{
-						new MatchExecution {ExecutorResult = EntryPointResult.Success}
-					})
-				.RuleFor(m => m.LastExecution, (f, m) => m.LastExecution = m.Executions.Single());
-
-
-			var tournament = NewTrackedEntity<Tournament>();
+			var tournament = SetupTournament(4);
 			tournament.Scope = TournamentScope.Deadline;
 			tournament.State = TournamentState.WaitingForFinish;
-			tournament.Matches = Faker.Entities<Match>(2);
+			tournament.Matches = Faker.Configure<Match>()
+				.RuleFor(m => m.Participations,
+					f => f.PickRandom(
+						tournament.Submissions.Select(s
+							=> new SubmissionParticipation {Submission = s}), 2).ToList())
+				.Generate(2);
+			await DbContext.SaveChangesAsync();
+
+			foreach (var match in tournament.Matches)
+			{
+				match.LastExecution = match.Executions.Single();
+				match.LastExecution.ExecutorResult = EntryPointResult.Success;
+			}
 			await DbContext.SaveChangesAsync();
 
 			await Processor.ExecuteAsync(CancellationToken);
@@ -90,21 +94,23 @@ namespace OPCAIC.ApiService.Test.Services
 		[Fact]
 		public async Task StateTransfer_Finished_ExecutorFailed()
 		{
-			Faker.Configure<Match>()
-				.RuleFor(m => m.Participations,
-					f => Faker.Entities<SubmissionParticipation>(2))
-				.RuleFor(m => m.Executions,
-					f => new List<MatchExecution>
-					{
-						new MatchExecution {ExecutorResult = EntryPointResult.UserError}
-					})
-				.RuleFor(m => m.LastExecution, (f, m) => m.LastExecution = m.Executions.Single());
-
-
-			var tournament = NewTrackedEntity<Tournament>();
+			var tournament = SetupTournament(4);
 			tournament.Scope = TournamentScope.Deadline;
 			tournament.State = TournamentState.WaitingForFinish;
-			tournament.Matches = Faker.Entities<Match>(2);
+			tournament.Matches = Faker.Configure<Match>()
+				.RuleFor(m => m.Participations,
+					f => f.PickRandom(
+						tournament.Submissions.Select(s
+							=> new SubmissionParticipation {Submission = s}), 2).ToList())
+				.Generate(2);
+
+			await DbContext.SaveChangesAsync();
+
+			foreach (var match in tournament.Matches)
+			{
+				match.LastExecution = match.Executions.Single();
+				match.LastExecution.ExecutorResult = EntryPointResult.ModuleError;
+			}
 			await DbContext.SaveChangesAsync();
 
 			await Processor.ExecuteAsync(CancellationToken);
@@ -159,12 +165,20 @@ namespace OPCAIC.ApiService.Test.Services
 			{
 				Tournament = tournament,
 				User = s.Author,
-				ActiveSubmission = s,
 				Submissions = new List<Submission>
 				{
 					s
 				}
 			}).ToList();
+
+			DbContext.SaveChanges();
+
+			foreach (var participant in tournament.Participants)
+			{
+				participant.ActiveSubmission = participant.Submissions.Single();
+			}
+
+			DbContext.SaveChanges();
 
 			return tournament;
 		}
@@ -260,7 +274,7 @@ namespace OPCAIC.ApiService.Test.Services
 				.Returns((List<NewMatchDto> matches, CancellationToken token)
 					=>
 				{
-					TestTournamentHelper.ExecuteMatches(tournament, matches, Now);
+					TestTournamentHelper.ExecuteMatches(DbContext, tournament, matches, Now);
 					return DbContext.SaveChangesAsync(token);
 				});
 

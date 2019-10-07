@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -63,14 +64,22 @@ namespace OPCAIC.TestUtils
 
 		protected void UseDatabase()
 		{
+			var connection = new SqliteConnection("DataSource=:memory:");
+			connection.Open();
+			RegisterDispose(connection);
 			// random new name so tests can run in parallel
 			var dbName = Guid.NewGuid().ToString();
 			Services.AddDbContext<DataContext>(options =>
 			{
-				options.UseInMemoryDatabase(dbName);
+				options.UseSqlite(connection);
 //				options.EnableSensitiveDataLogging();
 //				options.EnableDetailedErrors();
 			});
+
+			Services.BuildServiceProvider()
+				.GetRequiredService<DataContext>()
+				.Database
+				.EnsureCreated();
 		}
 
 		private ServiceProvider BuildServiceProvider()

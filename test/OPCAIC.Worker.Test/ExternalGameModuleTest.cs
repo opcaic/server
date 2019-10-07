@@ -93,7 +93,7 @@ namespace OPCAIC.Worker.Test
 				Assert.Contains(Bot.BinaryDirectory.FullName, stderr);
 			}
 
-			[Fact(Timeout = 1000)]
+			[Fact(Timeout = 10000)]
 			public async Task TerminateProcessWhenCanceled()
 			{
 				var cts = new CancellationTokenSource();

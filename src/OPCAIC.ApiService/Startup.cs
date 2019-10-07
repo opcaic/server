@@ -4,6 +4,7 @@ using MediatR.Pipeline;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -83,8 +84,10 @@ namespace OPCAIC.ApiService
 			var connectionString = Configuration.GetConnectionString(nameof(DataContext));
 			if (Environment.IsDevelopment() && connectionString == null)
 			{
+				var connection = new SqliteConnection("DataSource=:memory:");
+				connection.Open();
 				// allow in-memory db in development
-				services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("Dummy"));
+				services.AddDbContext<DataContext>(options => options.UseSqlite(connection));
 			}
 			else
 			{
