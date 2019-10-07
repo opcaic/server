@@ -28,7 +28,7 @@ namespace OPCAIC.Worker.Test
 			{
 				cfg.ArchiveDirectoryRoot = ArchiveDirectory.FullName;
 				cfg.WorkingDirectoryRoot = WorkingDirectory.FullName;
-				cfg.MaxTaskTimeout = 10000;
+				cfg.MaxTaskTimeoutSeconds = 10;
 			});
 
 			GameModuleMock = Services.Mock<IGameModule>();

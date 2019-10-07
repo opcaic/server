@@ -21,7 +21,7 @@ namespace OPCAIC.Worker.Test
 			Services
 				.Configure<ExecutionConfig>(cfg =>
 				{
-					cfg.MaxTaskTimeout = 1000;
+					cfg.MaxTaskTimeoutSeconds = 60;
 				});
 			Services.Mock<IGameModuleRegistry>();
 
@@ -57,7 +57,7 @@ namespace OPCAIC.Worker.Test
 					workStarted.Set();
 					// wait for the actual cancellation request
 					AssertEx.WaitForEvent(() => token.IsCancellationRequested,
-						TimeSpan.FromMilliseconds(200));
+						TimeSpan.FromMilliseconds(5000));
 				}).ReturnsAsync(new MatchExecutionResult {JobStatus = JobStatus.Timeout});
 
 			RunWorker();
@@ -137,7 +137,7 @@ namespace OPCAIC.Worker.Test
 			// adjust timeout
 			Services.Configure<ExecutionConfig>(cfg =>
 			{
-				cfg.MaxTaskTimeout = 1000; // long timeout
+				cfg.MaxTaskTimeoutSeconds = 1000; // long timeout
 			});
 
 			DoExecuteCancel(true);
@@ -152,7 +152,7 @@ namespace OPCAIC.Worker.Test
 			// adjust timeout
 			Services.Configure<ExecutionConfig>(cfg =>
 			{
-				cfg.MaxTaskTimeout = 10; // short timeout
+				cfg.MaxTaskTimeoutSeconds = 1; // short timeout
 			});
 
 			DoExecuteCancel(false);

@@ -136,7 +136,7 @@ namespace OPCAIC.Worker
 		private CancellationToken SetupCancellation()
 		{
 			// keep local (thread-safe) reference
-			var cts = new CancellationTokenSource(executionConfig.MaxTaskTimeout);
+			var cts = new CancellationTokenSource(executionConfig.MaxTaskTimeoutSeconds * 1000);
 			var token = cts.Token;
 			currentTaskCts = cts;
 			return token;

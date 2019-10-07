@@ -151,7 +151,7 @@ namespace OPCAIC.ApiService.Utils
 		private void DoSeed()
 		{
 			// dev settings: delete the database
-//			context.Database.EnsureDeleted();
+			context.Database.EnsureDeleted();
 			context.Database.EnsureCreated();
 
 			// delete all existing files to prevent inconsistent state

@@ -13,8 +13,8 @@
 		public string ArchiveDirectoryRoot { get; set; }
 
 		/// <summary>
-		///     Hard time limit in milliseconds for which a task can run.
+		///     Hard time limit in seconds for which a task can run.
 		/// </summary>
-		public int MaxTaskTimeout { get; set; } = 10000;
+		public int MaxTaskTimeoutSeconds { get; set; } = 60;
 	}
 }

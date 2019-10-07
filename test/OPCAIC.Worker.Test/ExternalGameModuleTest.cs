@@ -101,7 +101,8 @@ namespace OPCAIC.Worker.Test
 					=> ExternalGameModule.RunProcessAsync(
 						ExternalGameModuleHelper.CreateArgs(() => EntryPoints.WaitIndefinitely()),
 						cts.Token));
-
+				// small delay to make sure the process is really started
+				await Task.Delay(50);
 				cts.Cancel();
 				await task;
 			}

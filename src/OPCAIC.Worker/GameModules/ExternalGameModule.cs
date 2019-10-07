@@ -303,28 +303,33 @@ namespace OPCAIC.Worker.GameModules
 				logger.LogDebug(
 					$"Starting {args.EntryPoint.Executable} with args '{string.Join("', '", process.StartInfo.ArgumentList)}'");
 
+				process.OutputDataReceived += (_, e) =>
+				{
+					args.StandardOutput.WriteLine(e.Data);
+				};
+				process.ErrorDataReceived += (_, e) =>
+				{
+					args.StandardError.WriteLine(e.Data);
+				};
+				
 				if (!process.Start())
 				{
 					throw new GameModuleProcessStartException(
 						"Unable to start game module process.");
 				}
+				process.BeginOutputReadLine();
+				process.BeginErrorReadLine();
 
 				logger.LogDebug(
 					$"Process started, PID: {{{LoggingTags.GameModuleProcessId}}}", process.Id);
 
-				process.OutputDataReceived += (_, e) =>
-				{
-					args.StandardOutput.WriteLine(e.Data);
-				};
-				process.BeginOutputReadLine();
 
-				process.ErrorDataReceived += (_, e) =>
-				{
-					args.StandardError.WriteLine(e.Data);
-				};
-				process.BeginErrorReadLine();
+				var res = await WaitForExitOrKillAsync(process, cancellationToken);
 
-				return await WaitForExitOrKillAsync(process, cancellationToken);
+				// wait for stdout and stderr buffers to flush
+				process.WaitForExit();
+
+				return res;
 			}
 		}
 
@@ -342,11 +347,28 @@ namespace OPCAIC.Worker.GameModules
 			process.EnableRaisingEvents = true;
 			var tcs = new TaskCompletionSource<GameModuleEntryPointResult>();
 
+			void OnCancelled()
+			{
+				try
+				{
+					logger.LogWarning(
+						$"Cancellation requested, killing process {{{LoggingTags.GameModuleProcessId}}}",
+						process.Id);
+					process.Kill();
+					tcs.TrySetCanceled();
+				}
+				catch (InvalidOperationException)
+				{
+					// process was already finished and tcs fulfilled, ignore
+				}
+			}
+
 			void ExitHandler(object sender, EventArgs eventArgs)
 			{
 				logger.LogInformation(
 					$"Exited with exit code {{{LoggingTags.GameModuleProcessExitCode}}}",
 					process.ExitCode);
+
 				// try to set result, can fail if the task was cancelled in the meantime
 				tcs.TrySetResult(ExitCodeToProcessResult(process.ExitCode));
 			}
@@ -360,23 +382,17 @@ namespace OPCAIC.Worker.GameModules
 					ExitHandler(null, null);
 				}
 
-				using (cancellationToken.Register(() =>
+				if (cancellationToken.IsCancellationRequested)
 				{
-					try
-					{
-						logger.LogWarning(
-							$"Cancellation requested, killing process {{{LoggingTags.GameModuleProcessId}}}",
-							process.Id);
-						process.Kill();
-						tcs.TrySetCanceled();
-					}
-					catch (InvalidOperationException)
-					{
-						// process was already finished and tcs fulfilled, ignore
-					}
-				}))
+					OnCancelled();
+					return await tcs.Task;
+				}
+				else
 				{
-					return await tcs.Task.ConfigureAwait(false);
+					using (cancellationToken.Register(OnCancelled))
+					{
+						return await tcs.Task.ConfigureAwait(false);
+					}
 				}
 			}
 			finally
