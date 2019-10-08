@@ -61,7 +61,7 @@ namespace OPCAIC.Application.Tournaments.Commands
 				RuleFor(m => m.GameId).EntityId(typeof(Game))
 					.DependentRules(() =>
 					{
-						RuleFor(m => m.Configuration).ValidGameConfiguration(g => g.GameId);
+						RuleFor(m => m.Configuration).Required().ValidGameConfigurationViaGameId(g => g.GameId);
 					});
 
 				// keep these rules synchronized with UpdateTournamentCommand

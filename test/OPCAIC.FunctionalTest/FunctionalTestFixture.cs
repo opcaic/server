@@ -27,6 +27,9 @@ namespace OPCAIC.FunctionalTest
 			}).Start();
 
 			ClientFactory.AddServiceOverride<IEmailService>(EmailService);
+
+			// make sure the server is already initialized
+			ClientFactory.CreateClient();
 		}
 
 		public readonly IHost WorkerHost;
@@ -34,6 +37,11 @@ namespace OPCAIC.FunctionalTest
 		public WebServerFactory ClientFactory { get; } = new WebServerFactory();
 
 		public NullEmailService EmailService { get; } = new NullEmailService();
+
+		public TService GetServerService<TService>()
+		{
+			return ClientFactory.Server.Host.Services.GetRequiredService<TService>();
+		}
 
 		/// <inheritdoc />
 		public void Dispose()

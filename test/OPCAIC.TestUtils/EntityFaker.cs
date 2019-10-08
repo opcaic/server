@@ -38,7 +38,8 @@ namespace OPCAIC.ApiService.Test
 				.RuleFor(g => g.Availability, TournamentAvailability.Public)
 				.RuleFor(t => t.Deadline, DateTime.Now + TimeSpan.FromHours(1))
 				.RuleFor(g => g.MaxSubmissionSize, 1024 * 1024)
-				.RuleFor(g => g.Matches, f => new List<Match>());
+				.RuleFor(g => g.Matches, f => new List<Match>())
+				.RuleFor(g => g.Configuration, "{}");
 
 			Configure<Submission>()
 				.RuleFor(s => s.Author, f => Entity<User>());

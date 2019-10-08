@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
@@ -138,7 +139,7 @@ namespace OPCAIC.Application.Infrastructure.Validation
 			});
 		}
 
-		public static IRuleBuilder<T, JObject> ValidGameConfiguration<T>(
+		public static IRuleBuilder<T, JObject> ValidGameConfigurationViaGameId<T>(
 			this IRuleBuilder<T, JObject> rule, Func<T, long> gameIdGetter)
 		{
 			return rule.CustomAsync(async (o, context, token) =>
@@ -146,18 +147,16 @@ namespace OPCAIC.Application.Infrastructure.Validation
 				if (o == null)
 					return;
 
-				var schemaSpecification =
-					ProjectingSpecification<Game>.Create(g => g.ConfigurationSchema);
-				schemaSpecification.AddCriteria(g
-					=> g.Id == gameIdGetter((T)context.InstanceToValidate));
+				var schema = await context.GetServiceProvider().GetRequiredService<IRepository<Game>>()
+					.GetAsync(t => t.Id == gameIdGetter((T)context.InstanceToValidate),
+						t => t.ConfigurationSchema, token);
 
-				await ValidateGameConfiguration(context, o,
-					schemaSpecification, token);
+				ValidateGameConfiguration(context, o, schema);
 			});
 		}
 		
 
-		public static IRuleBuilder<T, JObject> ValidGameConfigurationViaTID<T>(
+		public static IRuleBuilder<T, JObject> ValidGameConfigurationViaTournamentId<T>(
 			this IRuleBuilder<T, JObject> rule, Func<T, long> tournamentIdGetter)
 		{
 			return rule.CustomAsync(async (o, context, token) =>
@@ -165,29 +164,27 @@ namespace OPCAIC.Application.Infrastructure.Validation
 				if (o == null)
 					return;
 
-				await ValidateGameConfiguration(context, o, 
-					ProjectingSpecification<Game>.Create(g => g.ConfigurationSchema), token);
+				var schema = await context.GetServiceProvider().GetRequiredService<IRepository<Tournament>>()
+					.GetAsync(t => t.Id == tournamentIdGetter((T)context.InstanceToValidate),
+						t => t.Game.ConfigurationSchema, token);
+
+				ValidateGameConfiguration(context, o, schema);
 			});
 		}
 
-		private static async Task ValidateGameConfiguration<T>(CustomContext context, JObject config,
-			IProjectingSpecification<T, string> schemaSpecification, CancellationToken cancellationToken)
+		private static void ValidateGameConfiguration(CustomContext context, JObject config,
+			string schema)
 		{
-
-			var schema = await context.GetServiceProvider()
-				.GetRequiredService<IRepository<T>>()
-				.FindAsync(schemaSpecification, cancellationToken);
-
-				if (!config.IsValid(JSchema.Parse(schema), out IList<string> errors))
-				{
-					context.AddFailure(
-						new ValidationFailure(context.PropertyName,
-							"Configuration does not validate against game's schema")
-						{
-							ErrorCode = ValidationErrorCodes.InvalidSchema,
-							CustomState = new Dictionary<string, object> {["errors"] = errors}
-						});
-				}
+			if (!config.IsValid(JSchema.Parse(schema), out IList<string> errors))
+			{
+				context.AddFailure(
+					new ValidationFailure(context.PropertyName,
+						"Configuration does not validate against game's schema")
+					{
+						ErrorCode = ValidationErrorCodes.InvalidSchema,
+						CustomState = new Dictionary<string, object> { ["errors"] = errors }
+					});
+			}
 		}
 
 		public static IRuleBuilderOptions<T, string> IsEnumeration<T, TEnum>(

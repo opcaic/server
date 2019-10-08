@@ -128,7 +128,7 @@ namespace OPCAIC.Application.Extensions
 		}
 
 		public static async Task<TDto> GetAsync<TEntity, TDto>(this IRepository<TEntity> repository,
-			Expression<Func<TEntity, bool>> criteria, Expression<Func<TEntity, TDto>> projection, CancellationToken cancellationToken)
+			Expression<Func<TEntity, bool>> criteria, Expression<Func<TEntity, TDto>> projection, CancellationToken cancellationToken = default)
 			where TDto : class
 		{
 			var spec = ProjectingSpecification<TEntity>.Create(projection);

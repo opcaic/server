@@ -6,6 +6,7 @@ using AutoMapper;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure;
@@ -26,6 +27,8 @@ namespace OPCAIC.Application.Tournaments.Commands
 		public string Name { get; set; }
 
 		public string Description { get; set; }
+
+		public JObject Configuration { get; set; }
 
 		public TournamentFormat Format { get; set; }
 
@@ -83,6 +86,8 @@ namespace OPCAIC.Application.Tournaments.Commands
 				RuleFor(m => m.Name).Required().MaxLength(StringLengths.TournamentName);
 
 				RuleForEach(m => m.MenuItems).SetValidator(menuItemValidator);
+
+				RuleFor(m => m.Configuration).Required().ValidGameConfigurationViaTournamentId(m => m.Id);
 
 				// keep these rules synchronized with NewTournamentModel
 				RuleFor(m => m.Format).IsInEnum().NotEqual(TournamentFormat.Unknown)

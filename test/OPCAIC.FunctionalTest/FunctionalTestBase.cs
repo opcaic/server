@@ -13,6 +13,16 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.FunctionalTest
 {
+	public class FunctionalTestBase<TSetup> : FunctionalTestBase, IClassFixture<TSetup> where TSetup : class
+	{
+		protected TSetup FixtureSetup { get; }
+		/// <inheritdoc />
+		public FunctionalTestBase(ITestOutputHelper output, FunctionalTestFixture fixture, TSetup fixtureSetup) : base(output, fixture)
+		{
+			FixtureSetup = fixtureSetup;
+		}
+	}
+
 	[Collection("ServerContext")]
 	public class FunctionalTestBase
 	{
@@ -31,6 +41,20 @@ namespace OPCAIC.FunctionalTest
 		}
 
 		protected WebServerFactory ClientFactory => Fixture.ClientFactory;
+
+		protected void Log(string msg)
+		{
+			var border = '+' + new string('-', msg.Length + 2) + '+';
+			Output.WriteLine(border);
+			Output.WriteLine("| " + msg + " |");
+			Output.WriteLine(border);
+			Output.WriteLine("");
+		}
+
+		protected Task LoginAsAdmin()
+		{
+			return LoginAs("admin@opcaic.com", "Password");
+		}
 
 		protected async Task LoginAs(string email, string password)
 		{
@@ -82,6 +106,16 @@ namespace OPCAIC.FunctionalTest
 		protected Task<T> PostAsync<T>(string url, object body, bool dump = true)
 		{
 			return SendAsync<T>(HttpMethod.Post, url, JsonContent(body), dump);
+		}
+
+		protected Task<HttpResponseMessage> PutAsync(string url, object body, bool dump = true)
+		{
+			return SendAsync(HttpMethod.Put, url, JsonContent(body), dump);
+		}
+
+		protected Task<T> PutAsync<T>(string url, object body, bool dump = true)
+		{
+			return SendAsync<T>(HttpMethod.Put, url, JsonContent(body), dump);
 		}
 
 		private HttpRequestMessage CreateRequest(HttpMethod method, string url,
