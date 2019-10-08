@@ -24,6 +24,7 @@ namespace OPCAIC.Worker.Test
 					cfg.MaxTaskTimeoutSeconds = 60;
 				});
 			Services.Mock<IGameModuleRegistry>();
+			Services.Mock<IGameModuleWatcher>();
 
 			jobMock = Services.Mock<IJobExecutor<MatchExecutionRequest, MatchExecutionResult>>();
 
@@ -126,7 +127,7 @@ namespace OPCAIC.Worker.Test
 		{
 			RunWorker();
 
-			connectorHelper.Mock.Verify(c => c.SendMessage(It.IsAny<WorkerConnectMessage>()));
+			connectorHelper.Mock.Verify(c => c.SendMessage(It.IsAny<WorkerCapabilitiesMessage>()));
 			connectorHelper.Mock.Verify(c => c.EnterConsumer());
 			connectorHelper.Mock.Verify(c => c.EnterSocket());
 		}

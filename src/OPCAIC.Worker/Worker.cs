@@ -12,7 +12,6 @@ using Newtonsoft.Json;
 using OPCAIC.Common;
 using OPCAIC.Messaging;
 using OPCAIC.Messaging.Messages;
-using OPCAIC.Utils;
 using OPCAIC.Worker.Config;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
@@ -31,19 +30,23 @@ namespace OPCAIC.Worker
 		private readonly IServiceProvider serviceProvider;
 		private Thread consumerThread;
 
-		private TimedCallback reportCallback;
-
 		private CancellationTokenSource currentTaskCts;
+
+		private TimedCallback reportCallback;
 
 		private Thread socketThread;
 
 		public Worker(IWorkerConnector connector, ILogger<Worker> logger,
-			IServiceProvider serviceProvider, IOptions<ExecutionConfig> executionConfig)
+			IServiceProvider serviceProvider, IOptions<ExecutionConfig> executionConfig,
+			IGameModuleWatcher watcher)
 		{
 			this.connector = connector;
 			this.logger = logger;
 			this.serviceProvider = serviceProvider;
 			this.executionConfig = executionConfig.Value;
+
+
+			watcher.ModuleListChanged += ModuleListChanged;
 
 			RegisterHandlers();
 		}
@@ -74,6 +77,13 @@ namespace OPCAIC.Worker
 			return Task.CompletedTask;
 		}
 
+		private void ModuleListChanged(object sender, EventArgs modules)
+		{
+			logger.LogInformation(LoggingEvents.GameModuleRefresh,
+				"Refreshing list of game modules");
+			SendCapabilities();
+		}
+
 		private void SetupThreads()
 		{
 			socketThread = new Thread(connector.EnterSocket) {Name = $"{Identity} - Socket"};
@@ -102,14 +112,14 @@ namespace OPCAIC.Worker
 
 			reportCallback = new TimedCallback(SendReport, msg.ReportPeriod, true);
 			connector.RegisterTimer(reportCallback);
-			
+
 			// resend worker capabilities, this makes sure the capabilities are not forgotten when reconnecting after timeout
 			SendCapabilities();
 		}
 
 		private void SendReport()
 		{
-			var driveInfo = new DriveInfo(System.AppContext.BaseDirectory);
+			var driveInfo = new DriveInfo(AppContext.BaseDirectory);
 			connector.SendMessage(new WorkerStatsReport
 			{
 				AllocatedBytes = GC.GetTotalMemory(false),
@@ -117,7 +127,7 @@ namespace OPCAIC.Worker
 				Gen1Collections = GC.CollectionCount(1),
 				Gen2Collections = GC.CollectionCount(2),
 				DiskSpace = driveInfo.TotalSize,
-				DiskSpaceLeft = driveInfo.AvailableFreeSpace,
+				DiskSpaceLeft = driveInfo.AvailableFreeSpace
 			});
 		}
 
@@ -229,13 +239,13 @@ namespace OPCAIC.Worker
 
 		private void SendCapabilities()
 		{
-			connector.SendMessage(new WorkerConnectMessage
+			connector.SendMessage(new WorkerCapabilitiesMessage
 			{
 				Capabilities = new WorkerCapabilities
 				{
 					SupportedGames = serviceProvider.GetService<IGameModuleRegistry>()
-						.GetAllModules()
-						.Select(m => m.GameName).ToList()
+						.GetAllModuleNames()
+						.ToList()
 				}
 			});
 		}

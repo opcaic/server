@@ -52,11 +52,13 @@ namespace OPCAIC.Common
 
 		public static readonly EventId JobExecutionFailure = CreateEvent(4000);
 		public static readonly EventId GameModuleFailure = CreateEvent(4001);
+		public static readonly EventId GameModuleRefresh = CreateEvent(4002);
 		public static readonly EventId JobAborted = CreateEvent(3001);
 
 		public static readonly EventId MailSentSuccess = CreateEvent(8000);
 		public static readonly EventId MailSentFailed = CreateEvent(8001);
 
 		public static readonly EventId RequestTooLong = CreateEvent(9000);
+
 	}
 }

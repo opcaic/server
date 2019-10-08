@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OPCAIC.Common;
 using OPCAIC.GameModules.Interface;
-using OPCAIC.Utils;
 using OPCAIC.Worker.Config;
 using OPCAIC.Worker.Exceptions;
 using OPCAIC.Worker.GameModules;
@@ -15,80 +15,85 @@ namespace OPCAIC.Worker.Services
 	/// <summary>
 	///     Class for loading instances of <see cref="ExternalGameModule" />
 	/// </summary>
-	public class GameModuleLoader : IGameModuleRegistry
+	public class GameModuleLoader : IGameModuleRegistry, IGameModuleWatcher, IDisposable
 	{
 		private readonly ILogger<GameModuleLoader> logger;
 		private readonly ILoggerFactory loggerFactory;
-
-		private readonly Dictionary<string, ExternalGameModule> modules;
+		private readonly string modulePath;
+		private readonly FileSystemWatcher watcher;
 
 		public GameModuleLoader(ILogger<GameModuleLoader> logger, ILoggerFactory loggerFactory,
 			IOptions<Configuration> config)
 		{
 			this.loggerFactory = loggerFactory;
 			this.logger = logger;
-			modules = new Dictionary<string, ExternalGameModule>();
-			LoadModules(config.Value.ModulePath);
+			modulePath = config.Value.ModulePath;
+			watcher = ConfigureWatcher(modulePath);
+		}
+
+		/// <inheritdoc />
+		public void Dispose()
+		{
+			watcher?.Dispose();
 		}
 
 		/// <inheritdoc />
 		public IGameModule FindGameModule(string game)
 		{
-			modules.TryGetValue(game, out var module);
-			return module ??
-				throw new GameModuleNotFoundException($"Game module '{game}' was not found");
+			return LoadModule(modulePath, game);
 		}
 
 		/// <inheritdoc />
-		public IGameModule TryFindGameModule(string game)
+		public IEnumerable<string> GetAllModuleNames()
 		{
-			modules.TryGetValue(game, out var module);
-			return module;
+			return Directory.CreateDirectory(modulePath).GetDirectories().Select(d => d.Name);
 		}
 
 		/// <inheritdoc />
-		public IEnumerable<IGameModule> GetAllModules()
-		{
-			return modules.Values;
-		}
+		public event EventHandler ModuleListChanged;
 
-		/// <summary>
-		///     Loads game modules from specified directory.
-		/// </summary>
-		/// <param name="modulePath">Path to game modules.</param>
-		private void LoadModules(string modulePath)
+		private FileSystemWatcher ConfigureWatcher(string path)
 		{
-			logger.LogInformation($"Loading game modules from folder '{modulePath}'");
-			var moduleDirectory = Directory.CreateDirectory(modulePath);
-			foreach (var directory in moduleDirectory.GetDirectories())
+			// make sure the directory exists
+			Directory.CreateDirectory(path);
+
+			var w = new FileSystemWatcher(path);
+
+			// only top level is interesting to us
+			w.IncludeSubdirectories = false;
+
+			void OnChange(object sender, FileSystemEventArgs e)
 			{
-				logger.LogInformation($"Loading game module from '{directory.FullName}'");
-				var gameName = Path.GetFileName(directory.FullName);
-				var configFile = Path.Combine(directory.FullName,
-					Constants.FileNames.EntryPointsConfig);
+				ModuleListChanged?.Invoke(this, EventArgs.Empty);
+			}
 
-				ExternalGameModuleConfiguration config;
+			// only add/delete of the game module
+			w.Created += OnChange;
+			w.Deleted += OnChange;
 
-				try
-				{
-					using (var sr = new StreamReader(configFile))
-					{
-						config = JsonHelper.DeserializeStrict<ExternalGameModuleConfiguration>(
-							sr.ReadToEnd());
-					}
-				}
-				catch (Exception e)
-				{
-					logger.LogError(LoggingEvents.Startup, e,
-						$"Failed to load game module configuration '{configFile}'");
-					continue;
-				}
+			w.EnableRaisingEvents = true;
+			return w;
+		}
 
-				modules.Add(gameName, new ExternalGameModule(
+		private ExternalGameModule LoadModule(string directory, string gameName)
+		{
+			var rootDir = Path.Combine(directory, gameName);
+			logger.LogInformation($"Loading game module '{gameName}'");
+			var configFile = Path.Combine(directory, gameName,
+				Constants.FileNames.EntryPointsConfig);
+
+			ExternalGameModuleConfiguration config;
+
+			using (var sr = new StreamReader(configFile))
+			{
+				config = JsonHelper.DeserializeStrict<ExternalGameModuleConfiguration>(
+					sr.ReadToEnd());
+
+				return new ExternalGameModule(
 					loggerFactory.CreateLogger($"{nameof(ExternalGameModule)}:{gameName}"),
 					config,
 					gameName,
-					directory.FullName));
+					rootDir);
 			}
 		}
 	}

@@ -342,7 +342,7 @@ namespace OPCAIC.Broker
 			connector.ReceivedMessage += (_, a) => OnMessageReceived(a.Sender, a.Payload);
 
 			// message handlers
-			RegisterInternalHandler<WorkerConnectMessage>(OnWorkerConnected);
+			RegisterInternalHandler<WorkerCapabilitiesMessage>(OnCapabilitiesReceived);
 			RegisterInternalHandler<WorkerStatsReport>(OnWorkerStatsReport);
 		}
 
@@ -356,7 +356,7 @@ namespace OPCAIC.Broker
 		{
 			switch (message)
 			{
-				case WorkerConnectMessage _:
+				case WorkerCapabilitiesMessage _:
 				case WorkerStatsReport _:
 				case ReplyMessageBase msg when msg.JobStatus == JobStatus.Canceled:
 					return; // no more reaction needed
@@ -403,12 +403,15 @@ namespace OPCAIC.Broker
 			});
 		}
 
-		private Task OnWorkerConnected(WorkerEntry worker, WorkerConnectMessage msg)
+		private Task OnCapabilitiesReceived(WorkerEntry worker, WorkerCapabilitiesMessage msg)
 		{
-			logger.LogInformation($"Worker capabilities received from '{worker.Identity}'");
+			logger.LogInformation($"Worker capabilities received from '{worker.Identity}' {{@{LoggingTags.WorkerCapabilities}}}", msg.Capabilities);
 			worker.Capabilities = msg.Capabilities;
 
-			DispatchWork(worker);
+			if (worker.CurrentWorkItem == null)
+			{
+				DispatchWork(worker);
+			}
 			return Task.CompletedTask;
 		}
 

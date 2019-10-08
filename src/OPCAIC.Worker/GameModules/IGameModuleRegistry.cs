@@ -18,15 +18,9 @@ namespace OPCAIC.Worker.GameModules
 		IGameModule FindGameModule(string game);
 
 		/// <summary>
-		///     Finds a game module based on the game name. Returns null if not found.
-		/// </summary>
-		/// <returns></returns>
-		IGameModule TryFindGameModule(string game);
-
-		/// <summary>
 		///     Gets all game modules.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<IGameModule> GetAllModules();
+		IEnumerable<string> GetAllModuleNames();
 	}
 }

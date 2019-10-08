@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using OPCAIC.TestUtils;
 using OPCAIC.Worker.Config;
 using OPCAIC.Worker.Services;
+using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -41,9 +42,7 @@ namespace OPCAIC.Worker.Test
 			SetupConfig(json);
 			var loader = GetService<GameModuleLoader>();
 
-			// none should be loaded
-			Assert.Empty(loader.GetAllModules());
-			loggerMock.VerifyLogException<GameModuleLoader, JsonException>(LogLevel.Error);
+			Should.Throw<JsonException>(() => loader.FindGameModule(moduleName));
 		}
 
 		private static class Configs
@@ -115,24 +114,14 @@ namespace OPCAIC.Worker.Test
 		}
 
 		[Fact]
-		public void DetectsMissingConfig()
-		{
-			var loader = GetService<GameModuleLoader>();
-
-			// none should be loaded
-			Assert.Empty(loader.GetAllModules());
-			loggerMock.VerifyLogException<GameModuleLoader, FileNotFoundException>(LogLevel.Error);
-		}
-
-		[Fact]
 		public void LoadsCorrectConfig()
 		{
 			SetupConfig(Configs.Valid);
 			var loader = GetService<GameModuleLoader>();
 
-			var module = Assert.Single(loader.GetAllModules());
-			Assert.Equal(moduleName, module.GameName);
-			Assert.Equal(module, loader.FindGameModule(moduleName));
+			var module = loader.GetAllModuleNames().ShouldHaveSingleItem();
+			module.ShouldBe(moduleName);
+			loader.FindGameModule(moduleName).GameName.ShouldBe(module);
 		}
 	}
 }

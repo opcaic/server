@@ -39,7 +39,9 @@ namespace OPCAIC.Worker
 					SubmissionValidator>()
 				.AddSingleton<IDownloadServiceFactory, DownloadServiceFactory>()
 				.AddTransient<IExecutionServices, ExecutionServices>()
-				.AddSingleton<IGameModuleRegistry, GameModuleLoader>();
+				.AddSingleton<IGameModuleRegistry, GameModuleLoader>()
+				.AddSingleton(
+					sp => (IGameModuleWatcher)sp.GetRequiredService<IGameModuleRegistry>());
 		}
 	}
 }

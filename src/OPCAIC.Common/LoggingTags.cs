@@ -52,5 +52,7 @@
 		public const string SubmissionValidationId = "SubmissionValidationId";
 
 		public const string Payload = "Payload";
+
+		public const string WorkerCapabilities = "WorkerCapabilites";
 	}
 }

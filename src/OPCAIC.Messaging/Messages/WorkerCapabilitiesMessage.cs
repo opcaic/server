@@ -7,7 +7,7 @@ namespace OPCAIC.Messaging.Messages
 	///     Message sent by worker to broker upon connection.
 	/// </summary>
 	[Serializable]
-	public class WorkerConnectMessage
+	public class WorkerCapabilitiesMessage
 	{
 		/// <summary>
 		///     Capabilities of the worker.
