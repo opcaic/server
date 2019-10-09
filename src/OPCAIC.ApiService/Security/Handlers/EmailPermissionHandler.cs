@@ -12,6 +12,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 			switch (permission)
 			{
 				case EmailPermission.Read:
+				case EmailPermission.ManageTemplates:
 					// only admin for now
 					return Task.FromResult(false);
 				default:

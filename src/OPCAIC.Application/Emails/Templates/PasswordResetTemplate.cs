@@ -1,12 +1,20 @@
-﻿namespace OPCAIC.Application.Emails.Templates
+﻿using OPCAIC.Application.Specifications;
+
+namespace OPCAIC.Application.Emails.Templates
 {
 	public partial class EmailType
 	{
 		public static readonly PasswordResetTemplate
 			PasswordReset = Create<PasswordResetTemplate>();
 
-		public class PasswordResetTemplate : Type<PasswordResetTemplate.Email>
+		public class PasswordResetTemplate : EmailType
 		{
+			public PasswordResetTemplate()
+				: base(typeof(Email))
+			{
+				
+			}
+
 			public Email CreateEmail(string resetUrl)
 			{
 				return new Email(Name, resetUrl);

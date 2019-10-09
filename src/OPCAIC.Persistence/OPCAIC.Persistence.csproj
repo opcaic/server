@@ -20,4 +20,8 @@
     <ProjectReference Include="..\OPCAIC.Domain\OPCAIC.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Repositories\Emails\" />
+  </ItemGroup>
+
 </Project>

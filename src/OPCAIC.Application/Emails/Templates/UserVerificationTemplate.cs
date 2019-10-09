@@ -5,8 +5,14 @@
 		public static readonly UserVerificationType UserVerification =
 			Create<UserVerificationType>();
 
-		public class UserVerificationType : Type<UserVerificationType.Email>
+		public class UserVerificationType : EmailType
 		{
+			public UserVerificationType()
+				: base(typeof(Email))
+			{
+
+			}
+
 			public Email CreateEmail(string verificationUrl)
 			{
 				return new Email(Name, verificationUrl);

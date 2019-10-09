@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
+using OPCAIC.ApiService.ModelBinding;
 using OPCAIC.ApiService.Utils;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Utils;
@@ -43,10 +45,10 @@ namespace OPCAIC.ApiService.Configs
 			};
 			options.AddSecurityRequirement(security);
 
-			options.OperationFilter<HybridOperationFilter>();
 			options.SchemaFilter<InterfaceMemberFilter>(typeof(IIdentifiedRequest));
 			options.SchemaFilter<InterfaceMemberFilter>(typeof(IAuthenticatedRequest));
 			options.SchemaFilter<InterfaceMemberFilter>(typeof(IPublicRequest));
+			options.OperationFilter<RouteParamFilter>();
 		}
 
 		public static void SetupSwaggerUi(SwaggerUIOptions options)
@@ -85,37 +87,30 @@ namespace OPCAIC.ApiService.Configs
 		}
 	}
 
-	public class HybridOperationFilter : IOperationFilter
+	public class RouteParamFilter : IOperationFilter
 	{
+		/// <inheritdoc />
 		public void Apply(Operation operation, OperationFilterContext context)
 		{
-			var hybridParameters = context.ApiDescription.ParameterDescriptions
-				.Where(x => x.Source.Id == "Hybrid")
-				.Select(x => new
-				{
-					name = x.Name,
-					schema = context.SchemaRegistry.GetOrRegister(x.Type)
-				}).ToList();
-
-			for (var i = 0; i < operation.Parameters.Count; i++)
+			foreach (var param in context.ApiDescription.ParameterDescriptions
+				.Where(p => p.Source == FromRouteAndBodyAttribute.RouteAndBodyBindingSource))
 			{
-				for (var j = 0; j < hybridParameters.Count; j++)
+				var schema = context.SchemaRegistry.Definitions[param.Type.Name];
+
+				int idx = operation.Parameters.IndexOf(operation.Parameters.First(p => p.Name == param.Name));
+
+				foreach (var pathParam in context.ApiDescription.ParameterDescriptions.Where(p => p.Source == BindingSource.Path))
 				{
-					if (hybridParameters[j].name == operation.Parameters[i].Name)
-					{
-						var name = operation.Parameters[i].Name;
-						var isRequired = operation.Parameters[i].Required;
-
-						operation.Parameters.RemoveAt(i);
-
-						operation.Parameters.Insert(i, new BodyParameter()
-						{
-							Name = name,
-							Required = isRequired,
-							Schema = hybridParameters[j].schema,
-						});
-					}
+					schema.Properties.Remove(pathParam.Name);
 				}
+
+				operation.Parameters.RemoveAt(idx);
+				operation.Parameters.Insert(idx, new BodyParameter
+				{
+					Name = param.Name,
+					Required = true,
+					Schema = schema
+				});
 			}
 		}
 	}

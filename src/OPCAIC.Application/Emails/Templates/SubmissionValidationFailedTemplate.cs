@@ -5,9 +5,14 @@
 		public static readonly SubmissionValidationFailedType SubmissionValidationFailed =
 			Create<SubmissionValidationFailedType>();
 
-		public class SubmissionValidationFailedType
-			: Type<SubmissionValidationFailedType.Email>
+		public class SubmissionValidationFailedType : EmailType
 		{
+			public SubmissionValidationFailedType()
+				:base(typeof(Email))
+			{
+				
+			}
+
 			public Email CreateEmail(string submissionUrl)
 			{
 				return new Email(Name, submissionUrl);

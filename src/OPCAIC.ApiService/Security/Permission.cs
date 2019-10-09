@@ -40,7 +40,8 @@
 
 	public enum EmailPermission
 	{
-		Read
+		Read,
+		ManageTemplates
 	}
 
 	public enum DocumentPermission

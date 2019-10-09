@@ -5,8 +5,14 @@
 		public static readonly TournamentFinishedType TournamentFinished =
 			Create<TournamentFinishedType>();
 
-		public class TournamentFinishedType : Type<TournamentFinishedType.Email>
+		public class TournamentFinishedType : EmailType
 		{
+			public TournamentFinishedType()
+				: base(typeof(Email))
+			{
+				
+			}
+
 			public Email CreateEmail(string tournamentUrl, string tournamentName)
 			{
 				return new Email(Name, tournamentUrl, tournamentName);

@@ -8,17 +8,20 @@ namespace OPCAIC.Application.Exceptions
 		public string Resource { get; }
 		public long? ResourceId { get; }
 
-		public NotFoundException(string resourceName) :
-				base($"Specified '{resourceName}' was not found.")
+		public NotFoundException(string resourceName, string message) :
+				base(message)
 		{
 			Resource = resourceName;
-			ResourceId = null;
+		}
+
+		public NotFoundException(string resourceName) :
+				this(resourceName, $"Specified '{resourceName}' was not found.")
+		{
 		}
 
 		public NotFoundException(string resourceName, long resourceId) :
-				base($"Resource '{resourceName}' with id {resourceId} was not found.")
+				this(resourceName, $"Resource '{resourceName}' with id {resourceId} was not found.")
 		{
-			Resource = resourceName;
 			ResourceId = resourceId;
 		}
 	}

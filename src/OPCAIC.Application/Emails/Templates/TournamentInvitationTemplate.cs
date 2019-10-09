@@ -5,8 +5,14 @@
 		public static readonly TournamentInvitationType TournamentInvitation =
 			Create<TournamentInvitationType>();
 
-		public class TournamentInvitationType : Type<TournamentInvitationType.Email>
+		public class TournamentInvitationType : EmailType
 		{
+			public TournamentInvitationType()
+				: base(typeof(Email))
+			{
+
+			}
+
 			public Email CreateEmail(string tournamentUrl, string tournamentName)
 			{
 				return new Email(Name, tournamentUrl, tournamentName);

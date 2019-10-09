@@ -51,6 +51,10 @@
 
 		public const string SubmissionValidationId = "SubmissionValidationId";
 
+		public const string EmailTemplateType = "EmailTemplateType";
+
+		public const string LanguageCode = "LanguageCode";
+
 		public const string Payload = "Payload";
 
 		public const string WorkerCapabilities = "WorkerCapabilites";

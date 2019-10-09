@@ -45,6 +45,11 @@ namespace OPCAIC.Common
 		public static readonly EventId DocumentCreated = CreateEvent(801);
 		public static readonly EventId DocumentUpdated = CreateEvent(802);
 
+		public static readonly EventId EmailTemplateCreated = CreateEvent(900);
+		public static readonly EventId EmailTemplateUpdated = CreateEvent(901);
+		public static readonly EventId EmailTemplateDeleted = CreateEvent(902);
+		public static readonly EventId EmailTemplateMissing = CreateEvent(903);
+
 		public static readonly EventId JwtRefreshTokenValidationFailed = CreateEvent(9000);
 
 		public static readonly EventId Startup = CreateEvent(1000);
