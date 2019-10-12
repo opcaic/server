@@ -126,20 +126,38 @@ namespace OPCAIC.ApiService.Test.Services
 		[Fact]
 		public async Task Generate_DoubleElimination()
 		{
-			SetupTournament(TournamentScope.Deadline, TournamentFormat.DoubleElimination, 4);
+			int playersCount = 15;
+			SetupTournament(TournamentScope.Deadline, TournamentFormat.DoubleElimination, playersCount);
 			var leaderboards =
 				await LeaderboardService.GetTournamentLeaderboard(tournamentId, CancellationToken);
 			var tree = (DoubleEliminationTreeLeaderboardModel)leaderboards;
-			leaderboards.Participations.Count.ShouldBe(4);
+			leaderboards.Participations.Count.ShouldBe(playersCount);
 			leaderboards.Finished.ShouldBe(true);
 			leaderboards.Participations[0].Place.ShouldBe(1);
-			tree.Final.FirstPlayerOriginMatch.MatchId.ShouldBe(tree.WinnersBracketFinal.MatchId);
-			tree.Final.SecondPlayerOriginMatch.MatchId.ShouldBe(tree.LosersBracketFinal.MatchId);
-			tree.WinnersBracketFinal.FirstPlayerOriginMatch.ShouldNotBeNull();
-			tree.LosersBracketFinal.FirstPlayerOriginMatch.ShouldNotBeNull();
-			tree.WinnersBracketFinal.SecondPlayerOriginMatch.ShouldNotBeNull();
-			tree.LosersBracketFinal.SecondPlayerOriginMatch.ShouldNotBeNull();
+			tree.Final.FirstPlayerOriginMatch.Index.ShouldBe(tree.WinnersBracketFinal.Index);
+			tree.Final.SecondPlayerOriginMatch.Index.ShouldBe(tree.LosersBracketFinal.Index);
+			
+            VerifyEliminationTree(tree.Final);
 		}
+
+        private void VerifyEliminationTree(BracketMatchModel final)
+        {
+	        if (final.FirstPlayerOriginMatch != null)
+	        {
+		        var firstPlayerId = final.FirstPlayer.Id;
+				(final.FirstPlayerOriginMatch.FirstPlayer.Id == firstPlayerId || 
+	                final.FirstPlayerOriginMatch.SecondPlayer.Id == firstPlayerId).ShouldBe(true);
+                VerifyEliminationTree(final.FirstPlayerOriginMatch);
+	        }
+
+	        if (final.SecondPlayerOriginMatch != null)
+	        {
+		        var secondPlayerId = final.SecondPlayer.Id;
+		        (final.SecondPlayerOriginMatch.FirstPlayer.Id == secondPlayerId ||
+			        final.SecondPlayerOriginMatch.SecondPlayer.Id == secondPlayerId).ShouldBe(true);
+		        VerifyEliminationTree(final.SecondPlayerOriginMatch);
+			}
+        }
 
 		[Fact]
 		public async Task Generate_Elo()
@@ -168,6 +186,8 @@ namespace OPCAIC.ApiService.Test.Services
 			leaderboards.Participations[0].Place.ShouldBe(1);
 			tree.Final.FirstPlayerOriginMatch.ShouldNotBeNull();
 			tree.Final.SecondPlayerOriginMatch.ShouldNotBeNull();
+
+            VerifyEliminationTree(tree.Final);
 		}
 
 		[Fact]
@@ -181,8 +201,7 @@ namespace OPCAIC.ApiService.Test.Services
 			leaderboards.Participations[0].Place.ShouldBe(1);
 		}
 
-
-		[Fact]
+        [Fact]
 		public async Task Generate_Table()
 		{
 			SetupTournament(TournamentScope.Deadline, TournamentFormat.Table, 10);
