@@ -109,10 +109,12 @@ namespace OPCAIC.Messaging
 		{
 			if (Socket != null)
 			{
-				AssertSocketThread(); // allow first call in constructor from foreign thread
-				Socket.Close();
-				Socket.Dispose();
+				// keep the assertion inside if block to allow the first call (in class constructor)
+				// to be called from foreign thread
+				AssertSocketThread(); 
+
 				SocketPoller.Remove(Socket);
+				Socket.Dispose();
 			}
 
 			Socket = socketFactory.CreateSocket();

@@ -9,12 +9,16 @@ namespace OPCAIC.ApiService.Services
 {
 	public class SignInManager : SignInManager<User>
 	{
-
-		public new UserManager UserManager => (UserManager)base.UserManager;
-
 		/// <inheritdoc />
-		public SignInManager(UserManager<User> userManager, IHttpContextAccessor contextAccessor, IUserClaimsPrincipalFactory<User> claimsFactory, IOptions<IdentityOptions> optionsAccessor, ILogger<SignInManager> logger, IAuthenticationSchemeProvider schemes) : base(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes)
+		public SignInManager(UserManager<User> userManager, IHttpContextAccessor contextAccessor,
+			IUserClaimsPrincipalFactory<User> claimsFactory,
+			IOptions<IdentityOptions> optionsAccessor, ILogger<SignInManager<User>> logger,
+			IAuthenticationSchemeProvider schemes, IUserConfirmation<User> confirmation) : base(
+			userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes,
+			confirmation)
 		{
 		}
+
+		public new UserManager UserManager => (UserManager)base.UserManager;
 	}
 }

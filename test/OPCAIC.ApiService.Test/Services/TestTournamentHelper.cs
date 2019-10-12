@@ -55,7 +55,8 @@ namespace OPCAIC.ApiService.Test.Services
 					break;
 				case TournamentFormat.Elo:
 					matches = generator.GenerateOngoing(
-						TestMapper.Mapper.Map<TournamentOngoingGenerationDto>(tournament), tournament.Participants.Count * 3);
+						TestMapper.Mapper.Map<TournamentOngoingGenerationDto>(tournament),
+						tournament.Participants.Count * 3);
 					ExecuteMatches(context, tournament, matches, DateTime.Now, seed);
 					break;
 				default:

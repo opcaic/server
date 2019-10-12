@@ -3,17 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Application.Dtos.Matches;
+using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Application.Tournaments.Events;
 using OPCAIC.Common;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Services
@@ -38,49 +42,42 @@ namespace OPCAIC.ApiService.Services
 			var now = time.Now;
 			var lastRun = lastUpdated;
 			lastUpdated = now;
-			return new Job(
-				Logger,
-				scopedProvider.GetRequiredService<IMediator>(),
-				scopedProvider.GetRequiredService<ITournamentRepository>(),
-				scopedProvider.GetRequiredService<IMatchRepository>(),
-				scopedProvider.GetRequiredService<IMatchGenerator>(),
-				lastRun,
-				now).ExecuteAsync(cancellationToken);
+			return scopedProvider.GetRequiredService<Job>().ExecuteAsync(lastRun, cancellationToken);
 		}
 
 		internal class Job
 		{
-			private readonly DateTime lastRun;
 			private readonly ILogger logger;
 			private readonly IMatchGenerator matchGenerator;
 			private readonly IMatchRepository matchRepository;
 			private readonly IMediator mediator;
 			private readonly DateTime now;
 			private readonly ITournamentRepository tournamentRepository;
+			private readonly IMapper mapper;
 
 			/// <inheritdoc />
-			public Job(ILogger logger, IMediator mediator,
+			public Job(ILogger<TournamentProcessor> logger, IMediator mediator,
 				ITournamentRepository tournamentRepository,
-				IMatchRepository matchRepository, IMatchGenerator matchGenerator, DateTime lastRun,
-				DateTime now)
+				IMatchRepository matchRepository, IMatchGenerator matchGenerator,
+				IMapper mapper, ITimeService time)
 			{
 				this.logger = logger;
 				this.tournamentRepository = tournamentRepository;
 				this.matchRepository = matchRepository;
 				this.matchGenerator = matchGenerator;
-				this.lastRun = lastRun;
-				this.now = now;
+				now = time.Now;
+				this.mapper = mapper;
 				this.mediator = mediator;
 			}
 
-			public async Task ExecuteAsync(CancellationToken cancellationToken)
+			public async Task ExecuteAsync(DateTime lastRun, CancellationToken cancellationToken)
 			{
 				await TransferTournamentsToRunning(cancellationToken);
-				await GenerateMatchesAsync(cancellationToken);
+				await GenerateMatchesAsync(lastRun, cancellationToken);
 				await TransferTournamentsToFinished(cancellationToken);
 			}
 
-			private async Task GenerateMatchesAsync(CancellationToken cancellationToken)
+			private async Task GenerateMatchesAsync(DateTime lastRun, CancellationToken cancellationToken)
 			{
 				// brackets
 				{
@@ -119,8 +116,14 @@ namespace OPCAIC.ApiService.Services
 				// ongoing
 				{
 					var tournaments =
-						await tournamentRepository.GetOngoingTournamentsForMatchGenerationAsync(
-							cancellationToken);
+						await tournamentRepository.ListAsync<Tournament, TournamentOngoingGenerationDto>(t =>
+								t.State == TournamentState.Running &&
+								t.Scope == TournamentScope.Ongoing &&
+								(!t.Matches.Any() ||
+									t.Matches.Any(m
+										=> m.Executions.Any(e
+											=> e.Executed.HasValue && e.Executed > lastRun))),
+mapper, cancellationToken);
 
 					foreach (var tournament in tournaments)
 					{

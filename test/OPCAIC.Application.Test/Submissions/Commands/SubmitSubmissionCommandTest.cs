@@ -2,15 +2,10 @@
 using System.IO;
 using System.Threading.Tasks;
 using MediatR;
-using Microsoft.AspNetCore.Http.Internal;
 using Moq;
-using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.IoC;
-using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Services;
-using OPCAIC.ApiService.Test;
 using OPCAIC.Application.Dtos.Submissions;
-using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
@@ -36,7 +31,8 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 			Services.AddMapper();
 			submissionRepository = Services.Mock<ISubmissionRepository>(MockBehavior.Strict);
 			tournamentRepository = Services.Mock<ITournamentRepository>(MockBehavior.Strict);
-			tournamentParticipationRepository = Services.Mock<IRepository<TournamentParticipation>>(MockBehavior.Strict);
+			tournamentParticipationRepository =
+				Services.Mock<IRepository<TournamentParticipation>>(MockBehavior.Strict);
 			storageService = Services.Mock<IStorageService>(MockBehavior.Strict);
 			time = Services.Mock<ITimeService>(MockBehavior.Strict);
 			mediator = Services.Mock<IMediator>(MockBehavior.Strict);
@@ -50,7 +46,10 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 
 		private readonly Mock<ISubmissionRepository> submissionRepository;
 		private readonly Mock<ITournamentRepository> tournamentRepository;
-		private readonly Mock<IRepository<TournamentParticipation>> tournamentParticipationRepository;
+
+		private readonly Mock<IRepository<TournamentParticipation>>
+			tournamentParticipationRepository;
+
 		private readonly Mock<IStorageService> storageService;
 		private readonly Mock<ITimeService> time;
 		private readonly Mock<IMediator> mediator;
@@ -72,7 +71,10 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 
 			var exception = await Should.ThrowAsync<BusinessException>(()
 				=> Handler.Handle(
-					new SubmitSubmissionCommand {TournamentId = TournamentId, RequestingUserId = UserId}, CancellationToken));
+					new SubmitSubmissionCommand
+					{
+						TournamentId = TournamentId, RequestingUserId = UserId
+					}, CancellationToken));
 
 			exception.ErrorCode.ShouldBe(ValidationErrorCodes.TournamentDeadlinePassed);
 		}
@@ -88,7 +90,10 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 
 			var exception = await Should.ThrowAsync<BusinessException>(()
 				=> Handler.Handle(
-					new SubmitSubmissionCommand {TournamentId = TournamentId, RequestingUserId = UserId}, CancellationToken));
+					new SubmitSubmissionCommand
+					{
+						TournamentId = TournamentId, RequestingUserId = UserId
+					}, CancellationToken));
 
 			exception.ErrorCode.ShouldBe(ValidationErrorCodes.TournamentDeadlinePassed);
 		}
@@ -117,7 +122,9 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 					CancellationToken)).ReturnsAsync(false);
 
 			tournamentParticipationRepository.Setup(s
-				=> s.CreateAsync(It.Is<TournamentParticipation>(p => p.TournamentId == TournamentId && p.UserId == UserId),
+				=> s.CreateAsync(
+					It.Is<TournamentParticipation>(p
+						=> p.TournamentId == TournamentId && p.UserId == UserId),
 					CancellationToken)).Returns(Task.CompletedTask);
 
 			mediator.Setup(m
@@ -158,7 +165,9 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 				=> s.ExistsAsync(It.IsAny<ISpecification<TournamentParticipation>>(),
 					CancellationToken)).ReturnsAsync(true);
 
-			mediator.Setup(m => m.Publish(It.Is<SubmissionCreated>(e => e.SubmissionId == SubmissionId), CancellationToken)).Returns(Task.CompletedTask);
+			mediator.Setup(m
+				=> m.Publish(It.Is<SubmissionCreated>(e => e.SubmissionId == SubmissionId),
+					CancellationToken)).Returns(Task.CompletedTask);
 
 			var id = await Handler.Handle(
 				new SubmitSubmissionCommand

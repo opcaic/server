@@ -74,7 +74,7 @@ namespace OPCAIC.Persistence
 					Expression.MakeMemberAccess(parameterExpression, property);
 				var negation = Expression.Not(memberAccess);
 				var lambda = Expression.Lambda(negation, parameterExpression);
-				type.QueryFilter = lambda;
+				modelBuilder.Entity(type.ClrType).HasQueryFilter(lambda);
 			}
 		}
 

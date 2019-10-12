@@ -17,7 +17,7 @@ namespace OPCAIC.Application.Services.MatchGeneration
 		{
 			var rand = new Random();
 			var matches = new List<NewMatchDto>(count);
-			var submissions = tournament.ActiveSubmissionIds.Count;
+			var submissions = tournament.Submissions.Count;
 
 			if (submissions < 2)
 			{

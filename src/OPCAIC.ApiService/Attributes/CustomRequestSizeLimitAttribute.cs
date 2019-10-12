@@ -1,6 +1,6 @@
 ﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Configs;
@@ -26,9 +26,9 @@ namespace OPCAIC.ApiService.Attributes
 		/// <inheritdoc />
 		public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
 		{
-			var filter = serviceProvider.GetRequiredService<RequestSizeLimitFilter>();
-			filter.Bytes = GetMaxRequestSize(serviceProvider);
-			return filter;
+			// redirect to the original attribute
+			var filter = new RequestSizeLimitAttribute(GetMaxRequestSize(serviceProvider));
+			return filter.CreateInstance(serviceProvider);
 		}
 
 		/// <inheritdoc />

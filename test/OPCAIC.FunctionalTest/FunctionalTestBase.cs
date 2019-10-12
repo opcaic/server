@@ -69,7 +69,7 @@ namespace OPCAIC.FunctionalTest
 			// HACK: reach deep into running server services and get the instance of serializer
 			// settings used
 			return fixture.ClientFactory.Server.Host.Services
-				.GetRequiredService<IOptions<MvcJsonOptions>>().Value.SerializerSettings;
+				.GetRequiredService<IOptions<MvcNewtonsoftJsonOptions>>().Value.SerializerSettings;
 		}
 
 		protected Task<HttpResponseMessage> GetAsync(string url)

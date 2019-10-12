@@ -33,6 +33,7 @@ namespace OPCAIC.ApiService.Test.Services
 			tournamentRepository = Services.Mock<ITournamentRepository>(MockBehavior.Strict);
 			submissionRepository = Services.Mock<ISubmissionRepository>(MockBehavior.Strict);
 			UseDatabase();
+			Services.AddMemoryCache();
 			Services.AddMapper();
 			Services.AddMatchGenerators();
 			Services.AddSingleton<LeaderboardService>();

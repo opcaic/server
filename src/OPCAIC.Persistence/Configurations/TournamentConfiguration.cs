@@ -13,11 +13,7 @@ namespace OPCAIC.Persistence.Configurations
 		public void Configure(EntityTypeBuilder<Tournament> builder)
 		{
 			builder.Property(e => e.Name).IsRequired().HasMaxLength(StringLengths.TournamentName);
-			builder.OwnsMany(e => e.MenuItems, b =>
-			{
-				b.Property<long>("Id");
-				b.HasKey("Id");
-			});
+			builder.HasMany(e => e.MenuItems);
 			builder.Property(e => e.Configuration).IsRequired();
 			builder.HasMany(e => e.Submissions).WithOne(e => e.Tournament);
 		}

@@ -9,17 +9,17 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace OPCAIC.ApiService.ModelBinding
 {
-	public class FromRouteAndBodyAttribute : Attribute, IBindingSourceMetadata
+	public class FromRouteAndBodyAttribute : Attribute, IBinderTypeProviderMetadata
 	{
-		public static readonly BindingSource RouteAndBodyBindingSource = new BindingSource("RouteAndBody", "RouteAndBody", true, true);
+		/// <inheritdoc />
+		public BindingSource BindingSource => BindingSource.Body;
 
 		/// <inheritdoc />
-		public BindingSource BindingSource => RouteAndBodyBindingSource;
+		public Type BinderType => typeof(RouteAndBodyBinder);
 	}
 
 	public class RouteAndBodyBinder : IModelBinder
@@ -80,32 +80,4 @@ namespace OPCAIC.ApiService.ModelBinding
 			return routeValueProvider;
 		}
 	}
-
-	public class RouteAndBodyBinderProvider : IModelBinderProvider
-	{
-		/// <inheritdoc />
-		public IModelBinder GetBinder(ModelBinderProviderContext context)
-		{
-			if (context.BindingInfo.BindingSource ==
-				FromRouteAndBodyAttribute.RouteAndBodyBindingSource)
-				return context.Services.GetRequiredService<RouteAndBodyBinder>();
-
-			return null;
-		}
-	}
-
-	public static class BindingConfigurationExtensions
-	{
-		public static IMvcBuilder ConfigureCustomBinders(this IMvcBuilder builder)
-		{
-			builder.Services.AddSingleton<RouteAndBodyBinder>();
-
-			return builder.AddMvcOptions(options =>
-			{
-				options.ModelBinderProviders.Insert(0,
-					new RouteAndBodyBinderProvider());
-			});
-		}
-	}
-
 }

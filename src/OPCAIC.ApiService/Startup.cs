@@ -8,6 +8,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using OPCAIC.ApiService.Behaviors;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Health;
@@ -34,24 +35,23 @@ namespace OPCAIC.ApiService
 	{
 		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-		public Startup(IConfiguration configuration, IHostingEnvironment environment)
+		public Startup(IConfiguration configuration, IWebHostEnvironment environment)
 		{
 			Configuration = configuration;
 			Environment = environment;
 		}
 
 		public IConfiguration Configuration { get; }
-		public IHostingEnvironment Environment { get; }
+		public IWebHostEnvironment Environment { get; }
 
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddMvc(options =>
+			services.AddControllers(options =>
 				{
 					options.ModelMetadataDetailsProviders.Add(new ExcludeInterfaceMetadataProvider(typeof(IPublicRequest)));
 					options.ModelMetadataDetailsProviders.Add(new ExcludeInterfaceMetadataProvider(typeof(IAuthenticatedRequest)));
 				})
 				.ConfigureJsonOptions()
-				.ConfigureCustomBinders()
 				.SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
 				.ConfigureApiBehaviorOptions(options =>
 				{
@@ -104,6 +104,7 @@ namespace OPCAIC.ApiService
 			services.AddBroker();
 			services.AddRepositories();
 			services.AddMapper();
+			services.AddMemoryCache();
 			services.AddSwaggerGen(SwaggerConfig.SetupSwaggerGen);
 
 			services.ConfigureSecurity(Configuration);
@@ -124,9 +125,11 @@ namespace OPCAIC.ApiService
 			services.Configure<BrokerOptions>(Configuration.GetSection("Broker"));
 		}
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app)
 		{
-			if (env.IsDevelopment())
+			app.UseRouting();
+
+			if (Environment.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
 				app.UseCors(myAllowSpecificOrigins);
@@ -139,14 +142,18 @@ namespace OPCAIC.ApiService
 
 			app.UseSwagger(SwaggerConfig.SetupSwagger);
 			app.UseSwaggerUI(SwaggerConfig.SetupSwaggerUi);
-			app.UseHealthChecks("/api/health", HealthSetup.Options);
 
 			app.UseAuthentication();
+			app.UseAuthorization();
 
 			app.UseMiddleware<ExceptionMiddleware>();
 			app.UseMiddleware<DbTransactionMiddleware>();
 
-			app.UseMvc();
+			app.UseEndpoints(endpoints =>
+			{
+				endpoints.MapHealthChecks("/api/health", HealthSetup.Options);
+				endpoints.MapControllers();
+			});
 		}
 	}
 }

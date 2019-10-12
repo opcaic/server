@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 using OPCAIC.ApiService.ModelBinding;
 using OPCAIC.ApiService.Utils;
 using OPCAIC.Application.Infrastructure;
@@ -28,22 +28,34 @@ namespace OPCAIC.ApiService.Configs
 
 		public static void SetupSwaggerGen(SwaggerGenOptions options)
 		{
-			options.SwaggerDoc(DocumentName, new Info { Version = ApiVersion, Title = Title });
+			options.SwaggerDoc(DocumentName, new OpenApiInfo { Version = ApiVersion, Title = Title });
 			options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
 				$"{typeof(SwaggerConfig).Assembly.GetName().Name}.xml"));
-			options.AddSecurityDefinition("Bearer", new ApiKeyScheme
+			options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
 			{
 				Description =
 					"JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
 				Name = "Authorization",
-				In = "header",
-				Type = "apiKey"
+				In = ParameterLocation.Header,
+				Type = SecuritySchemeType.ApiKey,
+				Scheme = "Bearer"
 			});
-			var security = new Dictionary<string, IEnumerable<string>>
+			options.AddSecurityRequirement(new OpenApiSecurityRequirement
 			{
-				{"Bearer", new string[] { }}
-			};
-			options.AddSecurityRequirement(security);
+				{
+					new OpenApiSecurityScheme
+					{
+						Name = "Bearer",
+						Scheme = "oauth2",
+						In = ParameterLocation.Header,
+						Reference = new OpenApiReference
+						{
+							Id = "Bearer", Type = ReferenceType.SecurityScheme
+						}
+					},
+					new List<string>()
+				}
+			});
 
 			options.SchemaFilter<InterfaceMemberFilter>(typeof(IIdentifiedRequest));
 			options.SchemaFilter<InterfaceMemberFilter>(typeof(IAuthenticatedRequest));
@@ -75,9 +87,9 @@ namespace OPCAIC.ApiService.Configs
 		}
 
 		/// <inheritdoc />
-		public void Apply(Schema schema, SchemaFilterContext context)
+		public void Apply(OpenApiSchema schema, SchemaFilterContext context)
 		{
-			if (interfaceType.IsAssignableFrom(context.SystemType))
+			if (interfaceType.IsAssignableFrom(context.ApiModel.Type))
 			{
 				foreach (var property in interfaceType.GetProperties())
 				{
@@ -90,27 +102,17 @@ namespace OPCAIC.ApiService.Configs
 	public class RouteParamFilter : IOperationFilter
 	{
 		/// <inheritdoc />
-		public void Apply(Operation operation, OperationFilterContext context)
+		public void Apply(OpenApiOperation operation, OperationFilterContext context)
 		{
 			foreach (var param in context.ApiDescription.ParameterDescriptions
-				.Where(p => p.Source == FromRouteAndBodyAttribute.RouteAndBodyBindingSource))
+				.Where(p => p.ModelMetadata?.BinderType == typeof(RouteAndBodyBinder)))
 			{
-				var schema = context.SchemaRegistry.Definitions[param.Type.Name];
-
-				int idx = operation.Parameters.IndexOf(operation.Parameters.First(p => p.Name == param.Name));
+				var schema = context.SchemaRepository.Schemas[param.Type.Name];
 
 				foreach (var pathParam in context.ApiDescription.ParameterDescriptions.Where(p => p.Source == BindingSource.Path))
 				{
 					schema.Properties.Remove(pathParam.Name);
 				}
-
-				operation.Parameters.RemoveAt(idx);
-				operation.Parameters.Insert(idx, new BodyParameter
-				{
-					Name = param.Name,
-					Required = true,
-					Schema = schema
-				});
 			}
 		}
 	}

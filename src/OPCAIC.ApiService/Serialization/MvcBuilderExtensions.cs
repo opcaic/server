@@ -7,7 +7,7 @@ namespace OPCAIC.ApiService.Serialization
 	{
 		public static IMvcBuilder ConfigureJsonOptions(this IMvcBuilder mvcBuilder)
 		{
-			return mvcBuilder.AddJsonOptions(opt =>
+			return mvcBuilder.AddNewtonsoftJson(opt =>
 			{
 				opt.SerializerSettings.Converters.Add(new MenuItemConverter());
 

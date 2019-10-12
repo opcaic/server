@@ -5,9 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting.Internal;
 using Moq;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.IoC;
@@ -16,6 +17,7 @@ using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Broker;
+using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Persistence;
 using OPCAIC.TestUtils;
@@ -37,6 +39,7 @@ namespace OPCAIC.ApiService.Test
 			Configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", false)
 				.Build();
 			CancellationTokenSource = new CancellationTokenSource();
+			Services.Mock<ITimeService>().SetupGet(g => g.Now).Returns(DateTime.UtcNow);
 
 			lazyDbContext = GetLazyService<DataContext>();
 			lazyMapper = GetLazyService<IMapper>();
@@ -52,8 +55,8 @@ namespace OPCAIC.ApiService.Test
 
 		protected void ApiConfigureServices()
 		{
-			var startup = new Startup(Configuration,
-				new HostingEnvironment {EnvironmentName = "Development"});
+			var mock = new Mock<IWebHostEnvironment>();
+			var startup = new Startup(Configuration, mock.Object);
 			Services.ConfigureSecurity(Configuration);
 			startup.ConfigureOptions(Services);
 

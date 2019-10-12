@@ -164,7 +164,7 @@ namespace OPCAIC.Application.Extensions
 
 		public static Task<List<TDestination>> ListAsync<TEntity, TDestination>(this IRepository<TEntity> repository,
 			Expression<Func<TEntity, bool>> criteria, Expression<Func<TEntity, TDestination>> projection, CancellationToken cancellationToken = default)
-			where TEntity : class, IEntity
+			where TEntity : class
 		{
 			var spec = new ProjectingSpecification<TEntity,TDestination>(projection);
 			spec.AddCriteria(criteria);

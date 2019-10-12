@@ -43,7 +43,6 @@ namespace OPCAIC.Application.Dtos.Tournaments
 		public DateTime EvaluationStarted { get; set; }
 		public int MatchesPerDay { get; set; }
 		public List<SubmissionScoreViewDto> Submissions { get; set; }
-
 		/// <inheritdoc />
 		void ICustomMapping.CreateMapping(Profile configuration)
 		{
@@ -51,7 +50,6 @@ namespace OPCAIC.Application.Dtos.Tournaments
 				.IncludeBase<Tournament, TournamentGenerationDtoBase>()
 				.ForMember(t => t.Submissions,
 					opt => opt.MapFrom(x => x.Participants.Where(p => p.ActiveSubmission != null).Select(p => p.ActiveSubmission)));
-
 		}
 	}
 }

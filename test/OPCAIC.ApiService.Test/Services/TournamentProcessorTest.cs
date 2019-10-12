@@ -14,6 +14,7 @@ using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using Shouldly;
@@ -29,10 +30,13 @@ namespace OPCAIC.ApiService.Test.Services
 		public TournamentProcessorTest(ITestOutputHelper output) : base(output)
 		{
 			UseDatabase();
+			Services.AddMemoryCache();
 			Services.Mock<IMediator>(); // no events
 			Services.AddMatchGenerators();
 			Services.AddMapper();
 			Services.AddRepositories();
+			Services.AddTransient<TournamentProcessor.Job>();
+			Services.Mock<ITimeService>().SetupGet(s => s.Now).Returns(() => Now);
 
 			Faker.Configure<Tournament>()
 				.RuleFor(t => t.Game, Faker.Entity<Game>);
@@ -44,25 +48,7 @@ namespace OPCAIC.ApiService.Test.Services
 		private DateTime LastUpdated { get; set; }
 		private DateTime Now { get; set; }
 
-		private TournamentProcessor.Job Processor
-		{
-			get
-			{
-				var services = ServiceProvider;
-				Now = Now == LastUpdated ? Now.AddMinutes(1) : Now;
-				var lastRun = LastUpdated;
-				LastUpdated = Now;
-
-				return new TournamentProcessor.Job(
-					services.GetRequiredService<ILogger<TournamentProcessor>>(),
-					services.GetRequiredService<IMediator>(),
-					services.GetRequiredService<ITournamentRepository>(),
-					services.GetRequiredService<IMatchRepository>(),
-					services.GetRequiredService<IMatchGenerator>(),
-					lastRun,
-					Now);
-			}
-		}
+		private TournamentProcessor.Job Processor => GetService<TournamentProcessor.Job>();
 
 		[Fact]
 		public async Task StateTransfer_Finished_Success()
@@ -85,7 +71,7 @@ namespace OPCAIC.ApiService.Test.Services
 			}
 			await DbContext.SaveChangesAsync();
 
-			await Processor.ExecuteAsync(CancellationToken);
+			await Processor.ExecuteAsync(LastUpdated, CancellationToken);
 
 			tournament.State.ShouldBe(TournamentState.Finished);
 			tournament.EvaluationFinished.ShouldBe(Now);
@@ -113,7 +99,7 @@ namespace OPCAIC.ApiService.Test.Services
 			}
 			await DbContext.SaveChangesAsync();
 
-			await Processor.ExecuteAsync(CancellationToken);
+			await Processor.ExecuteAsync(LastUpdated, CancellationToken);
 
 			tournament.State.ShouldBe(TournamentState.WaitingForFinish);
 			tournament.EvaluationFinished.ShouldBeNull();
@@ -130,7 +116,7 @@ namespace OPCAIC.ApiService.Test.Services
 			tournament.EvaluationStarted.ShouldBeNull();
 			tournament.EvaluationFinished.ShouldBeNull();
 
-			await Processor.ExecuteAsync(CancellationToken);
+			await Processor.ExecuteAsync(LastUpdated, CancellationToken);
 
 			tournament.State.ShouldBe(TournamentState.Running);
 			tournament.EvaluationStarted.ShouldBe(Now);
@@ -149,7 +135,7 @@ namespace OPCAIC.ApiService.Test.Services
 			tournament.EvaluationStarted.ShouldBeNull();
 			tournament.EvaluationFinished.ShouldBeNull();
 
-			await Processor.ExecuteAsync(CancellationToken);
+			await Processor.ExecuteAsync(LastUpdated, CancellationToken);
 
 			// no change
 			tournament.State.ShouldBe(TournamentState.Published);
@@ -193,7 +179,7 @@ namespace OPCAIC.ApiService.Test.Services
 			tournament.Scope = TournamentScope.Deadline;
 			await DbContext.SaveChangesAsync();
 
-			await Processor.ExecuteAsync(CancellationToken);
+			await Processor.ExecuteAsync(LastUpdated, CancellationToken);
 
 			tournament.Matches.ShouldNotBeNull();
 			tournament.Matches.Count.ShouldBe(matchCount);
@@ -211,7 +197,7 @@ namespace OPCAIC.ApiService.Test.Services
 			tournament.Scope = TournamentScope.Deadline;
 			await DbContext.SaveChangesAsync();
 
-			await Processor.ExecuteAsync(CancellationToken);
+			await Processor.ExecuteAsync(LastUpdated, CancellationToken);
 
 			tournament.Matches.ShouldNotBeNull();
 			tournament.Matches.Count.ShouldBe(matches);
@@ -229,7 +215,7 @@ namespace OPCAIC.ApiService.Test.Services
 			tournament.EvaluationStarted = Now - TimeSpan.FromHours(2.1);
 			await DbContext.SaveChangesAsync();
 
-			await Processor.ExecuteAsync(CancellationToken);
+			await Processor.ExecuteAsync(LastUpdated, CancellationToken);
 
 			tournament.Matches.ShouldNotBeNull();
 			tournament.Matches.Count.ShouldBe(2); // 2h have passed
@@ -247,7 +233,7 @@ namespace OPCAIC.ApiService.Test.Services
 			tournament.Scope = TournamentScope.Deadline;
 			await DbContext.SaveChangesAsync();
 
-			await Processor.ExecuteAsync(CancellationToken);
+			await Processor.ExecuteAsync(LastUpdated, CancellationToken);
 
 			tournament.State.ShouldBe(TournamentState.Finished);
 		}
@@ -283,7 +269,7 @@ namespace OPCAIC.ApiService.Test.Services
 			do
 			{
 				matchCount = tournament.Matches.Count;
-				await Processor.ExecuteAsync(CancellationToken);
+				await Processor.ExecuteAsync(LastUpdated, CancellationToken);
 			} while (matchCount != tournament.Matches.Count);
 
 			tournament.State.ShouldBe(TournamentState.Finished,

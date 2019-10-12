@@ -3,7 +3,7 @@ using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Domain.ValueObjects
 {
-	public abstract class MenuItem
+	public abstract class MenuItem : Entity
 	{
 		/// <summary>
 		///     Type of the menu item.

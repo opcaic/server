@@ -18,12 +18,11 @@ namespace OPCAIC.ApiService.Test.Security
 		{
 			Services.AddMapper();
 			Services.AddRepositories();
-			Services.Mock<ITimeService>().SetupGet(g => g.Now).Returns(DateTime.UtcNow);
 			UseDatabase();
 		}
 
 		[Fact]
-		public void AllowEveryoneBrowseTournametns()
+		public void AllowEveryoneBrowseTournaments()
 		{
 			var game = NewTrackedEntity<Game>();
 			var manager = NewUser();

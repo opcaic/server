@@ -20,6 +20,7 @@ namespace OPCAIC.ApiService.IoC
 				.AddMatchGenerators()
 				.AddHostedService<BrokerReactor>()
 				.AddHostedService<TournamentProcessor>()
+				.AddTransient<TournamentProcessor.Job>()
 				.AddHostedService<EmailCronService>()
 				.AddTransient<EmailSender>()
 				.AddSingleton<ILogStorageService, LogStorageService>()

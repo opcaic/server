@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
@@ -20,8 +19,6 @@ namespace OPCAIC.ApiService.Test
 
 			HttpContext = new DefaultHttpContext();
 			HttpContext.User = new ClaimsPrincipal();
-			Request = new DefaultHttpRequest(HttpContext);
-			Response = new DefaultHttpResponse(HttpContext);
 
 			ApiConfigureServices();
 			Services.AddTransient<TController>();
@@ -29,8 +26,6 @@ namespace OPCAIC.ApiService.Test
 
 		protected TController Controller => lazyController.Value;
 
-		protected HttpRequest Request { get; }
-		protected HttpResponse Response { get; }
 		protected HttpContext HttpContext { get; }
 
 		private TController CreateController()
