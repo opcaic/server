@@ -92,7 +92,7 @@ namespace OPCAIC.Application.Test.Tournaments
 			var result = GetService<IValidator<CreateTournamentCommand>>().Validate(ctx);
 			result.IsValid.ShouldBeFalse();
 			var error = result.Errors.ShouldHaveSingleItem();
-			error.ErrorCode.ShouldBe(ValidationErrorCodes.InvalidSchema);
+			error.ErrorCode.ShouldBe(ValidationErrorCodes.InvalidConfiguration);
 		}
 
 		[Fact]

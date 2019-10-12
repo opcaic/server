@@ -181,7 +181,7 @@ namespace OPCAIC.Application.Infrastructure.Validation
 					new ValidationFailure(context.PropertyName,
 						"Configuration does not validate against game's schema")
 					{
-						ErrorCode = ValidationErrorCodes.InvalidSchema,
+						ErrorCode = ValidationErrorCodes.InvalidConfiguration,
 						CustomState = new Dictionary<string, object> { ["errors"] = errors }
 					});
 			}

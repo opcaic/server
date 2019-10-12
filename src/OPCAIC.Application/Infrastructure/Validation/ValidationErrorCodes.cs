@@ -16,8 +16,6 @@
 
 		public static string MaxLengthError => "field-max-length";
 
-		public static string StringLengthError => "field-string-length";
-
 		public static string MinValueError => "field-min-value";
 
 		public static string RequiredError => "field-required";
@@ -44,9 +42,6 @@
 		public static string UserIsAlreadyManagerOfTournament => "user-is-already-manager-of-tournament";
 
 		public static string UserIsNotManagerOfTournament => "user-is-not-manager-of-tournament";
-
-		public static string DeadlineTournamentsCannotBeStopped
-			=> "deadline-tournaments-evaluation-cannot-be-stopped";
 
 		#endregion
 
@@ -88,19 +83,13 @@
 
 		public static string RefreshTokenInvalid => "invalid-token";
 
-		public static string UserNotInvited => "user-not-tounament-participant";
-
 		#endregion
-
-		public static string UploadNotZip => "not-zip-file";
 
 		public static string InvalidReference => "invalid-reference";
 
 		public static string InvalidSchema => "invalid-schema";
 
 		public static string InvalidConfiguration => "invalid-configuration";
-
-		public static string InvalidContentType => "invalid-content-type";
 
 		public static string InvalidZipSize => "invalid-archive-size";
 	}
