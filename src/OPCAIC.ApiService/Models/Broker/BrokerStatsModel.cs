@@ -4,6 +4,6 @@ namespace OPCAIC.ApiService.Models.Broker
 {
 	public class BrokerStatsModel
 	{
-		public List<WorkerInfoModel> Workers { get; set; }
+		public List<WorkerInfoModel> List { get; set; }
 	}
 }

@@ -192,7 +192,8 @@ namespace OPCAIC.ApiService
 		private void AddBrokerMapping()
 		{
 			CreateMap<WorkItem, WorkItemDto, WorkItemModel>(MemberList.Destination);
-			CreateMap<BrokerStats, BrokerStatsModel>(MemberList.Destination);
+			CreateMap<BrokerStats, BrokerStatsModel>(MemberList.Destination)
+				.ForMember(b => b.List, opt => opt.MapFrom(b => b.Workers));
 			CreateMap<WorkerInfo, WorkerInfoModel>(MemberList.Destination);
 			CreateMap<WorkMessageBase, WorkMessageBaseDto, WorkMessageBaseModel>(MemberList
 				.Destination);
