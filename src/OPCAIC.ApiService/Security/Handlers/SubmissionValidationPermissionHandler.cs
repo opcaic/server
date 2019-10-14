@@ -30,6 +30,9 @@ namespace OPCAIC.ApiService.Security.Handlers
 					return Task.FromResult(user.HasClaim(WorkerClaimTypes.ValidationId,
 						id.ToString()));
 
+				case SubmissionValidationPermission.Search:
+					return Task.FromResult(false);
+
 				case SubmissionValidationPermission.DownloadResult:
 				case SubmissionValidationPermission.ReadDetail:
 					var userId = user.TryGetId();

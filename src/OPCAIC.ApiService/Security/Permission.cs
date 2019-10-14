@@ -67,6 +67,7 @@
 		UploadResult,
 		DownloadResult,
 		ReadDetail,
+		Search
 	}
 
 	public enum MatchPermission
@@ -80,6 +81,7 @@
 	{
 		UploadResult,
 		DownloadResults,
-		ReadDetail
+		ReadDetail,
+		Search
 	}
 }

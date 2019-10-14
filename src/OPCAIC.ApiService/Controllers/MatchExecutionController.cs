@@ -1,6 +1,7 @@
 ﻿using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +12,12 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Security;
-using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
+using OPCAIC.Application.MatchExecutions;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -23,19 +26,23 @@ namespace OPCAIC.ApiService.Controllers
 	public class MatchExecutionController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;
-		private readonly IMatchExecutionRepository repository;
 		private readonly IMatchExecutionService executionService;
-		private readonly IStorageService storage;
 		private readonly ILogger<MatchExecutionController> logger;
+		private readonly IMediator mediator;
+		private readonly IMatchExecutionRepository repository;
+		private readonly IStorageService storage;
 
 		public MatchExecutionController(IStorageService storage,
-			IMatchExecutionRepository repository, IAuthorizationService authorizationService, IMatchExecutionService executionService, ILogger<MatchExecutionController> logger)
+			IMatchExecutionRepository repository, IAuthorizationService authorizationService,
+			IMatchExecutionService executionService, ILogger<MatchExecutionController> logger,
+			IMediator mediator)
 		{
 			this.storage = storage;
 			this.repository = repository;
 			this.authorizationService = authorizationService;
 			this.executionService = executionService;
 			this.logger = logger;
+			this.mediator = mediator;
 		}
 
 		/// <summary>
@@ -55,7 +62,8 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UploadResult(long id, [FromForm] ResultArchiveModel model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, MatchExecutionPermission.UploadResult);
+			await authorizationService.CheckPermissions(User, id,
+				MatchExecutionPermission.UploadResult);
 
 			var storageDto = await repository.FindExecutionForStorageAsync(id, cancellationToken);
 			using (var stream = storage.WriteMatchResultArchive(storageDto))
@@ -64,6 +72,28 @@ namespace OPCAIC.ApiService.Controllers
 			}
 
 			logger.MatchExecutionResultUploaded(id);
+		}
+
+		/// <summary>
+		///     Get filtered list of match executions.
+		/// </summary>
+		/// <param name="filter">Filter to use.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		/// <response code="200">Match executions found.</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to this action.</response>
+		[HttpGet]
+		[ProducesResponseType(typeof(PagedResult<MatchExecutionDto>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[RequiresPermission(MatchExecutionPermission.Search)]
+		public async Task<PagedResult<MatchExecutionDto>> GetMatchExecutionsAsync(
+			[FromQuery] GetMatchExecutionsQuery filter,
+			CancellationToken cancellationToken)
+		{
+			return await mediator.Send(filter, cancellationToken);
 		}
 
 
@@ -79,7 +109,8 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<MatchExecutionDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public async Task<MatchExecutionDetailModel> GetByIdAsync(long id,
+			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id,
 				MatchExecutionPermission.ReadDetail);
@@ -100,7 +131,8 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<IActionResult> DownloadResult(int id, CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, MatchExecutionPermission.DownloadResults);
+			await authorizationService.CheckPermissions(User, id,
+				MatchExecutionPermission.DownloadResults);
 
 			var storageDto = await repository.FindExecutionForStorageAsync(id, cancellationToken);
 

@@ -1,6 +1,7 @@
 ﻿using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +12,12 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.Security;
-using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
+using OPCAIC.Application.SubmissionValidations;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -23,20 +26,24 @@ namespace OPCAIC.ApiService.Controllers
 	public class ValidationController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;
-		private readonly IStorageService storage;
-		private readonly ISubmissionValidationRepository repository;
-		private readonly ISubmissionValidationService validationService;
 		private readonly ILogger<ValidationController> logger;
+		private readonly IMediator mediator;
+		private readonly ISubmissionValidationRepository repository;
+		private readonly IStorageService storage;
+		private readonly ISubmissionValidationService validationService;
 
 		/// <inheritdoc />
 		public ValidationController(IAuthorizationService authorizationService,
-			ISubmissionValidationRepository repository, IStorageService storage, ISubmissionValidationService validationService, ILogger<ValidationController> logger)
+			ISubmissionValidationRepository repository, IStorageService storage,
+			ISubmissionValidationService validationService, ILogger<ValidationController> logger,
+			IMediator mediator)
 		{
 			this.authorizationService = authorizationService;
 			this.repository = repository;
 			this.storage = storage;
 			this.validationService = validationService;
 			this.logger = logger;
+			this.mediator = mediator;
 		}
 
 		/// <summary>
@@ -53,7 +60,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[CustomRequestSizeLimit(CustomRequestSizeLimitAttribute.Type.Result)]
-		public async Task UploadResult(long id, ResultArchiveModel model, 
+		public async Task UploadResult(long id, ResultArchiveModel model,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id,
@@ -69,6 +76,30 @@ namespace OPCAIC.ApiService.Controllers
 		}
 
 		/// <summary>
+		///     Get filtered list of submission validations.
+		/// </summary>
+		/// <param name="filter">Filter to use.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		/// <response code="200">Match executions found.</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to this action.</response>
+		[HttpGet]
+		[ProducesResponseType(typeof(PagedResult<SubmissionValidationDto>),
+			StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[RequiresPermission(SubmissionValidationPermission.Search)]
+		public async Task<PagedResult<SubmissionValidationDto>> GetSubmissionValidationsAsync(
+			[FromQuery] GetSubmissionValidationsQuery filter,
+			CancellationToken cancellationToken)
+		{
+			return await mediator.Send(filter, cancellationToken);
+		}
+
+
+		/// <summary>
 		///     Gets detailed information about the given submission validation.
 		/// </summary>
 		/// <param name="id">Id of the submission validation.</param>
@@ -80,7 +111,8 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<SubmissionValidationDetailModel> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public async Task<SubmissionValidationDetailModel> GetByIdAsync(long id,
+			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id,
 				SubmissionValidationPermission.ReadDetail);

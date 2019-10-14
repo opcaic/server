@@ -29,6 +29,9 @@ namespace OPCAIC.ApiService.Security.Handlers
 					return Task.FromResult(user.HasClaim(WorkerClaimTypes.ExecutionId,
 						id.ToString()));
 
+				case MatchExecutionPermission.Search:
+					return Task.FromResult(false);
+
 				case MatchExecutionPermission.ReadDetail:
 				case MatchExecutionPermission.DownloadResults:
 					var userId = user.TryGetId();
