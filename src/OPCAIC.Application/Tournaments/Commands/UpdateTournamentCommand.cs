@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -19,6 +15,10 @@ using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Domain.ValueObjects;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OPCAIC.Application.Tournaments.Commands
 {

@@ -1,11 +1,11 @@
-﻿using System;
-using System.Linq;
-using AutoMapper;
+﻿using AutoMapper;
 using Newtonsoft.Json.Linq;
 using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using System;
+using System.Linq;
 
 namespace OPCAIC.Application.Tournaments.Models
 {
@@ -32,6 +32,8 @@ namespace OPCAIC.Application.Tournaments.Models
 		public int SubmissionsCount { get; set; }
 
 		public int ActiveSubmissionsCount { get; set; }
+
+		public bool HasAdditionalFiles { get; set; }
 
 		public string ImageUrl { get; set; }
 

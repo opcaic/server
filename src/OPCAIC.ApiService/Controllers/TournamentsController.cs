@@ -1,7 +1,4 @@
-﻿using System.Net.Mime;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +14,9 @@ using OPCAIC.Application.Tournaments.Command;
 using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Application.Tournaments.Queries;
+using System.Net.Mime;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -28,7 +28,8 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly IMediator mediator;
 		private readonly IStorageService storage;
 
-		public TournamentsController(IAuthorizationService authorizationService, IStorageService storage, IMediator mediator)
+		public TournamentsController(IAuthorizationService authorizationService,
+			IStorageService storage, IMediator mediator)
 		{
 			this.authorizationService = authorizationService;
 			this.storage = storage;
@@ -73,7 +74,7 @@ namespace OPCAIC.ApiService.Controllers
 			CancellationToken cancellationToken)
 		{
 			var id = await mediator.Send(model, cancellationToken);
-			return CreatedAtRoute(nameof(GetTournamentByIdAsync), new {id}, new IdModel {Id = id});
+			return CreatedAtRoute(nameof(GetTournamentByIdAsync), new { id }, new IdModel { Id = id });
 		}
 
 		/// <summary>
@@ -95,7 +96,8 @@ namespace OPCAIC.ApiService.Controllers
 			await authorizationService.CheckPermissions(User, id, TournamentPermission.Read);
 			var cloneId = await mediator.Send(new CloneTournamentCommand(id),
 				cancellationToken);
-			return CreatedAtRoute(nameof(GetTournamentByIdAsync), new {id = cloneId}, new IdModel {Id = cloneId});
+			return CreatedAtRoute(nameof(GetTournamentByIdAsync), new { id = cloneId },
+				new IdModel { Id = cloneId });
 		}
 
 		/// <summary>
@@ -140,7 +142,8 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UpdateAsync([FromRouteAndBody] UpdateTournamentCommand model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, model.Id, TournamentPermission.Update);
+			await authorizationService.CheckPermissions(User, model.Id,
+				TournamentPermission.Update);
 			await mediator.Send(model, cancellationToken);
 		}
 
@@ -195,6 +198,10 @@ namespace OPCAIC.ApiService.Controllers
 			await authorizationService.CheckPermissions(User, model.TournamentId,
 				TournamentPermission.UploadAdditionalFiles);
 
+			await mediator.Send(
+				new TournamentAdditionalFilesUploadedCommand { TournamentId = model.TournamentId },
+				cancellationToken);
+
 			using (var stream = storage.WriteTournamentAdditionalFiles(model.TournamentId, true))
 			{
 				await model.Archive.CopyToAsync(stream, cancellationToken);
@@ -224,7 +231,7 @@ namespace OPCAIC.ApiService.Controllers
 			await authorizationService.CheckPermissions(User, id,
 				TournamentPermission.StartEvaluation);
 
-			await mediator.Send(new StartTournamentEvaluationCommand {TournamentId = id},
+			await mediator.Send(new StartTournamentEvaluationCommand { TournamentId = id },
 				cancellationToken);
 		}
 
@@ -251,7 +258,7 @@ namespace OPCAIC.ApiService.Controllers
 			await authorizationService.CheckPermissions(User, id,
 				TournamentPermission.PauseEvaluation);
 
-			await mediator.Send(new PauseTournamentEvaluationCommand {TournamentId = id},
+			await mediator.Send(new PauseTournamentEvaluationCommand { TournamentId = id },
 				cancellationToken);
 		}
 
@@ -278,7 +285,7 @@ namespace OPCAIC.ApiService.Controllers
 			await authorizationService.CheckPermissions(User, id,
 				TournamentPermission.UnpauseEvaluation);
 
-			await mediator.Send(new UnpauseTournamentEvaluationCommand {TournamentId = id},
+			await mediator.Send(new UnpauseTournamentEvaluationCommand { TournamentId = id },
 				cancellationToken);
 		}
 
@@ -305,7 +312,7 @@ namespace OPCAIC.ApiService.Controllers
 			await authorizationService.CheckPermissions(User, id,
 				TournamentPermission.StopEvaluation);
 
-			await mediator.Send(new StopTournamentEvaluationCommand {TournamentId = id},
+			await mediator.Send(new StopTournamentEvaluationCommand { TournamentId = id },
 				cancellationToken);
 		}
 
@@ -333,12 +340,12 @@ namespace OPCAIC.ApiService.Controllers
 			await authorizationService.CheckPermissions(User, id,
 				TournamentPermission.Publish);
 
-			await mediator.Send(new PublishTournamentCommand {TournamentId = id},
+			await mediator.Send(new PublishTournamentCommand { TournamentId = id },
 				cancellationToken);
 		}
 
 		/// <summary>
-		/// Adds a manager to a given tournament.
+		///     Adds a manager to a given tournament.
 		/// </summary>
 		/// <param name="userId"></param>
 		/// <param name="managerEmail"></param>
@@ -354,13 +361,16 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task AddTournamentManagerAsync(string managerEmail, long tournamentId,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageManagers);
+			await authorizationService.CheckPermissions(User, tournamentId,
+				TournamentPermission.ManageManagers);
 
-			await mediator.Send(new AddTournamentManagerCommand { Email = managerEmail, TournamentId = tournamentId}, cancellationToken);
+			await mediator.Send(
+				new AddTournamentManagerCommand { Email = managerEmail, TournamentId = tournamentId },
+				cancellationToken);
 		}
 
 		/// <summary>
-		/// Deletes a manager of a given tournament.
+		///     Deletes a manager of a given tournament.
 		/// </summary>
 		/// <param name="userId"></param>
 		/// <param name="managerEmail"></param>
@@ -376,9 +386,15 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task DeleteTournamentManagerAsync(string managerEmail, long tournamentId,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageManagers);
+			await authorizationService.CheckPermissions(User, tournamentId,
+				TournamentPermission.ManageManagers);
 
-			await mediator.Send(new DeleteTournamentManagerCommand { Email = managerEmail, TournamentId = tournamentId }, cancellationToken);
+			await mediator.Send(
+				new DeleteTournamentManagerCommand
+				{
+					Email = managerEmail,
+					TournamentId = tournamentId
+				}, cancellationToken);
 		}
 	}
 }

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using OPCAIC.Domain.Enums;
+using OPCAIC.Domain.ValueObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using OPCAIC.Domain.Enums;
-using OPCAIC.Domain.ValueObjects;
 
 namespace OPCAIC.Domain.Entities
 {
@@ -127,6 +127,11 @@ namespace OPCAIC.Domain.Entities
 		public virtual ICollection<Document> Documents { get; set; }
 
 		/// <summary>
+		///     Whether there are additional files needed for match execution and submission validation.
+		/// </summary>
+		public bool HasAdditionalFiles { get; set; }
+
+		/// <summary>
 		///     Image url that is used both in tournament list and tournament detail.
 		/// </summary>
 		public string ImageUrl { get; set; }
@@ -157,7 +162,8 @@ namespace OPCAIC.Domain.Entities
 		public long MaxSubmissionSize { get; set; }
 
 		/// <summary>
-		///     All submissions posted to this tournament, note that the not all of these are active. for active submissions see Participants->ActiveSubmission
+		///     All submissions posted to this tournament, note that the not all of these are active. for active submissions see
+		///     Participants->ActiveSubmission
 		/// </summary>
 		public virtual IList<Submission> Submissions { get; set; }
 
