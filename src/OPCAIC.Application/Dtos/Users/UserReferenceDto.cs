@@ -8,8 +8,6 @@ namespace OPCAIC.Application.Dtos.Users
 
 		public string Username { get; set; }
 
-		public string Email { get; set; }
-
 		public string Organization { get; set; }
 
 		/// <inheritdoc />

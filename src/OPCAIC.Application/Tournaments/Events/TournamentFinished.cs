@@ -44,19 +44,19 @@ namespace OPCAIC.Application.Tournaments.Events
 			/// <inheritdoc />
 			public async Task Handle(TournamentFinished notification, CancellationToken cancellationToken)
 			{
-				var mail = EmailType.TournamentFinished.CreateEmail(
+				var data = EmailType.TournamentFinished.CreateEmail(
 					 urlGenerator.TournamentPageLink(notification.TournamentId),
 					 notification.TournamentName
 				);
 
-				var users = await userRepository.ListAsync<User, UserReferenceDto>(u
+				var userEmails = await userRepository.ListAsync(u
 					=> u.WantsEmailNotifications &&
-					u.Submissions.Any(s => s.TournamentId == notification.TournamentId), mapper, cancellationToken);
+					u.Submissions.Any(s => s.TournamentId == notification.TournamentId), u => u.Email, cancellationToken);
 
 				// TODO: batch email sending?
-				foreach (var user in users)
+				foreach (var email in userEmails)
 				{
-					await emailService.EnqueueEmailAsync(mail, user.Email, cancellationToken);
+					await emailService.EnqueueEmailAsync(data, email, cancellationToken);
 				}
 			}
 		}

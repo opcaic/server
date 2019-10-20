@@ -10,6 +10,7 @@ using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.TestUtils;
 using Shouldly;

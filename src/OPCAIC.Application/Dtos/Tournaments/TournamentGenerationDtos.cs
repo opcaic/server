@@ -31,6 +31,8 @@ namespace OPCAIC.Application.Dtos.Tournaments
 	public class TournamentBracketsGenerationDto : TournamentGenerationDtoBase, IMapFrom<Tournament>
 	{
 		public List<MatchDetailDto> Matches { get; set; }
+
+		public TournamentRankingStrategy RankingStrategy { get; set; }
 	}
 
 	public class TournamentDeadlineGenerationDto : TournamentGenerationDtoBase, IMapFrom<Tournament>

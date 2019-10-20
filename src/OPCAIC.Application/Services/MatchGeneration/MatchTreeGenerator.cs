@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using OPCAIC.Utils;
@@ -15,13 +14,17 @@ namespace OPCAIC.Application.Services.MatchGeneration
 			var winnerLinks = GenerateSeedIndices(logSize)
 				.Select(i => i < seedCount ? new MatchTreeLink(i) : null).ToList();
 			var looserLinks = new List<MatchTreeLink>();
-			var levels = new List<List<MatchTreeNode>>();
+			var winnerBracketLevels = new List<List<MatchTreeNode>>();
+			var looserBracketLevels = new List<List<MatchTreeNode>>();
+			var matchesByIndex = new Dictionary<long, MatchTreeNode>();
 
 			var matchId = 0;
 
 			MatchTreeNode NewNode(MatchTreeLink link0, MatchTreeLink link1)
 			{
-				return new MatchTreeNode(link0, link1, matchId++);
+				var node = new MatchTreeNode(link0, link1, matchId++);
+				matchesByIndex.Add(node.MatchIndex, node);
+				return node;
 			}
 
 			var nextWinnerLinks = new List<MatchTreeLink>(winnerLinks.Count / 2);
@@ -46,6 +49,9 @@ namespace OPCAIC.Application.Services.MatchGeneration
 				}
 			}
 
+			winnerBracketLevels.Add(matches);
+			matches = new List<MatchTreeNode>();
+
 			// looser bracket
 			var count = looserLinks.Count;
 			if (count > 1)
@@ -61,6 +67,7 @@ namespace OPCAIC.Application.Services.MatchGeneration
 					}
 					else // a bye or not enough players (may add null)
 					{
+						matches.Add(null);
 						looserLinks.Add(looserLinks[i + 1]);
 					}
 				}
@@ -68,7 +75,7 @@ namespace OPCAIC.Application.Services.MatchGeneration
 				looserLinks.RemoveRange(0, count);
 			}
 
-			levels.Add(matches);
+			looserBracketLevels.Add(matches);
 
 			winnerLinks = nextWinnerLinks;
 
@@ -91,6 +98,9 @@ namespace OPCAIC.Application.Services.MatchGeneration
 					nextLooserLinks.Add(match.LooserLink);
 				}
 
+				winnerBracketLevels.Add(matches);
+				matches = new List<MatchTreeNode>(winnerLinks.Count / 2);
+
 				// looser bracket, minor stage
 				Debug.Assert(looserLinks.Count == nextLooserLinks.Count);
 
@@ -101,21 +111,25 @@ namespace OPCAIC.Application.Services.MatchGeneration
 
 					// Get seed such that two players that did meet in winners bracket do not immediately meet
 					// in losers bracket
-					var looserLink =
-						looserLinks[GetLooserBracketSeed(levels.Count, looserLinks.Count, i)];
-					if (looserLink != null)
+					var winnerSeed =
+						GetLooserBracketSeed(winnerBracketLevels.Count, looserLinks.Count, i);
+					if (looserLinks[i] != null)
 					{
 						var match = NewNode(
-							nextLooserLinks[i], // loser from winners bracket comes first
-							looserLink);
+							looserLinks[i],
+							nextLooserLinks[winnerSeed]); // loser from winners bracket comes second
 						matches.Add(match);
 						loosersToEliminate.Add(match.WinnerLink);
 					}
 					else
 					{
-						loosersToEliminate.Add(nextLooserLinks[i]);
+						matches.Add(null);
+						loosersToEliminate.Add(nextLooserLinks[winnerSeed]);
 					}
 				}
+
+				looserBracketLevels.Add(matches);
+				matches = new List<MatchTreeNode>(winnerLinks.Count / 2);
 
 				// looser bracket, major stage
 				nextLooserLinks.Clear();
@@ -127,6 +141,8 @@ namespace OPCAIC.Application.Services.MatchGeneration
 						matches.Add(match);
 						nextLooserLinks.Add(match.WinnerLink);
 					}
+
+					looserBracketLevels.Add(matches);
 				}
 				else // last round
 				{
@@ -136,50 +152,65 @@ namespace OPCAIC.Application.Services.MatchGeneration
 
 				winnerLinks = nextWinnerLinks;
 				looserLinks = nextLooserLinks;
-				levels.Add(matches);
 			}
 
 			MatchTreeNode finale = null;
+			MatchTreeNode consolation = null;
 			MatchTreeNode winnersFinal = null;
 			MatchTreeNode losersFinal = null;
+			MatchTreeNode secondaryFinal = null;
 
-			if (winnerLinks.Count > 0
-			) // avoid pathological case when there are too few participants
+			// avoid pathological case when there are too few participants
+			if (winnerLinks.Count > 0)
 			{
-				// winner of the loser brackets vs winner of the winner bracket
-				finale = NewNode(winnerLinks[0], looserLinks[0]);
+				if (seedCount == 2)
+				{
+                    // the only match is a final
+                    finale = winnerBracketLevels[0].Single();
+                    winnerBracketLevels.Clear();
+                    looserBracketLevels.Clear();
+				}
+				else
+				{
+					// winner of the loser brackets vs winner of the winner bracket
+					finale = NewNode(winnerLinks[0], looserLinks[0]);
+				}
+
+				// secondary final is reversed, but we need to use links from the finale match
+				// secondaryFinal = NewNode(looserLinks[0], winnerLinks[0]);
+				if (seedCount > 2)
+				{
+					secondaryFinal = NewNode(finale.WinnerLink, finale.LooserLink);
+				}
+
 				winnersFinal = winnerLinks[0].SourceNode;
 				losersFinal = looserLinks[0].SourceNode;
-				matches = new List<MatchTreeNode>();
-				matches.Add(finale);
-				levels.Add(matches);
+
+				if (seedCount > 3)
+				{
+					consolation = NewNode(looserBracketLevels[^2].Single().LooserLink,
+						looserBracketLevels[^1].Single().LooserLink);
+				}
 			}
 
 			return new DoubleEliminationTree(
-				levels.SelectMany(i => i).Where(i => i != null).ToDictionary(m => m.MatchIndex),
-				levels,
+				matchesByIndex,
+				winnerBracketLevels,
+				looserBracketLevels,
 				finale,
 				winnersFinal,
-				losersFinal);
+				losersFinal,
+				consolation,
+				secondaryFinal);
 		}
 
 		private static int GetLooserBracketSeed(int round, int size, int i)
 		{
 			Require.Nonnegative(round, nameof(round));
 
-			switch (round % 4)
-			{
-				case 0:
-					return i;
-				case 1:
-					return size - i - 1;
-				case 2:
-					return (size - i - 1 + size / 2) % size;
-				case 3:
-					return (i + size / 2) % size;
-			}
-
-			throw new InvalidOperationException("Should not happen");
+			return round % 2 == 0
+				? size - i - 1
+				: i;
 		}
 
 		public static SingleEliminationTree GenerateSingleElimination(int seedCount,
@@ -189,12 +220,15 @@ namespace OPCAIC.Application.Services.MatchGeneration
 			var winnerLinks = GenerateSeedIndices(logSize)
 				.Select(i => i < seedCount ? new MatchTreeLink(i) : null).ToList();
 			var levels = new List<List<MatchTreeNode>>();
+			var matchesByIndex = new Dictionary<long, MatchTreeNode>();
 
 			var matchId = 0;
 
 			MatchTreeNode NewNode(MatchTreeLink link0, MatchTreeLink link1)
 			{
-				return new MatchTreeNode(link0, link1, matchId++);
+				var node = new MatchTreeNode(link0, link1, matchId++);
+				matchesByIndex.Add(node.MatchIndex, node);
+				return node;
 			}
 
 			// generate levels of tournament tree
@@ -216,6 +250,7 @@ namespace OPCAIC.Application.Services.MatchGeneration
 					{
 						// possible only in the leaf level of the tree
 						Debug.Assert(winnerLinks.Count == size);
+						matches.Add(null);
 						nextWinnerLinks.Add(winnerLinks[i]);
 					}
 				}
@@ -224,17 +259,17 @@ namespace OPCAIC.Application.Services.MatchGeneration
 				levels.Add(matches);
 			}
 
-			var final = levels.Count > 0 ? levels[levels.Count - 1][0] : null;
+			var final = levels.Count > 0 ? levels[^1][0] : null;
 			if (singleThirdPlace && seedCount > 3)
 			{
 				var match = NewNode(
 					final.FirstPlayerLink.SourceNode.LooserLink,
 					final.SecondPlayerLink.SourceNode.LooserLink);
-				levels[levels.Count - 1].Add(match);
+				levels[^1].Add(match);
 			}
 
 			return new SingleEliminationTree(
-				levels.SelectMany(i => i).Where(i => i != null).ToDictionary(m => m.MatchIndex),
+				matchesByIndex,
 				levels,
 				final);
 		}
@@ -250,6 +285,12 @@ namespace OPCAIC.Application.Services.MatchGeneration
 			}
 
 			return (size, logSize);
+		}
+
+		public static int[] GenerateIndicesForCount(int count)
+		{
+			var (_, log) = ClosestLargerPowerOfTwo(count);
+			return GenerateSeedIndices(log);
 		}
 
 		/// <summary>

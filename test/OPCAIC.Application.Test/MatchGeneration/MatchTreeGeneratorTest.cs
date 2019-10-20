@@ -38,11 +38,33 @@ namespace OPCAIC.Application.Test.MatchGeneration
 		{
 			var tree = MatchTreeGenerator.GenerateDoubleElimination(participants);
 
-			// N-1 matches for winners bracket, N-2 matches for losers bracket + additional one for
-			// winners of both brackets (optional rematch is not included in the tree)
-			var expectedCount = participants - 1 + (participants - 2) + 1;
+			// the number of generated matches is:
+			var expectedCount = 0;
 
-			Assert.Equal(expectedCount, tree.MatchNodesById.Count);
+			// N-1 matches in winner bracket (the final is not included in winner bracket)
+			expectedCount += participants - 1;
+
+			// N-2 matches in losers bracket
+			expectedCount += participants - 2;
+
+			// 1 for (primary) final
+			expectedCount++;
+
+			// 1 for third place match (if more than 3 players)
+			expectedCount += participants > 3 ? 1 : 0;
+
+			// 1 (optional) secondary final
+			expectedCount += participants > 2 ? 1 : 0;
+
+			// override for trivial cases
+			expectedCount = (participants) switch
+			{
+				1 => 0,
+				2 => 1,
+				_ => expectedCount
+			};
+
+		Assert.Equal(expectedCount, tree.MatchNodesById.Count);
 		}
 	}
 }

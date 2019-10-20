@@ -1,9 +1,8 @@
 ﻿using System;
 using AutoMapper;
-using OPCAIC.Application.Dtos.SubmissionValidations;
-using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 

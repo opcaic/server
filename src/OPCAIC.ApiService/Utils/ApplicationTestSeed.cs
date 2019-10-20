@@ -306,7 +306,7 @@ namespace OPCAIC.ApiService.Utils
 				Scope = TournamentScope.Ongoing,
 				Availability = TournamentAvailability.Private,
 				EvaluationStarted = DateTime.Now.AddHours(-20),
-				State = TournamentState.Running,
+				State = TournamentState.Created,
 				Configuration = "{}",
 				MaxSubmissionSize = 100 * 1024
 			};
@@ -319,7 +319,7 @@ namespace OPCAIC.ApiService.Utils
 				RankingStrategy = TournamentRankingStrategy.Maximum,
 				Scope = TournamentScope.Deadline,
 				Availability = TournamentAvailability.Public,
-				State = TournamentState.Published,
+				State = TournamentState.Created,
 				Configuration = "{}",
 				MaxSubmissionSize = 100 * 1024
 			};
@@ -332,7 +332,7 @@ namespace OPCAIC.ApiService.Utils
 				RankingStrategy = TournamentRankingStrategy.Maximum,
 				Scope = TournamentScope.Deadline,
 				Availability = TournamentAvailability.Public,
-				State = TournamentState.Published,
+				State = TournamentState.Running,
 				Configuration = "{}",
 				MaxSubmissionSize = 100 * 1024
 			};

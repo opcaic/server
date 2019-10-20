@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OPCAIC.ApiService\OPCAIC.ApiService.csproj" />
+    <ProjectReference Include="..\OPCAIC.Application.Test\OPCAIC.Application.Test.csproj" />
     <ProjectReference Include="..\OPCAIC.TestUtils\OPCAIC.TestUtils.csproj" />
   </ItemGroup>
 

@@ -5,6 +5,7 @@ namespace OPCAIC.Application.Services
 	/// <summary>
 	///     Class representing a node in a match tree
 	/// </summary>
+	[DebuggerDisplay("Index = {" + nameof(MatchIndex) + "}")]
 	public class MatchTreeNode
 	{
 		/// <inheritdoc />
@@ -47,6 +48,6 @@ namespace OPCAIC.Application.Services
 		/// <summary>
 		///     Unique identifier of the match inside a tournament.
 		/// </summary>
-		public int MatchIndex { get; }
+		public long MatchIndex { get; }
 	}
 }

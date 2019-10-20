@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.Tournaments;
-using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Persistence;
 using Shouldly;
 
-namespace OPCAIC.ApiService.Test.Services
+namespace OPCAIC.Application.Test
 {
-	internal static class TestTournamentHelper
+	public static class TestTournamentHelper
 	{
 		public static void ShouldBeInValidState(this Tournament tournament)
 		{
@@ -71,12 +70,12 @@ namespace OPCAIC.ApiService.Test.Services
 			DateTime now, int seed = 100)
 		{
 			matches.ShouldAllBe(m => m.Submissions.Count == matches[0].Submissions.Count);
-			var rand = new Random(100);
+			var rand = new Random(seed);
 
 			foreach (var matchDto in matches)
 			{
-				var order = 0;
 				var score = rand.Next(2);
+				var first = matchDto.Submissions[0];
 
 				tournament.Matches.Add(new Match
 				{
@@ -85,7 +84,7 @@ namespace OPCAIC.ApiService.Test.Services
 						{
 							Submission = tournament.Participants.Select(p => p.ActiveSubmission).Single(sub => sub.Id == s),
 							SubmissionId = s,
-							Order = order++
+							Order = s == first ? 0 : 1
 						}).ToList(),
 					Index = matchDto.Index,
 					Executions = new List<MatchExecution>
@@ -101,6 +100,7 @@ namespace OPCAIC.ApiService.Test.Services
 							{
 								AdditionalData = "{}",
 								SubmissionId = s,
+								Order = s == first ? 0 : 1,
 								Submission = tournament.Participants.Select(p => p.ActiveSubmission).Single(sub => sub.Id == s),
 								CompilerResult = EntryPointResult.Success,
 								Crashed = false,
@@ -111,7 +111,7 @@ namespace OPCAIC.ApiService.Test.Services
 				});
 			}
 
-			context.SaveChanges();
+			context?.SaveChanges();
 			foreach (var match in tournament.Matches)
 			{
 				match.LastExecution = match.Executions.Single();

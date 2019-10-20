@@ -23,6 +23,11 @@ namespace OPCAIC.Domain.Entities
 		public long SubmissionId { get; set; }
 
 		/// <summary>
+		///     Order of the submission in the match.
+		/// </summary>
+		public int Order { get; set; }
+
+		/// <summary>
 		///     The submission to which this result belongs.
 		/// </summary>
 		public virtual Submission Submission { get; set; }

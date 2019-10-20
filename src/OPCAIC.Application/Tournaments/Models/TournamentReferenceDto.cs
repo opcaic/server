@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Application.Dtos.Tournaments
+﻿namespace OPCAIC.Application.Tournaments.Models
 {
 	public class TournamentReferenceDto
 	{

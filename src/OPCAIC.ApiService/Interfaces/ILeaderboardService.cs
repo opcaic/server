@@ -1,12 +1,12 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.ApiService.Models.Leaderboards;
+using OPCAIC.Application.Tournaments.Models;
 
 namespace OPCAIC.ApiService.Interfaces
 {
 	public interface ILeaderboardService
 	{
-		Task<LeaderboardModel> GetTournamentLeaderboard(long tournamentId,
+		Task<TournamentLeaderboardDto> GetTournamentLeaderboard(long tournamentId,
 			CancellationToken cancellationToken);
 	}
 }

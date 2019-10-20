@@ -8,6 +8,7 @@ namespace OPCAIC.Application.Dtos.MatchExecutions
 		public double Score { get; set; }
 		public EntryPointResult CompilerResult { get; set; }
 		public bool Crashed { get; set; }
+		public long Order { get; set; }
 		public string AdditionalData { get; set; }
 	}
 }

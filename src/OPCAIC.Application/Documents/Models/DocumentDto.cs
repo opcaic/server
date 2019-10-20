@@ -1,6 +1,7 @@
 ﻿using System;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.Documents.Models

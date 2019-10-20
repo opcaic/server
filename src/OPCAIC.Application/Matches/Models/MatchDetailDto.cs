@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using AutoMapper;
 using Newtonsoft.Json.Linq;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Matches.Models
 {
+	[DebuggerDisplay("Id = {Id}, Index = {Index}, State = {State}")]
 	public class MatchDetailDto : ICustomMapping
 	{
 		public long Id { get; set; }

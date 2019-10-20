@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using Moq;
@@ -24,6 +26,18 @@ namespace OPCAIC.Application.Test
 		public static IReturnsResult<IRepository<TEntity>> SetupProject<TEntity, TDto>(this Mock<IRepository<TEntity>> mock, TDto value, CancellationToken cancellationToken)
 		{
 			return mock.Setup(s => s.FindAsync(It.IsAny<IProjectingSpecification<TEntity, TDto>>(), cancellationToken))
+				.ReturnsAsync(value);
+		}
+
+		public static IReturnsResult<IRepository<TEntity>> SetupProjectList<TEntity, TDto>(this Mock<IRepository<TEntity>> mock, Func<List<TDto>> valueFunc, CancellationToken cancellationToken)
+		{
+			return mock.Setup(s => s.ListAsync(It.IsAny<IProjectingSpecification<TEntity, TDto>>(), cancellationToken))
+				.ReturnsAsync(valueFunc);
+		}
+
+		public static IReturnsResult<IRepository<TEntity>> SetupProjectList<TEntity, TDto>(this Mock<IRepository<TEntity>> mock, List<TDto> value, CancellationToken cancellationToken)
+		{
+			return mock.Setup(s => s.ListAsync(It.IsAny<IProjectingSpecification<TEntity, TDto>>(), cancellationToken))
 				.ReturnsAsync(value);
 		}
 

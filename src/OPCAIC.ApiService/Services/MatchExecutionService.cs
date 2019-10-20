@@ -99,7 +99,16 @@ namespace OPCAIC.ApiService.Services
 		{
 			var dto = mapper.Map<UpdateMatchExecutionDto>(result);
 			dto.Executed = time.Now;
-			await scoreService.UpdateSubmissionsScore(result, new CancellationToken());
+			for (var i = 0; i < dto.BotResults.Length; i++)
+			{
+				dto.BotResults[i].Order = i;
+			}
+
+			if (result.ExecutorResult == SubTaskResult.Ok)
+			{
+				await scoreService.UpdateSubmissionsScore(result, new CancellationToken());
+			}
+
 			logger.MatchExecutionUpdated(result.JobId, dto);
 			await repository.UpdateFromJobAsync(result.JobId, dto, CancellationToken.None);
 		}

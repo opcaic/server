@@ -64,8 +64,8 @@ namespace OPCAIC.Application.Test.MatchGeneration
 			// finals
 			var executions = Simulate(extTournament, i => rand.Next(i), m => 1);
 
-			// all matches are executed (the extra tie breaker is not included in the generated tree)
-			Assert.Equal(tree.MatchNodesById.Count + 1, executions.Count);
+			// all matches are executed
+			executions.Count.ShouldBe(tree.MatchNodesById.Count);
 		}
 	}
 
@@ -104,7 +104,8 @@ namespace OPCAIC.Application.Test.MatchGeneration
 				Id = tournament.Id,
 				ActiveSubmissionIds = tournament.ActiveSubmissionIds,
 				Matches = new List<MatchDetailDto>(),
-				Format = tournament.Format
+				Format = tournament.Format,
+				RankingStrategy = TournamentRankingStrategy.Maximum
 			};
 			return extTournament;
 		}
@@ -113,16 +114,39 @@ namespace OPCAIC.Application.Test.MatchGeneration
 
 		[Theory]
 		[InlineData(42, 42)]
-		[MemberData(nameof(GetSeedsUpTo), 3)]
+		[InlineData(42, 13)]
+		[MemberData(nameof(GetSeedsUpTo), 5)]
 		public void SimpleSimulation(int seed, int participants)
 		{
 			var rand = new Random(seed);
 			var tournament = GenerateTournament(participants);
 
-			var executions = Simulate(tournament, i => rand.Next(i), m => rand.Next(2));
+			int totalMatches;
+			long specialIndex;
+			MatchTreeBase tree;
+
+			if (GetTournamentFormat() == TournamentFormat.DoubleElimination)
+			{
+				var myTree = MatchTreeGenerator.GenerateDoubleElimination(participants);
+				tree = myTree;
+				totalMatches = tree.MatchNodesById.Count;
+				specialIndex = myTree.Final?.MatchIndex ?? -1;
+			}
+			else
+			{
+				tree = MatchTreeGenerator.GenerateSingleElimination(participants, true);
+				totalMatches = tree.MatchNodesById.Count;
+				specialIndex = -1; // none
+			}
+
+			var executions = Simulate(tournament, i => rand.Next(i),
+				m => m.Index == specialIndex
+				? 1 // make sure the additional match executes
+				: rand.Next(2));
 
 			// all matches are executed
-			tournament.Matches.Count.ShouldBe(executions.Count);
+			executions.Count.ShouldBe(tournament.Matches.Count);
+			executions.Count.ShouldBe(totalMatches);
 		}
 
 		protected List<MatchDetailDto.ExecutionDto> Simulate(TournamentBracketsGenerationDto tournament,
@@ -140,7 +164,7 @@ namespace OPCAIC.Application.Test.MatchGeneration
 				};
 
 			var (matches, done) = generator.Generate(tournament);
-			while (!done)
+			while (!done || matches.Count + toExecute.Count > 0)
 			{
 				var newMatches = matches.Select(m => new MatchDetailDto
 				{
