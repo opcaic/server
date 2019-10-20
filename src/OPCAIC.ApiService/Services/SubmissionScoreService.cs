@@ -10,6 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Application.Exceptions;
+using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Tournaments.Models;
 
 namespace OPCAIC.ApiService.Services
@@ -75,8 +76,8 @@ namespace OPCAIC.ApiService.Services
 		{
 			var sub1Id = result.BotResults[0].SubmissionId;
 			var sub2Id = result.BotResults[1].SubmissionId;
-			var score1 = result.BotResults[0].Score;
-			var score2 = result.BotResults[1].Score;
+			var score1 = await submissionRepository.FindAsync(sub2Id, s => s.Score, cancellationToken);
+			var score2 = await submissionRepository.FindAsync(sub2Id, s => s.Score, cancellationToken);
 			await submissionRepository.UpdateAsync(sub1Id,
 				new UpdateSubmissionScoreDto { Score = score1 + result.BotResults[0].Score },
 				cancellationToken);

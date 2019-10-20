@@ -8,7 +8,9 @@ using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Messaging.Messages;
 using System.Threading.Tasks;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Tournaments.Models;
+using OPCAIC.Domain.Entities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -142,6 +144,10 @@ namespace OPCAIC.ApiService.Test.Services
 				.Setup(r => r.UpdateAsync(tableSubmission.Id,
 					It.IsAny<UpdateSubmissionScoreDto>(), CancellationToken))
 				.ReturnsAsync(true);
+			submissionRepository
+				.Setup(r => r.FindAsync(It.IsAny<IProjectingSpecification<Submission, double>>(),
+					CancellationToken))
+				.ReturnsAsync(1);
 			submissionRepository
 				.Setup(r => r.UpdateAsync(tableSubmission2.Id,
 					It.IsAny<UpdateSubmissionScoreDto>(), CancellationToken))

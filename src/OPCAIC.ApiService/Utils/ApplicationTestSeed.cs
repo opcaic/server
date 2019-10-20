@@ -562,10 +562,10 @@ namespace OPCAIC.ApiService.Utils
 			{
 				if (Randomizer.Seed.NextDouble() > 0.5)
 				{
-					// TO DO - submission score?
-					// score?? lets say it's elo
 					CreateSubmission(user, tournament,
-						Randomizer.Seed.NextDouble() * 1500);
+						tournament.Format == TournamentFormat.Elo 
+							? Randomizer.Seed.NextDouble() * 1500
+							: 0);
 				}
 			}
 
