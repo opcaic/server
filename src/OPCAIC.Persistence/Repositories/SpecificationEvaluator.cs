@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace OPCAIC.Persistence.Repositories
 {

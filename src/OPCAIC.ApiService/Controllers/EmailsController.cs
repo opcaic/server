@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +9,9 @@ using OPCAIC.Application.Emails.Models;
 using OPCAIC.Application.Emails.Queries;
 using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Infrastructure;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -75,12 +75,34 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permission to this action.</response>
 		[HttpGet("templates")]
 		[RequiresPermission(EmailPermission.ManageTemplates)]
-		[ProducesResponseType(typeof(PagedResult<EmailTypeDto>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PagedResult<EmailTemplatePreviewDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
-		public Task<PagedResult<EmailTemplateDto>> GetEmailTemplatesAsync(
+		public Task<PagedResult<EmailTemplatePreviewDto>> GetEmailTemplatesAsync(
 			[FromQuery] GetEmailTemplatesQuery query, CancellationToken cancellationToken)
+		{
+			return mediator.Send(query, cancellationToken);
+		}
+
+		/// <summary>
+		///     Gets email templates from the platform.
+		/// </summary>
+		/// <param name="query">Query parameters.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		/// <response code="200">Email templates returned.</response>
+		/// <response code="400">Invalid input model.</response>
+		/// <response code="401">User is not authorized.</response>
+		/// <response code="403">User does not have permission to this action.</response>
+		[HttpGet("template/{Name}/{LanguageCode}")]
+		[RequiresPermission(EmailPermission.ManageTemplates)]
+		[ProducesResponseType(typeof(EmailTemplateDto), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		public Task<EmailTemplateDto> GetEmailTemplateAsync(
+			[FromRoute] GetEmailTemplateQuery query, CancellationToken cancellationToken)
 		{
 			return mediator.Send(query, cancellationToken);
 		}

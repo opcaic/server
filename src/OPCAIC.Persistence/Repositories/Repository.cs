@@ -1,15 +1,14 @@
-﻿using System;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
+using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Specifications;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.EntityFrameworkCore;
-using OPCAIC.Application.Exceptions;
-using OPCAIC.Application.Infrastructure;
-using OPCAIC.Application.Specifications;
 
 namespace OPCAIC.Persistence.Repositories
 {
