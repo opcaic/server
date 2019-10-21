@@ -15,18 +15,12 @@ namespace OPCAIC.Application.Emails.Queries
 {
 	public class GetEmailTemplatesQuery : FilterDtoBase, IRequest<PagedResult<EmailTemplateDto>>
 	{
-		public string LanguageCode { get; set; }
+		public LocalizationLanguage LanguageCode { get; set; }
 
-		public string Name { get; set; }
+		public EmailType Name { get; set; }
 
-		public class Validator : AbstractValidator<GetEmailTemplatesQuery>
+		public class Validator : FilterValidator<GetEmailTemplatesQuery>
 		{
-			public Validator()
-			{
-				RuleFor(m => m.LanguageCode)
-					.IsEnumeration<GetEmailTemplatesQuery, LocalizationLanguage>();
-				RuleFor(m => m.Name).IsEnumeration<GetEmailTemplatesQuery, EmailType>();
-			}
 		}
 
 		public class Handler : FilterQueryHandler<GetEmailTemplatesQuery, EmailTemplate, EmailTemplateDto>

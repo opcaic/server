@@ -29,7 +29,7 @@ namespace OPCAIC.ApiService.Utils
 				Role = UserRole.Admin,
 				Email = "admin@opcaic.com",
 				EmailConfirmed = true,
-				LocalizationLanguage = "en"
+				LocalizationLanguage = LocalizationLanguage.EN
 			};
 
 			userManager.CreateAsync(userAdmin, "Password").GetAwaiter().GetResult();

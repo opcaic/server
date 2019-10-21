@@ -18,9 +18,9 @@ namespace OPCAIC.Application.Emails.Commands
 {
 	public class SetEmailTemplateCommand : IRequest, IMapTo<EmailTemplate>
 	{
-		public string Name { get; set; }
+		public EmailType Name { get; set; }
 
-		public string LanguageCode { get; set; }
+		public LocalizationLanguage LanguageCode { get; set; }
 
 		public string SubjectTemplate { get; set; }
 
@@ -30,13 +30,8 @@ namespace OPCAIC.Application.Emails.Commands
 		{
 			public Validator()
 			{
-				RuleFor(m => m.LanguageCode)
-					.Required()
-					.IsEnumeration<SetEmailTemplateCommand, LocalizationLanguage>();
-
-				RuleFor(m => m.Name)
-					.Required()
-					.IsEnumeration<SetEmailTemplateCommand, EmailType>();
+				RuleFor(m => m.LanguageCode).Required();
+				RuleFor(m => m.Name).Required();
 			}
 		}
 

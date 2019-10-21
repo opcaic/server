@@ -18,6 +18,7 @@ using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Users.Queries;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enumerations;
 using OPCAIC.Domain.Enums;
 using Xunit;
 using Xunit.Abstractions;
@@ -40,7 +41,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 			Password = "11afiejofa#XFAEFF@#23fafw",
 			Username = "user",
 			Organization = "opcaic",
-			LocalizationLanguage = "en"
+			LocalizationLanguage = LocalizationLanguage.EN
 		};
 
 		private Mock<IFrontendUrlGenerator> FrontendUrlGeneratorMock { get; }
@@ -97,12 +98,12 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			var user = await DoCreateUser(userModel, true);
 			await Controller.UpdateAsync(user.Id,
-				new UserProfileModel {LocalizationLanguage = "cz", Organization = "org"},
+				new UserProfileModel {LocalizationLanguage = LocalizationLanguage.CZ, Organization = "org"},
 				CancellationToken);
 			var model = await Controller.GetUserByIdAsync(user.Id, CancellationToken);
 			Assert.NotEqual(userModel.LocalizationLanguage, user.LocalizationLanguage);
 			Assert.NotEqual(userModel.Organization, user.Organization);
-			Assert.Equal("cz", user.LocalizationLanguage);
+			Assert.Equal(LocalizationLanguage.CZ, user.LocalizationLanguage);
 			Assert.Equal("org", user.Organization);
 		}
 

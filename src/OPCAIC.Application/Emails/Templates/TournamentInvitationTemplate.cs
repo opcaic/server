@@ -3,7 +3,7 @@
 	public partial class EmailType
 	{
 		public static readonly TournamentInvitationType TournamentInvitation =
-			Create<TournamentInvitationType>();
+			CreateDerived<TournamentInvitationType>();
 
 		public class TournamentInvitationType : EmailType
 		{

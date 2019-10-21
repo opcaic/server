@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Bogus;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enumerations;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Test
@@ -19,7 +20,7 @@ namespace OPCAIC.ApiService.Test
 				.RuleFor(u => u.LastName, f => f.Name.LastName())
 				.RuleFor(u => u.UserName, f => f.Name.Random.String(8))
 				.RuleFor(u => u.Email, f => f.Internet.Email())
-				.RuleFor(u => u.LocalizationLanguage, f => f.PickRandomParam("cz", "en"))
+				.RuleFor(u => u.LocalizationLanguage, f => f.PickRandom(LocalizationLanguage.AllValues))
 				.RuleFor(u => u.Organization, "OPCAIC")
 				.RuleFor(u => u.PasswordHash, "wfeiaweofiawef");
 
@@ -27,7 +28,7 @@ namespace OPCAIC.ApiService.Test
 				.RuleFor(g => g.Name, f => f.Random.String(10))
 				.RuleFor(g => g.Key, f => f.Random.String(10))
 				.RuleFor(g => g.Description, f => f.Lorem.Paragraph())
-				.RuleFor(g => g.Type, f => f.PickRandom<GameType>())
+				.RuleFor(g => g.Type, f => f.PickRandom(GameType.AllValues))
 				.RuleFor(g => g.MaxAdditionalFilesSize, 1024 * 1024)
 				.RuleFor(g => g.ConfigurationSchema, "{}");
 

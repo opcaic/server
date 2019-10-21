@@ -9,6 +9,7 @@ using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Users.Commands;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Emails.Templates;
+using OPCAIC.Domain.Enumerations;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -63,7 +64,7 @@ namespace OPCAIC.FunctionalTest
 			var response = await PostAsync("api/users", new CreateUserCommand
 			{
 				Email = email,
-				LocalizationLanguage = "en",
+				LocalizationLanguage = LocalizationLanguage.EN,
 				Password = "Pa$Sw0rd",
 				Organization = "MFF",
 				Username = "Raymond",

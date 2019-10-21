@@ -15,6 +15,7 @@ using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Services;
 using OPCAIC.Application.Services.MatchGeneration;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enumerations;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Domain.ValueObjects;
 using OPCAIC.Persistence;
@@ -140,7 +141,7 @@ namespace OPCAIC.ApiService.Utils
 				.RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
 				.RuleFor(u => u.EmailConfirmed, true)
 				.RuleFor(u => u.Role, UserRole.User)
-				.RuleFor(u => u.LocalizationLanguage, f => f.PickRandomParam(null, "en", "cs"));
+				.RuleFor(u => u.LocalizationLanguage, f => f.PickRandom(LocalizationLanguage.AllValues));
 
 			foreach (var user in userFaker.GenerateLazy(30))
 			{
@@ -178,7 +179,7 @@ namespace OPCAIC.ApiService.Utils
 				Role = UserRole.Admin,
 				Email = "admin@opcaic.com",
 				EmailConfirmed = true,
-				LocalizationLanguage = "en"
+				LocalizationLanguage = LocalizationLanguage.EN
 			};
 
 			var userOrganizer = new User
@@ -189,7 +190,7 @@ namespace OPCAIC.ApiService.Utils
 				Role = UserRole.Organizer,
 				Email = "organizer@opcaic.com",
 				EmailConfirmed = true,
-				LocalizationLanguage = "en"
+				LocalizationLanguage = LocalizationLanguage.EN
 			};
 
 			var user = new User
@@ -200,7 +201,7 @@ namespace OPCAIC.ApiService.Utils
 				Role = UserRole.User,
 				Email = "user@opcaic.com",
 				EmailConfirmed = true,
-				LocalizationLanguage = "cs"
+				LocalizationLanguage = LocalizationLanguage.EN
 			};
 
 			var userB = new User
@@ -211,7 +212,7 @@ namespace OPCAIC.ApiService.Utils
 				Role = UserRole.User,
 				Email = "userB@opcaic.com",
 				EmailConfirmed = true,
-				LocalizationLanguage = "cs"
+				LocalizationLanguage = LocalizationLanguage.EN
 			};
 
 			userManager.CreateAsync(userAdmin, "Password").Wait();
@@ -245,6 +246,7 @@ namespace OPCAIC.ApiService.Utils
 			{
 				Name = "2048",
 				Key = "2048",
+				Type = GameType.SinglePlayer,
 				ImageUrl =
 					"https://upload.wikimedia.org/wikipedia/commons/6/64/2048_Screenshot.png",
 				DefaultTournamentImageOverlay = 0.7f,
@@ -258,6 +260,7 @@ namespace OPCAIC.ApiService.Utils
 			{
 				Name = "Dota 2",
 				Key = "dota2",
+				Type = GameType.MultiPlayer,
 				ImageUrl = "https://wallpapercave.com/wp/V8Ee1Bm.jpg",
 				DefaultTournamentImageOverlay = 0.2f,
 				DefaultTournamentImageUrl = "https://wallpapercave.com/wp/V8Ee1Bm.jpg",
@@ -269,6 +272,7 @@ namespace OPCAIC.ApiService.Utils
 			{
 				Name = "Super Mario Bros.",
 				Key = "mario",
+				Type = GameType.SinglePlayer,
 				ImageUrl =
 					"https://cdn02.nintendo-europe.com/media/images/10_share_images/games_15/nintendo_ds_22/SI_NDS_NewSuperMarioBrosDS_image1600w.jpg",
 				DefaultTournamentImageOverlay = 0.6f,
@@ -282,6 +286,7 @@ namespace OPCAIC.ApiService.Utils
 			{
 				Name = "Sokoban",
 				Key = "masokoban",
+				Type = GameType.SinglePlayer,
 				ImageUrl =
 					"https://raw.githubusercontent.com/kefik/Sokoban4J/master/Sokoban4J/screenshot2.png",
 				DefaultTournamentImageOverlay = 0.6f,

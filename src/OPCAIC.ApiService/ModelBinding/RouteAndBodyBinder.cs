@@ -54,7 +54,14 @@ namespace OPCAIC.ApiService.ModelBinding
 				var value = routeValueProvider.GetValue(propertyInfo.Name).SingleOrDefault(x => !string.IsNullOrEmpty(x));
 				if (value != null)
 				{
-					SetProperty(value, propertyInfo, hydratedModel);
+					try
+					{
+						SetProperty(value, propertyInfo, hydratedModel);
+					}
+					catch
+					{
+						bindingContext.ModelState.AddModelError(propertyInfo.Name, $"Value '{value}' is not valid for type'{propertyInfo.PropertyType.Name}'");
+					}
 				}
 			}
 		}

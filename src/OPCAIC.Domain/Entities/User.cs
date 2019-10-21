@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
+using OPCAIC.Domain.Enumerations;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Domain.Entities
@@ -28,7 +29,7 @@ namespace OPCAIC.Domain.Entities
 		/// <summary>
 		///     UI language to use for the user.
 		/// </summary>
-		public string LocalizationLanguage { get; set; }
+		public LocalizationLanguage LocalizationLanguage { get; set; }
 
 		/// <summary>
 		///     Organization this user belongs to

@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Infrastructure;
+using OPCAIC.Persistence.ValueConverters;
 
 namespace OPCAIC.Persistence
 {
@@ -45,6 +48,20 @@ namespace OPCAIC.Persistence
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(DataContext).Assembly);
 			RegisterSoftDeleteQueryFilters(modelBuilder);
 			ConfigureEntities(modelBuilder);
+			ConfigureEnumerations(modelBuilder);
+		}
+
+		private static void ConfigureEnumerations(ModelBuilder modelBuilder)
+		{
+			foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+			{
+				var builder = modelBuilder.Entity(entityType.ClrType);
+
+				foreach (var property in entityType.ClrType.GetProperties().Where(p => Enumeration.IsEnumerationType(p.PropertyType)))
+				{
+					builder.Property(property.Name).HasConversion((ValueConverter)Activator.CreateInstance(typeof(EfEnumerationConverter<>).MakeGenericType(property.PropertyType)));
+				}
+			}
 		}
 
 		private static void ConfigureEntities(ModelBuilder modelBuilder)

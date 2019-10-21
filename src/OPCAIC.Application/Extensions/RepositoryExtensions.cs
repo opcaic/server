@@ -84,10 +84,31 @@ namespace OPCAIC.Application.Extensions
 		}
 
 		public static Task<TEntity> FindAsync<TEntity>(this IRepository<TEntity> repository,
+			long id, IEnumerable<string> includes, CancellationToken cancellationToken = default)
+			where TEntity : class, IEntity
+		{
+			return repository.FindAsync(e => e.Id == id, includes, cancellationToken);
+		}
+
+		public static Task<TEntity> FindAsync<TEntity>(this IRepository<TEntity> repository,
 			Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken = default)
 		{
 			return repository.FindAsync(new BaseSpecification<TEntity>()
 				.AddCriteria(criteria), cancellationToken);
+		}
+
+		public static Task<TEntity> FindAsync<TEntity>(this IRepository<TEntity> repository,
+			Expression<Func<TEntity, bool>> criteria, IEnumerable<string> includes, CancellationToken cancellationToken = default)
+		{
+			var spec = new BaseSpecification<TEntity>()
+				.AddCriteria(criteria);
+
+			foreach (var include in includes)
+			{
+				spec = spec.Include(include);
+			}
+
+			return repository.FindAsync(spec, cancellationToken);
 		}
 
 		public static async Task<TDto> GetAsync<TEntity, TDto>(this IRepository<TEntity> repository,
@@ -151,6 +172,14 @@ namespace OPCAIC.Application.Extensions
 			where TEntity : class, IEntity
 		{
 			return await repository.FindAsync(id, cancellationToken) ??
+				throw new NotFoundException(typeof(TEntity).Name, id);
+		}
+
+		public static async Task<TEntity> GetAsync<TEntity>(this IRepository<TEntity> repository,
+			long id, IEnumerable<string> includes, CancellationToken cancellationToken = default)
+			where TEntity : class, IEntity
+		{
+			return await repository.FindAsync(id, includes, cancellationToken) ??
 				throw new NotFoundException(typeof(TEntity).Name, id);
 		}
 

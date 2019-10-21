@@ -5,7 +5,7 @@ namespace OPCAIC.Application.Emails.Templates
 	public partial class EmailType
 	{
 		public static readonly PasswordResetTemplate
-			PasswordReset = Create<PasswordResetTemplate>();
+			PasswordReset = CreateDerived<PasswordResetTemplate>();
 
 		public class PasswordResetTemplate : EmailType
 		{

@@ -36,11 +36,11 @@ namespace OPCAIC.Infrastructure.Emails
 		public async Task EnqueueEmailAsync(EmailData data, string recipientEmail,
 			CancellationToken cancellationToken)
 		{
-			var recipient = await userRepository.GetAsync(r => r.Email == recipientEmail,
-				p => new { p.Email, p.LocalizationLanguage }, cancellationToken);
+			var language = await userRepository.FindAsync(r => r.Email == recipientEmail,
+				p => p.LocalizationLanguage, cancellationToken);
 
 			await EnqueueEmailAsync(data, recipientEmail,
-				recipient?.LocalizationLanguage ?? LocalizationLanguage.EN,
+				language ?? LocalizationLanguage.EN,
 				cancellationToken);
 		}
 

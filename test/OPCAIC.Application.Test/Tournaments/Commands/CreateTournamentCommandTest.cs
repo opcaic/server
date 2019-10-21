@@ -105,6 +105,11 @@ namespace OPCAIC.Application.Test.Tournaments
 						CancellationToken))
 				.ReturnsAsync(SomeSchema);
 
+			gameRepository.Setup(r
+					=> r.FindAsync(It.IsAny<ProjectingSpecification<Game, GameType>>(),
+						CancellationToken))
+				.ReturnsAsync(GameType.TwoPlayer);
+
 			gameRepository
 				.Setup(s => s.ExistsAsync(It.IsAny<BaseSpecification<Game>>(), CancellationToken))
 				.ReturnsAsync(true);

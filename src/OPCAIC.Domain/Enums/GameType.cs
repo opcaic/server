@@ -1,4 +1,4 @@
-﻿namespace OPCAIC.Domain.Enums
+﻿namespace OPCAIC.Domain.Enumsawef
 {
 	/// <summary>
 	///     Represents types of games based on the number of their players.

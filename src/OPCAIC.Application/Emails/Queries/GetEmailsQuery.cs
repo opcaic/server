@@ -6,6 +6,7 @@ using FluentValidation;
 using MediatR;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Emails.Models;
+using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Queries;
@@ -25,7 +26,7 @@ namespace OPCAIC.Application.Emails.Queries
 
 		public string RecipientEmail { get; set; }
 
-		public string TemplateName { get; set; }
+		public EmailType TemplateName { get; set; }
 
 		public class Handler : FilterQueryHandler<GetEmailsQuery, Email, EmailDto>
 		{

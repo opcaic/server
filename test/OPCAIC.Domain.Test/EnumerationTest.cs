@@ -11,22 +11,22 @@ namespace OPCAIC.Domain.Test
 	{
 		public class TestEnum : Enumeration<TestEnum>
 		{
-			public static readonly TestEnum ValueA = Create();
-			public static readonly TestEnum ValueB = Create();
+			public static readonly TestEnum ValueA = Create<TestEnum>();
+			public static readonly TestEnum ValueB = Create<TestEnum>();
 
 			public static TestEnum PublicCreate(int id, string name)
 			{
-				return Create(id, name);
+				return Create<TestEnum>(id, name);
 			}
 		}
 
 		[Fact]
 		public void CreatesValues()
 		{
-			TestEnum.ValueA.Id.ShouldBe(0);
+			TestEnum.ValueA.Id.ShouldBe(1);
 			TestEnum.ValueA.Name.ShouldBe(nameof(TestEnum.ValueA));
 
-			TestEnum.ValueB.Id.ShouldBe(1);
+			TestEnum.ValueB.Id.ShouldBe(2);
 			TestEnum.ValueB.Name.ShouldBe(nameof(TestEnum.ValueB));
 
 			TestEnum.AllValues.ShouldBe(new[] { TestEnum.ValueA, TestEnum.ValueB });
@@ -35,8 +35,8 @@ namespace OPCAIC.Domain.Test
 		[Fact]
 		public void ThrowsWhenDuplicateValueIsCreated()
 		{
-			Should.Throw<EnumerationException>(() => TestEnum.PublicCreate(0, "awefa"));
-			Should.Throw<EnumerationException>(() => TestEnum.PublicCreate(3, nameof(TestEnum.ValueA)));
+			Should.Throw<EnumerationException>(() => TestEnum.PublicCreate(TestEnum.ValueA.Id, "awefa"));
+			Should.Throw<EnumerationException>(() => TestEnum.PublicCreate(42, nameof(TestEnum.ValueA)));
 		}
 
 		[Fact]
@@ -44,9 +44,9 @@ namespace OPCAIC.Domain.Test
 		{
 			var value = TestEnum.FromId(1);
 
-			value.ShouldBe(TestEnum.ValueB);
+			value.ShouldBe(TestEnum.ValueA);
 			value.Id.ShouldBe(1);
-			value.Name.ShouldBe(TestEnum.ValueB.Name);
+			value.Name.ShouldBe(TestEnum.ValueA.Name);
 		}
 
 		[Fact]
@@ -55,7 +55,7 @@ namespace OPCAIC.Domain.Test
 			var value = TestEnum.FromName(nameof(TestEnum.ValueB));
 
 			value.ShouldBe(TestEnum.ValueB);
-			value.Id.ShouldBe(1);
+			value.Id.ShouldBe(2);
 			value.Name.ShouldBe(TestEnum.ValueB.Name);
 		}
 

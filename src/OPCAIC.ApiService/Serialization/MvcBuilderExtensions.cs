@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using OPCAIC.Domain.Infrastructure;
 
 namespace OPCAIC.ApiService.Serialization
 {
@@ -10,6 +12,11 @@ namespace OPCAIC.ApiService.Serialization
 			return mvcBuilder.AddNewtonsoftJson(opt =>
 			{
 				opt.SerializerSettings.Converters.Add(new MenuItemConverter());
+
+				foreach (var enumType in Enumeration.GetAllEnumerationTypes())
+				{
+					opt.SerializerSettings.Converters.Add((JsonConverter) Activator.CreateInstance(typeof(EnumerationIdConverter<>).MakeGenericType(enumType)));
+				}
 
 				// configure DateTime handling
 				opt.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;

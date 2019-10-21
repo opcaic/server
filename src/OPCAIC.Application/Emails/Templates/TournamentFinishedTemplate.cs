@@ -3,7 +3,7 @@
 	public partial class EmailType
 	{
 		public static readonly TournamentFinishedType TournamentFinished =
-			Create<TournamentFinishedType>();
+			CreateDerived<TournamentFinishedType>();
 
 		public class TournamentFinishedType : EmailType
 		{

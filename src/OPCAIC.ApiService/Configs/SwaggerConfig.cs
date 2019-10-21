@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using OPCAIC.ApiService.ModelBinding;
 using OPCAIC.ApiService.Utils;
+using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Infrastructure;
+using OPCAIC.Domain.Enumerations;
+using OPCAIC.Domain.Infrastructure;
 using OPCAIC.Utils;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -57,10 +62,61 @@ namespace OPCAIC.ApiService.Configs
 				}
 			});
 
+			foreach (var type in Enumeration.GetAllEnumerationTypes())
+			{
+				MapEnumerationAsId(options, type);
+			}
+
+			MapEnumerationAsName(options, typeof(LocalizationLanguage));
+			MapEnumerationAsName(options, typeof(EmailType));
+
 			options.SchemaFilter<InterfaceMemberFilter>(typeof(IIdentifiedRequest));
 			options.SchemaFilter<InterfaceMemberFilter>(typeof(IAuthenticatedRequest));
 			options.SchemaFilter<InterfaceMemberFilter>(typeof(IPublicRequest));
 			options.OperationFilter<RouteParamFilter>();
+		}
+
+		public static void MapEnumerationAsId(SwaggerGenOptions options, Type type)
+		{
+			options.ParameterFilterDescriptors.RemoveAll(f
+				=> f.Type == typeof(EnumerationFilter) &&
+				(Type)f.Arguments[0] == type);
+			options.SchemaFilterDescriptors.RemoveAll(f
+				=> f.Type == typeof(EnumerationFilter) &&
+				(Type)f.Arguments[0] == type);
+
+			Func<OpenApiSchema> factory = () => new OpenApiSchema
+			{
+				Nullable = false,
+				Type = "integer",
+				Format = "int32",
+				Enum = Enumeration.GetAllValues(type).Select(t => (IOpenApiAny)new OpenApiInteger(t.Id)).ToList()
+			};
+
+			options.ParameterFilter<EnumerationFilter>(type, factory);
+			options.SchemaFilter<EnumerationFilter>(type, factory);
+		}
+
+		public static void MapEnumerationAsName(SwaggerGenOptions options, Type type)
+		{
+			options.ParameterFilterDescriptors.RemoveAll(f
+				=> f.Type == typeof(EnumerationFilter) &&
+				(Type)f.Arguments[0] == type);
+			options.SchemaFilterDescriptors.RemoveAll(f
+				=> f.Type == typeof(EnumerationFilter) &&
+				(Type)f.Arguments[0] == type);
+
+			Func<OpenApiSchema> factory = () => new OpenApiSchema
+			{
+				Nullable = false,
+				Type = "string",
+				Format = "string",
+				Enum = Enumeration.GetAllValues(type)
+					.Select(t => (IOpenApiAny)new OpenApiString(t.Name)).ToList()
+			};
+
+			options.ParameterFilter<EnumerationFilter>(type, factory);
+			options.SchemaFilter<EnumerationFilter>(type, factory);
 		}
 
 		public static void SetupSwaggerUi(SwaggerUIOptions options)
@@ -71,6 +127,47 @@ namespace OPCAIC.ApiService.Configs
 		public static void SetupSwagger(SwaggerOptions options)
 		{
 			options.RouteTemplate = DocumentRouteTemplate;
+		}
+	}
+
+	public class EnumerationFilter : IParameterFilter , ISchemaFilter
+	{
+		private readonly Type enumType;
+		private readonly Func<OpenApiSchema> schemaFactory;
+
+		/// <inheritdoc />
+		public EnumerationFilter(Type enumType, Func<OpenApiSchema> schemaFactory)
+		{
+			this.enumType = enumType;
+			this.schemaFactory = schemaFactory;
+		}
+
+		/// <inheritdoc />
+		public void Apply(OpenApiParameter parameter, ParameterFilterContext context)
+		{
+			if (context.ApiParameterDescription.Type == enumType)
+			{
+				parameter.Schema = GetSchema(context.SchemaRepository);
+			}
+		}
+
+		private OpenApiSchema GetSchema(SchemaRepository repository)
+		{
+			return repository.GetOrAdd(enumType, enumType.Name, schemaFactory);
+		}
+
+		/// <inheritdoc />
+		public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+		{
+			foreach (var property in context.ApiModel.Type.GetProperties()
+				.Where(p => p.PropertyType == enumType))
+			{
+				var propertyName = property.Name.FirstLetterToLower();
+				if (schema.Properties.ContainsKey(propertyName))
+				{
+					schema.Properties[propertyName] = GetSchema(context.SchemaRepository);
+				}
+			}
 		}
 	}
 
@@ -104,14 +201,16 @@ namespace OPCAIC.ApiService.Configs
 		/// <inheritdoc />
 		public void Apply(OpenApiOperation operation, OperationFilterContext context)
 		{
-			foreach (var param in context.ApiDescription.ParameterDescriptions
-				.Where(p => p.ModelMetadata?.BinderType == typeof(RouteAndBodyBinder)))
+			foreach (var param in context.ApiDescription.ParameterDescriptions)
 			{
-				var schema = context.SchemaRepository.Schemas[param.Type.Name];
-
-				foreach (var pathParam in context.ApiDescription.ParameterDescriptions.Where(p => p.Source == BindingSource.Path))
+				if (param.ModelMetadata?.BinderType == typeof(RouteAndBodyBinder))
 				{
-					schema.Properties.Remove(pathParam.Name);
+					var schema = context.SchemaRepository.Schemas[param.Type.Name];
+
+					foreach (var pathParam in context.ApiDescription.ParameterDescriptions.Where(p => p.Source == BindingSource.Path))
+					{
+						schema.Properties.Remove(pathParam.Name);
+					}
 				}
 			}
 		}

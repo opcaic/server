@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Persistence.Configurations
 {

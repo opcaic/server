@@ -3,7 +3,7 @@
 	public partial class EmailType
 	{
 		public static readonly UserVerificationType UserVerification =
-			Create<UserVerificationType>();
+			CreateDerived<UserVerificationType>();
 
 		public class UserVerificationType : EmailType
 		{

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using AutoMapper;
-using OPCAIC.Application.Emails.Models;
-using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Domain.Infrastructure;
 
 namespace OPCAIC.Application.Emails.Templates
 {
+	[TypeConverter(typeof(EnumerationConverter<EmailType>))]
 	public partial class EmailType : Enumeration<EmailType>
 	{
 		public IEnumerable<string> TemplateVariables { get; }

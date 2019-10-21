@@ -7,6 +7,8 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using OPCAIC.Application.Exceptions;
+using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Application.Infrastructure.Validation;
@@ -98,19 +100,29 @@ namespace OPCAIC.Application.Tournaments.Commands
 			private readonly ILogger<CreateTournamentCommand> logger;
 			private readonly IMapper mapper;
 			private readonly IRepository<Tournament> repository;
+			private readonly IRepository<Game> gameRepository;
 
 			public Handler(IMapper mapper, ILogger<CreateTournamentCommand> logger,
-				IRepository<Tournament> repository)
+				IRepository<Tournament> repository, IRepository<Game> gameRepository)
 			{
 				this.mapper = mapper;
 				this.logger = logger;
 				this.repository = repository;
+				this.gameRepository = gameRepository;
 			}
 
 			/// <inheritdoc />
 			public async Task<long> Handle(CreateTournamentCommand request,
 				CancellationToken cancellationToken)
 			{
+				// check whether the game is even compatible
+				var gameType = await gameRepository.GetAsync(request.GameId, g => g.Type);
+				if (!gameType.SupportsTournamentFormat(request.Format))
+				{
+					throw new BusinessException(
+						$"Tournament format {request.Format} is not supported by given game.");
+				}
+
 				var tournament = mapper.Map<Tournament>(request);
 				tournament.OwnerId = request.RequestingUserId;
 

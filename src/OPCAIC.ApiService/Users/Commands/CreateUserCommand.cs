@@ -24,7 +24,7 @@ namespace OPCAIC.ApiService.Users.Commands
 
 		public string Organization { get; set; }
 
-		public string LocalizationLanguage { get; set; }
+		public LocalizationLanguage LocalizationLanguage { get; set; }
 
 		[IgnoreMap]
 		public string Password { get; set; }
@@ -39,8 +39,7 @@ namespace OPCAIC.ApiService.Users.Commands
 				RuleFor(m => m.Username).Required();
 				RuleFor(m => m.Organization).MinLength(1);
 
-				RuleFor(m => m.LocalizationLanguage)
-					.IsEnumeration<CreateUserCommand, LocalizationLanguage>().Required();
+				RuleFor(m => m.LocalizationLanguage).Required();
 
 				RuleFor(m => m.Password).Required();
 			}

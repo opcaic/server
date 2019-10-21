@@ -3,7 +3,7 @@
 	public partial class EmailType
 	{
 		public static readonly SubmissionValidationFailedType SubmissionValidationFailed =
-			Create<SubmissionValidationFailedType>();
+			CreateDerived<SubmissionValidationFailedType>();
 
 		public class SubmissionValidationFailedType : EmailType
 		{
