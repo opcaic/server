@@ -63,7 +63,7 @@ namespace OPCAIC.ApiService.Test.Security
 		[Fact]
 		public Task DocumentPermission()
 		{
-			return CheckPermissions<DocumentPermission, Document, DocumentPermissionHandler>();
+			return CheckPermissions<DocumentPermission, Document, DocumentPermissionHandler>(); 
 		}
 
 		[Fact(Skip = "Unused right now")]

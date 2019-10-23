@@ -16,21 +16,16 @@ namespace OPCAIC.Application.Emails.Commands
 {
 	public class DeleteEmailTemplateCommand : IRequest
 	{
-		public string Name { get; set; }
+		public EmailType Name { get; set; }
 
-		public string LanguageCode { get; set; }
+		public LocalizationLanguage LanguageCode { get; set; }
 
 		public class Validator : AbstractValidator<DeleteEmailTemplateCommand>
 		{
 			public Validator()
 			{
-				RuleFor(m => m.LanguageCode)
-					.Required()
-					.IsEnumeration<DeleteEmailTemplateCommand, LocalizationLanguage>();
-
-				RuleFor(m => m.Name)
-					.Required()
-					.IsEnumeration<DeleteEmailTemplateCommand, EmailType>();
+				RuleFor(m => m.LanguageCode) .Required();
+				RuleFor(m => m.Name) .Required();
 			}
 		}
 

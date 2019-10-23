@@ -37,7 +37,7 @@ namespace OPCAIC.FunctionalTest
 			this.Fixture = fixture;
 			this.Output = output;
 			Client = fixture.ClientFactory.CreateClient();
-			serializerSettings = GetJsonSeerializerOptions(fixture);
+			serializerSettings = GetJsonSerializerOptions(fixture);
 		}
 
 		protected WebServerFactory ClientFactory => Fixture.ClientFactory;
@@ -64,7 +64,7 @@ namespace OPCAIC.FunctionalTest
 			UseAccessToken(tokens.AccessToken);
 		}
 
-		private JsonSerializerSettings GetJsonSeerializerOptions(FunctionalTestFixture fixture)
+		private JsonSerializerSettings GetJsonSerializerOptions(FunctionalTestFixture fixture)
 		{
 			// HACK: reach deep into running server services and get the instance of serializer
 			// settings used

@@ -7,6 +7,8 @@ using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enumerations;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentValidation;
+using OPCAIC.Application.Infrastructure.Validation;
 
 namespace OPCAIC.Application.Emails.Queries
 {
@@ -15,6 +17,15 @@ namespace OPCAIC.Application.Emails.Queries
 		public EmailType Name { get; set; }
 
 		public LocalizationLanguage LanguageCode { get; set; }
+
+		public class Validator : AbstractValidator<GetEmailTemplatesQuery>
+		{
+			public Validator()
+			{
+				RuleFor(m => m.Name).Required();
+				RuleFor(m => m.LanguageCode).Required();
+			}
+		}
 
 		public class Handler : IRequestHandler<GetEmailTemplateQuery, EmailTemplateDto>
 		{
@@ -36,7 +47,10 @@ namespace OPCAIC.Application.Emails.Queries
 					et => (et.LanguageCode == request.LanguageCode && et.Name == request.Name),
 					cancellationToken);
 
-				return mapper.Map<EmailTemplateDto>(template);
+				var dto = mapper.Map<EmailTemplateDto>(template);
+				dto.TemplateVariables = request.Name.TemplateVariables;
+
+				return dto;
 			}
 		}
 	}

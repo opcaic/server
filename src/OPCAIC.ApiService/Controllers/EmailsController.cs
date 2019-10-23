@@ -47,23 +47,6 @@ namespace OPCAIC.ApiService.Controllers
 		}
 
 		/// <summary>
-		///     Gets available email types and names of variables for their templates.
-		/// </summary>
-		/// <param name="cancellationToken"></param>
-		/// <response code="200"></response>
-		/// <response code="401">User is not authorized.</response>
-		/// <response code="403">User does not have permission to this action.</response>
-		[HttpGet("types")]
-		[RequiresPermission(EmailPermission.ManageTemplates)]
-		[ProducesResponseType(typeof(List<EmailTypeDto>), StatusCodes.Status200OK)]
-		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		[ProducesResponseType(StatusCodes.Status403Forbidden)]
-		public Task<List<EmailTypeDto>> GetEmailTypesAsync(CancellationToken cancellationToken)
-		{
-			return mediator.Send(new GetEmailTypesQuery(), cancellationToken);
-		}
-
-		/// <summary>
 		///     Gets email templates from the platform.
 		/// </summary>
 		/// <param name="query">Query parameters.</param>
@@ -123,6 +106,27 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public Task SetTemplateAsync([FromRouteAndBody] SetEmailTemplateCommand model,
+			CancellationToken cancellationToken)
+		{
+			return mediator.Send(model, cancellationToken);
+		}
+
+		/// <summary>
+		///     Deletes email template for given email type and language code.
+		/// </summary>
+		/// <param name="model">The actual email template.</param>
+		/// <param name="cancellationToken"></param>
+		/// <response code="200">Email template successfully deleted.</response>
+		/// <response code="400">Invalid input model.</response>
+		/// <response code="401">User is not authorized.</response>
+		/// <response code="403">User does not have permission to this action.</response>
+		[HttpDelete("templates/{Name}/{LanguageCode}")]
+		[RequiresPermission(EmailPermission.ManageTemplates)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		public Task DeleteTemplateAsync([FromRoute] DeleteEmailTemplateCommand model,
 			CancellationToken cancellationToken)
 		{
 			return mediator.Send(model, cancellationToken);
