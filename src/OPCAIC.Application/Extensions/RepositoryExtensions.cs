@@ -225,5 +225,6 @@ namespace OPCAIC.Application.Extensions
 			var spec = new BaseSpecification<TEntity>().AddCriteria(criteria);
 			return repository.DeleteAsync(spec, cancellationToken);
 		}
+		
 	}
 }

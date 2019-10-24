@@ -7,7 +7,6 @@ using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Emails;
 using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Extensions;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
@@ -22,10 +21,10 @@ namespace OPCAIC.Infrastructure.Emails
 		private readonly IRepository<EmailTemplate> emailTemplateRepository;
 
 		private readonly IHandlebars handlebars = Handlebars.Create();
-		private readonly IUserRepository userRepository;
+		private readonly IRepository<User> userRepository;
 
 		public EmailService(IRepository<Email> emailRepository,
-			IRepository<EmailTemplate> emailTemplateRepository, IUserRepository userRepository, ILogger<EmailService> logger)
+			IRepository<EmailTemplate> emailTemplateRepository, IRepository<User> userRepository, ILogger<EmailService> logger)
 		{
 			this.emailRepository = emailRepository;
 			this.emailTemplateRepository = emailTemplateRepository;

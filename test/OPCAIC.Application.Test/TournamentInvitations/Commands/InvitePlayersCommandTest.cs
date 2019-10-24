@@ -23,7 +23,7 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 		private readonly Mock<ITournamentRepository> tournamentRepository;
 		private readonly Mock<IRepository<TournamentInvitation>> repository;
 		private readonly Mock<IRepository<TournamentParticipation>> participationsRepository;
-		private readonly Mock<IUserRepository> userRepository;
+		private readonly Mock<IRepository<User>> userRepository;
 		/// <inheritdoc />
 		public InvitePlayersCommandTest(ITestOutputHelper output) : base(output)
 		{
@@ -33,7 +33,7 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 			repository = Services.Mock<IRepository<TournamentInvitation>>(MockBehavior.Strict);
 			participationsRepository =
 				Services.Mock<IRepository<TournamentParticipation>>(MockBehavior.Strict);
-			userRepository = Services.Mock<IUserRepository>(MockBehavior.Strict);
+			userRepository = Services.Mock<IRepository<User>>(MockBehavior.Strict);
 		}
 
 		[Fact]

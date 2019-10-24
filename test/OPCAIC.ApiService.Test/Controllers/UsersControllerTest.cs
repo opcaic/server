@@ -97,8 +97,15 @@ namespace OPCAIC.ApiService.Test.Controllers
 		public async Task UpdateUser_Success()
 		{
 			var user = await DoCreateUser(userModel, true);
-			await Controller.UpdateAsync(user.Id,
-				new UserProfileModel {LocalizationLanguage = LocalizationLanguage.CZ, Organization = "org"},
+			await Controller.UpdateAsync(
+				new UpdateUserCommand
+				{
+					Id = user.Id, 
+					LocalizationLanguage = LocalizationLanguage.CZ,
+					Organization = "org",
+					Role = user.Role,
+					RequestingUserRole = UserRole.Admin,
+				},
 				CancellationToken);
 			var model = await Controller.GetUserByIdAsync(user.Id, CancellationToken);
 			Assert.NotEqual(userModel.LocalizationLanguage, user.LocalizationLanguage);

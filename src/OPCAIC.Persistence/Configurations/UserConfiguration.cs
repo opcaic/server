@@ -16,6 +16,7 @@ namespace OPCAIC.Persistence.Configurations
 			builder.Property(u => u.Email).IsRequired().HasMaxLength(StringLengths.UserEmail);
 			builder.Property(u => u.PasswordHash).HasMaxLength(StringLengths.PasswordHash)
 				.IsRequired();
+			builder.Property(e => e.Organization).HasMaxLength(StringLengths.Organization);
 		}
 	}
 }

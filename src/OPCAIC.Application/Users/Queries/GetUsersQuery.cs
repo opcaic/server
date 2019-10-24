@@ -8,7 +8,6 @@ using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Users.Model;
 using OPCAIC.Domain.Entities;
@@ -43,7 +42,7 @@ namespace OPCAIC.Application.Users.Queries
 		public class Handler : FilterQueryHandler<GetUsersQuery, User, UserPreviewDto>
 		{
 			/// <inheritdoc />
-			public Handler(IMapper mapper, IUserRepository repository) : base(mapper, repository)
+			public Handler(IMapper mapper, IRepository<User> repository) : base(mapper, repository)
 			{
 			}
 

@@ -16,7 +16,7 @@ using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Exceptions;
-using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
@@ -25,7 +25,7 @@ namespace OPCAIC.ApiService.Services
 	public class UserManager : UserManager<User>, IUserManager
 	{
 		private readonly IMapper mapper;
-		private readonly IUserRepository userRepository;
+		private readonly IRepository<User> userRepository;
 
 		/// <inheritdoc />
 		public UserManager(IUserStore<User> store, IOptions<IdentityOptions> optionsAccessor,
@@ -33,7 +33,7 @@ namespace OPCAIC.ApiService.Services
 			IEnumerable<IPasswordValidator<User>> passwordValidators,
 			ILookupNormalizer keyNormalizer, IdentityErrorDescriber errors,
 			IServiceProvider services, ILogger<UserManager> logger, IMapper mapper,
-			IUserRepository userRepository, IOptions<SecurityConfiguration> securityConfiguration)
+			IRepository<User> userRepository, IOptions<SecurityConfiguration> securityConfiguration)
 			: base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators,
 				keyNormalizer, errors, services, logger)
 		{
@@ -76,18 +76,6 @@ namespace OPCAIC.ApiService.Services
 			}
 
 			return mapper.Map<UserDetailDto>(user);
-		}
-
-		/// <inheritdoc />
-		public async Task UpdateAsync(long id, UserProfileModel model,
-			CancellationToken cancellationToken)
-		{
-			var dto = mapper.Map<UserProfileDto>(model);
-
-			if (!await userRepository.UpdateAsync(id, dto, cancellationToken))
-			{
-				throw new NotFoundException(nameof(User), id);
-			}
 		}
 
 		public async Task<UserTokens> GenerateUserTokensAsync(User user)

@@ -78,7 +78,6 @@ namespace OPCAIC.ApiService
 
 		private void AddUserMapping()
 		{
-			CreateMap<UserProfileModel, UserProfileDto, User>(MemberList.Source);
 			CreateMap<User, UserReferenceDto, UserReferenceModel>(MemberList.Destination);
 		}
 

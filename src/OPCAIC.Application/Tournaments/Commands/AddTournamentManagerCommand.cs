@@ -7,6 +7,7 @@ using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Tournaments.Command
 {
@@ -43,6 +44,11 @@ namespace OPCAIC.Application.Tournaments.Command
 			{
 				var tournament = await tournamentRepository.GetAsync(request.TournamentId, cancellationToken);
 				var user = await userRepository.GetAsync(u => u.Email == request.Email, cancellationToken);
+
+				if (user.Role == UserRole.User)
+				{
+					throw new BusinessException("Ordinary users cannot be tournament managers.");
+				}
 
 				if (await managerRepository.ExistsAsync(t => t.TournamentId == request.TournamentId && t.User.Email == user.Email, cancellationToken))
 				{

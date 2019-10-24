@@ -56,41 +56,5 @@ namespace OPCAIC.FunctionalTest
 			tokens.AccessToken.ShouldNotBeNull();
 			tokens.RefreshToken.ShouldNotBeNull();
 		}
-
-		[Fact]
-		public async Task RegisterNewUser()
-		{
-			var email = "newbie@site.com";
-			var response = await PostAsync("api/users", new CreateUserCommand
-			{
-				Email = email,
-				LocalizationLanguage = LocalizationLanguage.EN,
-				Password = "Pa$Sw0rd",
-				Organization = "MFF",
-				Username = "Raymond",
-				WantsEmailNotifications = false
-			});
-
-			response.EnsureSuccessStatusCode();
-
-			var verificationUrl = Fixture.EmailService.GetAllEmails(email).ShouldHaveSingleItem()
-				.ShouldBeOfType<EmailType.UserVerificationType.Email>().VerificationUrl;
-
-			verificationUrl.ShouldNotBeNull();
-
-			// extract token from url
-			var token = HttpUtility.ParseQueryString(new Uri(verificationUrl).Query)["token"];
-			token.ShouldNotBeNull();
-
-			response = await PostAsync("api/users/emailVerification",
-				new EmailVerificationModel {Email = email, Token = token});
-			response.EnsureSuccessStatusCode();
-
-			// at last, try logging in
-			var identity = await PostAsync<UserIdentityModel>("api/users/login", new UserCredentialsModel
-			{
-				Email = email, Password = "Pa$Sw0rd"
-			});
-		}
 	}
 }

@@ -15,6 +15,7 @@
 		public const int UserLastName = 50;
 		public const int PasswordHash = 100;
 		public const int UserRoleName = 30;
+		public const int Organization = 200;
 
 		public const int MenuItemText = 50;
 

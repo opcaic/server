@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
+using OPCAIC.ApiService.ModelBinding;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.ModelValidationHandling;
@@ -209,7 +210,6 @@ namespace OPCAIC.ApiService.Controllers
 		/// <summary>
 		///     Updates user data by id.
 		/// </summary>
-		/// <param name="id"></param>
 		/// <param name="model"></param>
 		/// <param name="cancellationToken"></param>
 		/// <response code="200">User was successfully updated.</response>
@@ -221,11 +221,11 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task UpdateAsync(long id, [FromBody] UserProfileModel model,
+		public async Task UpdateAsync([FromRouteAndBody] UpdateUserCommand model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, UserPermission.Update);
-			await userManager.UpdateAsync(id, model, cancellationToken);
+			await authorizationService.CheckPermissions(User, model.Id, UserPermission.Update);
+			await mediator.Send(model, cancellationToken);
 		}
 
 		/// <summary>

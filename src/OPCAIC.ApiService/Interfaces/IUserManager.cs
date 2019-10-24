@@ -14,7 +14,6 @@ namespace OPCAIC.ApiService.Interfaces
 		Task<IdentityResult> CreateAsync(User user, string password);
 
 		Task<UserDetailDto> GetByIdAsync(long id, CancellationToken cancellationToken);
-		Task UpdateAsync(long id, UserProfileModel model, CancellationToken cancellationToken);
 		Task<UserTokens> GenerateUserTokensAsync(User user);
 
 		string GetUserName(ClaimsPrincipal principal);
