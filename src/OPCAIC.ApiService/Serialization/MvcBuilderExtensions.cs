@@ -1,6 +1,9 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using OPCAIC.ApiService.Utils;
+using OPCAIC.Application.Emails.Templates;
+using OPCAIC.Domain.Enumerations;
 using OPCAIC.Domain.Infrastructure;
 
 namespace OPCAIC.ApiService.Serialization
@@ -13,9 +16,13 @@ namespace OPCAIC.ApiService.Serialization
 			{
 				opt.SerializerSettings.Converters.Add(new MenuItemConverter());
 
-				foreach (var enumType in Enumeration.GetAllEnumerationTypes())
+				foreach (var (type, useName) in EnumerationConfig.GetAnnotatedTypes())
 				{
-					opt.SerializerSettings.Converters.Add((JsonConverter) Activator.CreateInstance(typeof(EnumerationIdConverter<>).MakeGenericType(enumType)));
+					var converterType = useName
+						? typeof(EnumerationNameConverter<>)
+						: typeof(EnumerationIdConverter<>);
+
+						opt.SerializerSettings.Converters.Add((JsonConverter)Activator.CreateInstance(converterType.MakeGenericType(type)));
 				}
 
 				// configure DateTime handling

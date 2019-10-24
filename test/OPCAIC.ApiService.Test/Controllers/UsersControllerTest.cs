@@ -221,7 +221,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 		{
 			// should still produce OK result
 			return Controller.PostForgotPasswordAsync(
-				new ForgotPasswordModel {Email = "my@mail.com"},
+				new UserEmailModel {Email = "my@mail.com"},
 				CancellationToken);
 		}
 
@@ -342,7 +342,7 @@ namespace OPCAIC.ApiService.Test.Controllers
 				.Callback((string email, string resetToken) => { token = resetToken; });
 
 			await Controller.PostForgotPasswordAsync(
-				new ForgotPasswordModel {Email = user.Email}, CancellationToken);
+				new UserEmailModel {Email = user.Email}, CancellationToken);
 			Assert.NotNull(token);
 
 			// actual reset

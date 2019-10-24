@@ -1,7 +1,15 @@
 ﻿using System;
 using System.Linq;
+using MediatR;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using OPCAIC.ApiService.Configs;
+using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.Services;
+using OPCAIC.ApiService.Users.Commands;
 using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enumerations;
@@ -10,32 +18,99 @@ using OPCAIC.Persistence;
 
 namespace OPCAIC.ApiService.Utils
 {
-	public class DataGenerator
+	public interface IDatabaseSeed
 	{
-		public static void Initialize(IServiceProvider serviceProvider)
+		/// <summary>
+		///     Seeds the database with initial values.
+		/// </summary>
+		/// <returns></returns>
+		bool DoSeed();
+	}
+
+	public class DatabaseSeed
+		: IDatabaseSeed
+	{
+		private readonly DataContext context;
+		private readonly IWebHostEnvironment environment;
+		private readonly ILogger<DatabaseSeed> logger;
+		private readonly SeedConfig seedConfig;
+		private readonly IServiceProvider services;
+		private readonly UserManager userManager;
+
+		/// <inheritdoc />
+		public DatabaseSeed(ILogger<DatabaseSeed> logger, DataContext context,
+			IWebHostEnvironment environment, UserManager userManager, IServiceProvider services,
+			IOptions<SeedConfig> seedConfig)
 		{
-			var userManager = serviceProvider.GetRequiredService<UserManager>();
-			if (userManager.Users.Any())
+			this.logger = logger;
+			this.context = context;
+			this.environment = environment;
+			this.userManager = userManager;
+			this.services = services;
+			this.seedConfig = seedConfig.Value;
+		}
+
+		public bool DoSeed()
+		{
+			// apply pending migrations
+
+			logger.LogInformation("Checking for database migrations");
+			var migrations = context.Database.GetPendingMigrations().ToArray();
+			if (migrations.Length > 0)
 			{
-				// already initialized
-				return;
+				logger.LogInformation("Applying migrations: " + string.Join(", ", migrations));
+				context.Database.Migrate();
+				logger.LogInformation("Migration successful");
 			}
 
-			var userAdmin = new User
+			if (userManager.Users.Any())
 			{
-				FirstName = "Admin",
-				LastName = "Opcaic",
-				UserName = "admin",
-				Role = UserRole.Admin,
-				Email = "admin@opcaic.com",
-				EmailConfirmed = true,
-				LocalizationLanguage = LocalizationLanguage.EN
+				// database already initialized
+				return true;
+			}
+
+			logger.LogInformation("Preparing database before first usage.");
+
+			if (seedConfig.AdminEmail == null ||
+				seedConfig.AdminPassword == null ||
+				seedConfig.AdminUsername == null)
+			{
+				logger.LogCritical(
+					"You must provide --Seed.AdminUsername, --Seed:AdminEmail and --Seed:AdminPassword parameters on first startup.");
+				return false;
+			}
+
+			logger.LogInformation("Seeding email templates.");
+			AddEmailTemplates(context);
+
+			logger.LogInformation(
+				$"Seeding database with user '{seedConfig.AdminUsername}' and email '{seedConfig.AdminEmail}'");
+
+			var command = new CreateUserCommand
+			{
+				LocalizationLanguage = LocalizationLanguage.EN,
+				Email = seedConfig.AdminEmail,
+				Password = seedConfig.AdminPassword,
+				Username = seedConfig.AdminUsername
 			};
 
-			userManager.CreateAsync(userAdmin, "Password").GetAwaiter().GetResult();
+			try
+			{
+				services.GetRequiredService<IMediator>().Send(command).GetAwaiter().GetResult();
+			}
+			catch (ModelValidationException e)
+			{
+				logger.LogCritical("Failed to create admin account:\n" +
+					string.Join("\n", e.ValidationErrors.Select(e => e.Message)));
+				return false;
+			}
 
-			var context = serviceProvider.GetRequiredService<DataContext>();
-			AddEmailTemplates(context);
+			logger.LogInformation("Setting admin privileges");
+			context.Users.Single().Role = UserRole.Admin;
+			context.SaveChanges();
+
+			logger.LogInformation("Successfully seeded the database.");
+			return true;
 		}
 
 		public static void AddEmailTemplates(DataContext context)

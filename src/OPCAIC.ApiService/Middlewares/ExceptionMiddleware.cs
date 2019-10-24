@@ -63,7 +63,7 @@ namespace OPCAIC.ApiService.Middlewares
 			Require.ArgNotNull(context, nameof(context));
 
 			var start = Stopwatch.GetTimestamp();
-			var scope = logger.BeginScope(GetAdditionalProperties(context));
+			using var scope = logger.BeginScope(GetAdditionalProperties(context));
 			try
 			{
 				await next(context);
@@ -105,10 +105,9 @@ namespace OPCAIC.ApiService.Middlewares
 					new ApiException(ex.StatusCode, ex.Message, null));
 			}
 			catch (Exception ex)
-				when (Log(context, 500, GetElapsedMs(start), ex) &&
-					env.IsDevelopment())
+				when (Log(context, 500, GetElapsedMs(start), ex))
 			{
-				if (env.IsDevelopment())
+				if (!env.IsProduction())
 				{
 					await WriteResponseAsync(context, 500, ex);
 				}
@@ -122,16 +121,12 @@ namespace OPCAIC.ApiService.Middlewares
 
 		private bool Log(HttpContext context, int statusCode, double elapsedMs, Exception ex)
 		{
-			if (statusCode >= 500)
-			{
-				errorLog(logger, context.Request.Method, context.Request.Path, statusCode,
-					elapsedMs, ex);
-			}
-			else
-			{
-				infoLog(logger, context.Request.Method, context.Request.Path, statusCode,
-					elapsedMs, ex);
-			}
+			var logFunc = statusCode < 500
+				? infoLog
+				: errorLog;
+
+			logFunc(logger, context.Request.Method, context.Request.Path, statusCode,
+				elapsedMs, ex);
 
 			return true;
 		}

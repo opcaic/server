@@ -254,7 +254,7 @@ namespace OPCAIC.ApiService.Controllers
 		[HttpPost("forgotPassword")]
 		[AllowAnonymous]
 		[ProducesResponseType(StatusCodes.Status200OK)]
-		public async Task PostForgotPasswordAsync([FromBody] ForgotPasswordModel model,
+		public async Task PostForgotPasswordAsync([FromBody] UserEmailModel model,
 			CancellationToken cancellationToken)
 		{
 			var user = await userManager.FindByEmailAsync(model.Email);
@@ -332,6 +332,31 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="cancellationToken"></param>
 		/// <response code="200">Email was confirmed.</response>
 		/// <response code="400">Invalid model values.</response>
+		[HttpPost("resendVerificationEmail")]
+		[AllowAnonymous]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<IActionResult> ResendVerificationEmailAsync( [FromBody] UserEmailModel model,
+			CancellationToken cancellationToken)
+		{
+			var user = await userManager.FindByEmailAsync(model.Email);
+
+			// do not reveal that email exists
+			if (user != null && !user.EmailConfirmed)
+			{
+				await mediator.Send(new SendVerificationEmailCommand(user), cancellationToken);
+			}
+
+			return NoContent();
+		}
+
+		/// <summary>
+		///     Verifies user's email, if he provided valid token created by server.
+		/// </summary>
+		/// <param name="model"></param>
+		/// <param name="cancellationToken"></param>
+		/// <response code="200">Email was confirmed.</response>
+		/// <response code="400">Invalid model values.</response>
 		[HttpPost("emailVerification")]
 		[AllowAnonymous]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -347,8 +372,8 @@ namespace OPCAIC.ApiService.Controllers
 			}
 
 			var result = await userManager.ConfirmEmailAsync(user, model.Token);
-			result.ThrowIfFailed();
 			logger.UserConfirmEmail(user, result);
+			result.ThrowIfFailed();
 
 			return NoContent();
 		}

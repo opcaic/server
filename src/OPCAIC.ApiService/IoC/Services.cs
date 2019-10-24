@@ -2,6 +2,7 @@
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Services;
+using OPCAIC.ApiService.Utils;
 using OPCAIC.Application.Emails;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces;
@@ -22,7 +23,7 @@ namespace OPCAIC.ApiService.IoC
 				.AddHostedService<TournamentProcessor>()
 				.AddTransient<TournamentProcessor.Job>()
 				.AddHostedService<EmailCronService>()
-				.AddTransient<EmailSender>()
+				.AddTransient<IEmailSender, EmailSender>()
 				.AddSingleton<ILogStorageService, LogStorageService>()
 				.AddSingleton<IStorageService, StorageService>()
 				.AddSingleton<ITimeService, MachineTimeService>()
@@ -37,7 +38,8 @@ namespace OPCAIC.ApiService.IoC
 				.AddScoped<IMatchExecutionService, MatchExecutionService>()
 				.AddScoped<IWorkerService, WorkerService>()
 				.AddScoped<IBrokerService, BrokerService>()
-				.AddScoped<ISubmissionScoreService, SubmissionScoreService>();
+				.AddScoped<ISubmissionScoreService, SubmissionScoreService>()
+				.AddTransient<IDatabaseSeed, DatabaseSeed>();
 		}
 	}
 }

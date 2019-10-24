@@ -1,6 +1,6 @@
 ﻿namespace OPCAIC.ApiService.Models.Users
 {
-	public class ForgotPasswordModel
+	public class UserEmailModel
 	{
 		public string Email { get; set; }
 	}

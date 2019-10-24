@@ -5,16 +5,19 @@ namespace OPCAIC.Domain.ValueObjects
 {
 	public abstract class MenuItem : Entity
 	{
+		// cannot make this abstract becasue EF cannot map get-only field as discriminator yet
 		/// <summary>
 		///     Type of the menu item.
 		/// </summary>
-		public abstract MenuItemType Type { get; }
+		public MenuItemType Type { get; protected set; }
 	}
 
 	public class ExternalUrlMenuItem : MenuItem
 	{
-		/// <inheritdoc />
-		public override MenuItemType Type => MenuItemType.ExternalUrl;
+		public ExternalUrlMenuItem()
+		{
+			Type = MenuItemType.ExternalUrl;
+		}
 
 		/// <summary>
 		///     Text displayed in the menu item.
@@ -29,8 +32,10 @@ namespace OPCAIC.Domain.ValueObjects
 
 	public class DocumentLinkMenuItem : MenuItem
 	{
-		/// <inheritdoc />
-		public override MenuItemType Type => MenuItemType.DocumentLink;
+		public DocumentLinkMenuItem()
+		{
+			Type = MenuItemType.DocumentLink;
+		}
 
 		/// <summary>
 		///     Document linked by this menu item.

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,9 +9,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using OPCAIC.ApiService.ModelBinding;
 using OPCAIC.ApiService.Utils;
-using OPCAIC.Application.Emails.Templates;
 using OPCAIC.Application.Infrastructure;
-using OPCAIC.Domain.Enumerations;
 using OPCAIC.Domain.Infrastructure;
 using OPCAIC.Utils;
 using Swashbuckle.AspNetCore.Swagger;
@@ -62,13 +59,17 @@ namespace OPCAIC.ApiService.Configs
 				}
 			});
 
-			foreach (var type in Enumeration.GetAllEnumerationTypes())
+			foreach (var (type, useName) in EnumerationConfig.GetAnnotatedTypes())
 			{
-				MapEnumerationAsId(options, type);
+				if (useName)
+				{
+					MapEnumerationAsName(options, type);
+				}
+				else
+				{
+					MapEnumerationAsId(options, type);
+				}
 			}
-
-			MapEnumerationAsName(options, typeof(LocalizationLanguage));
-			MapEnumerationAsName(options, typeof(EmailType));
 
 			options.SchemaFilter<InterfaceMemberFilter>(typeof(IIdentifiedRequest));
 			options.SchemaFilter<InterfaceMemberFilter>(typeof(IAuthenticatedRequest));

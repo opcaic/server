@@ -5,7 +5,10 @@ using System.IO.Compression;
 using System.Linq;
 using AutoMapper;
 using Bogus;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Dtos.MatchExecutions;
@@ -22,9 +25,10 @@ using OPCAIC.Persistence;
 
 namespace OPCAIC.ApiService.Utils
 {
-	public class ApplicationTestSeed
+	public class ApplicationTestSeed : IDatabaseSeed
 	{
 		private readonly DataContext context;
+		private readonly IWebHostEnvironment environment;
 		private readonly Faker faker = new Faker();
 		private readonly IMapper mapper;
 		private readonly Random random = new Random(0);
@@ -37,6 +41,7 @@ namespace OPCAIC.ApiService.Utils
 			this.services = services;
 			mapper = services.GetRequiredService<IMapper>();
 			context = services.GetRequiredService<DataContext>();
+			environment = services.GetRequiredService<IWebHostEnvironment>();
 			userManager = services.GetRequiredService<UserManager>();
 		}
 
@@ -149,9 +154,9 @@ namespace OPCAIC.ApiService.Utils
 			}
 		}
 
-		private void DoSeed()
+		public bool DoSeed()
 		{
-			// dev settings: delete the database
+			// dev settings: recreate the database
 			context.Database.EnsureDeleted();
 			context.Database.EnsureCreated();
 
@@ -557,7 +562,8 @@ namespace OPCAIC.ApiService.Utils
 				EnsureMatchExecutionResultExists(storage, execution);
 			}
 
-			DataGenerator.AddEmailTemplates(context);
+			DatabaseSeed.AddEmailTemplates(context);
+			return true;
 		}
 
 
@@ -665,11 +671,6 @@ namespace OPCAIC.ApiService.Utils
 			participation.ActiveSubmission = submission;
 
 			return submission;
-		}
-
-		public static void Seed(IServiceProvider services)
-		{
-			new ApplicationTestSeed(services).DoSeed();
 		}
 	}
 }

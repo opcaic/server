@@ -39,8 +39,6 @@ namespace OPCAIC.ApiService.Users.Commands
 				RuleFor(m => m.Username).Required();
 				RuleFor(m => m.Organization).MinLength(1);
 
-				RuleFor(m => m.LocalizationLanguage).Required();
-
 				RuleFor(m => m.Password).Required();
 			}
 		}
@@ -66,6 +64,7 @@ namespace OPCAIC.ApiService.Users.Commands
 			{
 				var user = mapper.Map<User>(request);
 				user.Role = UserRole.User;
+				user.LocalizationLanguage ??= LocalizationLanguage.EN;
 
 				var result = await userManager.CreateAsync(user, request.Password);
 				result.ThrowIfFailed();

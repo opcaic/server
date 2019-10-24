@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -31,7 +32,6 @@ namespace OPCAIC.Persistence
 		public DbSet<Submission> Submissions { get; set; }
 		public DbSet<SubmissionValidation> SubmissionValidations { get; set; }
 		public DbSet<SubmissionMatchResult> SubmissionsMatchResults { get; set; }
-		public DbSet<UserTournament> UserTournaments { get; set; }
 
 		/// <inheritdoc />
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -57,9 +57,25 @@ namespace OPCAIC.Persistence
 			{
 				var builder = modelBuilder.Entity(entityType.ClrType);
 
-				foreach (var property in entityType.ClrType.GetProperties().Where(p => Enumeration.IsEnumerationType(p.PropertyType)))
+				foreach (var property in entityType.ClrType.GetProperties())
 				{
-					builder.Property(property.Name).HasConversion((ValueConverter)Activator.CreateInstance(typeof(EfEnumerationConverter<>).MakeGenericType(property.PropertyType)));
+					Type converterType;
+					if (Enumeration.IsEnumerationType(property.PropertyType))
+					{
+						converterType = typeof(EfEnumerationConverter<>);
+					}
+					else if (property.PropertyType.IsEnum)
+					{
+						converterType = typeof(EnumToStringConverter<>);
+					}
+					else
+					{
+						continue;
+					}
+
+					builder.Property(property.Name).HasConversion(
+						(ValueConverter)Activator.CreateInstance(
+							converterType.MakeGenericType(property.PropertyType), new[] { (object)null }));
 				}
 			}
 		}

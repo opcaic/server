@@ -1,11 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using OPCAIC.ApiService.Interfaces;
-using OPCAIC.Application.Emails;
-using OPCAIC.Application.Emails.Templates;
+using OPCAIC.ApiService.Users.Commands;
 using OPCAIC.Application.Extensions;
-using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 
@@ -22,29 +19,23 @@ namespace OPCAIC.ApiService.Users.Events
 
 		public class Handler : INotificationHandler<UserCreated>
 		{
-			private readonly IEmailService emailService;
 			private readonly IRepository<TournamentInvitation> invitationRepository;
 			private readonly IRepository<TournamentParticipation> participationsRepository;
-			private readonly IFrontendUrlGenerator urlGenerator;
-			private readonly IUserManager userManager;
+			private readonly IMediator mediator;
 
 			/// <inheritdoc />
-			public Handler(IUserManager userManager, IFrontendUrlGenerator urlGenerator,
-				IEmailService emailService,
-				IRepository<TournamentParticipation> participationsRepository,
-				IRepository<TournamentInvitation> invitationRepository)
+			public Handler(IRepository<TournamentParticipation> participationsRepository,
+				IRepository<TournamentInvitation> invitationRepository, IMediator mediator)
 			{
-				this.userManager = userManager;
-				this.urlGenerator = urlGenerator;
-				this.emailService = emailService;
 				this.participationsRepository = participationsRepository;
 				this.invitationRepository = invitationRepository;
+				this.mediator = mediator;
 			}
 
 			/// <inheritdoc />
 			public async Task Handle(UserCreated notification, CancellationToken cancellationToken)
 			{
-				await SendVerificationEmail(notification, cancellationToken);
+				await mediator.Send(new SendVerificationEmailCommand(notification.User), cancellationToken);
 
 				await AcceptInvitations(notification, cancellationToken);
 			}
@@ -68,17 +59,6 @@ namespace OPCAIC.ApiService.Users.Events
 
 				await participationsRepository.SaveChangesAsync(cancellationToken);
 				await invitationRepository.SaveChangesAsync(cancellationToken);
-			}
-
-			private async Task SendVerificationEmail(UserCreated notification,
-				CancellationToken cancellationToken)
-			{
-				var token =
-					await userManager.GenerateEmailConfirmationTokenAsync(notification.User);
-				var url = urlGenerator.EmailConfirmLink(notification.User.Email, token);
-
-				await emailService.EnqueueEmailAsync(EmailType.UserVerification.CreateEmail(url),
-					notification.User.Email, cancellationToken);
 			}
 		}
 	}

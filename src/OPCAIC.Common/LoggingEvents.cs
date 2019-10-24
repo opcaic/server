@@ -23,6 +23,7 @@ namespace OPCAIC.Common
 		public static readonly EventId UserPasswordReset = CreateEvent(301);
 		public static readonly EventId UserPasswordChange = CreateEvent(302);
 		public static readonly EventId UserEmailConfirm = CreateEvent(303);
+		public static readonly EventId UserEmailConfirmResend = CreateEvent(304);
 
 		public static readonly EventId SubmissionCreate = CreateEvent(400);
 		public static readonly EventId SubmissionUpdate = CreateEvent(401);

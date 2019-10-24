@@ -57,5 +57,10 @@ namespace OPCAIC.ApiService.Extensions
 		{
 			logger.LogInformation(LoggingEvents.UserEmailConfirm, $"Confirming email for user {{{LoggingTags.UserId}}} with result {{{LoggingTags.IdentityResult}}}", user.Id, result);
 		}
+
+		public static void UserVerificationResend(this ILogger logger, User user)
+		{
+			logger.LogInformation(LoggingEvents.UserEmailConfirmResend, $"Resending verification email for user {{{LoggingTags.UserId}}} to {{{LoggingTags.UserEmail}}}.", user.Id, user.Email);
+		}
 	}
 }

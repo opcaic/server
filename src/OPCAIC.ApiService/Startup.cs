@@ -18,6 +18,8 @@ using OPCAIC.ApiService.ModelBinding;
 using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Serialization;
+using OPCAIC.ApiService.Services.Development;
+using OPCAIC.ApiService.Utils;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Services;
 using OPCAIC.Application.Tournaments.Events;
@@ -43,6 +45,23 @@ namespace OPCAIC.ApiService
 
 		public IConfiguration Configuration { get; }
 		public IWebHostEnvironment Environment { get; }
+
+		public void OverrideDevelopmentServices(IServiceCollection services)
+		{
+			services.AddTransient<IEmailSender, LoggingEmailSender>();
+
+			if (Environment.IsDevelopment())
+			{
+				if (Configuration.GetConnectionString(nameof(DataContext)) == null)
+				{
+					services.AddTransient<IDatabaseSeed, ApplicationTestSeed>();
+				}
+			}
+
+			if (Environment.IsStaging())
+			{
+			}
+		}
 
 		public void ConfigureServices(IServiceCollection services)
 		{
@@ -91,8 +110,13 @@ namespace OPCAIC.ApiService
 			}
 			else
 			{
-				services.AddDbContext<DataContext>(options => options.UseNpgsql(connectionString));
+				services.AddDbContext<DataContext>(options =>
+				{
+					options.UseNpgsql(connectionString, op => op.MigrationsAssembly(typeof(DataContext).Assembly.FullName));
+				});
 			}
+
+			services.AddTransient<IDatabaseSeed, DatabaseSeed>();
 
 			services.AddMediatR(typeof(Startup).Assembly, typeof(TournamentFinished).Assembly);
 			services.AddSingleton(typeof(IRequestPreProcessor<>),
@@ -110,6 +134,12 @@ namespace OPCAIC.ApiService
 			services.ConfigureSecurity(Configuration);
 			services.ConfigureHealth();
 			ConfigureOptions(services);
+
+			// allow dev services override production ones
+			if (!Environment.IsProduction())
+			{
+				OverrideDevelopmentServices(services);
+			}
 		}
 
 		public void ConfigureOptions(IServiceCollection services)
@@ -118,6 +148,7 @@ namespace OPCAIC.ApiService
 			services.Configure<SecurityConfiguration>(
 				Configuration.GetSection(ConfigNames.Security));
 			services.Configure<RequestSizeConfig>(Configuration.GetSection("Limits"));
+			services.Configure<SeedConfig>(Configuration.GetSection("Seed"));
 			services.Configure<StorageConfiguration>(Configuration.GetSection("Storage"));
 			services.Configure<EmailsConfiguration>(Configuration.GetSection("Emails"));
 			services.Configure<SecurityConfiguration>(Configuration.GetSection("Security"));
@@ -129,15 +160,10 @@ namespace OPCAIC.ApiService
 		{
 			app.UseRouting();
 
-			if (Environment.IsDevelopment())
+			if (!Environment.IsProduction())
 			{
 				app.UseDeveloperExceptionPage();
 				app.UseCors(myAllowSpecificOrigins);
-			}
-			else
-			{
-				app.UseHsts();
-				app.UseHttpsRedirection();
 			}
 
 			app.UseSwagger(SwaggerConfig.SetupSwagger);

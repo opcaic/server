@@ -7,7 +7,7 @@ namespace OPCAIC.Persistence.ValueConverters
 		where T: Enumeration<T>
 	{
 		/// <inheritdoc />
-		public EfEnumerationConverter() : base(t => t.Name, name => Enumeration<T>.FromName(name))
+		public EfEnumerationConverter(ConverterMappingHints hints = null) : base(t => t.Name, name => Enumeration<T>.FromName(name), hints)
 		{
 		}
 	}

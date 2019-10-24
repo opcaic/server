@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -10,6 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OPCAIC.ApiService;
+using OPCAIC.ApiService.Configs;
+using OPCAIC.ApiService.Extensions;
+using OPCAIC.ApiService.Services;
 using OPCAIC.ApiService.Utils;
 using OPCAIC.Persistence;
 
@@ -60,15 +64,28 @@ namespace OPCAIC.FunctionalTest
 					services.AddSingleton(options);
 					services.AddSingleton<DbContextOptions>(options);
 
+					services.Configure<SeedConfig>(cfg =>
+					{
+						cfg.AdminEmail = "admin@opcaic.com";
+						cfg.AdminUsername = "admin";
+						cfg.AdminPassword = "Password";
+					});
+
 					foreach (var action in configureAction)
 					{
 						action(services);
 					}
 
-					// initialize db
 					using (var scope = services.BuildServiceProvider().CreateScope())
 					{
-						ApplicationTestSeed.Seed(scope.ServiceProvider);
+						// initialize db
+						scope.ServiceProvider.GetRequiredService<IDatabaseSeed>().DoSeed();
+
+						// confirm admin email
+						var mgr = scope.ServiceProvider.GetRequiredService<UserManager>();
+						var user = mgr.Users.Single();
+						var token = mgr.GenerateEmailConfirmationTokenAsync(user).GetAwaiter().GetResult();
+						mgr.ConfirmEmailAsync(user, token).GetAwaiter().GetResult().ThrowIfFailed();
 					}
 				});
 

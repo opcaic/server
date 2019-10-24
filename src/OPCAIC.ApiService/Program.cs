@@ -1,18 +1,8 @@
-﻿using System;
-using System.Reflection;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Utils;
-using OPCAIC.Common;
-using OPCAIC.Persistence;
-using OPCAIC.Utils;
 using Serilog;
-using Serilog.Events;
-using Serilog.Sinks.Graylog;
-using Serilog.Sinks.Graylog.Core.Transport;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("OPCAIC.ApiService.Test")]
 
@@ -26,8 +16,10 @@ namespace OPCAIC.ApiService
 
 			using (var scope = host.Services.CreateScope())
 			{
-//				DataGenerator.Initialize(scope.ServiceProvider);
-				ApplicationTestSeed.Seed(scope.ServiceProvider);
+				if (!scope.ServiceProvider.GetRequiredService<IDatabaseSeed>().DoSeed())
+				{
+					return;
+				}
 			}
 
 			host.Run();
