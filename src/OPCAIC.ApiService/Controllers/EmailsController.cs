@@ -78,7 +78,7 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="400">Invalid input model.</response>
 		/// <response code="401">User is not authorized.</response>
 		/// <response code="403">User does not have permission to this action.</response>
-		[HttpGet("template/{Name}/{LanguageCode}")]
+		[HttpGet("templates/{Name}/{LanguageCode}")]
 		[RequiresPermission(EmailPermission.ManageTemplates)]
 		[ProducesResponseType(typeof(EmailTemplateDto), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
