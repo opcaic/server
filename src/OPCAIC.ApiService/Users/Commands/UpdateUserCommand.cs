@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentValidation;
 using MediatR;
 using OPCAIC.Application.Exceptions;
@@ -42,14 +41,12 @@ namespace OPCAIC.ApiService.Users.Commands
 
 		public class Handler : IRequestHandler<UpdateUserCommand>
 		{
-			private readonly IMapper mapper;
 			private readonly IRepository<User> repository;
 
 			/// <inheritdoc />
-			public Handler(IRepository<User> repository, IMapper mapper)
+			public Handler(IRepository<User> repository)
 			{
 				this.repository = repository;
-				this.mapper = mapper;
 			}
 
 			/// <inheritdoc />
@@ -63,7 +60,7 @@ namespace OPCAIC.ApiService.Users.Commands
 						throw new BusinessException("Only admin can change user roles.");
 					}
 
-					// changing from admin role to non-admin, make sure there is at least one other admin
+					// changing from admin role to non-admin, make sure there is at least one other admin to prevent platform lockout
 					if (request.RequestingUserId == request.Id &&
 						!await repository.ExistsAsync(u
 							=> u.Role == UserRole.Admin && u.Id != request.Id, cancellationToken))

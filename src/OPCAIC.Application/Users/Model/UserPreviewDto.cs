@@ -16,7 +16,7 @@ namespace OPCAIC.Application.Users.Model
 
 		public bool EmailVerified { get; set; }
 
-		public UserRole UserRole { get; set; }
+		public UserRole Role { get; set; }
 
 		public DateTime Created { get; set; }
 
@@ -24,8 +24,6 @@ namespace OPCAIC.Application.Users.Model
 		void ICustomMapping.CreateMapping(Profile configuration)
 		{
 			configuration.CreateMap<User, UserPreviewDto>(MemberList.Destination)
-				.ForMember(usr => usr.UserRole,
-					opt => opt.MapFrom(usr => usr.Role))
 				.ForMember(u => u.EmailVerified,
 					opt => opt.MapFrom(u => u.EmailConfirmed))
 				.IncludeAllDerived();

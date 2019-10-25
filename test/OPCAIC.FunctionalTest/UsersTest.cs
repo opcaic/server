@@ -63,7 +63,7 @@ namespace OPCAIC.FunctionalTest
 			afterChange.Id.ShouldBe(User.Id);
 			afterChange.Email.ShouldBe(User.Email);
 			afterChange.EmailVerified.ShouldBeTrue();
-			afterChange.UserRole.ShouldBe(User.Role);
+			afterChange.Role.ShouldBe(User.Role);
 		}
 
 		[Fact]

@@ -1,6 +1,7 @@
 ﻿using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Application.Users.Model;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enumerations;
 
 namespace OPCAIC.Application.Dtos.Users
 {
@@ -8,6 +9,8 @@ namespace OPCAIC.Application.Dtos.Users
 	{
 		public string Organization { get; set; }
 
-		public string LocalizationLanguage { get; set; }
+		public LocalizationLanguage LocalizationLanguage { get; set; }
+
+		public bool WantsEmailNotifications { get; set; }
 	}
 }
