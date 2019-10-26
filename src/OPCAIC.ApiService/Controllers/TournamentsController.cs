@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System.Collections.Generic;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -345,11 +346,33 @@ namespace OPCAIC.ApiService.Controllers
 		}
 
 		/// <summary>
+		///     Gets all managers of the given tournament.
+		/// </summary>
+		/// <param name="tournamentId"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		[HttpGet("{tournamentId}/managers")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<List<string>> GetTournamentManagerAsync(long tournamentId,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, tournamentId,
+				TournamentPermission.ManageManagers);
+
+			return await mediator.Send(
+				new GetTournamentManagersQuery(tournamentId),
+				cancellationToken);
+		}
+
+		/// <summary>
 		///     Adds a manager to a given tournament.
 		/// </summary>
-		/// <param name="userId"></param>
-		/// <param name="managerEmail"></param>
 		/// <param name="tournamentId"></param>
+		/// <param name="managerEmail"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[HttpPost("{tournamentId}/managers/{managerEmail}")]
@@ -358,7 +381,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task AddTournamentManagerAsync(string managerEmail, long tournamentId,
+		public async Task AddTournamentManagerAsync(long tournamentId, string managerEmail,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, tournamentId,
@@ -369,12 +392,12 @@ namespace OPCAIC.ApiService.Controllers
 				cancellationToken);
 		}
 
+
 		/// <summary>
 		///     Deletes a manager of a given tournament.
 		/// </summary>
-		/// <param name="userId"></param>
-		/// <param name="managerEmail"></param>
 		/// <param name="tournamentId"></param>
+		/// <param name="managerEmail"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[HttpDelete("{tournamentId}/managers/{managerEmail}")]
@@ -383,7 +406,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task DeleteTournamentManagerAsync(string managerEmail, long tournamentId,
+		public async Task DeleteTournamentManagerAsync(long tournamentId, string managerEmail,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, tournamentId,
@@ -392,8 +415,7 @@ namespace OPCAIC.ApiService.Controllers
 			await mediator.Send(
 				new DeleteTournamentManagerCommand
 				{
-					Email = managerEmail,
-                                        TournamentId = tournamentId
+					Email = managerEmail, TournamentId = tournamentId
 				}, cancellationToken);
 		}
 
