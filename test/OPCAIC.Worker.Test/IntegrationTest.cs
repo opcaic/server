@@ -32,8 +32,8 @@ namespace OPCAIC.Worker.Test
 					SubmissionValidator>()
 				.Configure<ExecutionConfig>(cfg =>
 				{
-					cfg.ArchiveDirectoryRoot = ArchiveDirectory.FullName;
-					cfg.WorkingDirectoryRoot = WorkingDirectory.FullName;
+					cfg.ArchiveDirectory = ArchiveDirectory.FullName;
+					cfg.WorkingDirectory = WorkingDirectory.FullName;
 					cfg.MaxTaskTimeoutSeconds = 10;
 				});
 

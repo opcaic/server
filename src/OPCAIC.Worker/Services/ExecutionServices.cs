@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OPCAIC.GameModules.Interface;
@@ -24,28 +25,70 @@ namespace OPCAIC.Worker.Services
 			this.logger = logger;
 			this.gameModuleRegistry = gameModuleRegistry;
 			this.config = config.Value;
+
+			// create all directories
+			Directory.CreateDirectory(config.Value.ArchiveDirectory);
+			Directory.CreateDirectory(config.Value.ErrorDirectory);
+			Directory.CreateDirectory(config.Value.WorkingDirectory);
 		}
 
 		/// <inheritdoc />
 		public DirectoryInfo GetWorkingDirectory(WorkMessageBase request)
 		{
-			var path = Path.Combine(config.WorkingDirectoryRoot, request.JobId.ToString());
+			var path = Path.Combine(config.WorkingDirectory, request.JobId.ToString());
 			logger.LogTrace("Creating directory {path}", path);
 			return Directory.CreateDirectory(path);
 		}
 
 		/// <inheritdoc />
-		public void ArchiveDirectory(DirectoryInfo taskDirectory)
+		public void ArchiveDirectory(DirectoryInfo taskDirectory, bool success)
 		{
 			logger.LogTrace("Archiving task directory");
 			Require.ArgNotNull(taskDirectory, nameof(taskDirectory));
 			Require.That<ArgumentException>(taskDirectory.Exists, "Directory does not exist");
 
-			// make sure archive exists
-			Directory.CreateDirectory(config.ArchiveDirectoryRoot);
+			var targetDir = success
+				? config.ArchiveDirectory
+				: config.ErrorDirectory;
 
-			ZipFile.CreateFromDirectory(taskDirectory.FullName,
-				Path.Combine(config.ArchiveDirectoryRoot, taskDirectory.Name) + ".zip");
+			// make sure target directory exists
+			Directory.CreateDirectory(targetDir);
+
+			var destinationArchiveFileName = Path.Combine(targetDir, taskDirectory.Name) + ".zip";
+
+			ZipFile.CreateFromDirectory(taskDirectory.FullName, destinationArchiveFileName);
+		}
+
+		/// <inheritdoc />
+		public void DirectoryCleanup()
+		{
+			logger.LogInformation("Starting periodic cleanup of old directories.");
+			DeleteOldFilesInDirectory(
+				Directory.CreateDirectory(config.ArchiveDirectory),
+				DateTime.Now.AddDays(-config.ArchiveRetentionDays));
+
+			DeleteOldFilesInDirectory(
+				Directory.CreateDirectory(config.ErrorDirectory),
+				DateTime.Now.AddDays(-config.ErrorRetentionDays));
+			logger.LogInformation("Directory cleanup finished.");
+		}
+
+		public void DeleteOldFilesInDirectory(DirectoryInfo directory, DateTime before)
+		{
+			var toDelete = directory.GetFileSystemInfos()
+				.Where(i => i.CreationTime < before);
+
+			var counter = 0;
+			foreach (var file in toDelete)
+			{
+				counter++;
+				file.Delete();
+			}
+
+			if (counter > 0)
+			{
+				logger.LogInformation($"Deleted {counter} items from {directory.FullName}");
+			}
 		}
 
 		/// <inheritdoc />

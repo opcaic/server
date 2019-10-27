@@ -21,8 +21,8 @@ namespace OPCAIC.FunctionalTest
 			{
 				services.Configure<ExecutionConfig>(cfg =>
 				{
-					cfg.ArchiveDirectoryRoot = tempArchiveDir.FullName + '/';
-					cfg.WorkingDirectoryRoot = tempWorkDir.FullName + '/';
+					cfg.ArchiveDirectory = tempArchiveDir.FullName + '/';
+					cfg.WorkingDirectory = tempWorkDir.FullName + '/';
 				});
 			}).Start();
 

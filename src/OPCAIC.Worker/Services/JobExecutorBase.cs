@@ -119,6 +119,7 @@ namespace OPCAIC.Worker.Services
 
 			using (CreateLoggingScope(request))
 			{
+				var success = true;
 				try
 				{
 					// create directory structure 
@@ -128,7 +129,8 @@ namespace OPCAIC.Worker.Services
 						TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Source);
 					BinariesDirectory =
 						TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Binary);
-					OutputDirectory = TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Output);
+					OutputDirectory =
+						TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Output);
 					EntryPointConfig.AdditionalFiles =
 						TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Input);
 
@@ -142,12 +144,17 @@ namespace OPCAIC.Worker.Services
 
 					await InternalExecute();
 				}
+				catch
+				{
+					success = false;
+					throw;
+				}
 				finally
 				{
 					if (TaskDirectory != null)
 					{
 						await UploadResults();
-						Services.ArchiveDirectory(TaskDirectory);
+						Services.ArchiveDirectory(TaskDirectory, success);
 						TaskDirectory.Delete(true);
 					}
 				}

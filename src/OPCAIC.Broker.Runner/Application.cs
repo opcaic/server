@@ -139,8 +139,8 @@ namespace OPCAIC.Broker.Runner
 			Worker.Startup.ConfigureServices(ctx, services);
 			services.Configure<ExecutionConfig>(cfg =>
 			{
-				cfg.WorkingDirectoryRoot = $"./wrkdir/{worker.Identity}";
-				cfg.ArchiveDirectoryRoot = $"./archive/{worker.Identity}";
+				cfg.WorkingDirectory = $"./wrkdir/{worker.Identity}";
+				cfg.ArchiveDirectory = $"./archive/{worker.Identity}";
 			});
 
 			// replace with our custom module registry

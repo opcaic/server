@@ -16,6 +16,12 @@ namespace OPCAIC.Worker.Services
 		///     Archives the contents of the given directory.
 		/// </summary>
 		/// <param name="taskDirectory">Directory to be archived.</param>
-		void ArchiveDirectory(DirectoryInfo taskDirectory);
+		/// <param name="success">Whether the task execution was successful.</param>
+		void ArchiveDirectory(DirectoryInfo taskDirectory, bool success);
+
+		/// <summary>
+		///     Deletes old archived task files directories from the archive folders.
+		/// </summary>
+		void DirectoryCleanup();
 	}
 }

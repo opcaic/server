@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -10,6 +11,7 @@ using OPCAIC.Worker.Config;
 using OPCAIC.Worker.Exceptions;
 using OPCAIC.Worker.GameModules;
 using OPCAIC.Worker.Services;
+using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -24,7 +26,9 @@ namespace OPCAIC.Worker.Test
 
 			Services.AddSingleton(Options.Create(new ExecutionConfig
 			{
-				WorkingDirectoryRoot = workdir.FullName
+				WorkingDirectory = workdir.FullName,
+				ErrorDirectory = NewDirectory().FullName,
+				ArchiveDirectory = NewDirectory().FullName
 			}));
 			downloadService = Services.Mock<IDownloadService>();
 			gameModuleRegistry = Services.Mock<IGameModuleRegistry>();
@@ -40,7 +44,7 @@ namespace OPCAIC.Worker.Test
 		{
 			var id = Guid.NewGuid();
 
-			var dir = ExecutionServices.GetWorkingDirectory(new MatchExecutionRequest {JobId = id});
+			var dir = ExecutionServices.GetWorkingDirectory(new MatchExecutionRequest { JobId = id });
 
 			Assert.True(dir.Exists);
 			Assert.True(Directory.Exists(Path.Combine(workdir.FullName, id.ToString())));
@@ -54,6 +58,37 @@ namespace OPCAIC.Worker.Test
 
 			Assert.Throws<GameModuleNotFoundException>(
 				() => ExecutionServices.GetGameModule("game"));
+		}
+
+		[Fact]
+		public async Task DeletesOldFiles()
+		{
+			var dir = NewDirectory();
+			var fileA = new FileInfo(Path.Combine(dir.FullName, "aaa"));
+			using (var writer = fileA.CreateText())
+			{
+				writer.WriteLine("awefawefiawefoawiefawoefiaweofawe");
+			}
+
+			// make sure the timestamps will be different
+			await Task.Delay(50);
+
+			var fileB = new FileInfo(Path.Combine(dir.FullName, "bbb"));
+			using (var writer = fileB.CreateText())
+			{
+				writer.WriteLine("awefawefiawefoawiefawoefiaweofawe");
+			}
+
+			dir.GetFileSystemInfos().Length.ShouldBe(2);
+
+			// take timestamp in the middle
+			var timestamp = fileA.CreationTime + (fileB.CreationTime - fileA.CreationTime) / 2;
+
+			ExecutionServices.DeleteOldFilesInDirectory(dir, timestamp);
+
+			dir.GetFileSystemInfos().Length.ShouldBe(1);
+			File.Exists(fileA.FullName).ShouldBeFalse();
+			File.Exists(fileB.FullName).ShouldBeTrue();
 		}
 	}
 }

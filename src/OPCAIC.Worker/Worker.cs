@@ -45,7 +45,6 @@ namespace OPCAIC.Worker
 			this.serviceProvider = serviceProvider;
 			this.executionConfig = executionConfig.Value;
 
-
 			watcher.ModuleListChanged += ModuleListChanged;
 
 			RegisterHandlers();
@@ -98,6 +97,21 @@ namespace OPCAIC.Worker
 				ServeRequest<SubmissionValidationRequest, SubmissionValidationResult>);
 			connector.RegisterHandler<SetConfigMessage>(SetConfig);
 			connector.RegisterHandler<CancelTaskMessage>(CancelTask);
+
+			connector.RegisterTimer(new TimedCallback(CleanupOldDirectories, TimeSpan.FromDays(1)));
+		}
+
+		private void CleanupOldDirectories()
+		{
+			try
+			{
+				serviceProvider.GetRequiredService<IExecutionServices>().DirectoryCleanup();
+			}
+			catch (Exception e)
+			{
+				logger.LogError(e, "Failed to perform periodic cleanup of old directories.");
+				// swallow the possible exception
+			}
 		}
 
 		private void SetConfig(SetConfigMessage msg)
@@ -105,11 +119,11 @@ namespace OPCAIC.Worker
 			logger.LogInformation(LoggingEvents.WorkerConnection, "Resetting heartbeat config.");
 			connector.SetHeartbeatConfig(msg.HeartbeatConfig);
 
+			// reregister reporting callback with new period
 			if (reportCallback != null)
 			{
 				connector.UnregisterTimer(reportCallback);
 			}
-
 			reportCallback = new TimedCallback(SendReport, msg.ReportPeriod, true);
 			connector.RegisterTimer(reportCallback);
 
