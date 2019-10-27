@@ -3,29 +3,9 @@
 ###########################
 ####### LOAD CONFIG #######
 ###########################
- 
-while [ $# -gt 0 ]; do
-        case $1 in
-                -c)
-                        if [ -r "$2" ]; then
-                                source "$2"
-                                shift 2
-                        else
-                                ${ECHO} "Unreadable config file \"$2\"" 1>&2
-                                exit 1
-                        fi
-                        ;;
-                *)
-                        ${ECHO} "Unknown Option \"$1\"" 1>&2
-                        exit 2
-                        ;;
-        esac
-done
- 
-if [ $# = 0 ]; then
-        SCRIPTPATH=$(cd ${0%/*} && pwd -P)
-        source $SCRIPTPATH/pg_backup.config
-fi;
+
+SCRIPTPATH=$(cd ${0%/*} && pwd -P)
+source $SCRIPTPATH/backup.config
  
 ###########################
 #### PRE-BACKUP CHECKS ####
@@ -55,8 +35,12 @@ fi;
 #### START THE BACKUPS ####
 ###########################
  
+FINAL_BACKUP_DIR=$BACKUP_DIR"`date +\%Y-\%m-\%d_\%H-\%M-\%S`/"
+
+if [ $# -eq 1 ]; then
+	FINAL_BACKUP_DIR=$1/
+fi
  
-FINAL_BACKUP_DIR=$BACKUP_DIR"`date +\%Y-\%m-\%d`/"
  
 echo "Making backup directory in $FINAL_BACKUP_DIR"
  
@@ -158,3 +142,12 @@ do
 done
  
 echo -e "\nAll database backups complete!"
+
+###########################
+###### FILE BACKUPS #######
+###########################
+
+
+tar -cpzf "$FINAL_BACKUP_DIR/$(basename $FILE_ROOT).tar.gz" -C "$(dirname $FILE_ROOT)" "$(basename $FILE_ROOT)"
+
+echo "File backup complete!"

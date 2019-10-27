@@ -3,31 +3,9 @@
 ###########################
 ####### LOAD CONFIG #######
 ###########################
- 
-while [ $# -gt 0 ]; do
-        case $1 in
-                -c)
-                        CONFIG_FILE_PATH="$2"
-                        shift 2
-                        ;;
-                *)
-                        ${ECHO} "Unknown Option \"$1\"" 1>&2
-                        exit 2
-                        ;;
-        esac
-done
- 
-if [ -z $CONFIG_FILE_PATH ] ; then
-        SCRIPTPATH=$(cd ${0%/*} && pwd -P)
-        CONFIG_FILE_PATH="${SCRIPTPATH}/pg_backup.config"
-fi
- 
-if [ ! -r ${CONFIG_FILE_PATH} ] ; then
-        echo "Could not load config file from ${CONFIG_FILE_PATH}" 1>&2
-        exit 1
-fi
- 
-source "${CONFIG_FILE_PATH}"
+
+SCRIPTPATH=$(cd ${0%/*} && pwd -P)
+source "${SCRIPTPATH}/backup.config"
  
 ###########################
 #### PRE-BACKUP CHECKS ####
@@ -68,6 +46,8 @@ function perform_backups()
 		echo "Cannot create backup directory in $FINAL_BACKUP_DIR. Go and fix it!" 1>&2
 		exit 1;
 	fi;
+
+	## start with database backups
  
 	#######################
 	### GLOBALS BACKUPS ###
@@ -161,16 +141,25 @@ function perform_backups()
 	done
  
 	echo -e "\nAll database backups complete!"
+
+	###########################
+	###### FILE BACKUPS #######
+	###########################
+
+	tar -cpzf "$FINAL_BACKUP_DIR/$(basename $FILE_ROOT).tar.gz" -C "$(dirname $FILE_ROOT)" "$(basename $FILE_ROOT)"
+
+	echo "File backup complete!"
 }
  
 # MONTHLY BACKUPS
  
 DAY_OF_MONTH=`date +%d`
+EXPIRED_DAYS=`expr $((($MONTHS_TO_KEEP * 30) + 1))`
  
 if [ $DAY_OF_MONTH -eq 1 ];
 then
 	# Delete all expired monthly directories
-	find $BACKUP_DIR -maxdepth 1 -name "*-monthly" -exec rm -rf '{}' ';'
+	find $BACKUP_DIR -maxdepth 1 -mtime +$EXPIRED_DAYS -name "*-monthly" -exec rm -rf '{}' ';'
  
 	perform_backups "-monthly"
  
