@@ -181,10 +181,8 @@ mapper, cancellationToken);
 			private async Task TransferTournamentsToFinished(CancellationToken cancellationToken)
 			{
 				var events = await tournamentRepository.ListAsync(
-					t => t.Scope == TournamentScope.Deadline &&
-						t.State == TournamentState.WaitingForFinish &&
-						t.Matches.All(m
-							=> m.LastExecution.ExecutorResult == EntryPointResult.Success),
+					t => t.State == TournamentState.WaitingForFinish &&
+						t.Matches.All(m => m.LastExecution.ExecutorResult == EntryPointResult.Success),
 					t => new TournamentFinished(t.Id, t.Name), cancellationToken);
 
 				var updateDto = new TournamentFinishedUpdateDto(now);
