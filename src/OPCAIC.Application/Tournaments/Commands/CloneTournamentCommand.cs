@@ -47,11 +47,15 @@ namespace OPCAIC.Application.Tournaments.Commands
 					.Include(nameof(Tournament.Documents))
 					.AsReadOnly();
 
+				// does not fetch related entities aside from explicitly included ones
 				var tournament = await repository.FindAsync(spec, cancellationToken) ??
 					throw new NotFoundException(nameof(Tournament), request.Id);
 
 				tournament.OwnerId = request.RequestingUserId;
 				tournament.State = TournamentState.Created;
+
+				// take care of duplicated objects
+				var documents = tournament.Documents.ToDictionary(d => d.Id);
 
 				// flush Ids so the tournament is stored as new tournament
 				tournament.Id = 0;
@@ -61,6 +65,7 @@ namespace OPCAIC.Application.Tournaments.Commands
 				}
 				foreach (var item in tournament.MenuItems.OfType<DocumentLinkMenuItem>())
 				{
+					item.Document = documents.GetValueOrDefault(item.DocumentId);
 					item.DocumentId = 0;
 				}
 

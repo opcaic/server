@@ -1,10 +1,12 @@
-﻿using AutoMapper;
+﻿using System.Collections.Generic;
+using AutoMapper;
 using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Domain.Infrastructure;
 using OPCAIC.Domain.ValueObjects;
 
 namespace OPCAIC.Application.Tournaments.Models
 {
-	public class MenuItemDto : ICustomMapping
+	public class MenuItemDto : ValueObject, ICustomMapping
 	{
 		// nullable to allow for better error messages
 		public MenuItemType? Type { get; set; }
@@ -22,6 +24,13 @@ namespace OPCAIC.Application.Tournaments.Models
 
 			configuration.CreateMap<DocumentLinkMenuItem, DocumentLinkMenuItemDto>().ReverseMap();
 			configuration.CreateMap<ExternalUrlMenuItem, ExternalUrlMenuItemDto>().ReverseMap();
+		}
+
+		/// <inheritdoc />
+		protected override IEnumerable<object> GetAtomicValues()
+		{
+			// this method is not supposed to be called
+			throw new System.NotImplementedException();
 		}
 	}
 }

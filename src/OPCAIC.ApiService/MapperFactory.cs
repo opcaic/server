@@ -5,7 +5,6 @@ using AutoMapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OPCAIC.ApiService.Models.Broker;
-using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Models.Submissions;
 using OPCAIC.ApiService.Models.SubmissionValidations;
@@ -13,7 +12,6 @@ using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.Broker;
-using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.Submissions;
@@ -47,7 +45,6 @@ namespace OPCAIC.ApiService
 			AddTournamentParticipationMapping();
 			AddSubmissionMapping();
 			AddSubmissionValidationMapping();
-			AddDocumentMapping();
 			AddMatchMapping();
 			AddMatchExecutionMapping();
 			AddBrokerMapping();
@@ -68,12 +65,6 @@ namespace OPCAIC.ApiService
 			CreateMap<JObject, string>()
 				.ConvertUsing(j => j == null ? null : JsonConvert.SerializeObject(j));
 			CreateMap<string, JObject>().ConvertUsing(j => j == null ? null : JObject.Parse(j));
-		}
-
-		private void AddDocumentMapping()
-		{
-			CreateMap<NewDocumentModel, NewDocumentDto, Document>(MemberList.Source);
-			CreateMap<UpdateDocumentModel, UpdateDocumentDto, Document>(MemberList.Source);
 		}
 
 		private void AddUserMapping()

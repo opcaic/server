@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using OPCAIC.ApiService;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Extensions;
@@ -17,7 +16,7 @@ using OPCAIC.ApiService.Services;
 using OPCAIC.ApiService.Utils;
 using OPCAIC.Persistence;
 
-namespace OPCAIC.FunctionalTest
+namespace OPCAIC.FunctionalTest.Infrastructure
 {
 	public class WebServerFactory : WebServerFactory<Startup>
 	{

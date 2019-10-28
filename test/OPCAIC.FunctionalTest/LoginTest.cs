@@ -1,15 +1,10 @@
-﻿using System;
-using System.Net;
-using System.Security.Policy;
+﻿using System.Net;
 using System.Threading.Tasks;
-using System.Web;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
-using OPCAIC.ApiService.Users.Commands;
 using OPCAIC.Application.Dtos.Users;
-using OPCAIC.Application.Emails.Templates;
-using OPCAIC.Domain.Enumerations;
+using OPCAIC.FunctionalTest.Infrastructure;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;

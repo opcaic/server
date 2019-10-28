@@ -11,7 +11,7 @@ using OPCAIC.ApiService.Models.Users;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace OPCAIC.FunctionalTest
+namespace OPCAIC.FunctionalTest.Infrastructure
 {
 	public class FunctionalTestBase<TSetup> : FunctionalTestBase, IClassFixture<TSetup> where TSetup : class
 	{
@@ -103,9 +103,13 @@ namespace OPCAIC.FunctionalTest
 			return SendAsync(HttpMethod.Post, url, JsonContent(body), dump);
 		}
 
-		protected Task<T> PostAsync<T>(string url, object body, bool dump = true)
+		protected Task<T> PostAsync<T>(string url, object body = null, bool dump = true)
 		{
-			return SendAsync<T>(HttpMethod.Post, url, JsonContent(body), dump);
+			return SendAsync<T>(HttpMethod.Post, url, 
+				body == null
+					? null 
+					: JsonContent(body),
+				dump);
 		}
 
 		protected Task<HttpResponseMessage> PutAsync(string url, object body, bool dump = true)
@@ -116,6 +120,11 @@ namespace OPCAIC.FunctionalTest
 		protected Task<T> PutAsync<T>(string url, object body, bool dump = true)
 		{
 			return SendAsync<T>(HttpMethod.Put, url, JsonContent(body), dump);
+		}
+
+		protected Task<HttpResponseMessage> DeleteAsync(string url, bool dump = true)
+		{
+			return SendAsync(HttpMethod.Delete, url, null, dump);
 		}
 
 		private HttpRequestMessage CreateRequest(HttpMethod method, string url,

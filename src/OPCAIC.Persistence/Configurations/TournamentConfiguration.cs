@@ -41,6 +41,7 @@ namespace OPCAIC.Persistence.Configurations
 		/// <inheritdoc />
 		public void Configure(EntityTypeBuilder<MenuItem> builder)
 		{
+			builder.Property(typeof(long), nameof(Entity.Id));
 			builder.HasDiscriminator(p => p.Type)
 				.HasValue<DocumentLinkMenuItem>(MenuItemType.DocumentLink)
 				.HasValue<ExternalUrlMenuItem>(MenuItemType.ExternalUrl);

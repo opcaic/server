@@ -12,7 +12,7 @@ using OPCAIC.Application.Users.Model;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enumerations;
 using OPCAIC.Domain.Enums;
-using OPCAIC.Persistence;
+using OPCAIC.FunctionalTest.Infrastructure;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;

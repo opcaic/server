@@ -54,13 +54,21 @@ namespace OPCAIC.ApiService.Utils
 		{
 			// apply pending migrations
 
-			logger.LogInformation("Checking for database migrations");
-			var migrations = context.Database.GetPendingMigrations().ToArray();
-			if (migrations.Length > 0)
+			if (context.Database.IsSqlite())
 			{
-				logger.LogInformation("Applying migrations: " + string.Join(", ", migrations));
-				context.Database.Migrate();
-				logger.LogInformation("Migration successful");
+				// Hack for functional tests: SQLite does not support some migrations generated for postgres
+				context.Database.EnsureCreated();
+			}
+			else
+			{
+				logger.LogInformation("Checking for database migrations");
+				var migrations = context.Database.GetPendingMigrations().ToArray();
+				if (migrations.Length > 0)
+				{
+					logger.LogInformation("Applying migrations: " + string.Join(", ", migrations));
+					context.Database.Migrate();
+					logger.LogInformation("Migration successful");
+				}
 			}
 
 			if (userManager.Users.Any())

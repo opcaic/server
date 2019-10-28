@@ -4,11 +4,8 @@ using System.Threading.Tasks;
 using Moq;
 using OPCAIC.Application.Documents.Models;
 using OPCAIC.Application.Documents.Queries;
-using OPCAIC.Application.Dtos.Documents;
-using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
@@ -28,7 +25,7 @@ namespace OPCAIC.Application.Test.Documents.Queries
 //			documentRepository = Services.Mock<IDocumentRepository>();
 		}
 
-		private readonly Mock<IDocumentRepository> documentRepository;
+		private readonly Mock<IRepository<Document>> documentRepository;
 
 		[Fact(Skip = "Until automapper conf is in Application project")]
 		public async Task NotFound()

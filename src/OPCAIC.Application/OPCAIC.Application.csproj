@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Dtos\Documents\" />
     <Folder Include="Matches\Command\" />
     <Folder Include="Matches\Queries\" />
   </ItemGroup>

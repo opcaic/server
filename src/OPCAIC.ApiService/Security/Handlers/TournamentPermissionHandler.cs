@@ -37,12 +37,12 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case TournamentPermission.UploadAdditionalFiles:
 				case TournamentPermission.StartEvaluation:
 				case TournamentPermission.ManageInvites:
-				case TournamentPermission.EditDocument:
 				case TournamentPermission.Update:
 				case TournamentPermission.StopEvaluation:
 				case TournamentPermission.PauseEvaluation:
 				case TournamentPermission.UnpauseEvaluation:
 				case TournamentPermission.Publish:
+				case TournamentPermission.ManageDocuments:
 					// only owner and managers
 					return IsOwnerOrManager(userId, id);
 

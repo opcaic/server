@@ -11,15 +11,15 @@
 		Submit,
 		ManageInvites,
 		Join,
-		EditDocument,
 		DownloadAdditionalFiles,
 		UploadAdditionalFiles,
 		StartEvaluation,
-        PauseEvaluation,
-        UnpauseEvaluation,
-        StopEvaluation,
-        Publish,
-		ManageManagers
+		PauseEvaluation,
+		UnpauseEvaluation,
+		StopEvaluation,
+		Publish,
+		ManageManagers,
+		ManageDocuments
 	}
 
 	public enum UserPermission
@@ -46,7 +46,6 @@
 
 	public enum DocumentPermission
 	{
-		Create,
 		Read,
 		Update,
 		Delete,

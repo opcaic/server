@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using OPCAIC.Application.Emails;
 using OPCAIC.Application.Emails.Templates;
 
-namespace OPCAIC.FunctionalTest
+namespace OPCAIC.FunctionalTest.Infrastructure
 {
 	public class NullEmailService : IEmailService
 	{

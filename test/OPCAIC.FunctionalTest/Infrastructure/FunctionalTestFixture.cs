@@ -7,7 +7,7 @@ using OPCAIC.Worker;
 using OPCAIC.Worker.Config;
 using Xunit;
 
-namespace OPCAIC.FunctionalTest
+namespace OPCAIC.FunctionalTest.Infrastructure
 {
 	public class FunctionalTestFixture : IDisposable
 	{

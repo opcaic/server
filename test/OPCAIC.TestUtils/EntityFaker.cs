@@ -18,8 +18,8 @@ namespace OPCAIC.ApiService.Test
 			Configure<User>()
 				.RuleFor(u => u.FirstName, f => f.Name.FirstName())
 				.RuleFor(u => u.LastName, f => f.Name.LastName())
-				.RuleFor(u => u.UserName, f => f.Name.Random.String(8))
-				.RuleFor(u => u.Email, f => f.Internet.Email())
+				.RuleFor(u => u.UserName, (f, u) => f.Internet.UserName(u.FirstName, u.LastName))
+				.RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
 				.RuleFor(u => u.LocalizationLanguage, f => f.PickRandom(LocalizationLanguage.AllValues))
 				.RuleFor(u => u.Organization, "OPCAIC")
 				.RuleFor(u => u.PasswordHash, "wfeiaweofiawef");

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -129,23 +130,38 @@ namespace OPCAIC.Application.Extensions
 				throw new NotFoundException(typeof(TEntity).Name, id);
 		}
 
-		public static async Task<TDto> GetStructAsync<TEntity, TDto>(this IRepository<TEntity> repository,
-			long id, Expression<Func<TEntity, TDto>> projection, CancellationToken cancellationToken = default)
+		private static async Task<TDto?> GetStructInternalAsync<TEntity, TDto>(this IRepository<TEntity> repository,
+			Expression<Func<TEntity, bool>> criteria, Expression<Func<TEntity, TDto>> projection, CancellationToken cancellationToken = default)
 			where TEntity : IEntity
 			where TDto : struct
 		{
 			// query into a list so that we can distinguish not found errors
 			var spec = new ProjectingSpecification<TEntity,TDto>(projection);
-			spec.WithPaging(0, 1);
+			spec.WithPaging(0, 1)
+				.AddCriteria(criteria);
 
 			var list = await repository.ListAsync(spec, cancellationToken);
-			if (list.Count == 1)
-			{
-				// found
-				return list[0];
-			}
+			return list.Select(s => (TDto?) s).SingleOrDefault();
+		}
 
-			throw new NotFoundException(typeof(TEntity).Name, id);
+		public static async Task<TDto> GetStructAsync<TEntity, TDto>(this IRepository<TEntity> repository,
+			long id, Expression<Func<TEntity, TDto>> projection, CancellationToken cancellationToken = default)
+			where TEntity : IEntity
+			where TDto : struct
+		{
+			return await GetStructInternalAsync(repository, e => e.Id == id, projection,
+				cancellationToken) 
+				?? throw new NotFoundException(typeof(TEntity).Name, id);
+		}
+
+		public static async Task<TDto> GetStructAsync<TEntity, TDto>(this IRepository<TEntity> repository,
+			Expression<Func<TEntity, bool>> criteria, Expression<Func<TEntity, TDto>> projection, CancellationToken cancellationToken = default)
+			where TEntity : IEntity
+			where TDto : struct
+		{
+			return await GetStructInternalAsync(repository, criteria, projection,
+				cancellationToken) 
+				?? throw new NotFoundException(typeof(TEntity).Name);
 		}
 
 		public static async Task<TDto> GetAsync<TEntity, TDto>(this IRepository<TEntity> repository,

@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
@@ -23,7 +23,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OPCAIC.ApiService\OPCAIC.ApiService.csproj" />
+    <ProjectReference Include="..\..\src\OPCAIC.Domain\OPCAIC.Domain.csproj" />
+    <ProjectReference Include="..\..\src\OPCAIC.Persistence\OPCAIC.Persistence.csproj" />
     <ProjectReference Include="..\..\src\OPCAIC.Worker\OPCAIC.Worker.csproj" />
+    <ProjectReference Include="..\OPCAIC.TestUtils\OPCAIC.TestUtils.csproj" />
   </ItemGroup>
 
 </Project>

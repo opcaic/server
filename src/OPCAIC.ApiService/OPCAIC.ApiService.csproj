@@ -11,6 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ModelValidationHandling\Validators\Games\**" />
+    <Content Remove="ModelValidationHandling\Validators\Games\**" />
+    <EmbeddedResource Remove="ModelValidationHandling\Validators\Games\**" />
+    <None Remove="ModelValidationHandling\Validators\Games\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -48,7 +55,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ModelValidationHandling\Validators\Games\" />
+    <Folder Include="Models\Documents\" />
   </ItemGroup>
 
 </Project>

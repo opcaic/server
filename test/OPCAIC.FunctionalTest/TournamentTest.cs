@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using OPCAIC.ApiService.Models;
+using OPCAIC.Application.Documents.Commands;
 using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using OPCAIC.Domain.ValueObjects;
+using OPCAIC.FunctionalTest.Infrastructure;
 using OPCAIC.Persistence;
 using Shouldly;
 using Xunit;
@@ -17,39 +20,21 @@ namespace OPCAIC.FunctionalTest
 {
 	public class TournamentTest : FunctionalTestBase<TournamentTest.Setup>
 	{
+		/// <inheritdoc />
+		public TournamentTest(ITestOutputHelper output, FunctionalTestFixture fixture,
+			Setup fixtureSetup) : base(output, fixture, fixtureSetup)
+		{
+			LoginAsAdmin().GetAwaiter().GetResult();
+		}
+
 		public class Setup
 		{
 			public readonly Game Game;
 
 			public Setup(FunctionalTestFixture fixture)
 			{
-				var ctx = fixture.GetServerService<DataContext>();
-				Game = new Game
-				{
-					Name = "A testing game",
-					Key = "testGame1231241",
-					Type = GameType.TwoPlayer,
-					Description = "A trivial game for testing purposes",
-					ImageUrl =
-						"https://images.chesscomfiles.com/uploads/v1/article/17623.87bb05cd.668x375o.47d81802f1eb@2x.jpeg",
-					DefaultTournamentImageOverlay = 0.7f,
-					DefaultTournamentImageUrl =
-						"https://images.chesscomfiles.com/uploads/v1/article/17623.87bb05cd.668x375o.47d81802f1eb@2x.jpeg",
-					DefaultTournamentThemeColor = "#555555",
-					MaxAdditionalFilesSize = 1024 * 1024,
-					ConfigurationSchema = "{}"
-				};
-
-				ctx.Games.Add(Game);
-				ctx.SaveChanges();
+				Game = fixture.CreateTwoPlayerGame();
 			}
-		}
-
-		[Fact]
-		public async Task GetTournament_NotFound()
-		{
-			var response = await GetAsync("/api/tournaments/123124134315");
-			response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 		}
 
 		[Fact]
@@ -86,9 +71,23 @@ namespace OPCAIC.FunctionalTest
 			tournament.Game.Id.ShouldBe(command.GameId);
 
 			Log("Update the tournament name");
-			var update = new UpdateTournamentCommand
+			var update = MakeUpdateCommand(tournament);
+			update.Name = "A testing tournament 2";
+			update.Name.ShouldNotBe(tournament.Name);
+
+			var response = await PutAsync($"/api/tournaments/{id.Id}", update);
+			response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+			Log("Check that the name was updated");
+			tournament = await GetAsync<TournamentDetailDto>($"/api/tournaments/{id.Id}");
+			tournament.Name.ShouldBe(update.Name);
+		}
+
+		private static UpdateTournamentCommand MakeUpdateCommand(TournamentDetailDto tournament)
+		{
+			return new UpdateTournamentCommand
 			{
-				Name = "A testing tournament 2",
+				Name = tournament.Name,
 				Availability = tournament.Availability,
 				Configuration = tournament.Configuration,
 				Description = tournament.Description,
@@ -104,20 +103,86 @@ namespace OPCAIC.FunctionalTest
 				Scope = tournament.Scope,
 				ThemeColor = tournament.ThemeColor
 			};
-			update.Name.ShouldNotBe(tournament.Name);
-
-			var response = await PutAsync($"/api/tournaments/{id.Id}", update);
-			response.StatusCode.ShouldBe(HttpStatusCode.OK);
-
-			Log("Check that the name was updated");
-			tournament = await GetAsync<TournamentDetailDto>($"/api/tournaments/{id.Id}");
-			tournament.Name.ShouldBe(update.Name);
 		}
 
-		/// <inheritdoc />
-		public TournamentTest(ITestOutputHelper output, FunctionalTestFixture fixture, Setup fixtureSetup) : base(output, fixture, fixtureSetup)
+		[Fact]
+		public async Task CloneTournament()
 		{
-			LoginAsAdmin().GetAwaiter().GetResult();
+			Log("Create a tournament:");
+			var command = new CreateTournamentCommand
+			{
+				Name = "A testing tournament",
+				Configuration = new JObject(), // empty,
+				Scope = TournamentScope.Deadline,
+				Availability = TournamentAvailability.Public,
+				Deadline = DateTime.Now.AddDays(1),
+				Format = TournamentFormat.Table,
+				MaxSubmissionSize = 1024 * 1024,
+				RankingStrategy = TournamentRankingStrategy.Maximum,
+				GameId = FixtureSetup.Game.Id,
+			};
+
+			var id = await PostAsync<IdModel>("/api/tournaments", command);
+
+			Log("Add a document");
+			var documentId = await PostAsync<IdModel>("/api/documents",
+				new CreateDocumentCommand
+				{
+					Name = "awefa", Content = "awefawefawefawefawef", TournamentId = id.Id
+				});
+
+			Log("Add the document to the tournament");
+			var tournament = await GetAsync<TournamentDetailDto>($"/api/tournaments/{id.Id}");
+			var update = MakeUpdateCommand(tournament);
+			update.MenuItems = new List<MenuItemDto>
+			{
+				new ExternalUrlMenuItemDto
+				{
+					Type = MenuItemType.ExternalUrl,
+					ExternalLink = "http://www.google.com",
+					Text = "TEXT"
+				},
+				new DocumentLinkMenuItemDto
+				{
+					Type = MenuItemType.DocumentLink,
+					DocumentId = documentId.Id
+				}
+			};
+			var response = await PutAsync($"/api/tournaments/{id.Id}", update);
+			response.EnsureSuccessStatusCode();
+			tournament = await GetAsync<TournamentDetailDto>($"/api/tournaments/{id.Id}");
+
+			Log("Try cloning the tournament");
+			var cloneId = await PostAsync<IdModel>($"/api/tournaments/{id.Id}/clone");
+			var clone = await GetAsync<TournamentDetailDto>($"/api/tournaments/{cloneId.Id}");
+
+			Log("Comparing the two tournaments");
+			clone.Id.ShouldNotBe(id.Id);
+			clone.Name.ShouldBe(tournament.Name);
+			clone.Configuration.ShouldBe(tournament.Configuration);
+			clone.Scope.ShouldBe(tournament.Scope);
+			clone.Availability.ShouldBe(tournament.Availability);
+			clone.Deadline.ShouldBe(tournament.Deadline?.ToUniversalTime());
+			clone.Format.ShouldBe(tournament.Format);
+			clone.MaxSubmissionSize.ShouldBe(tournament.MaxSubmissionSize);
+			clone.RankingStrategy.ShouldBe(tournament.RankingStrategy);
+			clone.Game.Id.ShouldBe(tournament.Game.Id);
+
+			// link item should be identical
+			clone.MenuItems.Count.ShouldBe(tournament.MenuItems.Count);
+			clone.MenuItems[0].ShouldBe(tournament.MenuItems[0]);
+			// documents should be unique
+			clone.MenuItems[1].Type.ShouldBe(tournament.MenuItems[1].Type);
+			var cloneItem1 = clone.MenuItems[1].ShouldBeOfType<DocumentLinkMenuItemDto>();
+			var item1 = tournament.MenuItems[1].ShouldBeOfType<DocumentLinkMenuItemDto>();
+			cloneItem1.DocumentId.ShouldNotBe(item1.DocumentId);
+		}
+
+		[Fact]
+		public async Task GetTournament_NotFound()
+		{
+			var response = await GetAsync("/api/tournaments/123124134315");
+			response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 		}
 	}
 }

@@ -16,7 +16,6 @@ namespace OPCAIC.ApiService.IoC
 				.AddScoped<ISubmissionRepository, SubmissionRepository>()
 				.AddScoped<ISubmissionValidationRepository, SubmissionValidationRepository>()
 				.AddScoped<IMatchExecutionRepository, MatchExecutionRepository>()
-				.AddScoped<IDocumentRepository, DocumentRepository>()
 				.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 		}
 	}

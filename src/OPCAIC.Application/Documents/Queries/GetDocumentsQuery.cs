@@ -4,11 +4,9 @@ using AutoMapper;
 using MediatR;
 using OPCAIC.Application.Documents.Models;
 using OPCAIC.Application.Dtos;
-using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Tournaments.Queries;
 using OPCAIC.Domain.Entities;
@@ -36,7 +34,7 @@ namespace OPCAIC.Application.Documents.Queries
 		public class Handler : FilterQueryHandler<GetDocumentsQuery, Document, DocumentDto>
 		{
 			/// <inheritdoc />
-			public Handler(IMapper mapper, IDocumentRepository repository) : base(mapper,
+			public Handler(IMapper mapper, IRepository<Document> repository) : base(mapper,
 				repository)
 			{
 			}

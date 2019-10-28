@@ -30,7 +30,6 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case DocumentPermission.Read:
 					return Task.FromResult(true); // TODO: private tournaments
 
-				case DocumentPermission.Create:
 				case DocumentPermission.Update:
 				case DocumentPermission.Delete:
 					// only tournament owners and managers

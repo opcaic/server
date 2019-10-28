@@ -5,14 +5,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OPCAIC.ApiService.Extensions;
-using OPCAIC.ApiService.Interfaces;
+using OPCAIC.ApiService.ModelBinding;
 using OPCAIC.ApiService.Models;
-using OPCAIC.ApiService.Models.Documents;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Documents.Commands;
 using OPCAIC.Application.Documents.Models;
 using OPCAIC.Application.Documents.Queries;
-using OPCAIC.Application.Dtos.Documents;
 using OPCAIC.Application.Infrastructure;
 
 namespace OPCAIC.ApiService.Controllers
@@ -21,13 +20,11 @@ namespace OPCAIC.ApiService.Controllers
 	[Route("api/documents")]
 	public class DocumentController : ControllerBase
 	{
-		private readonly IDocumentService documentService;
 		private readonly IAuthorizationService authorizationService;
 		private readonly IMediator mediator;
 
-		public DocumentController(IDocumentService documentService, IAuthorizationService authorizationService, IMediator mediator)
+		public DocumentController(IAuthorizationService authorizationService, IMediator mediator)
 		{
-			this.documentService = documentService;
 			this.authorizationService = authorizationService;
 			this.mediator = mediator;
 		}
@@ -67,12 +64,11 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status409Conflict)]
-		[RequiresPermission(DocumentPermission.Create)]
-		public async Task<IActionResult> PostAsync([FromBody] NewDocumentModel model,
+		public async Task<IActionResult> PostAsync([FromBody] CreateDocumentCommand model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, model.TournamentId, TournamentPermission.EditDocument);
-			var id = await documentService.CreateAsync(model, cancellationToken);
+			await authorizationService.CheckPermissions(User, model.TournamentId, TournamentPermission.ManageDocuments);
+			var id = await mediator.Send(model, cancellationToken);
 			return CreatedAtRoute(nameof(GetDocumentByIdAsync), new { id }, new IdModel {Id = id});
 		}
 
@@ -115,12 +111,11 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task UpdateAsync(long id, [FromBody] UpdateDocumentModel model,
+		public async Task UpdateAsync([FromRouteAndBody] UpdateDocumentCommand model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, DocumentPermission.Update);
-			await authorizationService.CheckPermissions(User, model.TournamentId, TournamentPermission.EditDocument);
-			await documentService.UpdateAsync(id, model, cancellationToken);
+			await authorizationService.CheckPermissions(User, model.Id, DocumentPermission.Update);
+			await mediator.Send(model, cancellationToken);
 		}
 
 		/// <summary>
@@ -138,7 +133,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task DeleteAsync(long id, CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id, DocumentPermission.Delete);
-			await documentService.DeleteAsync(id, cancellationToken);
+			await mediator.Send(new DeleteDocumentCommand(id), cancellationToken);
 		}
 	}
 }

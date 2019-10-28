@@ -2,7 +2,7 @@
 using MediatR;
 using OPCAIC.Application.Documents.Models;
 using OPCAIC.Application.Infrastructure.Queries;
-using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.Documents.Queries
@@ -16,7 +16,7 @@ namespace OPCAIC.Application.Documents.Queries
 
 		public class Handler : EntityRequestHandler<GetDocumentQuery, DocumentDto>
 		{
-			public Handler(IMapper mapper, IDocumentRepository repository)
+			public Handler(IMapper mapper, IRepository<Document> repository)
 				: base(mapper, repository)
 			{
 			}
