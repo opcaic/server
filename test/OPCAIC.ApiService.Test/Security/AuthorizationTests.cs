@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.Domain.Entities;
@@ -17,7 +18,7 @@ namespace OPCAIC.ApiService.Test.Security
 		protected AuthorizationTest(ITestOutputHelper output) : base(output)
 		{
 			Services.AddAuthorization();
-			Services.ConfigureSecurity(Configuration);
+			Services.ConfigureSecurity(Configuration, NullLogger.Instance);
 			lazyAuthorizationService = GetLazyService<IAuthorizationService>();
 		}
 

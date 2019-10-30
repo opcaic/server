@@ -33,7 +33,7 @@ namespace OPCAIC.ApiService.Services
 			IEnumerable<IPasswordValidator<User>> passwordValidators,
 			ILookupNormalizer keyNormalizer, IdentityErrorDescriber errors,
 			IServiceProvider services, ILogger<UserManager> logger, IMapper mapper,
-			IRepository<User> userRepository, IOptions<SecurityConfiguration> securityConfiguration)
+			IRepository<User> userRepository, IOptions<JwtConfiguration> securityConfiguration)
 			: base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators,
 				keyNormalizer, errors, services, logger)
 		{

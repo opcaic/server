@@ -14,7 +14,7 @@ namespace OPCAIC.ApiService.Services
 		private readonly IWorkerUrlGenerator urlGenerator;
 		private readonly TimeSpan tokenLifetime;
 
-		public WorkerService(IStorageService storage, IJwtTokenService tokenService, IOptions<SecurityConfiguration> conf, IWorkerUrlGenerator urlGenerator)
+		public WorkerService(IStorageService storage, IJwtTokenService tokenService, IOptions<JwtConfiguration> conf, IWorkerUrlGenerator urlGenerator)
 		{
 			this.storage = storage;
 			this.tokenService = tokenService;

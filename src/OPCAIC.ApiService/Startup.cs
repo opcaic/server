@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService.Behaviors;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Health;
@@ -37,25 +38,27 @@ namespace OPCAIC.ApiService
 	{
 		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-		public Startup(IConfiguration configuration, IWebHostEnvironment environment)
+		public Startup(IConfiguration configuration, IWebHostEnvironment environment, ILogger<Startup> logger)
 		{
 			Configuration = configuration;
 			Environment = environment;
+			Logger = logger;
 		}
 
 		public IConfiguration Configuration { get; }
 		public IWebHostEnvironment Environment { get; }
+		public ILogger<Startup> Logger { get; }
 
 		public void OverrideDevelopmentServices(IServiceCollection services)
 		{
-			services.AddTransient<IEmailSender, LoggingEmailSender>();
-
 			if (Environment.IsDevelopment())
 			{
 				if (Configuration.GetConnectionString(nameof(DataContext)) == null)
 				{
 					services.AddTransient<IDatabaseSeed, ApplicationTestSeed>();
 				}
+
+				services.AddTransient<IEmailSender, LoggingEmailSender>();
 			}
 
 			if (Environment.IsStaging())
@@ -131,7 +134,7 @@ namespace OPCAIC.ApiService
 			services.AddMemoryCache();
 			services.AddSwaggerGen(SwaggerConfig.SetupSwaggerGen);
 
-			services.ConfigureSecurity(Configuration);
+			services.ConfigureSecurity(Configuration, Logger);
 			services.ConfigureHealth();
 			ConfigureOptions(services);
 
@@ -145,13 +148,13 @@ namespace OPCAIC.ApiService
 		public void ConfigureOptions(IServiceCollection services)
 		{
 			services.Configure<UrlGeneratorConfiguration>(Configuration);
-			services.Configure<SecurityConfiguration>(
+			services.Configure<JwtConfiguration>(
 				Configuration.GetSection(ConfigNames.Security));
 			services.Configure<RequestSizeConfig>(Configuration.GetSection("Limits"));
 			services.Configure<SeedConfig>(Configuration.GetSection("Seed"));
 			services.Configure<StorageConfiguration>(Configuration.GetSection("Storage"));
 			services.Configure<EmailsConfiguration>(Configuration.GetSection("Emails"));
-			services.Configure<SecurityConfiguration>(Configuration.GetSection("Security"));
+			services.Configure<JwtConfiguration>(Configuration.GetSection("Security:JWT"));
 			services.Configure<BrokerConnectorConfig>(Configuration.GetSection("Broker"));
 			services.Configure<BrokerOptions>(Configuration.GetSection("Broker"));
 		}

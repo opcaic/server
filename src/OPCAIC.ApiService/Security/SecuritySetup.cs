@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Interfaces;
@@ -14,9 +15,9 @@ namespace OPCAIC.ApiService.Security
 {
 	internal static class SecuritySetup
 	{
-		public static void ConfigureSecurity(this IServiceCollection services, IConfiguration configuration)
+		public static void ConfigureSecurity(this IServiceCollection services, IConfiguration configuration, ILogger logger)
 		{
-			services.ConfigureIdentity();
+			services.ConfigureIdentity(configuration, logger);
 
 			services
 				.AddSingleton<IAuthorizationHandler, SuperUserAuthorizationHandler>()
@@ -32,7 +33,7 @@ namespace OPCAIC.ApiService.Security
 
 			services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
-			var conf = configuration.GetSecurityConfiguration();
+			var conf = configuration.GetJwtConfiguration();
 
 			var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(conf.Key));
 

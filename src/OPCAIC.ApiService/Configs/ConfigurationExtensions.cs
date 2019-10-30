@@ -4,11 +4,11 @@ namespace OPCAIC.ApiService.Configs
 {
 	public static class ConfigurationExtensions
 	{
-		public static SecurityConfiguration GetSecurityConfiguration(
+		public static JwtConfiguration GetJwtConfiguration(
 			this IConfiguration configuration)
 		{
-			var conf = new SecurityConfiguration();
-			configuration.Bind(ConfigNames.Security, conf);
+			var conf = new JwtConfiguration();
+			configuration.Bind(ConfigNames.Jwt, conf);
 			return conf;
 		}
 

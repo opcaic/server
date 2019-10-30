@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting.Internal;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using OPCAIC.ApiService.Exceptions;
 using OPCAIC.ApiService.IoC;
@@ -56,8 +57,8 @@ namespace OPCAIC.ApiService.Test
 		protected void ApiConfigureServices()
 		{
 			var mock = new Mock<IWebHostEnvironment>();
-			var startup = new Startup(Configuration, mock.Object);
-			Services.ConfigureSecurity(Configuration);
+			var startup = new Startup(Configuration, mock.Object, NullLogger<Startup>.Instance);
+			Services.ConfigureSecurity(Configuration, NullLogger.Instance);
 			startup.ConfigureOptions(Services);
 
 			UseDatabase();

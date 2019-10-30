@@ -22,12 +22,12 @@ namespace OPCAIC.ApiService.Services
 		private readonly IJwtTokenService jwtTokenService;
 		private readonly ILogger<JwtTokenProvider> logger;
 
-		private readonly SecurityConfiguration securityConfig;
+		private readonly JwtConfiguration jwtConfig;
 
-		public JwtTokenProvider(IOptions<SecurityConfiguration> securityConfig,
+		public JwtTokenProvider(IOptions<JwtConfiguration> securityConfig,
 			ILogger<JwtTokenProvider> logger, IJwtTokenService jwtTokenService)
 		{
-			this.securityConfig = securityConfig.Value;
+			this.jwtConfig = securityConfig.Value;
 			this.logger = logger;
 			this.jwtTokenService = jwtTokenService;
 		}
@@ -97,7 +97,7 @@ namespace OPCAIC.ApiService.Services
 		{
 			var identity = new ClaimsIdentity(await manager.GetClaimsAsync(user));
 			return jwtTokenService.CreateToken(
-				TimeSpan.FromMinutes(securityConfig.AccessTokenExpirationMinutes), identity);
+				TimeSpan.FromMinutes(jwtConfig.AccessTokenExpirationMinutes), identity);
 		}
 
 		private Task<string> CreateJwtRefreshToken(UserManager<User> manager, User user)
@@ -107,7 +107,7 @@ namespace OPCAIC.ApiService.Services
 			var identity = new ClaimsIdentity(new[] {nameClaim, stampClaim});
 			var token =
 				jwtTokenService.CreateToken(
-					TimeSpan.FromDays(securityConfig.RefreshTokenExpirationDays), identity);
+					TimeSpan.FromDays(jwtConfig.RefreshTokenExpirationDays), identity);
 
 			return Task.FromResult(token);
 		}

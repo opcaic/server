@@ -1,6 +1,6 @@
 ﻿namespace OPCAIC.ApiService.Configs
 {
-	public class SecurityConfiguration
+	public class JwtConfiguration
 	{
 		public string Key { get; set; }
 
