@@ -43,7 +43,6 @@ namespace OPCAIC.Worker.Services
 		/// <inheritdoc />
 		public void ArchiveDirectory(DirectoryInfo taskDirectory, bool success)
 		{
-			logger.LogTrace("Archiving task directory");
 			Require.ArgNotNull(taskDirectory, nameof(taskDirectory));
 			Require.That<ArgumentException>(taskDirectory.Exists, "Directory does not exist");
 
@@ -51,11 +50,13 @@ namespace OPCAIC.Worker.Services
 				? config.ArchiveDirectory
 				: config.ErrorDirectory;
 
+
 			// make sure target directory exists
-			Directory.CreateDirectory(targetDir);
+			var dir = Directory.CreateDirectory(targetDir);
 
 			var destinationArchiveFileName = Path.Combine(targetDir, taskDirectory.Name) + ".zip";
 
+			logger.LogTrace($"Archiving task directory to {destinationArchiveFileName}");
 			ZipFile.CreateFromDirectory(taskDirectory.FullName, destinationArchiveFileName);
 		}
 

@@ -146,7 +146,7 @@ namespace OPCAIC.Worker.GameModules
 			{
 				logger.LogDebug("Reading results file");
 				entryPointRes.MatchResult = ReadMatchResult(
-					Path.Combine(outputDir.FullName, Constants.FileNames.ExecutorResult),
+					Path.Combine(outputDir.FullName, Constants.FileNames.MatchResults),
 					binDirs.Count);
 			}
 
@@ -166,23 +166,11 @@ namespace OPCAIC.Worker.GameModules
 		{
 			var configPath = Path.Combine(config.AdditionalFiles.FullName,
 				Constants.FileNames.GameModuleConfig);
-			if (File.Exists(configPath))
-			{
-				logger.LogWarning(
-					"file {} already exists. Contents will be overwritten.", configPath);
-			}
+			File.WriteAllText(
+				configPath,
+				JsonConvert.SerializeObject(config.Configuration));
 
-			try
-			{
-				File.WriteAllText(
-					configPath,
-					JsonConvert.SerializeObject(config.Configuration));
-				return await InvokeGameModule<T>(procStart, logPrefix, cancellationToken);
-			}
-			finally
-			{
-				File.Delete(configPath);
-			}
+			return await InvokeGameModule<T>(procStart, logPrefix, cancellationToken);
 		}
 
 		/// <summary>

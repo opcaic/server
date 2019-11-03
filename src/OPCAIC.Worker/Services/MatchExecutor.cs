@@ -7,7 +7,6 @@ using OPCAIC.GameModules.Interface;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Worker.GameModules;
 using MessageBotInfo = OPCAIC.Messaging.Messages.BotInfo;
-using PlatformBotResult = OPCAIC.GameModules.Interface.BotResult;
 using MessageBotResult = OPCAIC.Messaging.Messages.BotResult;
 
 namespace OPCAIC.Worker.Services
@@ -61,7 +60,6 @@ namespace OPCAIC.Worker.Services
 				{
 					var botResult = matchResult.Results[i];
 
-					Response.BotResults[i].SubmissionId = Submissions[i].SubmissionId;
 					Response.BotResults[i].Score = botResult.Score;
 					Response.BotResults[i].AdditionalData = botResult.AdditionalInfo;
 					Response.BotResults[i].Crashed = botResult.HasCrashed;
@@ -76,7 +74,10 @@ namespace OPCAIC.Worker.Services
 			Response.BotResults = new MessageBotResult[Request.Bots.Count];
 			for (var i = 0; i < Response.BotResults.Length; i++)
 			{
-				Response.BotResults[i] = new MessageBotResult();
+				Response.BotResults[i] = new MessageBotResult
+				{
+					SubmissionId = Request.Bots[i].SubmissionId
+				};
 			}
 		}
 

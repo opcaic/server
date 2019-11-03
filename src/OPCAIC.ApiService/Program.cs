@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore;
+﻿using Destructurama;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using OPCAIC.ApiService.Users.Commands;
 using OPCAIC.ApiService.Utils;
 using Serilog;
 
@@ -34,6 +36,8 @@ namespace OPCAIC.ApiService
 				{
 					Log.Logger = new LoggerConfiguration()
 						.ReadFrom.Configuration(context.Configuration)
+						.Destructure
+						.ByIgnoringProperties<CreateUserCommand>(cmd => cmd.Password)
 						.CreateLogger();
 				});
 		}

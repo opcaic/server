@@ -125,7 +125,7 @@ namespace OPCAIC.ApiService
 			services.AddSingleton(typeof(IRequestPreProcessor<>),
 				typeof(UserRequestPreprocessor<>));
 			services.AddSingleton(typeof(IPipelineBehavior<,>),
-				typeof(PerformancePipelineBehavior<,>));
+				typeof(RequestLoggingBehavior<,>));
 
 			services.AddServices();
 			services.AddBroker();

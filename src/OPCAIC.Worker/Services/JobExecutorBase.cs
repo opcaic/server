@@ -119,7 +119,6 @@ namespace OPCAIC.Worker.Services
 
 			using (CreateLoggingScope(request))
 			{
-				var success = true;
 				try
 				{
 					// create directory structure 
@@ -144,17 +143,12 @@ namespace OPCAIC.Worker.Services
 
 					await InternalExecute();
 				}
-				catch
-				{
-					success = false;
-					throw;
-				}
 				finally
 				{
 					if (TaskDirectory != null)
 					{
 						await UploadResults();
-						Services.ArchiveDirectory(TaskDirectory, success);
+						Services.ArchiveDirectory(TaskDirectory, Response.JobStatus == JobStatus.Ok);
 						TaskDirectory.Delete(true);
 					}
 				}

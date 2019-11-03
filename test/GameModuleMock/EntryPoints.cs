@@ -112,7 +112,7 @@ than the stdout one.";
 	]
 }";
 			Console.WriteLine(contents);
-			File.WriteAllText(Path.Combine(outDir, "match-result.json"), contents);
+			File.WriteAllText(Path.Combine(outDir, "match-results.json"), contents);
 			return 0;
 		}
 
