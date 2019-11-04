@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using AutoMapper;
 using FluentValidation;
@@ -25,7 +26,7 @@ namespace OPCAIC.Application.Users.Queries
 
 		public string Username { get; set; }
 
-		public UserRole? UserRole { get; set; }
+		public UserRole[] UserRole { get; set; }
 
 		public bool? EmailVerified { get; set; }
 
@@ -35,7 +36,7 @@ namespace OPCAIC.Application.Users.Queries
 			{
 				RuleFor(m => m.Email).MinLength(1);
 				RuleFor(m => m.Username).MinLength(1);
-				RuleFor(m => m.UserRole).IsInEnum();
+				RuleForEach(m => m.UserRole).IsInEnum();
 			}
 		}
 
@@ -73,9 +74,9 @@ namespace OPCAIC.Application.Users.Queries
 					spec.AddCriteria(row => row.EmailConfirmed == request.EmailVerified.Value);
 				}
 
-				if (request.UserRole != null)
+				if (request.UserRole != null && request.UserRole.Length > 0)
 				{
-					spec.AddCriteria(row => row.Role == request.UserRole.Value);
+					spec.AddCriteria(row => request.UserRole.Contains(row.Role));
 				}
 
 				spec.Ordered(GetSortingKey(request.SortBy), request.Asc);
