@@ -6,6 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Dtos\Documents\**" />
+    <EmbeddedResource Remove="Dtos\Documents\**" />
+    <None Remove="Dtos\Documents\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="9.0.0" />
     <PackageReference Include="FluentValidation" Version="8.5.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="8.5.0" />
@@ -28,7 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dtos\Documents\" />
     <Folder Include="Matches\Command\" />
     <Folder Include="Matches\Queries\" />
   </ItemGroup>

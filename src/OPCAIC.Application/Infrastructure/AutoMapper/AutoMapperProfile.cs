@@ -12,6 +12,11 @@ namespace OPCAIC.Application.Infrastructure.AutoMapper
 	/// </summary>
 	public class AutoMapperProfile : Profile
 	{
+		/// <summary>
+		///     List of all mapped types
+		/// </summary>
+		private HashSet<Type> mappedTypes = new HashSet<Type>();
+
 		public AutoMapperProfile()
 			: this(new[] { Assembly.GetExecutingAssembly() })
 		{
@@ -25,6 +30,15 @@ namespace OPCAIC.Application.Infrastructure.AutoMapper
 			LoadSimpleMappings(types);
 			LoadCustomMappings(types);
 			LoadCustomConverters(types);
+			CreateReflexiveMaps(mappedTypes);
+		}
+
+		private void CreateReflexiveMaps(IEnumerable<Type> types)
+		{
+			foreach (var type in types.Where(t => t.GetConstructor(Array.Empty<Type>()) != null))
+			{
+				CreateMap(type, type);
+			}
 		}
 
 		private void LoadCustomConverters(List<Type> types)
@@ -51,6 +65,8 @@ namespace OPCAIC.Application.Infrastructure.AutoMapper
 		{
 			foreach (var (src, dest) in GetMaps(types, typeof(IMapTo<>)))
 			{
+				mappedTypes.Add(src);
+
 				var map = CreateMap(src, dest[0], MemberList.Source).IncludeAllDerived();
 
 				foreach (var property in src.GetNotMappedProperties())
@@ -61,6 +77,8 @@ namespace OPCAIC.Application.Infrastructure.AutoMapper
 
 			foreach (var (dest, src) in GetMaps(types, typeof(IMapFrom<>)))
 			{
+				mappedTypes.Add(dest);
+
 				var map = CreateMap(src[0], dest, MemberList.Destination).IncludeAllDerived();
 
 				foreach (var property in dest.GetNotMappedProperties())
@@ -74,11 +92,6 @@ namespace OPCAIC.Application.Infrastructure.AutoMapper
 					map = map.IncludeBase(src[0], t);
 				}
 			}
-		}
-
-		private void AddBaseIncludes(IMappingExpression map, Type src, Type dest)
-		{
-
 		}
 
 		private IEnumerable<(Type type, Type[] metadataType)> GetMaps(

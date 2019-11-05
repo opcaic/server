@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.MatchExecutions.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
@@ -68,9 +69,9 @@ namespace OPCAIC.Persistence.Repositories
 		}
 
 		/// <inheritdoc />
-		public Task<MatchExecutionDto> FindByIdAsync(long id, CancellationToken cancellationToken)
+		public Task<MatchExecutionPreviewDto> FindByIdAsync(long id, CancellationToken cancellationToken)
 		{
-			return GetDtoByIdAsync<MatchExecutionDto>(id, cancellationToken);
+			return GetDtoByIdAsync<MatchExecutionPreviewDto>(id, cancellationToken);
 		}
 	}
 }

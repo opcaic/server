@@ -20,6 +20,7 @@ using OPCAIC.Application.Dtos.TournamentParticipations;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Application.MatchExecutions.Models;
 using OPCAIC.Application.SubmissionValidations.Events;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Broker;
@@ -148,16 +149,7 @@ namespace OPCAIC.ApiService
 			CreateMap<NewMatchExecutionDto, MatchExecution>(MemberList.Source);
 
 			CreateMap<MatchExecution, MatchExecutionStorageDto>(MemberList.Destination);
-			CreateMap<MatchExecutionDto, MatchExecutionStorageDto>(MemberList.Destination);
-
-			CreateMap<MatchExecution, MatchExecutionDto, MatchExecutionPreviewModel>(MemberList
-				.Destination);
-			CreateMap<MatchExecutionDto, MatchExecutionDetailModel>(MemberList.Destination)
-				.ForMember(e => e.ExecutorLog, opt => opt.Ignore());
-			CreateMap<SubmissionMatchResult, SubmissionMatchResultDto,
-				SubmissionMatchResultPreviewModel>(MemberList.Destination);
-			CreateMap<SubmissionMatchResultPreviewModel, SubmissionMatchResultDetailModel>(
-				MemberList.Source);
+			CreateMap<MatchExecutionPreviewDto, MatchExecutionStorageDto>(MemberList.Destination);
 
 			CreateMap<MatchExecutionResult, UpdateMatchExecutionDto>()
 				.ForMember(d => d.State, opt => opt.MapFrom(r => r.JobStatus))

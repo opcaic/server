@@ -11,7 +11,6 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.ModelBinding;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Users;
-using OPCAIC.ApiService.ModelValidationHandling;
 using OPCAIC.ApiService.Security;
 using OPCAIC.ApiService.Services;
 using OPCAIC.ApiService.Users.Commands;
@@ -25,9 +24,6 @@ using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Users.Commands;
 using OPCAIC.Application.Users.Model;
 using OPCAIC.Application.Users.Queries;
-using OPCAIC.Domain.Entities;
-using OPCAIC.Domain.Enums;
-using OPCAIC.Infrastructure.Emails;
 
 namespace OPCAIC.ApiService.Controllers
 {

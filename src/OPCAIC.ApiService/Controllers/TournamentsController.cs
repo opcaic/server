@@ -18,6 +18,7 @@ using OPCAIC.Application.Tournaments.Queries;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using MimeKit;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -173,7 +174,8 @@ namespace OPCAIC.ApiService.Controllers
 				return NoContent();
 			}
 
-			return File(archive, MediaTypeNames.Application.Zip, "tournamentFiles.zip");
+			string filename = $"tournament-files-{id}.zip";
+			return File(archive, MimeTypes.GetMimeType(filename), filename);
 		}
 
 		/// <summary>
@@ -203,10 +205,8 @@ namespace OPCAIC.ApiService.Controllers
 				new TournamentAdditionalFilesUploadedCommand { TournamentId = model.TournamentId },
 				cancellationToken);
 
-			using (var stream = storage.WriteTournamentAdditionalFiles(model.TournamentId, true))
-			{
-				await model.Archive.CopyToAsync(stream, cancellationToken);
-			}
+			await using var stream = storage.WriteTournamentAdditionalFiles(model.TournamentId, true);
+			await model.Archive.CopyToAsync(stream, cancellationToken);
 		}
 
 		/// <summary>

@@ -123,6 +123,7 @@ namespace OPCAIC.ApiService.Configs
 		public static void SetupSwaggerUi(SwaggerUIOptions options)
 		{
 			options.SwaggerEndpoint(DocumentEndpoint, DocumentName);
+			options.ConfigObject.DocExpansion = DocExpansion.None;
 		}
 
 		public static void SetupSwagger(SwaggerOptions options)

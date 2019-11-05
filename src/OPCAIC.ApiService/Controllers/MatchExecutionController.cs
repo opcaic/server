@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MimeKit;
 using OPCAIC.ApiService.Attributes;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
-using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Infrastructure;
@@ -18,6 +18,8 @@ using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Application.MatchExecutions;
+using OPCAIC.Application.MatchExecutions.Models;
+using OPCAIC.Application.MatchExecutions.Queries;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -84,12 +86,12 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this action.</response>
 		[HttpGet]
-		[ProducesResponseType(typeof(PagedResult<MatchExecutionDto>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PagedResult<MatchExecutionPreviewDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[RequiresPermission(MatchExecutionPermission.Search)]
-		public async Task<PagedResult<MatchExecutionDto>> GetMatchExecutionsAsync(
+		public async Task<PagedResult<MatchExecutionPreviewDto>> GetMatchExecutionsAsync(
 			[FromQuery] GetMatchExecutionsQuery filter,
 			CancellationToken cancellationToken)
 		{
@@ -109,13 +111,13 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<MatchExecutionDetailModel> GetByIdAsync(long id,
+		public async Task<MatchExecutionDetailDto> GetByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id,
 				MatchExecutionPermission.ReadDetail);
 
-			return await executionService.GetByIdAsync(id, cancellationToken);
+			return await mediator.Send(new GetMatchExecutionQuery(id), cancellationToken);
 		}
 
 		/// <summary>
@@ -125,25 +127,51 @@ namespace OPCAIC.ApiService.Controllers
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[HttpGet("{id}/download")]
+		[Produces(MediaTypeNames.Application.Zip)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> DownloadResult(int id, CancellationToken cancellationToken)
+		public async Task<IActionResult> DownloadResult(long id,
+			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id,
 				MatchExecutionPermission.DownloadResults);
 
-			var storageDto = await repository.FindExecutionForStorageAsync(id, cancellationToken);
-
-			var stream = storage.ReadMatchResultArchive(storageDto);
+			var stream = await mediator.Send(new GetMatchResultArchiveQuery(id), cancellationToken);
 			if (stream == null)
 			{
 				// no results yet
 				return NotFound();
 			}
 
-			return File(stream, MediaTypeNames.Application.Zip);
+			var filename = $"match-execution-{id}.zip";
+			return File(stream, MimeTypes.GetMimeType(filename), filename);
+		}
+
+		/// <summary>
+		///     Downloads match execution results as a zip model.
+		/// </summary>
+		/// <returns></returns>
+		[HttpGet("{Id}/download/{Filename}")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<IActionResult> DownloadResult([FromRoute] GetMatchResultFileQuery query,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermissions(User, query.Id,
+				MatchExecutionPermission.DownloadResults);
+
+			var stream = await mediator.Send(query, cancellationToken);
+			if (stream == null)
+			{
+				// no results yet or not found 
+				return NotFound();
+			}
+
+			return File(stream, MimeTypes.GetMimeType(query.Filename), query.Filename);
 		}
 	}
 }

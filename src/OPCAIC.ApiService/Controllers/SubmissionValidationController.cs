@@ -1,11 +1,11 @@
-﻿using System.Net.Mime;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MimeKit;
 using OPCAIC.ApiService.Attributes;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
@@ -147,7 +147,8 @@ namespace OPCAIC.ApiService.Controllers
 				return NotFound();
 			}
 
-			return File(stream, MediaTypeNames.Application.Zip);
+			var filename = $"submission-validation-{id}.zip";
+			return File(stream, MimeTypes.GetMimeType(filename), filename);
 		}
 	}
 }

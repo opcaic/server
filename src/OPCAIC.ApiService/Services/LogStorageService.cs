@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
 using OPCAIC.Application.Dtos.MatchExecutions;
@@ -28,29 +27,28 @@ namespace OPCAIC.ApiService.Services
 				return logs;
 			}
 
-			using (var archive = new ZipArchive(file, ZipArchiveMode.Read))
+			using var archive = new ZipArchive(file, ZipArchiveMode.Read);
+
+			foreach (var entry in archive.Entries)
 			{
-				foreach (var entry in archive.Entries)
+				switch (entry.Name)
 				{
-					switch (entry.Name)
-					{
-						case "check.0.stdout":
-							logs.CheckerLog = ReadAsText(entry);
-							break;
-						case "compile.0.stdout":
-							logs.CompilerLog = ReadAsText(entry);
-							break;
-						case "validate.0.stdout":
-							logs.ValidatorLog = ReadAsText(entry);
-							break;
-					}
+					case "check.0.stdout":
+						logs.CheckerLog = ReadAsText(entry);
+						break;
+					case "compile.0.stdout":
+						logs.CompilerLog = ReadAsText(entry);
+						break;
+					case "validate.0.stdout":
+						logs.ValidatorLog = ReadAsText(entry);
+						break;
 				}
 			}
 
 			return logs;
 		}
 
-		private static readonly Regex CompilerLogRegex = new Regex(@"^compile\.(\d+)\.stdout$", RegexOptions.Compiled);
+		private static readonly Regex compilerLogRegex = new Regex(@"^compile\.(\d+)\.stdout$", RegexOptions.Compiled);
 
 		/// <inheritdoc />
 		public MatchExecutionLogsDto GetMatchExecutionLogs(MatchExecutionStorageDto storage)
@@ -73,7 +71,7 @@ namespace OPCAIC.ApiService.Services
 					}
 					else
 					{
-						var match = CompilerLogRegex.Match(entry.Name);
+						var match = compilerLogRegex.Match(entry.Name);
 						if (!match.Success)
 						{
 							continue;
@@ -97,10 +95,8 @@ namespace OPCAIC.ApiService.Services
 
 		private static string ReadAsText(ZipArchiveEntry entry)
 		{
-			using (var stream = new StreamReader(entry.Open()))
-			{
-				return stream.ReadToEnd();
-			}
+			using var stream = new StreamReader(entry.Open());
+			return stream.ReadToEnd();
 		}
 	}
 }

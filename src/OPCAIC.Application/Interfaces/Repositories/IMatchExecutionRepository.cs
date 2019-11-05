@@ -4,12 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.MatchExecutions.Models;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IMatchExecutionRepository
-		: ICreateRepository<NewMatchExecutionDto>, ILookupRepository<MatchExecutionDto>
+		: ICreateRepository<NewMatchExecutionDto>, ILookupRepository<MatchExecutionPreviewDto>
 	{
 		/// <summary>
 		///     Returns data needed to find where the archive with results of match execution with given id is stored.

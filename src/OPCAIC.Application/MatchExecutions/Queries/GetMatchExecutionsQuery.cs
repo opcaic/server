@@ -4,17 +4,17 @@ using AutoMapper;
 using FluentValidation;
 using MediatR;
 using OPCAIC.Application.Dtos;
-using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
+using OPCAIC.Application.MatchExecutions.Models;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Application.MatchExecutions
+namespace OPCAIC.Application.MatchExecutions.Queries
 {
-	public class GetMatchExecutionsQuery : FilterDtoBase, IRequest<PagedResult<MatchExecutionDto>>
+	public class GetMatchExecutionsQuery : FilterDtoBase, IRequest<PagedResult<MatchExecutionPreviewDto>>
 	{
 		public const string SortByUpdated = "updated";
 		public const string SortByCreated = "created";
@@ -40,7 +40,7 @@ namespace OPCAIC.Application.MatchExecutions
 		}
 
 		public class Handler
-			: FilterQueryHandler<GetMatchExecutionsQuery, MatchExecution, MatchExecutionDto>
+			: FilterQueryHandler<GetMatchExecutionsQuery, MatchExecution, MatchExecutionPreviewDto>
 		{
 			/// <inheritdoc />
 			public Handler(IMapper mapper, IRepository<MatchExecution> repository) : base(mapper,
@@ -50,7 +50,7 @@ namespace OPCAIC.Application.MatchExecutions
 
 			/// <inheritdoc />
 			protected override void ApplyUserFilter(
-				ProjectingSpecification<MatchExecution, MatchExecutionDto> spec, long? userId)
+				ProjectingSpecification<MatchExecution, MatchExecutionPreviewDto> spec, long? userId)
 			{
 				// only executions of managed/owned tournaments
 				spec.AddCriteria(m =>
@@ -60,7 +60,7 @@ namespace OPCAIC.Application.MatchExecutions
 
 			/// <inheritdoc />
 			protected override void SetupSpecification(GetMatchExecutionsQuery request,
-				ProjectingSpecification<MatchExecution, MatchExecutionDto> spec)
+				ProjectingSpecification<MatchExecution, MatchExecutionPreviewDto> spec)
 			{
 				if (request.TournamentId != null)
 				{

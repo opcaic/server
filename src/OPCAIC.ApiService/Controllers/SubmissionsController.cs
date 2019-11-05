@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MimeKit;
 using OPCAIC.ApiService.Attributes;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Interfaces;
@@ -133,8 +134,10 @@ namespace OPCAIC.ApiService.Controllers
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermissions(User, id, SubmissionPermission.Download);
+
+			var filename = $"submission-{id}.zip";
 			return File(await submissionService.GetSubmissionArchiveAsync(id, cancellationToken),
-				MediaTypeNames.Application.Zip);
+				MimeTypes.GetMimeType(filename), filename);
 		}
 
 		/// <summary>

@@ -47,10 +47,8 @@ namespace OPCAIC.ApiService.Utils
 
 		private void WriteEntry(ZipArchive archive, string entryName, string content)
 		{
-			using (var stream = new StreamWriter(archive.CreateEntry(entryName).Open()))
-			{
-				stream.Write(content);
-			}
+			using var stream = new StreamWriter(archive.CreateEntry(entryName).Open());
+			stream.Write(content);
 		}
 
 		private void EnsureSubmissionArchiveExists(IStorageService storage, Submission sub)
@@ -65,11 +63,9 @@ namespace OPCAIC.ApiService.Utils
 			}
 
 			// write something so that we have at least some file
-			using (var zip = new ZipArchive(storage.WriteSubmissionArchive(storageDto),
-				ZipArchiveMode.Create))
-			{
-				WriteEntry(zip, "input.txt", faker.Lorem.Paragraphs());
-			}
+			using var zip = new ZipArchive(storage.WriteSubmissionArchive(storageDto),
+				ZipArchiveMode.Create);
+			WriteEntry(zip, "input.txt", faker.Lorem.Paragraphs());
 		}
 
 		private void EnsureSubmissionValidationResultExists(IStorageService storage,
@@ -84,24 +80,22 @@ namespace OPCAIC.ApiService.Utils
 				return; // already exists
 			}
 
-			using (var zip =
+			using var zip =
 				new ZipArchive(storage.WriteSubmissionValidationResultArchive(storageDto),
-					ZipArchiveMode.Create))
+					ZipArchiveMode.Create);
+			if (sub.CheckerResult != EntryPointResult.NotExecuted)
 			{
-				if (sub.CheckerResult != EntryPointResult.NotExecuted)
-				{
-					WriteEntry(zip, "check.0.stdout", faker.Lorem.Paragraph());
-				}
+				WriteEntry(zip, "check.0.stdout", faker.Lorem.Paragraph());
+			}
 
-				if (sub.CompilerResult != EntryPointResult.NotExecuted)
-				{
-					WriteEntry(zip, "compile.0.stdout", faker.Lorem.Paragraph());
-				}
+			if (sub.CompilerResult != EntryPointResult.NotExecuted)
+			{
+				WriteEntry(zip, "compile.0.stdout", faker.Lorem.Paragraph());
+			}
 
-				if (sub.ValidatorResult != EntryPointResult.NotExecuted)
-				{
-					WriteEntry(zip, "validate.0.stdout", faker.Lorem.Paragraph());
-				}
+			if (sub.ValidatorResult != EntryPointResult.NotExecuted)
+			{
+				WriteEntry(zip, "validate.0.stdout", faker.Lorem.Paragraph());
 			}
 		}
 
@@ -117,21 +111,19 @@ namespace OPCAIC.ApiService.Utils
 				return; // already exists
 			}
 
-			using (var zip = new ZipArchive(storage.WriteMatchResultArchive(storageDto),
-				ZipArchiveMode.Create))
+			using var zip = new ZipArchive(storage.WriteMatchResultArchive(storageDto),
+				ZipArchiveMode.Create);
+			for (int i = 0; i < execution.BotResults.Count; i++)
 			{
-				for (int i = 0; i < execution.BotResults.Count; i++)
+				if (execution.BotResults[i].CompilerResult != EntryPointResult.NotExecuted)
 				{
-					if (execution.BotResults[i].CompilerResult != EntryPointResult.NotExecuted)
-					{
-						WriteEntry(zip, $"compile.{i}.stdout", faker.Lorem.Paragraph());
-					}
+					WriteEntry(zip, $"compile.{i}.stdout", faker.Lorem.Paragraph());
 				}
+			}
 
-				if (execution.ExecutorResult != EntryPointResult.NotExecuted)
-				{
-					WriteEntry(zip, "execute.stdout", faker.Lorem.Paragraphs());
-				}
+			if (execution.ExecutorResult != EntryPointResult.NotExecuted)
+			{
+				WriteEntry(zip, "execute.stdout", faker.Lorem.Paragraphs());
 			}
 		}
 
