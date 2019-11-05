@@ -136,7 +136,7 @@ namespace OPCAIC.Application.Tournaments.Commands
 			public async Task<Unit> Handle(UpdateTournamentCommand request,
 				CancellationToken cancellationToken)
 			{
-				var tournament = await repository.GetAsync(request.Id, new[] { "Game" }, cancellationToken);
+				var tournament = await repository.GetAsync(request.Id, new[] { "Game", "MenuItems" }, cancellationToken);
 
 				// check whether the game is even compatible
 				if (!tournament.Game.Type.SupportsTournamentFormat(request.Format))
@@ -166,7 +166,8 @@ namespace OPCAIC.Application.Tournaments.Commands
 					}
 				}
 
-				await repository.UpdateAsync(request.Id, request, cancellationToken);
+				mapper.Map(request, tournament);
+				await repository.SaveChangesAsync(cancellationToken);
 
 				logger.TournamentUpdated(request.Id, request);
 				return Unit.Value;
