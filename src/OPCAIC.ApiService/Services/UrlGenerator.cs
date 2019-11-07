@@ -41,7 +41,7 @@ namespace OPCAIC.ApiService.Services
 		/// <inheritdoc />
 		public string GenerateAdditionalFilesUrl(long tournamentId)
 		{
-			return $"api/tournaments/{tournamentId}/files";
+			return $"tournaments/{tournamentId}/files";
 		}
 	}
 }
