@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using OPCAIC.Application.Extensions;
-using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Infrastructure;
@@ -29,7 +28,7 @@ namespace OPCAIC.Application.Infrastructure.Validation
 		public static IRuleBuilderOptions<T, int> InRange<T>(
 			this IRuleBuilder<T, int> rule, int min, int max)
 		{
-			var dict = new Dictionary<string, object> { ["minimum"] = min, ["maximum"] = max };
+			var dict = new Dictionary<string, object> {["minimum"] = min, ["maximum"] = max};
 			return rule.InclusiveBetween(min, max)
 				.WithState(_ => dict)
 				.WithErrorCode(ValidationErrorCodes.RangeError);
@@ -37,9 +36,9 @@ namespace OPCAIC.Application.Infrastructure.Validation
 
 		public static IRuleBuilderOptions<T, TVal?> InRange<T, TVal>(
 			this IRuleBuilder<T, TVal?> rule, TVal min, TVal max)
-			where TVal: struct, IComparable, IComparable<TVal>
+			where TVal : struct, IComparable, IComparable<TVal>
 		{
-			var dict = new Dictionary<string, object> { ["minimum"] = min, ["maximum"] = max };
+			var dict = new Dictionary<string, object> {["minimum"] = min, ["maximum"] = max};
 			return rule.InclusiveBetween(min, max)
 				.WithState(_ => dict)
 				.WithErrorCode(ValidationErrorCodes.RangeError);
@@ -92,32 +91,12 @@ namespace OPCAIC.Application.Infrastructure.Validation
 		public static IRuleBuilderOptions<T, long> EntityId<T>(
 			this IRuleBuilder<T, long> rule, Type entityType)
 		{
-			return rule.SetValidator((PropertyValidator) Activator.CreateInstance(typeof(EntityIdValidator<>).MakeGenericType(entityType)))
+			return rule
+				.SetValidator(
+					(PropertyValidator)Activator.CreateInstance(
+						typeof(EntityIdValidator<>).MakeGenericType(entityType)))
 				.WithState((s, id) => new Dictionary<string, object> {["id"] = id})
 				.WithErrorCode(ValidationErrorCodes.InvalidReference);
-		}
-
-		private class EntityIdValidator<TEntity> : PropertyValidator
-			where TEntity : IEntity
-		{
-			/// <inheritdoc />
-			public EntityIdValidator() 
-				: base($"'{{PropertyName}}' does not reference valid {typeof(TEntity).Name}: {{PropertyValue}}.")
-			{
-			}
-
-			/// <inheritdoc />
-			protected override bool IsValid(PropertyValidatorContext context)
-			{
-				return IsValidAsync(context, CancellationToken.None).GetAwaiter().GetResult();
-			}
-
-			/// <inheritdoc />
-			protected override Task<bool> IsValidAsync(PropertyValidatorContext context, CancellationToken cancellation)
-			{
-				var repository = context.GetServiceProvider().GetRequiredService<IRepository<TEntity>>();
-				return repository.ExistsAsync((long)context.PropertyValue, cancellation);
-			}
 		}
 
 		public static IRuleBuilder<T, JObject> ValidSchema<T>(
@@ -125,15 +104,20 @@ namespace OPCAIC.Application.Infrastructure.Validation
 		{
 			return rule.Custom((s, context) =>
 			{
-				if (s != null && !s.IsValid(JsonSchemaDefinition.Version7,
-					out IList<string> errors))
+				if (s != null &&
+					!s.IsValid(JsonSchemaDefinition.Version7,
+						out IList<Newtonsoft.Json.Schema.ValidationError> errors))
 				{
 					context.AddFailure(
 						new ValidationFailure(context.PropertyName,
 							"Specified JSON Schema is not valid.")
 						{
 							ErrorCode = ValidationErrorCodes.InvalidSchema,
-							CustomState = new Dictionary<string, object> {["errors"] = errors}
+							CustomState = new Dictionary<string, object>
+							{
+								["errors"] = errors.Select(e
+									=> new {e.Value, e.ErrorType, e.Path, e.Message})
+							}
 						});
 				}
 			});
@@ -147,14 +131,15 @@ namespace OPCAIC.Application.Infrastructure.Validation
 				if (o == null)
 					return;
 
-				var schema = await context.GetServiceProvider().GetRequiredService<IRepository<Game>>()
+				var schema = await context.GetServiceProvider()
+					.GetRequiredService<IRepository<Game>>()
 					.GetAsync(t => t.Id == gameIdGetter((T)context.InstanceToValidate),
 						t => t.ConfigurationSchema, token);
 
 				ValidateGameConfiguration(context, o, schema);
 			});
 		}
-		
+
 
 		public static IRuleBuilder<T, JObject> ValidGameConfigurationViaTournamentId<T>(
 			this IRuleBuilder<T, JObject> rule, Func<T, long> tournamentIdGetter)
@@ -164,7 +149,8 @@ namespace OPCAIC.Application.Infrastructure.Validation
 				if (o == null)
 					return;
 
-				var schema = await context.GetServiceProvider().GetRequiredService<IRepository<Tournament>>()
+				var schema = await context.GetServiceProvider()
+					.GetRequiredService<IRepository<Tournament>>()
 					.GetAsync(t => t.Id == tournamentIdGetter((T)context.InstanceToValidate),
 						t => t.Game.ConfigurationSchema, token);
 
@@ -182,7 +168,7 @@ namespace OPCAIC.Application.Infrastructure.Validation
 						"Configuration does not validate against game's schema")
 					{
 						ErrorCode = ValidationErrorCodes.InvalidConfiguration,
-						CustomState = new Dictionary<string, object> { ["errors"] = errors }
+						CustomState = new Dictionary<string, object> {["errors"] = errors}
 					});
 			}
 		}
@@ -193,6 +179,32 @@ namespace OPCAIC.Application.Infrastructure.Validation
 		{
 			return rule.Must(f => Enumeration<TEnum>.TryFromName(f, out _))
 				.WithMessage("'{PropertyValue}' is not valid value for {PropertyName}.");
+		}
+
+		private class EntityIdValidator<TEntity> : PropertyValidator
+			where TEntity : IEntity
+		{
+			/// <inheritdoc />
+			public EntityIdValidator()
+				: base(
+					$"'{{PropertyName}}' does not reference valid {typeof(TEntity).Name}: {{PropertyValue}}.")
+			{
+			}
+
+			/// <inheritdoc />
+			protected override bool IsValid(PropertyValidatorContext context)
+			{
+				return IsValidAsync(context, CancellationToken.None).GetAwaiter().GetResult();
+			}
+
+			/// <inheritdoc />
+			protected override Task<bool> IsValidAsync(PropertyValidatorContext context,
+				CancellationToken cancellation)
+			{
+				var repository = context.GetServiceProvider()
+					.GetRequiredService<IRepository<TEntity>>();
+				return repository.ExistsAsync((long)context.PropertyValue, cancellation);
+			}
 		}
 	}
 }
