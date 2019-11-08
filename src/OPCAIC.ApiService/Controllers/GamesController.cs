@@ -85,7 +85,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<GameDetailDto> GetGameByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, GamePermission.Read);
+			await authorizationService.CheckPermission(User, id, GamePermission.Read);
 			return await mediator.Send(new GetGameQuery(id), cancellationToken);
 		}
 
@@ -108,7 +108,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UpdateAsync([FromRouteAndBody] UpdateGameCommand model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, model.Id, GamePermission.Update);
+			await authorizationService.CheckPermission(User, model.Id, GamePermission.Update);
 			await mediator.Send(model, cancellationToken);
 		}
 	}

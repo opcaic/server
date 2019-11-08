@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces.MatchGeneration;
-using OPCAIC.Application.Matches.Models;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Application.Tournaments.Queries;
@@ -96,13 +95,16 @@ namespace OPCAIC.Application.Test.Tournaments.Queries
 			TestTournamentHelper.SimulateTournament(null, tournament, generator, seed);
 
 			repository.Setup(r
-				=> r.FindAsync(It.IsAny<IProjectingSpecification<Tournament, TournamentLeaderboardDto>>(),
+				=> r.FindAsync(
+					It.IsAny<IProjectingSpecification<Tournament,
+						GetTournamentLeaderboardQuery.Handler.Data>>(),
 					CancellationToken)).ReturnsAsync(
-				(IProjectingSpecification<Tournament, TournamentLeaderboardDto> spec,
+				(IProjectingSpecification<Tournament, GetTournamentLeaderboardQuery.Handler.Data> spec,
 					CancellationToken token) => spec.Projection.Compile().Invoke(tournament));
 
 			matchRepository.SetupProjectList(()
-				=> Mapper.Map<List<GetTournamentLeaderboardQuery.Handler.MatchData>>(tournament.Matches), CancellationToken);
+				=> Mapper.Map<List<GetTournamentLeaderboardQuery.Handler.MatchData>>(tournament
+					.Matches), CancellationToken);
 		}
 
 		public static TheoryData<int> GetRange(int from, int to)
@@ -112,6 +114,7 @@ namespace OPCAIC.Application.Test.Tournaments.Queries
 			{
 				theoryData.Add(i /*data*/);
 			}
+
 			return theoryData;
 		}
 
@@ -119,7 +122,8 @@ namespace OPCAIC.Application.Test.Tournaments.Queries
 		[MemberData(nameof(GetRange), 4, 8)]
 		public async Task Generate_DoubleElimination(int submissionCount)
 		{
-			SetupTournament(TournamentScope.Deadline, TournamentFormat.DoubleElimination, submissionCount);
+			SetupTournament(TournamentScope.Deadline, TournamentFormat.DoubleElimination,
+				submissionCount);
 			var leaderboards = await Handler.Handle(query, CancellationToken);
 			var tree = leaderboards.ShouldBeOfType<DoubleEliminationLeaderboardDto>();
 			leaderboards.Participations.Count.ShouldBe(submissionCount);

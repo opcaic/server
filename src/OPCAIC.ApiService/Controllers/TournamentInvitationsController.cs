@@ -43,7 +43,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<PagedResult<TournamentInvitationDto>> GetParticipantsAsync(long tournamentId, [FromQuery] GetTournamentInvitationsQuery filter, CancellationToken cancellationToken)
 		{
 			filter.TournamentId = tournamentId; // TODO: hide the TournamentId property from swagger
-			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageInvites);
+			await authorizationService.CheckPermission(User, tournamentId, TournamentPermission.ManageInvites);
 			return await mediator.Send(filter, cancellationToken);
 		}
 
@@ -63,7 +63,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task PostParticipantsAsync(long tournamentId, [FromBody] NewTournamentInvitationsModel model, CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageInvites);
+			await authorizationService.CheckPermission(User, tournamentId, TournamentPermission.ManageInvites);
 			await mediator.Send(new InvitePlayersCommand
 			{
 				TournamentId = tournamentId,
@@ -87,7 +87,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task DeleteParticipantAsync(long tournamentId, string email, CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, tournamentId, TournamentPermission.ManageInvites);
+			await authorizationService.CheckPermission(User, tournamentId, TournamentPermission.ManageInvites);
 			await mediator.Send(new DeleteInvitationCommand(tournamentId, email), cancellationToken);
 		}
 	}

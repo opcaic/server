@@ -55,6 +55,8 @@ namespace OPCAIC.Application.Tournaments.Commands
 
 		public bool PrivateMatchlog { get; set; }
 
+		public bool Anonymize { get; set; }
+
 		public class Validator : AbstractValidator<CreateTournamentCommand>
 		{
 			public Validator(ITimeService time)

@@ -34,7 +34,7 @@ namespace OPCAIC.ApiService.Test.Security
 
 			DbContext.SaveChanges();
 
-			AuthorizationService.CheckPermissions(new ClaimsPrincipal(),
+			AuthorizationService.CheckPermission(new ClaimsPrincipal(),
 				TournamentPermission.Update);
 		}
 
@@ -55,7 +55,7 @@ namespace OPCAIC.ApiService.Test.Security
 
 			DbContext.SaveChanges();
 
-			AuthorizationService.CheckPermissions(GetClaimsPrincipal(manager), tournament.Id,
+			AuthorizationService.CheckPermission(GetClaimsPrincipal(manager), tournament.Id,
 				TournamentPermission.Update);
 		}
 	}

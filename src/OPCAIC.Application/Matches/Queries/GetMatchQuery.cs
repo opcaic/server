@@ -2,15 +2,14 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
-using OPCAIC.Application.Exceptions;
+using OPCAIC.Application.Extensions;
+using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Matches.Models;
-using OPCAIC.Application.Specifications;
-using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.Matches.Queries
 {
-	public class GetMatchQuery : IRequest<MatchDetailDto>
+	public class GetMatchQuery : AuthenticatedRequest, IRequest<MatchDetailDto>
 	{
 		/// <inheritdoc />
 		public GetMatchQuery(long id)
@@ -18,28 +17,39 @@ namespace OPCAIC.Application.Matches.Queries
 			Id = id;
 		}
 
-		public long Id { get; }
+		public long Id { get; set; }
+
+		public bool? Anonymize { get; set; }
 
 		public class Handler : IRequestHandler<GetMatchQuery, MatchDetailDto>
 		{
+			private readonly IMapper mapper;
 			private readonly IMatchRepository repository;
 
-			public Handler(IMatchRepository repository)
+			public Handler(IMapper mapper, IMatchRepository repository)
 			{
+				this.mapper = mapper;
 				this.repository = repository;
 			}
 
 			/// <inheritdoc />
 			public async Task<MatchDetailDto> Handle(GetMatchQuery request, CancellationToken cancellationToken)
 			{
-				var dto = await repository.FindByIdAsync(request.Id, cancellationToken);
+				var spec = MatchDetailQueryData.CreateSpecification(mapper, request.RequestingUserId);
+				spec.AddCriteria(m => m.Id == request.Id);
 
-				if (dto == null)
+				var data = await repository.GetAsync(spec, cancellationToken);
+
+				var shouldAnonymize = data.CanOverrideAnonymize
+					? request.Anonymize ?? data.ShouldAnonymize
+					: data.ShouldAnonymize;
+
+				if (shouldAnonymize)
 				{
-					throw new NotFoundException(nameof(Match), request.Id);
+					data.Dto.AnonymizeUsersExcept(request.RequestingUserId);
 				}
 
-				return dto;
+				return data.Dto;
 			}
 		}
 	}

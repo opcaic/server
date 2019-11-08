@@ -175,6 +175,14 @@ namespace OPCAIC.Application.Extensions
 				throw new NotFoundException(typeof(TEntity).Name); 
 		}
 
+		public static async Task<TDto> GetAsync<TEntity, TDto>(this IRepository<TEntity> repository,
+			IProjectingSpecification<TEntity, TDto> spec, CancellationToken cancellationToken = default)
+			where TDto : class
+		{
+			return await repository.FindAsync(spec, cancellationToken) ?? 
+				throw new NotFoundException(typeof(TEntity).Name);
+		}
+
 		public static async Task<TEntity> GetAsync<TEntity>(this IRepository<TEntity> repository,
 			Expression<Func<TEntity, bool>> criteria, CancellationToken cancellationToken = default)
 			where TEntity : class

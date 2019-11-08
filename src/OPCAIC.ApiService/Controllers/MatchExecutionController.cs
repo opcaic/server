@@ -64,7 +64,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UploadResult(long id, [FromForm] ResultArchiveModel model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				MatchExecutionPermission.UploadResult);
 
 			var storageDto = await repository.FindExecutionForStorageAsync(id, cancellationToken);
@@ -114,7 +114,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<MatchExecutionDetailDto> GetByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				MatchExecutionPermission.ReadDetail);
 
 			return await mediator.Send(new GetMatchExecutionQuery(id), cancellationToken);
@@ -135,7 +135,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> DownloadResult(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				MatchExecutionPermission.DownloadResults);
 
 			var stream = await mediator.Send(new GetMatchResultArchiveQuery(id), cancellationToken);
@@ -161,7 +161,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> DownloadResult([FromRoute] GetMatchResultFileQuery query,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, query.Id,
+			await authorizationService.CheckPermission(User, query.Id,
 				MatchExecutionPermission.DownloadResults);
 
 			var stream = await mediator.Send(query, cancellationToken);

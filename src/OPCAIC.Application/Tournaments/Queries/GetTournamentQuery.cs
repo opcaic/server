@@ -22,6 +22,7 @@ namespace OPCAIC.Application.Tournaments.Queries
 		public class Handler : IRequestHandler<GetTournamentQuery, TournamentDetailDto>
 		{
 			private readonly IMapper mapper;
+			private readonly IRepository<Tournament> repository;
 
 			/// <inheritdoc />
 			public Handler(IMapper mapper, IRepository<Tournament> repository)
@@ -29,8 +30,6 @@ namespace OPCAIC.Application.Tournaments.Queries
 				this.mapper = mapper;
 				this.repository = repository;
 			}
-
-			private readonly IRepository<Tournament> repository;
 
 			/// <inheritdoc />
 			public async Task<TournamentDetailDto> Handle(GetTournamentQuery request, CancellationToken cancellationToken)

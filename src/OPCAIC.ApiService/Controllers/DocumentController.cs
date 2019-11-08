@@ -67,7 +67,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> PostAsync([FromBody] CreateDocumentCommand model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, model.TournamentId, TournamentPermission.ManageDocuments);
+			await authorizationService.CheckPermission(User, model.TournamentId, TournamentPermission.ManageDocuments);
 			var id = await mediator.Send(model, cancellationToken);
 			return CreatedAtRoute(nameof(GetDocumentByIdAsync), new { id }, new IdModel {Id = id});
 		}
@@ -91,7 +91,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<DocumentDto> GetDocumentByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, DocumentPermission.Read);
+			await authorizationService.CheckPermission(User, id, DocumentPermission.Read);
 			return await mediator.Send(new GetDocumentQuery(id), cancellationToken);
 		}
 
@@ -114,7 +114,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UpdateAsync([FromRouteAndBody] UpdateDocumentCommand model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, model.Id, DocumentPermission.Update);
+			await authorizationService.CheckPermission(User, model.Id, DocumentPermission.Update);
 			await mediator.Send(model, cancellationToken);
 		}
 
@@ -132,7 +132,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task DeleteAsync(long id, CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, DocumentPermission.Delete);
+			await authorizationService.CheckPermission(User, id, DocumentPermission.Delete);
 			await mediator.Send(new DeleteDocumentCommand(id), cancellationToken);
 		}
 	}

@@ -63,7 +63,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UploadResult(long id, ResultArchiveModel model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				SubmissionValidationPermission.UploadResult);
 
 			var storageDto = await repository.FindStorageAsync(id, cancellationToken);
@@ -114,7 +114,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<SubmissionValidationDetailModel> GetByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				SubmissionValidationPermission.ReadDetail);
 
 			return await validationService.GetByIdAsync(id, cancellationToken);
@@ -135,7 +135,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> DownloadResult(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				SubmissionValidationPermission.DownloadResult);
 
 			var storageDto = await repository.FindStorageAsync(id, cancellationToken);

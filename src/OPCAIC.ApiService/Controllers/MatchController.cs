@@ -57,6 +57,7 @@ namespace OPCAIC.ApiService.Controllers
 		///     Gets match by id.
 		/// </summary>
 		/// <param name="id">Id of match to look for.</param>
+		/// <param name="anonymize">Flag to override anonymization of the tournament</param>
 		/// <param name="cancellationToken"></param>
 		/// <response code="200">Match found.</response>
 		/// <response code="401">User is not authenticated.</response>
@@ -68,10 +69,10 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<MatchDetailDto> GetMatchById(long id, CancellationToken cancellationToken)
+		public async Task<MatchDetailDto> GetMatchById(long id, [FromQuery] bool? anonymize, CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, MatchPermission.Read);
-			return await mediator.Send(new GetMatchQuery(id), cancellationToken);
+			await authorizationService.CheckPermission(User, id, MatchPermission.Read);
+			return await mediator.Send(new GetMatchQuery(id) { Anonymize = anonymize }, cancellationToken);
 		}
 
 
@@ -91,7 +92,7 @@ namespace OPCAIC.ApiService.Controllers
 		[HttpPost("{id}/execute")]
 		public async Task ExecuteAsync(long id, CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				MatchPermission.QueueMatchExecution);
 			await mediator.Send(new ExecuteMatchCommand(id), cancellationToken);
 		}

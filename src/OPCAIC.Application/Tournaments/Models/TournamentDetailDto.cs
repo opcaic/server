@@ -9,6 +9,8 @@ namespace OPCAIC.Application.Tournaments.Models
 	{
 		public bool PrivateMatchLog { get; set; }
 
+		public bool Anonymize { get; set; }
+
 		public string Description { get; set; }
 
 		public long MaxSubmissionSize { get; set; }

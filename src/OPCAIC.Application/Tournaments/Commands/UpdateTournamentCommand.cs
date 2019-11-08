@@ -42,6 +42,8 @@ namespace OPCAIC.Application.Tournaments.Commands
 
 		public bool PrivateMatchLog { get; set; }
 
+		public bool Anonymize { get; set; }
+
 		public List<MenuItemDto> MenuItems { get; set; }
 
 		public string ImageUrl { get; set; }

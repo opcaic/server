@@ -95,7 +95,7 @@ namespace OPCAIC.ApiService.Controllers
 		[RequiresPermission(TournamentPermission.Create)]
 		public async Task<IActionResult> CloneAsync(long id, CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, TournamentPermission.Read);
+			await authorizationService.CheckPermission(User, id, TournamentPermission.Read);
 			var cloneId = await mediator.Send(new CloneTournamentCommand(id),
 				cancellationToken);
 			return CreatedAtRoute(nameof(GetTournamentByIdAsync), new { id = cloneId },
@@ -121,7 +121,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<TournamentDetailDto> GetTournamentByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, TournamentPermission.Read);
+			await authorizationService.CheckPermission(User, id, TournamentPermission.Read);
 			return await mediator.Send(new GetTournamentQuery(id), cancellationToken);
 		}
 
@@ -144,7 +144,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UpdateAsync([FromRouteAndBody] UpdateTournamentCommand model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, model.Id,
+			await authorizationService.CheckPermission(User, model.Id,
 				TournamentPermission.Update);
 			await mediator.Send(model, cancellationToken);
 		}
@@ -165,7 +165,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<IActionResult> DownloadAdditionalFiles(long id)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				TournamentPermission.DownloadAdditionalFiles);
 
 			var archive = storage.ReadTournamentAdditionalFiles(id);
@@ -198,7 +198,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UploadAdditionalFiles(AdditionalTournamentFilesModel model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, model.TournamentId,
+			await authorizationService.CheckPermission(User, model.TournamentId,
 				TournamentPermission.UploadAdditionalFiles);
 
 			await mediator.Send(
@@ -229,7 +229,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task StartTournamentEvaluationAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				TournamentPermission.StartEvaluation);
 
 			await mediator.Send(new StartTournamentEvaluationCommand { TournamentId = id },
@@ -256,7 +256,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task PauseTournamentEvaluationAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				TournamentPermission.PauseEvaluation);
 
 			await mediator.Send(new PauseTournamentEvaluationCommand { TournamentId = id },
@@ -283,7 +283,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UnpauseTournamentEvaluationAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				TournamentPermission.UnpauseEvaluation);
 
 			await mediator.Send(new UnpauseTournamentEvaluationCommand { TournamentId = id },
@@ -310,7 +310,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task StopTournamentEvaluationAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				TournamentPermission.StopEvaluation);
 
 			await mediator.Send(new StopTournamentEvaluationCommand { TournamentId = id },
@@ -338,7 +338,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task PublishTournamentEvaluationAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				TournamentPermission.Publish);
 
 			await mediator.Send(new PublishTournamentCommand { TournamentId = id },
@@ -360,7 +360,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<List<string>> GetTournamentManagerAsync(long tournamentId,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, tournamentId,
+			await authorizationService.CheckPermission(User, tournamentId,
 				TournamentPermission.ManageManagers);
 
 			return await mediator.Send(
@@ -384,7 +384,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task AddTournamentManagerAsync(long tournamentId, string managerEmail,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, tournamentId,
+			await authorizationService.CheckPermission(User, tournamentId,
 				TournamentPermission.ManageManagers);
 
 			await mediator.Send(
@@ -409,7 +409,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task DeleteTournamentManagerAsync(long tournamentId, string managerEmail,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, tournamentId,
+			await authorizationService.CheckPermission(User, tournamentId,
 				TournamentPermission.ManageManagers);
 
 			await mediator.Send(
@@ -433,11 +433,11 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<TournamentLeaderboardDto> GetLeaderboardByTournamentIdAsync(long id,
+		public async Task<TournamentLeaderboardDto> GetLeaderboardByTournamentIdAsync(long id, [FromQuery] bool? anonymize,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, TournamentPermission.ViewLeaderboard);
-			return await mediator.Send(new GetTournamentLeaderboardQuery(id));
+			await authorizationService.CheckPermission(User, id, TournamentPermission.ViewLeaderboard);
+			return await mediator.Send(new GetTournamentLeaderboardQuery(id) { Anonymize = anonymize }, cancellationToken);
 		}
 	}
 }

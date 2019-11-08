@@ -7,6 +7,7 @@ using AutoMapper;
 using MediatR;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Extensions;
+using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Services;
@@ -18,7 +19,8 @@ using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Tournaments.Queries
 {
-	public class GetTournamentLeaderboardQuery : IRequest<TournamentLeaderboardDto>
+	public class GetTournamentLeaderboardQuery
+		: AuthenticatedRequest, IRequest<TournamentLeaderboardDto>
 	{
 		public GetTournamentLeaderboardQuery(long tournamentId)
 		{
@@ -26,6 +28,8 @@ namespace OPCAIC.Application.Tournaments.Queries
 		}
 
 		public long TournamentId { get; }
+
+		public bool? Anonymize { get; set; }
 
 		public class Handler
 			: IRequestHandler<GetTournamentLeaderboardQuery, TournamentLeaderboardDto>
@@ -49,46 +53,61 @@ namespace OPCAIC.Application.Tournaments.Queries
 			public async Task<TournamentLeaderboardDto> Handle(
 				GetTournamentLeaderboardQuery request, CancellationToken cancellationToken)
 			{
-				var dto = await repository.GetAsync(request.TournamentId,
-					t => new TournamentLeaderboardDto
+				var data = await repository.GetAsync(request.TournamentId,
+					t => new Data
 					{
-						Format = t.Format,
-						Finished = t.EvaluationFinished != null,
-						Participations = t.Participants.Where(p => p.ActiveSubmission != null)
-							.Select(p => new TournamentLeaderboardDto.ParticipationDto
-							{
-								SubmissionId = p.ActiveSubmission.Id,
-								Author = new UserReferenceDto
+						Dto = new TournamentLeaderboardDto
+						{
+							Format = t.Format,
+							Finished = t.EvaluationFinished != null,
+							Participations = t.Participants.Where(p => p.ActiveSubmission != null)
+								.Select(p => new TournamentLeaderboardDto.ParticipationDto
 								{
-									Id = p.UserId,
-									Organization = p.User.Organization,
-									Username = p.User.UserName
-								},
-								SubmissionScore = p.ActiveSubmission.Score
-							}).ToList(),
-						RankingStrategy = t.RankingStrategy
+									SubmissionId = p.ActiveSubmission.Id,
+									Author = new UserReferenceDto
+									{
+										Id = p.UserId,
+										Organization = p.User.Organization,
+										Username = p.User.UserName
+									},
+									SubmissionScore = p.ActiveSubmission.Score
+								}).ToList(),
+							RankingStrategy = t.RankingStrategy
+						},
+						Anonymize = t.Anonymize,
+						CanOverrideAnonymize = t.OwnerId == request.RequestingUserId ||
+							t.Managers.Any(m => m.UserId == request.RequestingUserId)
 					}, cancellationToken);
 
+				var shouldAnonymize = data.CanOverrideAnonymize
+					? request.Anonymize ?? data.Anonymize
+					: data.Anonymize;
+
 				int slot = 1;
-				foreach (var p in dto.Participations.OrderBy(p => p.SubmissionId))
+				foreach (var p in data.Dto.Participations.OrderBy(p => p.SubmissionId))
 				{
 					p.StartingSlot = slot++;
+
+					if (shouldAnonymize && p.Author.Id != request.RequestingUserId)
+					{
+						p.Author = UserReferenceDto.Anonymous;
+					}
 				}
 
-				switch (dto.Format)
+				switch (data.Dto.Format)
 				{
 					case TournamentFormat.SingleElimination:
-						return await CreateSingleElimination(request.TournamentId, dto,
+						return await CreateSingleElimination(request.TournamentId, data.Dto,
 							cancellationToken);
 					case TournamentFormat.DoubleElimination:
-						return await CreateDoubleElimination(request.TournamentId, dto,
+						return await CreateDoubleElimination(request.TournamentId, data.Dto,
 							cancellationToken);
 					case TournamentFormat.Table:
-						return await CreateTable(request.TournamentId, dto, cancellationToken);
+						return await CreateTable(request.TournamentId, data.Dto, cancellationToken);
 					case TournamentFormat.SinglePlayer:
 					case TournamentFormat.Elo:
-						DeterminePlacementFromScore(dto);
-						return dto; // nothing more needed
+						DeterminePlacementFromScore(data.Dto);
+						return data.Dto; // nothing more needed
 					case TournamentFormat.Unknown:
 					default:
 						throw new ArgumentOutOfRangeException();
@@ -171,7 +190,7 @@ namespace OPCAIC.Application.Tournaments.Queries
 
 				SetStartingSlotsFromBrackets(model.Participations, tree.Levels);
 
-				if (model.Finished)
+				if (model.Finished && model.Participations.Count > 0)
 				{
 					// determine also placement order
 					var players = model.Participations.ToDictionary(d => d.SubmissionId);
@@ -195,7 +214,6 @@ namespace OPCAIC.Application.Tournaments.Queries
 					// level 5, otherwise we want to skip only one
 					var skipLevels = tree.Levels[^1].Count;
 					DeterminePlacementFromTree(players, model.Matches, model.RankingStrategy,
-
 						placement, tree.Levels.Reverse().Skip(skipLevels));
 
 					model.Participations.Sort((a, b) => a.Place.Value.CompareTo(b.Place.Value));
@@ -260,7 +278,7 @@ namespace OPCAIC.Application.Tournaments.Queries
 					}
 				}
 
-				if (model.Finished)
+				if (model.Finished && model.Participations.Count > 0)
 				{
 					// determine also placement order
 					var players = model.Participations.ToDictionary(d => d.SubmissionId);
@@ -357,6 +375,13 @@ namespace OPCAIC.Application.Tournaments.Queries
 							? dto.Participations[i - 1].Place
 							: i + 1;
 				}
+			}
+
+			public class Data
+			{
+				public TournamentLeaderboardDto Dto { get; set; }
+				public bool Anonymize { get; set; }
+				public bool CanOverrideAnonymize { get; set; }
 			}
 
 			public class MatchData : IMapFrom<Match>

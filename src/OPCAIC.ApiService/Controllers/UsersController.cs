@@ -199,7 +199,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<UserDetailDto> GetUserByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, UserPermission.Read);
+			await authorizationService.CheckPermission(User, id, UserPermission.Read);
 			return await userManager.GetByIdAsync(id, cancellationToken);
 		}
 
@@ -220,7 +220,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task UpdateAsync([FromRouteAndBody] UpdateUserCommand model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, model.Id, UserPermission.Update);
+			await authorizationService.CheckPermission(User, model.Id, UserPermission.Update);
 			await mediator.Send(model, cancellationToken);
 		}
 

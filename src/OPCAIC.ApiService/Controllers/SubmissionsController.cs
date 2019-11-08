@@ -81,7 +81,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> PostAsync([FromForm] NewSubmissionModel model,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, model.TournamentId,
+			await authorizationService.CheckPermission(User, model.TournamentId,
 				TournamentPermission.Submit);
 
 			var id = await mediator.Send(
@@ -111,7 +111,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<SubmissionDetailDto> GetSubmissionByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, SubmissionPermission.Read);
+			await authorizationService.CheckPermission(User, id, SubmissionPermission.Read);
 			return await mediator.Send(new GetSubmissionQuery(id), cancellationToken);
 		}
 
@@ -133,7 +133,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<IActionResult> GetSubmissionArchiveAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id, SubmissionPermission.Download);
+			await authorizationService.CheckPermission(User, id, SubmissionPermission.Download);
 
 			var filename = $"submission-{id}.zip";
 			return File(await submissionService.GetSubmissionArchiveAsync(id, cancellationToken),
@@ -157,7 +157,7 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task ValidateAsync(long id, CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermissions(User, id,
+			await authorizationService.CheckPermission(User, id,
 				SubmissionPermission.QueueValidation);
 			await mediator.Send(new EnqueueValidationCommand(id), cancellationToken);
 		}

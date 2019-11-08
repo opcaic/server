@@ -6,6 +6,7 @@ using AutoMapper;
 using Newtonsoft.Json.Linq;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
@@ -83,6 +84,19 @@ namespace OPCAIC.Application.Matches.Models
 				public double Score { get; set; }
 				public EntryPointResult CompilerResult { get; set; }
 				public JObject AdditionalData { get; set; }
+			}
+		}
+
+		public void AnonymizeUsersExcept(long? userId)
+		{
+			foreach (var sub in Executions
+				.SelectMany(e => e.BotResults.Select(s => s.Submission))
+				.Concat(Submissions))
+			{
+				if (sub.Author.Id != userId)
+				{
+					sub.Author = UserReferenceDto.Anonymous;
+				}
 			}
 		}
 	}

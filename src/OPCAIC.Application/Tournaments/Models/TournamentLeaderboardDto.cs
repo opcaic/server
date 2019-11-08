@@ -31,8 +31,6 @@ namespace OPCAIC.Application.Tournaments.Models
 			{
 				public long SubmissionId { get; set; }
 
-				public long? OriginMatchIndex { get; set; }
-
 				public double? Score { get; set; }
 			}
 		}

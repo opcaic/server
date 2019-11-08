@@ -11,9 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\Documents\**" />
     <Compile Remove="ModelValidationHandling\Validators\Games\**" />
+    <Content Remove="Models\Documents\**" />
     <Content Remove="ModelValidationHandling\Validators\Games\**" />
+    <EmbeddedResource Remove="Models\Documents\**" />
     <EmbeddedResource Remove="ModelValidationHandling\Validators\Games\**" />
+    <None Remove="Models\Documents\**" />
     <None Remove="ModelValidationHandling\Validators\Games\**" />
   </ItemGroup>
 
@@ -53,10 +57,6 @@
     <ProjectReference Include="..\OPCAIC.Infrastructure\OPCAIC.Infrastructure.csproj" />
     <ProjectReference Include="..\OPCAIC.Persistence\OPCAIC.Persistence.csproj" />
     <ProjectReference Include="..\OPCAIC.Utils\OPCAIC.Utils.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\Documents\" />
   </ItemGroup>
 
 </Project>

@@ -2,6 +2,7 @@
 using OPCAIC.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace OPCAIC.Domain.Entities
@@ -155,6 +156,11 @@ namespace OPCAIC.Domain.Entities
 		///     If true, ordinary users can see only matches where their submissions participate.
 		/// </summary>
 		public bool PrivateMatchlog { get; set; }
+
+		/// <summary>
+		///     If true, all user names aside from current users are redacted from any data sent to the outside applications.
+		/// </summary>
+		public bool Anonymize { get; set; }
 
 		/// <summary>
 		///     Maximum size in bytes on the submission archive contents.
