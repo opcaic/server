@@ -13,6 +13,8 @@ namespace OPCAIC.Application.Tournaments.Models
 	{
 		public long Id { get; set; }
 
+		public long OwnerId { get; set; }
+
 		public string Name { get; set; }
 
 		public GameReferenceDto Game { get; set; }

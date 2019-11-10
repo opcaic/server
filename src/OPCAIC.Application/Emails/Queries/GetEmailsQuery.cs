@@ -36,7 +36,8 @@ namespace OPCAIC.Application.Emails.Queries
 			}
 
 			/// <inheritdoc />
-			protected override void ApplyUserFilter(ProjectingSpecification<Email, EmailDto> spec, long? userId)
+			protected override void ApplyUserFilter(ProjectingSpecification<Email, EmailDto> spec,
+				GetEmailsQuery request)
 			{
 				throw new BusinessException("Only admin may query emails");
 			}

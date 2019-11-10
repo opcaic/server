@@ -28,6 +28,7 @@ namespace OPCAIC.Application.Matches.Queries
 		public const string SortByCreated = "created";
 		public const string SortByExecuted = "executed";
 
+		public bool ManagedOnly { get; set; }
 		public long? TournamentId { get; set; }
 		public long? UserId { get; set; }
 		public long? SubmissionId { get; set; }
@@ -75,7 +76,7 @@ namespace OPCAIC.Application.Matches.Queries
 
 				if (request.RequestingUserRole != UserRole.Admin)
 				{
-					ApplyUserFilter(spec, request.RequestingUserId);
+					ApplyUserFilter(spec, request.RequestingUserId, request.ManagedOnly);
 				}
 
 				var result = await repository.ListPagedAsync(spec, cancellationToken);
@@ -93,20 +94,23 @@ namespace OPCAIC.Application.Matches.Queries
 			}
 
 			private void ApplyUserFilter(
-				ProjectingSpecification<Match, QueryData<MatchPreviewDto>> spec, long? userId)
+				ProjectingSpecification<Match, QueryData<MatchPreviewDto>> spec, long? userId, bool managedOnly)
 			{
 				// only matches from tournaments visible by the user (includes matches with user's submissions)
-				var tournamentCriteria = GetTournamentsQuery.Handler.GetUserFilter(userId);
+				var tournamentCriteria = GetTournamentsQuery.Handler.GetUserFilter(userId, managedOnly);
 				spec.AddCriteria(Rebind.Map((Match m)
 					=> Rebind.Invoke(m.Tournament, tournamentCriteria)));
 
-				// also, if tournament has private matchlog, we want to hide matches of other players,
-				// unless the user is tournament organizer
-				spec.AddCriteria(m
-					=> !m.Tournament.PrivateMatchlog ||
-					m.Participations.Any(s => s.Submission.AuthorId == userId) ||
-					m.Tournament.OwnerId == userId ||
-					m.Tournament.Managers.Any(u => u.UserId == userId));
+				if (!managedOnly)
+				{
+					// also, if tournament has private matchlog, we want to hide matches of other players,
+					// unless the user is tournament organizer
+					spec.AddCriteria(m
+						=> !m.Tournament.PrivateMatchlog ||
+						m.Participations.Any(s => s.Submission.AuthorId == userId) ||
+						m.Tournament.OwnerId == userId ||
+						m.Tournament.Managers.Any(u => u.UserId == userId));
+				}
 			}
 
 			private void SetupSpecification(GetMatchesQuery request,

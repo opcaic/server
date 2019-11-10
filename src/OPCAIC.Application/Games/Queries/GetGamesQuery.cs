@@ -36,7 +36,8 @@ namespace OPCAIC.Application.Games.Queries
 			}
 
 			/// <inheritdoc />
-			protected override void ApplyUserFilter(ProjectingSpecification<Game, GamePreviewDto> spec, long? userId)
+			protected override void ApplyUserFilter(
+				ProjectingSpecification<Game, GamePreviewDto> spec, GetGamesQuery request)
 			{
 				// all games are considered public by default
 			}

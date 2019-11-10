@@ -53,12 +53,13 @@ namespace OPCAIC.Application.MatchExecutions.Queries
 
 			/// <inheritdoc />
 			protected override void ApplyUserFilter(
-				ProjectingSpecification<MatchExecution, MatchExecutionPreviewDto> spec, long? userId)
+				ProjectingSpecification<MatchExecution, MatchExecutionPreviewDto> spec,
+				GetMatchExecutionsQuery request)
 			{
 				// only executions of managed/owned tournaments
 				spec.AddCriteria(m =>
-					m.Match.Tournament.OwnerId == userId ||
-					m.Match.Tournament.Managers.Any(u => u.UserId == userId));
+					m.Match.Tournament.OwnerId == request.RequestingUserId ||
+					m.Match.Tournament.Managers.Any(u => u.UserId == request.RequestingUserId));
 			}
 
 			/// <inheritdoc />

@@ -37,7 +37,8 @@ namespace OPCAIC.Application.Emails.Queries
 
 			/// <inheritdoc />
 			protected override void ApplyUserFilter(
-				ProjectingSpecification<EmailTemplate, EmailTemplatePreviewDto> spec, long? userId)
+				ProjectingSpecification<EmailTemplate, EmailTemplatePreviewDto> spec,
+				GetEmailTemplatesQuery request)
 			{
 				throw new BusinessException("Only admin may query email templates");
 			}

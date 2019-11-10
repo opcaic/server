@@ -40,10 +40,11 @@ namespace OPCAIC.Application.Documents.Queries
 			}
 
 			/// <inheritdoc />
-			protected override void ApplyUserFilter(ProjectingSpecification<Document, DocumentDto> spec, long? userId)
+			protected override void ApplyUserFilter(
+				ProjectingSpecification<Document, DocumentDto> spec, GetDocumentsQuery request)
 			{
 				// if user can see the tournament, then he should be able to see the documents
-				var tournamentCriteria = GetTournamentsQuery.Handler.GetUserFilter(userId);
+				var tournamentCriteria = GetTournamentsQuery.Handler.GetUserFilter(request.RequestingUserId, false);
 				spec.AddCriteria(Rebind.Map((Document d)
 					=> Rebind.Invoke(d.Tournament, tournamentCriteria)));
 			}

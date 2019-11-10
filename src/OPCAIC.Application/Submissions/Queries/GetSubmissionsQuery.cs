@@ -22,6 +22,7 @@ namespace OPCAIC.Application.Submissions.Queries
 		public const string SortByCreated = "created";
 		public const string SortByAuthor = "author";
 
+		public bool ManagedOnly { get; set; }
 		public long? AuthorId { get; set; }
 		public bool? IsActive { get; set; }
 		public long? TournamentId { get; set; }
@@ -43,10 +44,12 @@ namespace OPCAIC.Application.Submissions.Queries
 			}
 
 			/// <inheritdoc />
-			protected override void ApplyUserFilter(ProjectingSpecification<Submission, SubmissionPreviewDto> spec, long? userId)
+			protected override void ApplyUserFilter(
+				ProjectingSpecification<Submission, SubmissionPreviewDto> spec,
+				GetSubmissionsQuery request)
 			{
 				// only submissions from tournaments visible by the user (includes his submissions by design)
-				var tournamentCriteria = GetTournamentsQuery.Handler.GetUserFilter(userId);
+				var tournamentCriteria = GetTournamentsQuery.Handler.GetUserFilter(request.RequestingUserId, request.ManagedOnly);
 				spec.AddCriteria(Rebind.Map((Submission s)
 					=> Rebind.Invoke(s.Tournament, tournamentCriteria)));
 			}

@@ -38,7 +38,7 @@ namespace OPCAIC.Application.Infrastructure.Queries
 			// admins must be able to see everything
 			if (request.RequestingUserRole != UserRole.Admin)
 			{
-				ApplyUserFilter(spec, request.RequestingUserId);
+				ApplyUserFilter(spec, request);
 			}
 
 			SetupSpecification(request, spec);
@@ -50,9 +50,9 @@ namespace OPCAIC.Application.Infrastructure.Queries
 		///     Applies data viewing restriction for the current user
 		/// </summary>
 		/// <param name="spec">The specification for the db query.</param>
-		/// <param name="userId">The user who initiated the request.</param>
+		/// <param name="request"></param>
 		protected abstract void ApplyUserFilter(ProjectingSpecification<TEntity, TResult> spec,
-			long? userId);
+			TRequest request);
 
 		/// <summary>
 		///     Sets up the specification for db query based on the request data.

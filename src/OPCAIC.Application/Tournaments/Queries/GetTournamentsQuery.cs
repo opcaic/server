@@ -29,6 +29,8 @@ namespace OPCAIC.Application.Tournaments.Queries
 		public const string SortByPublishedDate = "published";
 		public const string SortByUserSubmissionDate = "userSubmissionDate";
 
+		public bool ManagedOnly { get; set; }
+
 		public string Name { get; set; }
 
 		public long? GameId { get; set; }
@@ -100,7 +102,7 @@ namespace OPCAIC.Application.Tournaments.Queries
 				// admins must be able to see everything
 				if (request.RequestingUserRole != UserRole.Admin)
 				{
-					ApplyUserFilter(spec, request.RequestingUserId);
+					ApplyUserFilter(spec, request.RequestingUserId, request.ManagedOnly);
 				}
 
 				spec.WithPaging(request.Offset, request.Count);
@@ -176,8 +178,15 @@ namespace OPCAIC.Application.Tournaments.Queries
 			}
 
 			public static Expression<Func<Tournament, bool>> GetUserFilter(
-				long? userId)
+				long? userId, bool managedOnly)
 			{
+				if (managedOnly)
+				{
+					return t => 
+						t.Managers.Any(m => m.UserId == userId) ||
+						t.OwnerId == userId;
+				}
+
 				Expression<Func<Tournament, bool>> criteria = t
 					=> t.Availability == TournamentAvailability.Public;
 
@@ -194,9 +203,9 @@ namespace OPCAIC.Application.Tournaments.Queries
 
 			private void ApplyUserFilter(
 				ProjectingSpecification<Tournament, TournamentPreviewAndSubmissionDate> spec,
-				long? userId)
+				long? userId, bool managedOnly)
 			{
-				spec.AddCriteria(GetUserFilter(userId));
+				spec.AddCriteria(GetUserFilter(userId, managedOnly));
 			}
 
 			private static void AddOrdering(

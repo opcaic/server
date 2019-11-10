@@ -48,7 +48,8 @@ namespace OPCAIC.Application.Users.Queries
 			}
 
 			/// <inheritdoc />
-			protected override void ApplyUserFilter(ProjectingSpecification<User, UserPreviewDto> spec, long? userId)
+			protected override void ApplyUserFilter(
+				ProjectingSpecification<User, UserPreviewDto> spec, GetUsersQuery request)
 			{
 				throw new BusinessException("Only admin may query users.");
 			}

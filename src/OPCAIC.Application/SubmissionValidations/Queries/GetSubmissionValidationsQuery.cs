@@ -55,13 +55,13 @@ namespace OPCAIC.Application.SubmissionValidations.Queries
 			/// <inheritdoc />
 			protected override void ApplyUserFilter(
 				ProjectingSpecification<SubmissionValidation, SubmissionValidationPreviewDto> spec,
-				long? userId)
+				GetSubmissionValidationsQuery request)
 			{
 				// only executions of managed/owned tournaments
 				spec.AddCriteria(submissionValidation =>
-					submissionValidation.Submission.Tournament.OwnerId == userId ||
+					submissionValidation.Submission.Tournament.OwnerId == request.RequestingUserId ||
 					submissionValidation.Submission.Tournament.Managers.Any(u
-						=> u.UserId == userId));
+						=> u.UserId == request.RequestingUserId));
 			}
 
 			/// <inheritdoc />
