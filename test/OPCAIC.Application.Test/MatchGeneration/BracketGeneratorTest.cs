@@ -12,6 +12,7 @@ using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Matches.Models;
+using OPCAIC.Application.MatchExecutions.Models;
 using OPCAIC.Application.Services;
 using OPCAIC.Application.Services.MatchGeneration;
 using OPCAIC.Domain.Enums;
@@ -149,12 +150,12 @@ namespace OPCAIC.Application.Test.MatchGeneration
 			executions.Count.ShouldBe(totalMatches);
 		}
 
-		protected List<MatchDetailDto.ExecutionDto> Simulate(TournamentBracketsGenerationDto tournament,
+		protected List<MatchExecutionDetailDto> Simulate(TournamentBracketsGenerationDto tournament,
 			Func<int, int> matchPicker,
 			Func<MatchDetailDto, int> resultPicker)
 		{
 			var toExecute = new List<MatchDetailDto>();
-			var executions = new List<MatchDetailDto.ExecutionDto>();
+			var executions = new List<MatchExecutionDetailDto>();
 			var tournamentRef =
 				new MatchDetailDto.TournamentDto
 				{
@@ -172,9 +173,9 @@ namespace OPCAIC.Application.Test.MatchGeneration
 					Submissions =
 						m.Submissions.ConvertAll(i => new SubmissionReferenceDto {Id = i}),
 					Index = m.Index,
-					Executions = new List<MatchDetailDto.ExecutionDto>
+					Executions = new List<MatchExecutionDetailDto>
 					{
-						new MatchDetailDto.ExecutionDto {Created = DateTime.Now}
+						new MatchExecutionDetailDto {Created = DateTime.Now}
 					}
 				}).ToList();
 
@@ -201,14 +202,14 @@ namespace OPCAIC.Application.Test.MatchGeneration
 			return executions;
 		}
 
-		private void ExecuteMatch(MatchDetailDto.ExecutionDto execution,
+		private void ExecuteMatch(MatchExecutionDetailDto execution,
 			IList<SubmissionReferenceDto> submissions, int result)
 		{
 			execution.Executed = DateTime.Now;
 			execution.AdditionalData = new JObject();
 			execution.ExecutorResult = EntryPointResult.Success;
 			execution.BotResults = Enumerable.Range(0, 2).Select(i =>
-				new MatchDetailDto.ExecutionDto.SubmissionResultDto()
+				new MatchExecutionDetailDto.SubmissionResultDetailDto
 				{
 					Submission = new SubmissionReferenceDto {Id = submissions[i].Id},
 					Score = result == i ? 1 : 0,

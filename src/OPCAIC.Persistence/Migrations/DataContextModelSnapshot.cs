@@ -319,6 +319,9 @@ namespace OPCAIC.Persistence.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("Exception")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("Executed")
                         .HasColumnType("timestamp without time zone");
 
@@ -490,6 +493,9 @@ namespace OPCAIC.Persistence.Migrations
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Exception")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("Executed")
                         .HasColumnType("timestamp without time zone");

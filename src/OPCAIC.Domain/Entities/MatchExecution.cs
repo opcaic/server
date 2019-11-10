@@ -42,5 +42,8 @@ namespace OPCAIC.Domain.Entities
 
 		/// <inheritdoc />
 		public DateTime? Executed { get; set; }
+
+		/// <inheritdoc />
+		public string Exception { get; set; }
 	}
 }

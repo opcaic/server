@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.Application.Submissions.Models;
+using OPCAIC.Application.SubmissionValidations.Models;
 
 namespace OPCAIC.ApiService.Models.Submissions
 {
 	public class SubmissionDetailModel : SubmissionPreviewDto
 	{
-		public List<SubmissionValidationPreviewModel> Validations { get; set; }
+		public List<SubmissionValidationPreviewDto> Validations { get; set; }
 	}
 }

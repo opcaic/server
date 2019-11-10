@@ -31,11 +31,11 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
-		public async Task<List<WorkItemModel>> GetWorkItems(WorkItemFilterModel filter,
+		public async Task<List<WorkItemDto>> GetWorkItems(WorkItemFilterModel filter,
 			CancellationToken cancellationToken)
 		{
 			var items = await broker.GetWorkItems();
-			return FilterWorkItems(filter, items).Select(wi => mapper.Map<WorkItemModel>(wi)).ToList();
+			return FilterWorkItems(filter, items).ToList();
 		}
 
 		/// <inheritdoc />
@@ -65,7 +65,7 @@ namespace OPCAIC.ApiService.Services
 
 			if (filter.Game != null)
 			{
-				filtered = filtered.Where(wi => wi.Payload.Game == filter.Game);
+				filtered = filtered.Where(wi => wi.Payload.GameKey == filter.Game);
 			}
 
 			return filtered.Select(wi => mapper.Map<WorkItemDto>(wi)).ToList();

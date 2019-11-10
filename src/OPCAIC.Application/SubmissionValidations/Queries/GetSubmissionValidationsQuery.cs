@@ -4,18 +4,18 @@ using AutoMapper;
 using FluentValidation;
 using MediatR;
 using OPCAIC.Application.Dtos;
-using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Specifications;
+using OPCAIC.Application.SubmissionValidations.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
-namespace OPCAIC.Application.SubmissionValidations
+namespace OPCAIC.Application.SubmissionValidations.Queries
 {
 	public class GetSubmissionValidationsQuery
-		: FilterDtoBase, IRequest<PagedResult<SubmissionValidationDto>>
+		: FilterDtoBase, IRequest<PagedResult<SubmissionValidationPreviewDto>>
 	{
 		public const string SortByUpdated = "updated";
 		public const string SortByCreated = "created";
@@ -44,7 +44,7 @@ namespace OPCAIC.Application.SubmissionValidations
 
 		public class Handler
 			: FilterQueryHandler<GetSubmissionValidationsQuery, SubmissionValidation,
-				SubmissionValidationDto>
+				SubmissionValidationPreviewDto>
 		{
 			/// <inheritdoc />
 			public Handler(IMapper mapper, IRepository<SubmissionValidation> repository) : base(
@@ -54,7 +54,7 @@ namespace OPCAIC.Application.SubmissionValidations
 
 			/// <inheritdoc />
 			protected override void ApplyUserFilter(
-				ProjectingSpecification<SubmissionValidation, SubmissionValidationDto> spec,
+				ProjectingSpecification<SubmissionValidation, SubmissionValidationPreviewDto> spec,
 				long? userId)
 			{
 				// only executions of managed/owned tournaments
@@ -66,7 +66,7 @@ namespace OPCAIC.Application.SubmissionValidations
 
 			/// <inheritdoc />
 			protected override void SetupSpecification(GetSubmissionValidationsQuery request,
-				ProjectingSpecification<SubmissionValidation, SubmissionValidationDto> spec)
+				ProjectingSpecification<SubmissionValidation, SubmissionValidationPreviewDto> spec)
 			{
 				if (request.TournamentId != null)
 				{

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Common;
 using OPCAIC.Messaging.Messages;
-using OPCAIC.Utils;
 
 namespace OPCAIC.Worker
 {
@@ -15,7 +14,9 @@ namespace OPCAIC.Worker
 			return logger.BeginScope(new Dictionary<string, object>
 			{
 				[LoggingTags.JobId] = message.JobId,
-				[LoggingTags.Game] = message.Game,
+				[LoggingTags.Game] = message.GameKey,
+				[LoggingTags.TournamentId] = message.TournamentId,
+				[LoggingTags.GameId] = message.GameId,
 				[LoggingTags.JobType] = typeof(TMessage)
 			});
 		}
@@ -39,7 +40,11 @@ namespace OPCAIC.Worker
 		public static IDisposable MatchExecutionScope(this ILogger logger,
 			MatchExecutionRequest request)
 		{
-			return logger.BeginScope((LoggingTags.ExecutionId, request.ExecutionId));
+			return logger.BeginScope(new Dictionary<string, object>
+			{
+				[LoggingTags.ExecutionId] = request.ExecutionId,
+				[LoggingTags.MatchId] = request.MatchId
+			});
 		}
 	}
 }

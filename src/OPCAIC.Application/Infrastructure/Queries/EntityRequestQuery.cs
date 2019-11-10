@@ -8,7 +8,7 @@ using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.Infrastructure.Queries
 {
-	public abstract class EntityRequestQuery<TEntity>
+	public abstract class EntityRequestQuery<TEntity> : PublicRequest
 		where TEntity : class, IEntity
 	{
 		protected EntityRequestQuery(long id)

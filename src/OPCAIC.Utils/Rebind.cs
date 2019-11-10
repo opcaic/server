@@ -35,6 +35,11 @@ namespace OPCAIC.Utils
 				return base.VisitMethodCall(node);
 			}
 
+			if (node.Method.Name != nameof(Invoke))
+			{
+				throw new InvalidOperationException($"Cannot call {node.Method} inside expression to be rebound.");
+			}
+
 			// get the mapping expression
 			var map = (LambdaExpression) new EvaluatingVisitor().Evaluate(node.Arguments[1]);
 
@@ -42,8 +47,9 @@ namespace OPCAIC.Utils
 			var newValueExpression = ExpressionParameterRebinder.ReplaceParameters(
 				new Dictionary<ParameterExpression, Expression>
 				{
-					[map.Parameters[0]] = node.Arguments[0]
+					[map.Parameters[0]] = Visit(node.Arguments[0])
 				}, map.Body);
+
 			return newValueExpression;
 		}
 

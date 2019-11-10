@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Extensions;
+using OPCAIC.Application.MatchExecutions.Events;
 using OPCAIC.Application.Tournaments.Models;
 
 namespace OPCAIC.ApiService.Services
@@ -28,7 +29,7 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
-		public async Task UpdateSubmissionsScore(MatchExecutionResult result,
+		public async Task UpdateSubmissionsScore(MatchExecutionFinished result,
 			CancellationToken cancellationToken)
 		{
 			var tournament = await GetTournament(result, cancellationToken);
@@ -46,7 +47,7 @@ namespace OPCAIC.ApiService.Services
 			}
 		}
 
-		private async Task UpdateEloScore(MatchExecutionResult result,
+		private async Task UpdateEloScore(MatchExecutionFinished result,
 			CancellationToken cancellationToken)
 		{
 			var sub1Id = result.BotResults[0].SubmissionId;
@@ -71,7 +72,7 @@ namespace OPCAIC.ApiService.Services
 				cancellationToken);
 		}
 
-		private async Task UpdateTableScore(MatchExecutionResult result,
+		private async Task UpdateTableScore(MatchExecutionFinished result,
 			CancellationToken cancellationToken)
 		{
 			var sub1Id = result.BotResults[0].SubmissionId;
@@ -87,7 +88,7 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		private async Task UpdateSinglePlayerScore(TournamentDetailDto tournament,
-			MatchExecutionResult result, CancellationToken cancellationToken)
+			MatchExecutionFinished result, CancellationToken cancellationToken)
 		{
 			var subId = result.BotResults[0].SubmissionId;
 			var sub = await submissionRepository.FindByIdAsync(subId, cancellationToken);
@@ -112,7 +113,7 @@ namespace OPCAIC.ApiService.Services
 			}
 		}
 
-		private async Task<TournamentDetailDto> GetTournament(MatchExecutionResult match,
+		private async Task<TournamentDetailDto> GetTournament(MatchExecutionFinished match,
 			CancellationToken cancellationToken)
 		{
 			var subId = match.BotResults[0].SubmissionId;

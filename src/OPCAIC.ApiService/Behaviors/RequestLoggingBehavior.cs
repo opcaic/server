@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Application.Logging;
 using OPCAIC.Common;
 
 namespace OPCAIC.ApiService.Behaviors
@@ -35,6 +36,7 @@ namespace OPCAIC.ApiService.Behaviors
 		public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken,
 			RequestHandlerDelegate<TResponse> next)
 		{
+			using var scope = logger.CreateScopeWithIds(request);
 			try
 			{
 				logAction(logger, request, null);

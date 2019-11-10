@@ -14,7 +14,7 @@ using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.MatchExecutions.Queries
 {
-	public class GetMatchExecutionsQuery : FilterDtoBase, IRequest<PagedResult<MatchExecutionPreviewDto>>
+	public class GetMatchExecutionsQuery : FilterDtoBase, IAnonymize, IRequest<PagedResult<MatchExecutionPreviewDto>>
 	{
 		public const string SortByUpdated = "updated";
 		public const string SortByCreated = "created";
@@ -29,6 +29,9 @@ namespace OPCAIC.Application.MatchExecutions.Queries
 		public EntryPointResult? ExecutorResult { get; set; }
 		public WorkerJobState? State { get; set; }
 		public Guid? JobId { get; set; }
+
+		/// <inheritdoc />
+		public bool? Anonymize { get; set; }
 
 		public class Validator : FilterValidator<GetMatchExecutionsQuery>
 		{

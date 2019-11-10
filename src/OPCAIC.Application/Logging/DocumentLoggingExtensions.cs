@@ -16,8 +16,8 @@ namespace OPCAIC.Application.Logging
 		public static void DocumentUpdated(this ILogger logger, UpdateDocumentCommand dto)
 		{
 			logger.LogInformation(LoggingEvents.DocumentUpdated,
-				$"Document {{{LoggingTags.DocumentId}}} was updated: {{{LoggingTags.UpdateData}}}",
-				dto.Id, JsonConvert.SerializeObject(dto));
+				$"Document {{{LoggingTags.DocumentId}}} was updated: {{@{LoggingTags.UpdateData}}}",
+				dto.Id, dto);
 		}
 	}
 }

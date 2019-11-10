@@ -28,7 +28,7 @@ using OPCAIC.Broker;
 using OPCAIC.Infrastructure.Emails;
 using OPCAIC.Messaging.Config;
 using OPCAIC.Persistence;
-using Serilog;
+using Mediator = OPCAIC.Application.Infrastructure.Mediator;
 
 [assembly: ApiController]
 
@@ -38,7 +38,8 @@ namespace OPCAIC.ApiService
 	{
 		private readonly string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-		public Startup(IConfiguration configuration, IWebHostEnvironment environment, ILogger<Startup> logger)
+		public Startup(IConfiguration configuration, IWebHostEnvironment environment,
+			ILogger<Startup> logger)
 		{
 			Configuration = configuration;
 			Environment = environment;
@@ -70,8 +71,10 @@ namespace OPCAIC.ApiService
 		{
 			services.AddControllers(options =>
 				{
-					options.ModelMetadataDetailsProviders.Add(new ExcludeInterfaceMetadataProvider(typeof(IPublicRequest)));
-					options.ModelMetadataDetailsProviders.Add(new ExcludeInterfaceMetadataProvider(typeof(IAuthenticatedRequest)));
+					options.ModelMetadataDetailsProviders.Add(
+						new ExcludeInterfaceMetadataProvider(typeof(IPublicRequest)));
+					options.ModelMetadataDetailsProviders.Add(
+						new ExcludeInterfaceMetadataProvider(typeof(IAuthenticatedRequest)));
 				})
 				.ConfigureJsonOptions()
 				.SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
@@ -115,13 +118,17 @@ namespace OPCAIC.ApiService
 			{
 				services.AddDbContext<DataContext>(options =>
 				{
-					options.UseNpgsql(connectionString, op => op.MigrationsAssembly(typeof(DataContext).Assembly.FullName));
+					options.UseNpgsql(connectionString,
+						op => op.MigrationsAssembly(typeof(DataContext).Assembly.FullName));
 				});
 			}
 
 			services.AddTransient<IDatabaseSeed, DatabaseSeed>();
 
-			services.AddMediatR(typeof(Startup).Assembly, typeof(TournamentFinished).Assembly);
+			services.AddMediatR(
+				new[] {typeof(Startup).Assembly, typeof(TournamentFinished).Assembly},
+				cfg => cfg.Using<Mediator>());
+
 			services.AddSingleton(typeof(IRequestPreProcessor<>),
 				typeof(UserRequestPreprocessor<>));
 			services.AddSingleton(typeof(IPipelineBehavior<,>),

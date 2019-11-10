@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using OPCAIC.ApiService.Users.Commands;
 using OPCAIC.ApiService.Utils;
+using OPCAIC.Domain.Entities;
 using Serilog;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("OPCAIC.ApiService.Test")]
@@ -38,6 +39,7 @@ namespace OPCAIC.ApiService
 						.ReadFrom.Configuration(context.Configuration)
 						.Destructure
 						.ByIgnoringProperties<CreateUserCommand>(cmd => cmd.Password)
+						.Destructure.ByIgnoringProperties<User>(u => u.SecurityStamp, u => u.PasswordHash)
 						.CreateLogger();
 				});
 		}

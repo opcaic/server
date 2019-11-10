@@ -25,7 +25,7 @@ namespace OPCAIC.Application.Infrastructure.AutoMapper
 		public AutoMapperProfile(params Assembly[] assembliesToScan)
 		{
 			var types = assembliesToScan.SelectMany(a => a.GetExportedTypes()).Where(t =>
-				!t.IsAbstract && !t.IsInterface).ToList();
+				!t.IsInterface).ToList();
 
 			LoadSimpleMappings(types);
 			LoadCustomMappings(types);
@@ -55,9 +55,26 @@ namespace OPCAIC.Application.Infrastructure.AutoMapper
 			{
 				var map = type.GetInterfaceMap(typeof(ICustomMapping));
 
-				// call the method only if the type actually implemented it
+				// call the method only if the type actually implemented it, this makes sure that
+				// the method is called only once
 				if (map.TargetMethods[0].DeclaringType == type)
-					((ICustomMapping)Activator.CreateInstance(type)).CreateMapping(this);
+				{
+					var instantiatedType = type;
+
+					if (type.IsAbstract)
+					{
+						// instantiate any derived class as surrogate
+						instantiatedType =
+							types.FirstOrDefault(t => type.IsAssignableFrom(t) && !t.IsAbstract);
+					}
+
+					// if abstract and no derived type, then we don't need to care
+					if (instantiatedType == null) continue;
+
+					var instance = Activator.CreateInstance(instantiatedType);
+
+					map.TargetMethods[0].Invoke(instance, new object[] {this});
+				}
 			}
 		}
 
@@ -89,7 +106,10 @@ namespace OPCAIC.Application.Infrastructure.AutoMapper
 				var t = dest;
 				while ((t = t.BaseType) != typeof(object))
 				{
-					map = map.IncludeBase(src[0], t);
+					if (!t.IsAbstract)
+					{
+						map = map.IncludeBase(src[0], t);
+					}
 				}
 			}
 		}

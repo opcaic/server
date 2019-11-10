@@ -113,5 +113,28 @@ namespace OPCAIC.Utils.Test
 
 			compiled(instance).ShouldBe(1);
 		}
+
+		[Fact]
+		public void Recursive()
+		{
+			var instance = new OuterClass
+			{
+				TestClass = new TestClass
+				{
+					A = "a",
+					B = "b"
+				}
+			};
+
+			Expression<Func<OuterClass, TestClass>> outer = a => a.TestClass;
+			Expression<Func<TestClass, string>> inner = a => a.A;
+
+			var composed = Rebind.Map((OuterClass o) => new
+			{
+				A = Rebind.Invoke(Rebind.Invoke(o, outer), inner)
+			}).Compile();
+
+			composed(instance).A.ShouldBe(instance.TestClass.A);
+		}
 	}
 }

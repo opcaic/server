@@ -66,21 +66,24 @@
 		UploadResult,
 		DownloadResult,
 		ReadDetail,
-		Search
+		Search,
+		ReadAdmin
 	}
 
 	public enum MatchPermission
 	{
 		Read,
+		ReadAdmin,
 		QueueMatchExecution,
 		Search
 	}
 
 	public enum MatchExecutionPermission
 	{
+		Read,
+		ReadAdmin,
 		UploadResult,
 		DownloadResults,
-		ReadDetail,
 		Search
 	}
 }

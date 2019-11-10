@@ -5,9 +5,7 @@ using AutoMapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OPCAIC.ApiService.Models.Broker;
-using OPCAIC.ApiService.Models.Matches;
 using OPCAIC.ApiService.Models.Submissions;
-using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.Models.Tournaments;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.Application.Dtos;
@@ -20,8 +18,10 @@ using OPCAIC.Application.Dtos.TournamentParticipations;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Application.MatchExecutions.Events;
 using OPCAIC.Application.MatchExecutions.Models;
 using OPCAIC.Application.SubmissionValidations.Events;
+using OPCAIC.Application.SubmissionValidations.Models;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
@@ -102,37 +102,34 @@ namespace OPCAIC.ApiService
 		{
 			CreateMap<SubmissionValidation, SubmissionValidationStorageDto>(MemberList
 				.Destination);
-			CreateMap<SubmissionValidationDto, SubmissionValidationStorageDto>(MemberList
+			CreateMap<SubmissionValidationPreviewDto, SubmissionValidationStorageDto>(MemberList
 				.Destination);
 
 			CreateMap<NewSubmissionValidationDto, SubmissionValidation>(MemberList.Source);
 			CreateMap<SubmissionValidationResult, SubmissionValidationFinished>(MemberList
 					.Destination)
 				.ForMember(d => d.State, opt => opt.MapFrom(r => r.JobStatus))
-				.IgnoreProperty(m => m.Executed);
-			CreateMap<SubmissionValidationFinished, SubmissionValidation>(MemberList.Source);
+				.IgnoreProperty(m => m.Executed)
+				.IgnoreProperty(e => e.TournamentId)
+				.IgnoreProperty(e => e.SubmissionId)
+				.IgnoreProperty(e => e.ValidationId)
+				.IgnoreProperty(e => e.GameId);
+
+			CreateMap<SubmissionValidationFinished, SubmissionValidation>(MemberList.Source)
+				.IgnoreSourceProperty(e => e.TournamentId)
+				.IgnoreSourceProperty(e => e.SubmissionId)
+				.IgnoreSourceProperty(e => e.ValidationId)
+				.IgnoreSourceProperty(e => e.GameId);
+
 			CreateMap<JobStateUpdateDto, SubmissionValidation>(MemberList.Source);
 			CreateMap<SubmissionValidation, SubmissionValidationRequestDataDto>(MemberList
 					.Destination)
-				.ForMember(v => v.TournamentId, opt => opt.MapFrom(v => v.Submission.Tournament.Id))
+				.ForMember(v => v.GameId, opt => opt.MapFrom(v => v.Submission.Tournament.GameId))
+				.ForMember(v => v.TournamentId, opt => opt.MapFrom(v => v.Submission.TournamentId))
 				.ForMember(v => v.TournamentConfiguration,
 					opt => opt.MapFrom(v => v.Submission.Tournament.Configuration))
 				.ForMember(v => v.GameKey,
 					opt => opt.MapFrom(v => v.Submission.Tournament.Game.Key));
-
-			CreateMap<SubmissionValidation, SubmissionValidationDto>(MemberList
-				.Destination);
-			CreateMap<SubmissionValidationDto, SubmissionValidationPreviewModel>(
-				MemberList.Destination);
-
-			CreateMap<SubmissionValidationDto, SubmissionValidationDetailModel>(
-					MemberList.Destination)
-				.ForMember(d => d.CheckerLog, opt => opt.Ignore())
-				.ForMember(d => d.CompilerLog, opt => opt.Ignore())
-				.ForMember(d => d.ValidatorLog, opt => opt.Ignore());
-
-			CreateMap<SubmissionValidationLogsDto, SubmissionValidationDetailModel>(MemberList
-				.Source);
 		}
 
 		private void AddMatchMapping()
@@ -141,7 +138,7 @@ namespace OPCAIC.ApiService
 				.ForSourceMember(m => m.Submissions,
 					opt => opt.DoNotValidate());
 
-			CreateMap<Match, MatchReferenceDto, MatchReferenceModel>(MemberList.Destination);
+			CreateMap<Match, MatchReferenceDto>(MemberList.Destination);
 		}
 
 		private void AddMatchExecutionMapping()
@@ -151,13 +148,17 @@ namespace OPCAIC.ApiService
 			CreateMap<MatchExecution, MatchExecutionStorageDto>(MemberList.Destination);
 			CreateMap<MatchExecutionPreviewDto, MatchExecutionStorageDto>(MemberList.Destination);
 
-			CreateMap<MatchExecutionResult, UpdateMatchExecutionDto>()
-				.ForMember(d => d.State, opt => opt.MapFrom(r => r.JobStatus))
-				.ForMember(d => d.Executed, opt => opt.Ignore());
-			CreateMap<BotResult, NewSubmissionMatchResultDto>(MemberList.Source);
+			CreateMap<BotResult, SubmissionMatchResult>(MemberList.Source);
 
-			CreateMap<NewSubmissionMatchResultDto, SubmissionMatchResult>(MemberList.Source);
-			CreateMap<UpdateMatchExecutionDto, MatchExecution>(MemberList.Source);
+			CreateMap<MatchExecutionResult, MatchExecutionFinished>(MemberList.Source);
+
+			CreateMap<MatchExecutionFinished, MatchExecution>(MemberList.Source)
+				.ForMember(d => d.State, opt => opt.MapFrom(r => r.JobStatus))
+				.IgnoreSourceProperty(e => e.TournamentId)
+				.IgnoreSourceProperty(e => e.ExecutionId)
+				.IgnoreSourceProperty(e => e.MatchId)
+				.IgnoreSourceProperty(e => e.GameId);
+
 			CreateMap<JobStateUpdateDto, MatchExecution>(MemberList.Source);
 			CreateMap<MatchExecution, MatchExecutionRequestDataDto>(MemberList
 					.Destination)
@@ -165,6 +166,7 @@ namespace OPCAIC.ApiService
 					opt => opt.MapFrom(e
 						=> e.Match.Participations.OrderBy(s => s.Order)
 							.Select(s => s.SubmissionId)))
+				.ForMember(e => e.GameId, opt => opt.MapFrom(e => e.Match.Tournament.GameId))
 				.ForMember(e => e.TournamentId, opt => opt.MapFrom(e => e.Match.Tournament.Id))
 				.ForMember(e => e.TournamentConfiguration,
 					opt => opt.MapFrom(e => e.Match.Tournament.Configuration))
@@ -173,17 +175,15 @@ namespace OPCAIC.ApiService
 
 		private void AddBrokerMapping()
 		{
-			CreateMap<WorkItem, WorkItemDto, WorkItemModel>(MemberList.Destination);
+			CreateMap<WorkItem, WorkItemDto, WorkItemDto>(MemberList.Destination);
 			CreateMap<BrokerStats, BrokerStatsModel>(MemberList.Destination)
 				.ForMember(b => b.List, opt => opt.MapFrom(b => b.Workers));
 			CreateMap<WorkerInfo, WorkerInfoModel>(MemberList.Destination);
-			CreateMap<WorkMessageBase, WorkMessageBaseDto, WorkMessageBaseModel>(MemberList
+			CreateMap<WorkMessageBase, WorkMessageBaseDto>(MemberList
 				.Destination);
 			CreateMap<BotInfo, BotInfoDto, BotInfoModel>(MemberList.Destination);
-			CreateMap<MatchExecutionRequest, MatchExecutionRequestDto,
-				MatchExecutionRequestModel>(MemberList.Destination);
-			CreateMap<SubmissionValidationRequest, SubmissionValidationRequestDto,
-				SubmissionValidationRequestModel>(MemberList.Destination);
+			CreateMap<MatchExecutionRequest, MatchExecutionRequestDto>(MemberList.Destination);
+			CreateMap<SubmissionValidationRequest, SubmissionValidationRequestDto>(MemberList.Destination);
 		}
 	}
 }

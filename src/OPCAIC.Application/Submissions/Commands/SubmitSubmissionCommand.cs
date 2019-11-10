@@ -1,11 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Application.Dtos.Submissions;
-using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure;
@@ -106,7 +104,7 @@ namespace OPCAIC.Application.Submissions.Commands
 					await repository.FindSubmissionForStorageAsync(id, cancellationToken);
 
 				// save archive
-				using (var stream = storage.WriteSubmissionArchive(storeDto))
+				await using (var stream = storage.WriteSubmissionArchive(storeDto))
 				{
 					// TODO: do we really want to permit cancellation here?
 					// TODO: connect db transactions and filesystem transactions storage

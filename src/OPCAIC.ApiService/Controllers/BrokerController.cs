@@ -9,7 +9,7 @@ using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Broker;
 using OPCAIC.ApiService.Security;
-using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Dtos.Broker;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -17,14 +17,11 @@ namespace OPCAIC.ApiService.Controllers
 	[Authorize(RolePolicy.Admin)]
 	public class BrokerController : ControllerBase
 	{
-		private readonly IAuthorizationService authorizationService;
 		private readonly IBrokerService brokerService;
 
-		public BrokerController(IBrokerService brokerService,
-			IAuthorizationService authorizationService)
+		public BrokerController(IBrokerService brokerService)
 		{
 			this.brokerService = brokerService;
-			this.authorizationService = authorizationService;
 		}
 
 		/// <summary>
@@ -38,11 +35,11 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permission to manage broker.</response>
 		/// <returns>Filtered list of current work items.</returns>
 		[HttpGet("items")]
-		[ProducesResponseType(typeof(List<WorkItemModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(List<WorkItemDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
-		public Task<List<WorkItemModel>> GetWorkItemsAsync(WorkItemFilterModel filter,
+		public Task<List<WorkItemDto>> GetWorkItemsAsync(WorkItemFilterModel filter,
 			CancellationToken cancellationToken)
 		{
 			return brokerService.GetWorkItems(filter, cancellationToken);

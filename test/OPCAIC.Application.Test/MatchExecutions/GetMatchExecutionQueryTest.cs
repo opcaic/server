@@ -7,7 +7,9 @@ using Moq;
 using Newtonsoft.Json.Linq;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
+using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Matches.Models;
@@ -41,9 +43,9 @@ namespace OPCAIC.Application.Test.MatchExecutions
 		{
 			Created = DateTime.Now,
 			AdditionalData = new JObject(),
-			BotResults = new List<MatchDetailDto.ExecutionDto.SubmissionResultDto>
+			BotResults = new List<MatchExecutionDetailDto.SubmissionResultDetailDto>
 			{
-				new MatchDetailDto.ExecutionDto.SubmissionResultDto
+				new MatchExecutionDetailDto.SubmissionResultDetailDto
 				{
 					AdditionalData = new JObject(),
 					CompilerResult = EntryPointResult.Success,
@@ -56,7 +58,7 @@ namespace OPCAIC.Application.Test.MatchExecutions
 						}
 					}
 				},
-				new MatchDetailDto.ExecutionDto.SubmissionResultDto
+				new MatchExecutionDetailDto.SubmissionResultDetailDto
 				{
 					AdditionalData = new JObject(),
 					CompilerResult = EntryPointResult.Success,
@@ -77,7 +79,11 @@ namespace OPCAIC.Application.Test.MatchExecutions
 		[Fact]
 		public async Task Handle_Success()
 		{
-			matchExecutionRepository.SetupProject(successfulExecutionPreviewDto, CancellationToken);
+			matchExecutionRepository.SetupProject(new QueryData<MatchExecutionDetailDto>
+			{
+				Dto = successfulExecutionPreviewDto,
+				OrganizersDto = new TournamentOrganizersDto(),
+			}, CancellationToken);
 
 			storageService.Setup(s
 					=> s.ReadMatchResultArchive(It.Is<MatchExecutionStorageDto>(d => d.Id == successfulExecutionPreviewDto.Id)))
@@ -88,7 +94,7 @@ namespace OPCAIC.Application.Test.MatchExecutions
 					It.IsAny<MatchExecutionStorageDto>()))
 				.Returns(new MatchExecutionLogsDto { ExecutorLog = "log" });
 
-			var dto = await Handler.Handle(new GetMatchExecutionQuery(successfulExecutionPreviewDto.Id), CancellationToken);
+			var dto = await Send<GetMatchExecutionQuery, MatchExecutionDetailDto>(new GetMatchExecutionQuery(successfulExecutionPreviewDto.Id));
 				
 			dto.BotResults[0].Score.ShouldBe(1.0);
 			dto.BotResults[1].Score.ShouldBe(0.0);

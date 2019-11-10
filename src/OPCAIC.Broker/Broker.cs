@@ -315,7 +315,7 @@ namespace OPCAIC.Broker
 
 			taskQueue.RemoveWhere(w =>
 			{
-				if (games.Contains(w.Payload.Game))
+				if (games.Contains(w.Payload.GameKey))
 				{
 					w.ExpirationTime = newExpire;
 				}
@@ -397,8 +397,8 @@ namespace OPCAIC.Broker
 				}
 				catch (Exception e)
 				{
-					logger.LogError(e, "Exception occured when processing message:\n{message}",
-						JsonConvert.SerializeObject(message));
+					logger.LogError(e, "Exception occured when processing message:\n{@Message}",
+						message);
 				}
 			});
 		}
@@ -444,7 +444,7 @@ namespace OPCAIC.Broker
 
 		private static bool CanWorkerExecute(WorkerEntry worker, WorkMessageBase msg)
 		{
-			return worker.Capabilities?.SupportedGames.Contains(msg.Game) == true;
+			return worker.Capabilities?.SupportedGames.Contains(msg.GameKey) == true;
 		}
 
 		private void OnWorkerDisconnected(string identity)

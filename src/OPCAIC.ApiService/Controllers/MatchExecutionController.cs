@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using MimeKit;
 using OPCAIC.ApiService.Attributes;
 using OPCAIC.ApiService.Extensions;
-using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos.MatchExecutions;
@@ -28,21 +27,18 @@ namespace OPCAIC.ApiService.Controllers
 	public class MatchExecutionController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;
-		private readonly IMatchExecutionService executionService;
 		private readonly ILogger<MatchExecutionController> logger;
 		private readonly IMediator mediator;
 		private readonly IMatchExecutionRepository repository;
 		private readonly IStorageService storage;
 
 		public MatchExecutionController(IStorageService storage,
-			IMatchExecutionRepository repository, IAuthorizationService authorizationService,
-			IMatchExecutionService executionService, ILogger<MatchExecutionController> logger,
+			IMatchExecutionRepository repository, IAuthorizationService authorizationService, ILogger<MatchExecutionController> logger,
 			IMediator mediator)
 		{
 			this.storage = storage;
 			this.repository = repository;
 			this.authorizationService = authorizationService;
-			this.executionService = executionService;
 			this.logger = logger;
 			this.mediator = mediator;
 		}
@@ -68,7 +64,7 @@ namespace OPCAIC.ApiService.Controllers
 				MatchExecutionPermission.UploadResult);
 
 			var storageDto = await repository.FindExecutionForStorageAsync(id, cancellationToken);
-			using (var stream = storage.WriteMatchResultArchive(storageDto))
+			await using (var stream = storage.WriteMatchResultArchive(storageDto))
 			{
 				await model.Archive.CopyToAsync(stream, cancellationToken);
 			}
@@ -111,19 +107,43 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<MatchExecutionDetailDto> GetByIdAsync(long id,
+		public async Task<MatchExecutionDetailDto> GetByIdAsync(long id, [FromQuery] bool? anonymize,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermission(User, id,
-				MatchExecutionPermission.ReadDetail);
+				MatchExecutionPermission.Read);
 
-			return await mediator.Send(new GetMatchExecutionQuery(id), cancellationToken);
+			return await mediator.Send(new GetMatchExecutionQuery(id) { Anonymize = anonymize }, cancellationToken);
+		}
+
+		/// <summary>
+		///     Gets detailed information about the given match execution, including the information
+		///     available only to tournament organizers.
+		/// </summary>
+		/// <param name="id">Id of the match execution.</param>
+		/// <param name="anonymize">Flag to override anonymization of the tournament</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		[HttpGet("{id}/admin")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<MatchExecutionAdminDto> GetByIdForAdminAsync(long id, [FromQuery] bool? anonymize,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermission(User, id,
+				MatchExecutionPermission.ReadAdmin);
+
+			return await mediator.Send<MatchExecutionAdminDto>(new GetMatchExecutionAdminQuery(id) { Anonymize = anonymize }, cancellationToken);
 		}
 
 		/// <summary>
 		///     Downloads match execution results as a zip model.
 		/// </summary>
 		/// <param name="id">Id of the match execution.</param>
+		/// <param name="anonymize">Flag to override anonymization of the tournament</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[HttpGet("{id}/download")]

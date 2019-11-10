@@ -208,6 +208,7 @@ namespace OPCAIC.Worker
 				// log in when handler to preserve scopes.
 				catch (Exception e) when (DoLogExecutionFailure(e, request))
 				{
+					response.Exception = e;
 					response.JobStatus = e is OperationCanceledException
 						? JobStatus.Canceled
 						: JobStatus.Error;
@@ -227,8 +228,7 @@ namespace OPCAIC.Worker
 		{
 			logger.LogError(LoggingEvents.JobExecutionFailure, e,
 				"Exception occured when processing message" +
-				$"{{{LoggingTags.JobPayload}}}",
-				JsonConvert.SerializeObject(request));
+				$"{{@{LoggingTags.JobPayload}}}", request);
 
 			return true;
 		}

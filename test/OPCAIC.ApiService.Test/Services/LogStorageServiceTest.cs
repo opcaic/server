@@ -109,7 +109,12 @@ namespace OPCAIC.ApiService.Test.Services
 			var logs = Service.GetMatchExecutionLogs(null);
 
 			logs.ExecutorLog.ShouldBe(execute);
-			logs.CompilerLogs.ShouldBe(compile);
+
+			logs.SubmissionLogs.Count.ShouldBe(compile.Length);
+			for (int i = 0; i < compile.Length; i++)
+			{
+				logs.SubmissionLogs[i].CompilerLog.ShouldBe(compile[i]);
+			}
 		}
 
 		[Fact]
@@ -122,7 +127,7 @@ namespace OPCAIC.ApiService.Test.Services
 			logs.ShouldNotBeNull();
 
 			logs.ExecutorLog.ShouldBeNull();
-			logs.CompilerLogs.ShouldBeEmpty();
+			logs.SubmissionLogs.ShouldBeEmpty();
 		}
 
 		[Fact]

@@ -122,7 +122,7 @@ namespace OPCAIC.Worker.Services
 				try
 				{
 					// create directory structure 
-					GameModule = GameModuleRegistry.FindGameModule(request.Game);
+					GameModule = GameModuleRegistry.FindGameModule(request.GameKey);
 					TaskDirectory = Services.GetWorkingDirectory(request);
 					SourcesDirectory =
 						TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Source);

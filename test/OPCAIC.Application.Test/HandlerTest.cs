@@ -1,11 +1,10 @@
 ﻿using System.Threading;
-using AutoMapper;
+using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Results;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using OPCAIC.ApiService;
 using OPCAIC.ApiService.Test;
-using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.TestUtils;
 using Xunit.Abstractions;
 using ValidationContext = FluentValidation.ValidationContext;
@@ -17,9 +16,14 @@ namespace OPCAIC.Application.Test
 	{
 		protected EntityFaker Faker { get; }
 		private THandler handler;
-		protected THandler Handler => handler ?? (handler = GetService<THandler>());
+		protected THandler Handler => handler ??= GetService<THandler>();
 
 		protected CancellationToken CancellationToken => CancellationToken.None;
+
+		protected Task<TResponse> Send<TRequest, TResponse>(TRequest request)
+			where TRequest : IRequest<TResponse>
+			=> ((IRequestHandler<TRequest, TResponse>)Handler).Handle(request,
+				CancellationToken);
 
 		/// <inheritdoc />
 		protected HandlerTest(ITestOutputHelper output) : base(output)
@@ -27,6 +31,7 @@ namespace OPCAIC.Application.Test
 			Faker = new EntityFaker();
 
 			Services.AddSingleton(TestMapper.Mapper);
+			Services.AddTransient<THandler>();
 			Services.AddTransient<THandler>();
 			Services.AddValidatorsFromAssemblyContaining<THandler>();
 		}

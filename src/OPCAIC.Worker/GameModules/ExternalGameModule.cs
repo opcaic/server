@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using OPCAIC.Common;
 using OPCAIC.GameModules.Interface;
 using OPCAIC.Utils;
+using OPCAIC.Worker.Exceptions;
 using OPCAIC.Worker.Services;
 
 namespace OPCAIC.Worker.GameModules

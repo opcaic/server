@@ -32,15 +32,23 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case MatchExecutionPermission.Search:
 					return Task.FromResult(false);
 
-				case MatchExecutionPermission.ReadDetail:
+				case MatchExecutionPermission.Read:
 				case MatchExecutionPermission.DownloadResults:
+				{
 					var userId = user.TryGetId();
 
 					return repository.GetStructAsync(id.Value, e =>
 						e.Match.Tournament.OwnerId == userId ||
 						e.Match.Tournament.Managers.Any(m => m.UserId == userId) ||
 						e.Match.Participations.Any(s => s.Submission.AuthorId == userId));
-
+				}
+				case MatchExecutionPermission.ReadAdmin:
+				{
+					var userId = user.TryGetId();
+					return repository.GetStructAsync(id.Value, e =>
+						e.Match.Tournament.OwnerId == userId ||
+						e.Match.Tournament.Managers.Any(m => m.UserId == userId));
+				}
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
 			}

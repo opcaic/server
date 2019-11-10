@@ -81,7 +81,7 @@ namespace OPCAIC.Worker.Test
 			connectorHelper.SetupConsumerReceive(
 				new SubmissionValidationRequest
 				{
-					Game = "",
+					GameKey = "",
 					JobId = Guid.NewGuid(),
 					AccessToken = "",
 					Configuration = "{}"

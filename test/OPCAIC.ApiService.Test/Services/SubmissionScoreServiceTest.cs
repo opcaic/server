@@ -8,6 +8,7 @@ using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Messaging.Messages;
 using System.Threading.Tasks;
+using OPCAIC.Application.MatchExecutions.Events;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
@@ -95,7 +96,7 @@ namespace OPCAIC.ApiService.Test.Services
 					It.IsAny<UpdateSubmissionScoreDto>(), CancellationToken))
 				.ReturnsAsync(true);
 			await GetService<SubmissionScoreService>().UpdateSubmissionsScore(
-				new MatchExecutionResult
+				new MatchExecutionFinished
 				{
 					BotResults = new[]
 					{
@@ -119,7 +120,7 @@ namespace OPCAIC.ApiService.Test.Services
 					It.IsAny<UpdateSubmissionScoreDto>(), CancellationToken))
 				.ReturnsAsync(true);
 			await GetService<SubmissionScoreService>().UpdateSubmissionsScore(
-				new MatchExecutionResult
+				new MatchExecutionFinished
 				{
 					BotResults = new[]
 					{
@@ -153,7 +154,7 @@ namespace OPCAIC.ApiService.Test.Services
 					It.IsAny<UpdateSubmissionScoreDto>(), CancellationToken))
 				.ReturnsAsync(true);
 			await GetService<SubmissionScoreService>().UpdateSubmissionsScore(
-				new MatchExecutionResult
+				new MatchExecutionFinished
 				{
 					BotResults = new[]
 					{

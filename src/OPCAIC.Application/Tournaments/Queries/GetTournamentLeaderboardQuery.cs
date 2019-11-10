@@ -20,7 +20,7 @@ using OPCAIC.Domain.Enums;
 namespace OPCAIC.Application.Tournaments.Queries
 {
 	public class GetTournamentLeaderboardQuery
-		: AuthenticatedRequest, IRequest<TournamentLeaderboardDto>
+		: AuthenticatedRequest, IAnonymize, IRequest<TournamentLeaderboardDto>
 	{
 		public GetTournamentLeaderboardQuery(long tournamentId)
 		{

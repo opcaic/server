@@ -22,5 +22,10 @@ namespace OPCAIC.Domain.Entities
 		///     Timestamp when the job was finished.
 		/// </summary>
 		DateTime? Executed { get; set; }
+
+		/// <summary>
+		///     If execution of the task failed, contains exception which led to execution failure.
+		/// </summary>
+		string Exception { get; set; }
 	}
 }

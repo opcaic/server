@@ -15,7 +15,7 @@ namespace OPCAIC.Worker.Test
 		{
 			Request = new SubmissionValidationRequest
 			{
-				Game = "MockGame", JobId = Guid.NewGuid(), SubmissionId = 42,
+				GameKey = "MockGame", JobId = Guid.NewGuid(), SubmissionId = 42,
 				AccessToken = "",
 				ValidationId = 1,
 				Configuration = "{}",

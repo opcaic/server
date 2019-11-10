@@ -17,7 +17,17 @@ namespace OPCAIC.Messaging.Messages
 		/// <summary>
 		///     Game which the work task concerns.
 		/// </summary>
-		public string Game { get; set; }
+		public string GameKey { get; set; }
+
+		/// <summary>
+		///     Unique id of the game whose match is being executed.
+		/// </summary>
+		public string GameId { get; set; }
+
+		/// <summary>
+		///     Unique id of the tournament whose match is being executed.
+		/// </summary>
+		public long TournamentId { get; set; }
 
 		/// <summary>
 		///     Game module configuration to use for the task.

@@ -26,6 +26,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 			switch (permission)
 			{
 				case MatchPermission.Read:
+				{
 					// authors of participated submissions and tournament managers
 					var userId = user.TryGetId();
 					return repository.GetStructAsync(id.Value, m =>
@@ -33,9 +34,15 @@ namespace OPCAIC.ApiService.Security.Handlers
 						m.Participations.Any(s => s.Submission.AuthorId == userId) ||
 						m.Tournament.OwnerId == userId ||
 						m.Tournament.Managers.Any(mm => mm.UserId == userId));
-
+				}
 				case MatchPermission.QueueMatchExecution:
-					return Task.FromResult(false); // only admin //TODO: not tournament managers?
+				case MatchPermission.ReadAdmin:
+				{
+					var userId = user.TryGetId();
+					return repository.GetStructAsync(id.Value, m =>
+						m.Tournament.OwnerId == userId ||
+						m.Tournament.Managers.Any(mm => mm.UserId == userId));
+				}
 
 				case MatchPermission.Search:
 					return Task.FromResult(true);

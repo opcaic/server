@@ -11,6 +11,7 @@ using OPCAIC.Worker.GameModules;
 using Xunit;
 using Xunit.Abstractions;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Worker.Exceptions;
 
 namespace OPCAIC.Worker.Test
 {

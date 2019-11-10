@@ -7,9 +7,10 @@ using AutoMapper;
 using FluentValidation;
 using MediatR;
 using OPCAIC.Application.Dtos;
-using OPCAIC.Application.Dtos.Users;
+using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Matches.Models;
@@ -21,25 +22,7 @@ using OPCAIC.Utils;
 
 namespace OPCAIC.Application.Matches.Queries
 {
-			public class MatchDetailQueryData
-			{
-				public static ProjectingSpecification<Match, MatchDetailQueryData> CreateSpecification(
-					IMapper mapper, long? userId)
-				{
-					var map = mapper.GetMapExpression<Match, MatchDetailDto>();
-				return ProjectingSpecification.Create(Rebind.Map((Match m) =>
-					new MatchDetailQueryData
-					{
-						Dto = Rebind.Invoke(m, map), ShouldAnonymize = m.Tournament.Anonymize,
-						CanOverrideAnonymize = m.Tournament.OwnerId == userId || m.Tournament.Managers.Any(m => m.UserId == userId)
-					}
-				));
-				}
-				public MatchDetailDto Dto { get; set; }
-				public bool ShouldAnonymize { get; set; }
-				public bool CanOverrideAnonymize { get; set; }
-			}
-	public class GetMatchesQuery : FilterDtoBase, IRequest<PagedResult<MatchDetailDto>>
+	public class GetMatchesQuery : FilterDtoBase, IAnonymize, IRequest<PagedResult<MatchPreviewDto>>
 	{
 		public const string SortByUpdated = "updated";
 		public const string SortByCreated = "created";
@@ -60,7 +43,7 @@ namespace OPCAIC.Application.Matches.Queries
 			}
 		}
 
-		public class Handler : IRequestHandler<GetMatchesQuery, PagedResult<MatchDetailDto>>
+		public class Handler : IRequestHandler<GetMatchesQuery, PagedResult<MatchPreviewDto>>
 		{
 			private readonly IMapper mapper;
 			private readonly IMatchRepository repository;
@@ -73,10 +56,19 @@ namespace OPCAIC.Application.Matches.Queries
 			}
 
 			/// <inheritdoc />
-			public async Task<PagedResult<MatchDetailDto>> Handle(GetMatchesQuery request,
+			public async Task<PagedResult<MatchPreviewDto>> Handle(GetMatchesQuery request,
 				CancellationToken cancellationToken)
 			{
-				var spec = MatchDetailQueryData.CreateSpecification(mapper, request.RequestingUserId);
+				var map = mapper.GetMapExpression<Match, MatchPreviewDto>();
+				var orgMap = mapper.GetMapExpression<Tournament, TournamentOrganizersDto>();
+				var spec = ProjectingSpecification.Create(Rebind.Map((Match m) =>
+					new QueryData<MatchPreviewDto>
+					{
+						Dto = Rebind.Invoke(m, map),
+						OrganizersDto = Rebind.Invoke(m.Tournament, orgMap),
+						TournamentAnonymize = m.Tournament.Anonymize
+					}
+				));
 
 				SetupSpecification(request, spec);
 				spec.WithPaging(request.Offset, request.Count);
@@ -87,19 +79,12 @@ namespace OPCAIC.Application.Matches.Queries
 				}
 
 				var result = await repository.ListPagedAsync(spec, cancellationToken);
-				var toReturn = new PagedResult<MatchDetailDto>(result.Total,
-					new List<MatchDetailDto>(result.Total));
+				var toReturn = new PagedResult<MatchPreviewDto>(result.Total,
+					new List<MatchPreviewDto>(result.Total));
 
 				foreach (var data in result.List)
 				{
-					var shouldAnonymize = data.CanOverrideAnonymize
-						? request.Anonymize ?? data.ShouldAnonymize
-						: data.ShouldAnonymize;
-
-					if (shouldAnonymize)
-					{
-						data.Dto.AnonymizeUsersExcept(request.RequestingUserId);
-					}
+					data.AnonymizeIfNecessary(request);
 
 					toReturn.List.Add(data.Dto);
 				}
@@ -108,7 +93,7 @@ namespace OPCAIC.Application.Matches.Queries
 			}
 
 			private void ApplyUserFilter(
-				ProjectingSpecification<Match, MatchDetailQueryData> spec, long? userId)
+				ProjectingSpecification<Match, QueryData<MatchPreviewDto>> spec, long? userId)
 			{
 				// only matches from tournaments visible by the user (includes matches with user's submissions)
 				var tournamentCriteria = GetTournamentsQuery.Handler.GetUserFilter(userId);
@@ -125,7 +110,7 @@ namespace OPCAIC.Application.Matches.Queries
 			}
 
 			private void SetupSpecification(GetMatchesQuery request,
-				ProjectingSpecification<Match, MatchDetailQueryData> spec)
+				ProjectingSpecification<Match, QueryData<MatchPreviewDto>> spec)
 			{
 				if (request.TournamentId != null)
 				{

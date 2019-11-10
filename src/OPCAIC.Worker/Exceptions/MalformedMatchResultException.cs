@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using OPCAIC.GameModules.Interface;
 
-namespace OPCAIC.Worker.GameModules
+namespace OPCAIC.Worker.Exceptions
 {
 	[Serializable]
 	public class MalformedMatchResultException : GameModuleException

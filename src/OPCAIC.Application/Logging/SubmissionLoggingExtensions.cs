@@ -19,8 +19,8 @@ namespace OPCAIC.Application.Logging
 			UpdateSubmissionScoreDto dto)
 		{
 			logger.LogInformation(LoggingEvents.SubmissionUpdate,
-				$"Updated submission {{{LoggingTags.SubmissionId}}}: {{{LoggingTags.UpdateData}}}",
-				submissionId, JsonConvert.SerializeObject(dto));
+				$"Updated submission {{{LoggingTags.SubmissionId}}}: {{@{LoggingTags.UpdateData}}}",
+				submissionId, dto);
 		}
 	}
 }

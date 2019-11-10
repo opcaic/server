@@ -18,5 +18,10 @@ namespace OPCAIC.Messaging.Messages
 		///     Unique id of the match execution.
 		/// </summary>
 		public long ExecutionId { get; set; }
+
+		/// <summary>
+		///     Unique id of the match being executed
+		/// </summary>
+		public long MatchId { get; set; }
 	}
 }

@@ -6,6 +6,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Extensions;
+using OPCAIC.Application.Infrastructure.Events;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
 using OPCAIC.Application.Submissions.Events;
@@ -13,14 +14,14 @@ using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.SubmissionValidations.Events
 {
-	public class SubmissionValidationFinished : INotification
+	public class SubmissionValidationFinished : SubmissionValidationEvent
 	{
-		public Guid JobId { get; set; }
 		public WorkerJobState State { get; set; }
 		public EntryPointResult CheckerResult { get; set; }
 		public EntryPointResult CompilerResult { get; set; }
 		public EntryPointResult ValidatorResult { get; set; }
 		public DateTime Executed { get; set; }
+		public Exception Exception { get; set; }
 
 		public class Handler : INotificationHandler<SubmissionValidationFinished>
 		{

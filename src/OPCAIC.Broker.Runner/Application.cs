@@ -197,7 +197,7 @@ namespace OPCAIC.Broker.Runner
 						JobId = Guid.NewGuid(),
 						SubmissionId = 1,
 						ValidationId = i,
-						Game = config.Games[rand.Next(config.Games.Length)],
+						GameKey = config.Games[rand.Next(config.Games.Length)],
 						AccessToken = "",
 						Configuration = "{}",
 					});

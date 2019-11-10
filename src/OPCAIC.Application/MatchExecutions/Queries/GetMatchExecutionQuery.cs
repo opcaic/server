@@ -1,11 +1,11 @@
-﻿using System.IO.Compression;
-using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Extensions;
+using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.MatchExecutions.Models;
@@ -15,78 +15,102 @@ using OPCAIC.Domain.Entities;
 namespace OPCAIC.Application.MatchExecutions.Queries
 {
 	public class GetMatchExecutionQuery
-		: EntityRequestQuery<MatchExecution>, IRequest<MatchExecutionDetailDto>
+		: GetMatchExecutionQueryBase, IRequest<MatchExecutionDetailDto>
 	{
 		/// <inheritdoc />
 		public GetMatchExecutionQuery(long id) : base(id)
 		{
 		}
 
-		public class Handler : EntityRequestHandler<GetMatchExecutionQuery, MatchExecutionDetailDto>
+		public class Handler
+			: HandlerBase<GetMatchExecutionQuery, MatchExecutionDetailDto,
+				MatchExecutionDetailDto.SubmissionResultDetailDto>
+		{
+			/// <inheritdoc />
+			public Handler(IMapper mapper, IRepository<MatchExecution> repository,
+				ILogStorageService logStorage, IStorageService storage) : base(mapper, repository,
+				logStorage, storage)
+			{
+			}
+		}
+	}
+
+	public class GetMatchExecutionAdminQuery
+		: GetMatchExecutionQueryBase, IRequest<MatchExecutionAdminDto>
+	{
+		/// <inheritdoc />
+		public GetMatchExecutionAdminQuery(long id) : base(id)
+		{
+		}
+
+		public class Handler
+			: HandlerBase<GetMatchExecutionAdminQuery, MatchExecutionAdminDto,
+				MatchExecutionAdminDto.SubmissionResultAdminDto>
+		{
+			/// <inheritdoc />
+			public Handler(IMapper mapper, IRepository<MatchExecution> repository,
+				ILogStorageService logStorage, IStorageService storage) : base(mapper, repository,
+				logStorage, storage)
+			{
+			}
+		}
+	}
+
+	public abstract class GetMatchExecutionQueryBase
+		: EntityRequestQuery<MatchExecution>, IAnonymize
+	{
+		/// <inheritdoc />
+		protected GetMatchExecutionQueryBase(long id) : base(id)
+		{
+		}
+
+		/// <inheritdoc />
+		public bool? Anonymize { get; set; }
+
+		public abstract class HandlerBase<TRequest, TResponse, TSubmission>
+			: IRequestHandler<TRequest, TResponse>
+			where TResponse : MatchExecutionDetailDtoBase<TSubmission>
+			where TSubmission : IAnonymizable
+			where TRequest : GetMatchExecutionQueryBase, IRequest<TResponse>
 		{
 			private readonly ILogStorageService logStorage;
+			private readonly IMapper mapper;
+			private readonly IRepository<MatchExecution> repository;
 			private readonly IStorageService storage;
 
 			/// <inheritdoc />
-			public Handler(IMapper mapper, IRepository<MatchExecution> repository,
-				ILogStorageService logStorage, IStorageService storage) : base(mapper, repository)
+			public HandlerBase(IMapper mapper, IRepository<MatchExecution> repository,
+				ILogStorageService logStorage, IStorageService storage)
 			{
+				this.mapper = mapper;
+				this.repository = repository;
 				this.logStorage = logStorage;
 				this.storage = storage;
 			}
 
 			/// <inheritdoc />
-			public override async Task<MatchExecutionDetailDto> Handle(
-				GetMatchExecutionQuery request, CancellationToken cancellationToken)
+			public async Task<TResponse> Handle(TRequest request,
+				CancellationToken cancellationToken)
 			{
-				var dto = await base.Handle(request, cancellationToken);
+				var data =
+					await repository.GetQueryDataAsync<MatchExecution, TResponse>(
+						request.Id, e => e.Match.Tournament, mapper, cancellationToken);
 
-				GatherLogs(dto);
-				GatherFiles(dto);
+				var dto = data.Dto;
 
-				return dto;
-			}
+				data.AnonymizeIfNecessary(request);
 
-			private void GatherLogs(MatchExecutionDetailDto dto)
-			{
 				var logs =
-					logStorage.GetMatchExecutionLogs(new MatchExecutionStorageDto {Id = dto.Id});
+					logStorage.GetMatchExecutionLogs(
+						new MatchExecutionStorageDto {Id = data.Dto.Id});
 
-				for (var i = 0; i < dto.BotResults.Count; i++)
-				{
-					var detail =
-						mapper.Map<MatchExecutionDetailDto.SubmissionResultDetailDto>(
-							dto.BotResults[i]);
+				dto.AdditionalFiles.AddRange(FileDto
+					.GetFilesInArchive(
+						storage.ReadMatchResultArchive(new MatchExecutionStorageDto {Id = dto.Id}))
+					.Where(f => !Utils.IsMaskedFile(f.Filename)));
 
-					// the log collection may be "too short"
-					if (i < logs.CompilerLogs.Count)
-					{
-						detail.CompilerLog = logs.CompilerLogs[i];
-					}
-
-					dto.BotResults[i] = detail;
-				}
-
-				dto.ExecutorLog = logs.ExecutorLog;
-			}
-
-			private void GatherFiles(MatchExecutionDetailDto dto)
-			{
-				using var archive =
-					storage.ReadMatchResultArchive(new MatchExecutionStorageDto {Id = dto.Id});
-
-				// not executed yet
-				if (archive == null)
-					return;
-
-				using var zip = new ZipArchive(archive, ZipArchiveMode.Read, true);
-
-				// filter out logs
-				foreach (var e in zip.Entries.Where(e => !Utils.IsMaskedFile(e.Name)))
-				{
-					dto.AdditionalFiles.Add(
-						new MatchExecutionDetailDto.FileDto {Filename = e.Name, Length = e.Length});
-				}
+				dto.AddLogs(logs);
+				return dto;
 			}
 		}
 	}

@@ -1,11 +1,11 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using OPCAIC.Messaging.Messages;
+using OPCAIC.Application.MatchExecutions.Events;
 
 namespace OPCAIC.Application.Interfaces
 {
 	public interface ISubmissionScoreService
 	{
-		Task UpdateSubmissionsScore(MatchExecutionResult result, CancellationToken cancellationToken);
+		Task UpdateSubmissionsScore(MatchExecutionFinished result, CancellationToken cancellationToken);
 	}
 }

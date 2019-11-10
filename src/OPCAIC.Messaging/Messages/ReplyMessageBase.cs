@@ -17,5 +17,10 @@ namespace OPCAIC.Messaging.Messages
 		///     Execution status of the job.
 		/// </summary>
 		public JobStatus JobStatus { get; set; }
+
+		/// <summary>
+		///     Exception which caused the task to fail. Null if task finished successfully.
+		/// </summary>
+		public Exception Exception { get; set; }
 	}
 }

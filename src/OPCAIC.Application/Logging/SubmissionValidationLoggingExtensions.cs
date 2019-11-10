@@ -20,8 +20,8 @@ namespace OPCAIC.Application.Logging
 			SubmissionValidationFinished dto)
 		{
 			logger.LogInformation(LoggingEvents.SubmissionValidationUpdated,
-				$"Submission validation job {{{LoggingTags.JobId}}} updated: {{{LoggingTags.UpdateData}}}",
-				dto.JobId, JsonConvert.SerializeObject(dto));
+				$"Submission validation job {{{LoggingTags.JobId}}} updated: {{@{LoggingTags.UpdateData}}}",
+				dto.JobId, dto);
 		}
 
 		public static void SubmissionValidationExpired(this ILogger logger, Guid jobId)

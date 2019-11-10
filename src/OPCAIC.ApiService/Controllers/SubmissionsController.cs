@@ -5,7 +5,6 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using MimeKit;
 using OPCAIC.ApiService.Attributes;
 using OPCAIC.ApiService.Extensions;
@@ -26,20 +25,14 @@ namespace OPCAIC.ApiService.Controllers
 	public class SubmissionsController : ControllerBase
 	{
 		private readonly IAuthorizationService authorizationService;
-		private readonly ILogger<SubmissionsController> logger;
 		private readonly IMediator mediator;
 		private readonly ISubmissionService submissionService;
-		private readonly ISubmissionValidationService validationService;
 
 		/// <inheritdoc />
-		public SubmissionsController(ILogger<SubmissionsController> logger,
-			IAuthorizationService authorizationService, ISubmissionService submissionService,
-			ISubmissionValidationService validationService, IMediator mediator)
+		public SubmissionsController(IAuthorizationService authorizationService, ISubmissionService submissionService, IMediator mediator)
 		{
-			this.logger = logger;
 			this.authorizationService = authorizationService;
 			this.submissionService = submissionService;
-			this.validationService = validationService;
 			this.mediator = mediator;
 		}
 

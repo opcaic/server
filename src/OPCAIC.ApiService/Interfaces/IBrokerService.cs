@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Models;
 using OPCAIC.ApiService.Models.Broker;
+using OPCAIC.Application.Dtos.Broker;
 
 namespace OPCAIC.ApiService.Interfaces
 {
@@ -13,7 +14,7 @@ namespace OPCAIC.ApiService.Interfaces
 		Task<ResultModel> PrioritizeWork(Guid id, CancellationToken cancellationToken);
 		Task<BrokerStatsModel> GetStats(CancellationToken cancellationToken);
 
-		Task<List<WorkItemModel>> GetWorkItems(WorkItemFilterModel filter,
+		Task<List<WorkItemDto>> GetWorkItems(WorkItemFilterModel filter,
 			CancellationToken cancellationToken);
 	}
 }

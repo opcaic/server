@@ -21,7 +21,7 @@ namespace OPCAIC.Worker.Test
 			Request = new MatchExecutionRequest
 			{
 				JobId = Guid.NewGuid(),
-				Game = "",
+				GameKey = "",
 				ExecutionId = 1,
 				Bots = new List<BotInfo>
 				{

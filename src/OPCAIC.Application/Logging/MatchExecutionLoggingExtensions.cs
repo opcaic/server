@@ -17,11 +17,11 @@ namespace OPCAIC.Application.Logging
 		}
 
 		public static void MatchExecutionUpdated(this ILogger logger, Guid jobId,
-			UpdateMatchExecutionDto dto)
+			object dto)
 		{
 			logger.LogInformation(LoggingEvents.MatchExecutionUpdated,
-				$"Match execution job {{{LoggingTags.JobId}}} updated: {{{LoggingTags.UpdateData}}}",
-				jobId, JsonConvert.SerializeObject(dto));
+				$"Match execution job {{{LoggingTags.JobId}}} updated: {{@{LoggingTags.UpdateData}}}",
+				jobId, dto);
 		}
 
 		public static void MatchExecutionExpired(this ILogger logger, Guid jobId)

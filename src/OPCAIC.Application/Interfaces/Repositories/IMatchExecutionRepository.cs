@@ -5,12 +5,14 @@ using System.Threading.Tasks;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.MatchExecutions.Models;
+using OPCAIC.Application.Specifications;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface IMatchExecutionRepository
-		: ICreateRepository<NewMatchExecutionDto>, ILookupRepository<MatchExecutionPreviewDto>
+		: ICreateRepository<NewMatchExecutionDto>, ILookupRepository<MatchExecutionPreviewDto>, IRepository<MatchExecution>
 	{
 		/// <summary>
 		///     Returns data needed to find where the archive with results of match execution with given id is stored.
@@ -20,15 +22,6 @@ namespace OPCAIC.Application.Interfaces.Repositories
 		/// <returns></returns>
 		Task<MatchExecutionStorageDto> FindExecutionForStorageAsync(long id,
 			CancellationToken cancellationToken = default);
-
-		Task<bool> UpdateFromJobAsync(Guid jobId, UpdateMatchExecutionDto dto,
-			CancellationToken cancellationToken);
-
-		Task<bool> UpdateJobStateAsync(Guid jobId, JobStateUpdateDto dto,
-			CancellationToken cancellationToken);
-
-		Task<MatchExecutionRequestDataDto> GetRequestDataAsync(long id,
-			CancellationToken cancellationToken);
 
 		Task<List<MatchExecutionRequestDataDto>> GetRequestsForSchedulingAsync(int count,
 			WorkerJobState state, IEnumerable<string> gameKeys, CancellationToken cancellationToken);

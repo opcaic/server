@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Specifications;
-using OPCAIC.Application.SubmissionValidations.Events;
+using OPCAIC.Application.SubmissionValidations.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
@@ -13,13 +13,10 @@ namespace OPCAIC.Application.Interfaces.Repositories
 {
 	public interface ISubmissionValidationRepository
 		: ICreateRepository<NewSubmissionValidationDto>,
-			ILookupRepository<SubmissionValidationDto>,
+			ILookupRepository<SubmissionValidationPreviewDto>,
 			IRepository<SubmissionValidation>
 	{
 		Task<SubmissionValidationStorageDto> FindStorageAsync(long id,
-			CancellationToken cancellationToken);
-
-		Task<bool> UpdateFromJobAsync(Guid jobId, SubmissionValidationFinished dto,
 			CancellationToken cancellationToken);
 
 		Task<bool> UpdateJobStateAsync(Guid jobId, JobStateUpdateDto dto,

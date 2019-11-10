@@ -1,20 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OPCAIC.ApiService.Interfaces;
+using OPCAIC.ApiService.Security;
 using OPCAIC.Application.Dtos;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Extensions;
+using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
+using OPCAIC.Application.Logging;
+using OPCAIC.Application.MatchExecutions.Events;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Application.SubmissionValidations.Events;
 using OPCAIC.Broker;
 using OPCAIC.Common;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using OPCAIC.Messaging.Messages;
 
@@ -49,7 +56,6 @@ namespace OPCAIC.ApiService.Services
 		protected override async Task ExecuteJob(IServiceProvider scopedProvider,
 			CancellationToken cancellationToken)
 		{
-			// TODO: filter the queues by available games
 			var toQueue = maxBrokerItems - await broker.GetUnfinishedTasksCount();
 			if (toQueue <= 0)
 			{
@@ -59,11 +65,10 @@ namespace OPCAIC.ApiService.Services
 			var stats = await broker.GetStats();
 			var requests = new List<JobDtoBase>(2 * toQueue);
 
-			var validationService =
-				scopedProvider.GetRequiredService<ISubmissionValidationService>();
+			var workerService = scopedProvider.GetRequiredService<IWorkerService>();
+
 			var validationRepository =
 				scopedProvider.GetRequiredService<ISubmissionValidationRepository>();
-			var executionService = scopedProvider.GetRequiredService<IMatchExecutionService>();
 			var executionRepository =
 				scopedProvider.GetRequiredService<IMatchExecutionRepository>();
 
@@ -79,16 +84,12 @@ namespace OPCAIC.ApiService.Services
 				switch (job)
 				{
 					case SubmissionValidationRequestDataDto dto:
-						await broker.EnqueueWork(validationService.CreateRequest(dto));
-						await validationRepository.UpdateJobStateAsync(dto.JobId,
-							new JobStateUpdateDto {State = WorkerJobState.Scheduled},
+						await DispatchValidationRequest(workerService, validationRepository, dto,
 							cancellationToken);
 						break;
 
 					case MatchExecutionRequestDataDto dto:
-						await broker.EnqueueWork(executionService.CreateRequest(dto));
-						await executionRepository.UpdateJobStateAsync(dto.JobId,
-							new JobStateUpdateDto {State = WorkerJobState.Scheduled},
+						await DispatchMatchExecutionRequest(workerService, executionRepository, dto,
 							cancellationToken);
 						break;
 
@@ -98,44 +99,136 @@ namespace OPCAIC.ApiService.Services
 			}
 		}
 
+		public async Task DispatchValidationRequest(IWorkerService workerService,
+			IRepository<SubmissionValidation> repository,
+			SubmissionValidationRequestDataDto data, CancellationToken cancellationToken)
+		{
+			var request = new SubmissionValidationRequest
+			{
+				JobId = data.JobId,
+				SubmissionId = data.SubmissionId,
+				TournamentId = data.TournamentId,
+				ValidationId = data.Id,
+				Configuration = data.TournamentConfiguration,
+				GameKey = data.GameKey,
+				AdditionalFilesUri = workerService.GetAdditionalFilesUrl(data.TournamentId),
+				AccessToken = workerService.GenerateWorkerToken(new ClaimsIdentity(new[]
+				{
+					new Claim(WorkerClaimTypes.SubmissionId, data.SubmissionId.ToString()),
+					new Claim(WorkerClaimTypes.ValidationId, data.Id.ToString()),
+					new Claim(WorkerClaimTypes.TournamentId, data.TournamentId.ToString())
+				}))
+			};
+
+			await broker.EnqueueWork(request);
+			await repository.UpdateAsync(data.Id,
+				new JobStateUpdateDto {State = WorkerJobState.Scheduled},
+				cancellationToken);
+		}
+
+		public async Task DispatchMatchExecutionRequest(IWorkerService workerService,
+			IRepository<MatchExecution> repository, MatchExecutionRequestDataDto data,
+			CancellationToken cancellationToken)
+		{
+			var request = new MatchExecutionRequest
+			{
+				JobId = data.JobId,
+				ExecutionId = data.Id,
+				TournamentId = data.TournamentId,
+				Configuration = data.TournamentConfiguration,
+				GameKey = data.GameKey,
+				Bots =
+					data.SubmissionIds.Select(id => new BotInfo {SubmissionId = id}).ToList(),
+				AdditionalFilesUri = workerService.GetAdditionalFilesUrl(data.TournamentId),
+				AccessToken = workerService.GenerateWorkerToken(new ClaimsIdentity(data
+					.SubmissionIds
+					.Select(s => new Claim(WorkerClaimTypes.SubmissionId, s.ToString())).Concat(
+						new[]
+						{
+							new Claim(WorkerClaimTypes.ExecutionId, data.Id.ToString()), new Claim(
+								WorkerClaimTypes.TournamentId,
+								data.TournamentId.ToString())
+						})))
+			};
+
+			await broker.EnqueueWork(request);
+			await repository.UpdateAsync(data.Id,
+				new JobStateUpdateDto {State = WorkerJobState.Scheduled},
+				cancellationToken);
+		}
+
 		private async Task OnMatchExecuted(IServiceProvider services, MatchExecutionResult result,
 			CancellationToken cancellationToken)
 		{
-			using (Logger.BeginScope((LoggingTags.JobId, result.JobId)))
-			{
-				var executionService = services.GetRequiredService<IMatchExecutionService>();
-				await executionService.UpdateFromMessage(result);
-			}
+			var mediator = services.GetRequiredService<IMediator>();
+			var repository = services.GetRequiredService<IRepository<MatchExecution>>();
+			var notification = mapper.Map<MatchExecutionFinished>(result);
+
+			// fill notification ids
+			var data = await repository.GetAsync(e => e.JobId == result.JobId,
+				e => new {e.Id, e.MatchId, e.Match.TournamentId, e.Match.Tournament.GameId},
+				cancellationToken);
+
+			notification.Executed = time.Now;
+			notification.Exception = result.Exception;
+			notification.GameId = data.GameId;
+			notification.TournamentId = data.TournamentId;
+			notification.ExecutionId = data.Id;
+			notification.MatchId = data.MatchId;
+
+			await mediator.Publish(notification, cancellationToken);
 		}
 
 		private async Task OnSubmissionValidated(IServiceProvider services,
 			SubmissionValidationResult result, CancellationToken cancellationToken)
 		{
-			using (Logger.BeginScope((LoggingTags.JobId, result.JobId)))
-			{
-				var dto = mapper.Map<SubmissionValidationFinished>(result);
-				dto.Executed = time.Now;
-				await services.GetRequiredService<IMediator>().Publish(dto, cancellationToken);
-			}
+			var mediator = services.GetRequiredService<IMediator>();
+			var repository = services.GetRequiredService<IRepository<SubmissionValidation>>();
+			var notification = mapper.Map<SubmissionValidationFinished>(result);
+
+			// fill notification ids
+			var data = await repository.GetAsync(e => e.JobId == result.JobId,
+				e => new
+				{
+					e.Id,
+					e.SubmissionId,
+					e.Submission.TournamentId,
+					e.Submission.Tournament.GameId
+				}, cancellationToken);
+
+			notification.Executed = time.Now;
+			notification.Exception = result.Exception;
+			notification.GameId = data.GameId;
+			notification.TournamentId = data.TournamentId;
+			notification.ValidationId = data.Id;
+			notification.SubmissionId = data.SubmissionId;
+
+			await mediator.Publish(notification, cancellationToken);
 		}
 
 		private async Task OnTaskExpired(IServiceProvider services, WorkMessageBase msg,
 			CancellationToken cancellationToken)
 		{
+			using var scope = Logger.CreateScopeWithIds(msg);
 			Logger.LogWarning(
 				$"Execution of job {{{LoggingTags.JobId}}} expired, because there is no worker which could process it",
 				msg.JobId);
+
 			switch (msg)
 			{
 				case SubmissionValidationRequest req:
-					var validationService =
-						services.GetRequiredService<ISubmissionValidationService>();
-					await validationService.OnValidationRequestExpired(req.JobId);
+					Logger.SubmissionValidationExpired(req.JobId);
+					await services.GetRequiredService<IRepository<SubmissionValidation>>()
+						.UpdateAsync(req.ValidationId,
+							new JobStateUpdateDto {State = WorkerJobState.Waiting},
+							CancellationToken.None);
 					return;
 
 				case MatchExecutionRequest req:
-					var executionService = services.GetRequiredService<IMatchExecutionService>();
-					await executionService.OnExecutionRequestExpired(req.JobId);
+					Logger.MatchExecutionExpired(req.JobId);
+					await services.GetRequiredService<IRepository<MatchExecution>>().UpdateAsync(
+						req.ExecutionId,
+						new JobStateUpdateDto {State = WorkerJobState.Waiting}, cancellationToken);
 					return;
 
 				default:

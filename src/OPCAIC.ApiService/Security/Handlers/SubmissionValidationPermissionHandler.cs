@@ -35,13 +35,22 @@ namespace OPCAIC.ApiService.Security.Handlers
 
 				case SubmissionValidationPermission.DownloadResult:
 				case SubmissionValidationPermission.ReadDetail:
+				{
 					var userId = user.TryGetId();
 					// submission owners and tournament organizers
 					return repository.GetStructAsync(id.Value, v =>
 						v.Submission.AuthorId == userId ||
 						v.Submission.Tournament.OwnerId == userId ||
 						v.Submission.Tournament.Managers.Any(m => m.UserId == userId));
-
+				}
+				case SubmissionValidationPermission.ReadAdmin:
+				{
+					var userId = user.TryGetId();
+					// tournament organizers
+					return repository.GetStructAsync(id.Value, v =>
+						v.Submission.Tournament.OwnerId == userId ||
+						v.Submission.Tournament.Managers.Any(m => m.UserId == userId));
+				}
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
 			}

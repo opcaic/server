@@ -8,16 +8,14 @@ using Microsoft.Extensions.Logging;
 using MimeKit;
 using OPCAIC.ApiService.Attributes;
 using OPCAIC.ApiService.Extensions;
-using OPCAIC.ApiService.Interfaces;
 using OPCAIC.ApiService.Models;
-using OPCAIC.ApiService.Models.SubmissionValidations;
 using OPCAIC.ApiService.Security;
-using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
-using OPCAIC.Application.SubmissionValidations;
+using OPCAIC.Application.SubmissionValidations.Models;
+using OPCAIC.Application.SubmissionValidations.Queries;
 
 namespace OPCAIC.ApiService.Controllers
 {
@@ -30,18 +28,15 @@ namespace OPCAIC.ApiService.Controllers
 		private readonly IMediator mediator;
 		private readonly ISubmissionValidationRepository repository;
 		private readonly IStorageService storage;
-		private readonly ISubmissionValidationService validationService;
 
 		/// <inheritdoc />
 		public ValidationController(IAuthorizationService authorizationService,
-			ISubmissionValidationRepository repository, IStorageService storage,
-			ISubmissionValidationService validationService, ILogger<ValidationController> logger,
+			ISubmissionValidationRepository repository, IStorageService storage, ILogger<ValidationController> logger,
 			IMediator mediator)
 		{
 			this.authorizationService = authorizationService;
 			this.repository = repository;
 			this.storage = storage;
-			this.validationService = validationService;
 			this.logger = logger;
 			this.mediator = mediator;
 		}
@@ -67,7 +62,7 @@ namespace OPCAIC.ApiService.Controllers
 				SubmissionValidationPermission.UploadResult);
 
 			var storageDto = await repository.FindStorageAsync(id, cancellationToken);
-			using (var stream = storage.WriteSubmissionValidationResultArchive(storageDto))
+			await using (var stream = storage.WriteSubmissionValidationResultArchive(storageDto))
 			{
 				await model.Archive.CopyToAsync(stream, cancellationToken);
 			}
@@ -85,13 +80,13 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this action.</response>
 		[HttpGet]
-		[ProducesResponseType(typeof(PagedResult<SubmissionValidationDto>),
+		[ProducesResponseType(typeof(PagedResult<SubmissionValidationPreviewDto>),
 			StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[RequiresPermission(SubmissionValidationPermission.Search)]
-		public async Task<PagedResult<SubmissionValidationDto>> GetSubmissionValidationsAsync(
+		public async Task<PagedResult<SubmissionValidationPreviewDto>> GetSubmissionValidationsAsync(
 			[FromQuery] GetSubmissionValidationsQuery filter,
 			CancellationToken cancellationToken)
 		{
@@ -111,13 +106,34 @@ namespace OPCAIC.ApiService.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<SubmissionValidationDetailModel> GetByIdAsync(long id,
+		public async Task<SubmissionValidationDetailDto> GetByIdAsync(long id,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermission(User, id,
 				SubmissionValidationPermission.ReadDetail);
 
-			return await validationService.GetByIdAsync(id, cancellationToken);
+			return await mediator.Send(new GetSubmissionValidationQuery(id), cancellationToken);
+		}
+
+		/// <summary>
+		///     Gets detailed information about the given submission validation, including the information that is available only to tournament organizers.
+		/// </summary>
+		/// <param name="id">Id of the submission validation.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		[HttpGet("{id}/admin")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<SubmissionValidationDetailDto> GetByIdForAdminAsync(long id,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermission(User, id,
+				SubmissionValidationPermission.ReadAdmin);
+
+			return await mediator.Send(new GetSubmissionValidationAdminQuery(id), cancellationToken);
 		}
 
 		/// <summary>

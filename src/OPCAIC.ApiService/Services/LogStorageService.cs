@@ -9,6 +9,9 @@ namespace OPCAIC.ApiService.Services
 {
 	public class LogStorageService : ILogStorageService
 	{
+		private static readonly Regex compilerLogRegex =
+			new Regex(@"^compile\.(\d+)\.(stdout|stderr)$", RegexOptions.Compiled);
+
 		private readonly IStorageService storageService;
 
 		public LogStorageService(IStorageService storageService)
@@ -17,7 +20,8 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
-		public SubmissionValidationLogsDto GetSubmissionValidationLogs(SubmissionValidationStorageDto storage)
+		public SubmissionValidationLogsDto GetSubmissionValidationLogs(
+			SubmissionValidationStorageDto storage)
 		{
 			var logs = new SubmissionValidationLogsDto();
 
@@ -36,19 +40,26 @@ namespace OPCAIC.ApiService.Services
 					case "check.0.stdout":
 						logs.CheckerLog = ReadAsText(entry);
 						break;
+					case "check.0.stderr":
+						logs.CheckerErrorLog = ReadAsText(entry);
+						break;
 					case "compile.0.stdout":
 						logs.CompilerLog = ReadAsText(entry);
 						break;
+					case "compile.0.stderr":
+						logs.CompilerErrorLog = ReadAsText(entry);
+						break;
 					case "validate.0.stdout":
 						logs.ValidatorLog = ReadAsText(entry);
+						break;
+					case "validate.0.stderr":
+						logs.ValidatorErrorLog = ReadAsText(entry);
 						break;
 				}
 			}
 
 			return logs;
 		}
-
-		private static readonly Regex compilerLogRegex = new Regex(@"^compile\.(\d+)\.stdout$", RegexOptions.Compiled);
 
 		/// <inheritdoc />
 		public MatchExecutionLogsDto GetMatchExecutionLogs(MatchExecutionStorageDto storage)
@@ -65,27 +76,39 @@ namespace OPCAIC.ApiService.Services
 			{
 				foreach (var entry in archive.Entries)
 				{
-					if (entry.Name == "execute.stdout")
+					switch (entry.Name)
 					{
-						logs.ExecutorLog = ReadAsText(entry);
-					}
-					else
-					{
-						var match = compilerLogRegex.Match(entry.Name);
-						if (!match.Success)
-						{
-							continue;
-						}
+						case "execute.stdout":
+							logs.ExecutorLog = ReadAsText(entry);
+							break;
+						case "execute.stderr":
+							logs.ExecutorErrorLog = ReadAsText(entry);
+							break;
+						default:
+							var match = compilerLogRegex.Match(entry.Name);
+							if (!match.Success)
+							{
+								continue;
+							}
 
-						var order = int.Parse(match.Groups[1].Value);
+							var order = int.Parse(match.Groups[1].Value);
 
-						// make sure there is enough space
-						while (logs.CompilerLogs.Count <= order)
-						{
-							logs.CompilerLogs.Add(null);
-						}
+							// make sure there is enough space
+							while (logs.SubmissionLogs.Count <= order)
+							{
+								logs.SubmissionLogs.Add(new MatchExecutionLogsDto.SubmissionLog());
+							}
 
-						logs.CompilerLogs[order] = ReadAsText(entry);
+							if (match.Groups[2].Value == "stdout")
+							{
+								logs.SubmissionLogs[order].CompilerLog = ReadAsText(entry);
+							}
+							else
+							{
+								logs.SubmissionLogs[order].CompilerErrorLog = ReadAsText(entry);
+							}
+
+							break;
 					}
 				}
 			}
