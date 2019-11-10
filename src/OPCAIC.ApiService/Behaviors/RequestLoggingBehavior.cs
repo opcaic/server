@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Logging;
 using OPCAIC.Common;
 
@@ -52,7 +53,7 @@ namespace OPCAIC.ApiService.Behaviors
 
 				return response;
 			}
-			catch (Exception e)
+			catch (Exception e) when (!(e is AppException))
 			{
 				logActionError(logger, request, e);
 				throw;

@@ -7,7 +7,7 @@ namespace OPCAIC.Domain.Entities
 	/// <summary>
 	///     A single execution of a match in a tournament.
 	/// </summary>
-	public class MatchExecution : SoftDeletableEntity, IWorkerJob
+	public class MatchExecution : Entity, IWorkerJob
 	{
 		/// <summary>
 		///     Unique Id of the match.

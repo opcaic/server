@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using OPCAIC.Application.Dtos.MatchExecutions;
-using OPCAIC.Application.Dtos.Submissions;
-using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.Base;
+using OPCAIC.Application.Dtos.BaseDtos;
 
 namespace OPCAIC.Application.Interfaces
 {
@@ -16,7 +15,7 @@ namespace OPCAIC.Application.Interfaces
 		/// </summary>
 		/// <param name="submission"></param>
 		/// <returns></returns>
-		Stream ReadSubmissionArchive(SubmissionStorageDto submission);
+		Stream ReadSubmissionArchive(SubmissionDtoBase submission);
 
 		/// <summary>
 		///     Opens stream for writing archive for given submission.
@@ -24,7 +23,13 @@ namespace OPCAIC.Application.Interfaces
 		/// <param name="submission"></param>
 		/// <exception cref="InvalidOperationException">When such file already exists.</exception>
 		/// <returns></returns>
-		Stream WriteSubmissionArchive(SubmissionStorageDto submission);
+		Stream WriteSubmissionArchive(SubmissionDtoBase submission);
+
+		/// <summary>
+		///     Deletes archive for given submission.
+		/// </summary>
+		/// <param name="submission"></param>
+		void DeleteSubmissionArchive(SubmissionDtoBase submission);
 
 		/// <summary>
 		///     Opens stream for archive containing result files from given match execution. Returns null when no such archive
@@ -32,7 +37,7 @@ namespace OPCAIC.Application.Interfaces
 		/// </summary>
 		/// <param name="matchExecution"></param>
 		/// <returns></returns>
-		Stream ReadMatchResultArchive(MatchExecutionStorageDto matchExecution);
+		Stream ReadMatchResultArchive(MatchExecutionDtoBase matchExecution);
 
 		/// <summary>
 		///     Opens stream for writing archive for given match result.
@@ -40,21 +45,34 @@ namespace OPCAIC.Application.Interfaces
 		/// <param name="matchExecution"></param>
 		/// <exception cref="InvalidOperationException">When such file already exists.</exception>
 		/// <returns></returns>
-		Stream WriteMatchResultArchive(MatchExecutionStorageDto matchExecution);
+		Stream WriteMatchResultArchive(MatchExecutionDtoBase matchExecution);
+
+		/// <summary>
+		///     Deletes archive for given match execution.
+		/// </summary>
+		/// <param name="matchExecution"></param>
+		void DeleteMatchResultArchive(MatchExecutionDtoBase matchExecution);
 
 		/// <summary>
 		///     Opens stream for writing archive for given submission validation.
 		/// </summary>
 		/// <param name="validation"></param>
 		/// <returns></returns>
-		Stream WriteSubmissionValidationResultArchive(SubmissionValidationStorageDto validation);
+		Stream WriteSubmissionValidationResultArchive(SubmissionValidationDtoBase validation);
 
 		/// <summary>
 		///     Opens stream for reading archive for given submission validation.
 		/// </summary>
 		/// <param name="validation"></param>
 		/// <returns></returns>
-		Stream ReadSubmissionValidationResultArchive(SubmissionValidationStorageDto validation);
+		Stream ReadSubmissionValidationResultArchive(SubmissionValidationDtoBase validation);
+
+		/// <summary>
+		///     Deletes result archive of given submission validation.
+		/// </summary>
+		/// <param name="validation"></param>
+		/// <returns></returns>
+		void DeleteSubmissionValidationResultArchive(SubmissionValidationDtoBase validation);
 
 		/// <summary>
 		///     Opens stream for reading archive for additional files for given tournament.
@@ -70,5 +88,18 @@ namespace OPCAIC.Application.Interfaces
 		/// <param name="overwrite">Whether an existing file should be overwritten.</param>
 		/// <returns></returns>
 		Stream WriteTournamentAdditionalFiles(long id, bool overwrite = false);
+
+		/// <summary>
+		///     Deletes additional files uploaded for given tournament.
+		/// </summary>
+		/// <param name="id">Id of the tournament.</param>
+		/// <returns></returns>
+		void DeleteTournamentAdditionalFiles(long id);
+
+		/// <summary>
+		///     Deletes all data associated with given tournament.
+		/// </summary>
+		/// <param name="id">Id of the tournament.</param>
+		void DeleteAllTournamentFiles(long id);
 	}
 }

@@ -11,7 +11,7 @@ namespace OPCAIC.Domain.Entities
 	/// <summary>
 	///     Basic information about a game in the platform.
 	/// </summary>
-	public class Game : SoftDeletableEntity
+	public class Game : Entity
 	{
 		/// <summary>
 		///     Human readable name of the game.

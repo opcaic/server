@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.MatchExecutions.Models;
@@ -24,23 +23,10 @@ namespace OPCAIC.Persistence.Repositories
 		}
 
 		/// <inheritdoc />
-		public Task<MatchExecutionStorageDto> FindExecutionForStorageAsync(long id,
+		public Task<MatchExecutionDtoBase> FindExecutionForStorageAsync(long id,
 			CancellationToken cancellationToken = default)
 		{
-			return GetDtoByIdAsync<MatchExecutionStorageDto>(id, cancellationToken);
-		}
-
-		/// <inheritdoc />
-		public Task<bool> UpdateFromJobAsync(Guid jobId, UpdateMatchExecutionDto dto,
-			CancellationToken cancellationToken)
-		{
-			return UpdateFromDtoByQueryAsync(e => e.JobId == jobId, dto, cancellationToken);
-		}
-
-		public Task<bool> UpdateJobStateAsync(Guid jobId, JobStateUpdateDto dto,
-			CancellationToken cancellationToken)
-		{
-			return UpdateFromDtoByQueryAsync(e => e.JobId == jobId, dto, cancellationToken);
+			return GetDtoByIdAsync<MatchExecutionDtoBase>(id, cancellationToken);
 		}
 
 		/// <inheritdoc />
@@ -53,13 +39,6 @@ namespace OPCAIC.Persistence.Repositories
 				.Take(count)
 				.ProjectTo<MatchExecutionRequestDataDto>(Mapper.ConfigurationProvider)
 				.ToListAsync(cancellationToken);
-		}
-
-		/// <inheritdoc />
-		public Task<MatchExecutionRequestDataDto> GetRequestDataAsync(long id,
-			CancellationToken cancellationToken)
-		{
-			return GetDtoByIdAsync<MatchExecutionRequestDataDto>(id, cancellationToken);
 		}
 
 		/// <inheritdoc />

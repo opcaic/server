@@ -9,7 +9,7 @@ namespace OPCAIC.Domain.Entities
 	/// <summary>
 	///     Represents a user in the platform.
 	/// </summary>
-	public class User : IdentityUser<long>, IEntity, ISoftDeletable, IChangeTrackable
+	public class User : IdentityUser<long>, IEntity, IChangeTrackable
 	{
 		/// <summary>
 		///     First name of the user.
@@ -66,8 +66,5 @@ namespace OPCAIC.Domain.Entities
 
 		/// <inheritdoc />
 		public DateTime Updated { get; set; }
-
-		/// <inheritdoc />
-		public bool IsDeleted { get; set; }
 	}
 }

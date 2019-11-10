@@ -42,7 +42,7 @@ namespace OPCAIC.Application.Tournaments.Commands
 				if (tournament.State != TournamentState.Created)
 				{
 					throw new BadTournamentStateException(request.TournamentId,
-						nameof(TournamentState.Created), tournament.State.ToString());
+						TournamentState.Created, tournament.State);
 				}
 
 				var updateDto = new PublishUpdateDto(time.Now);

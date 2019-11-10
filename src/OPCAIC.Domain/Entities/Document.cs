@@ -3,7 +3,7 @@
 	/// <summary>
 	///     Represents a markdown document, used for description of a tournament.
 	/// </summary>
-	public class Document : SoftDeletableEntity
+	public class Document : Entity
 	{
 		/// <summary>
 		///     Name of the document.

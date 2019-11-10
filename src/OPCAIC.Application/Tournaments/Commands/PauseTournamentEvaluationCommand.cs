@@ -36,7 +36,7 @@ namespace OPCAIC.Application.Tournaments.Commands
 				if (tournament.State != TournamentState.Running)
 				{
 					throw new BadTournamentStateException(request.TournamentId,
-						nameof(TournamentState.Running), tournament.State.ToString());
+						TournamentState.Running, tournament.State);
 				}
 
 				var updateDto = new TournamentStateUpdateDto(TournamentState.Paused);

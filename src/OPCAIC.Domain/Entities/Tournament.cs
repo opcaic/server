@@ -10,7 +10,7 @@ namespace OPCAIC.Domain.Entities
 	/// <summary>
 	///     A tournament between AI bots.
 	/// </summary>
-	public class Tournament : SoftDeletableEntity
+	public class Tournament : Entity
 	{
 		/// <summary>
 		///     Id of the owner of the tournament.

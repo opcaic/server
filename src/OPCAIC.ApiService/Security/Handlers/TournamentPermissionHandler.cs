@@ -34,7 +34,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 					// only organizers
 					return Task.FromResult(user.GetUserRole() == UserRole.Organizer);
 
-				case TournamentPermission.UploadAdditionalFiles:
+				case TournamentPermission.ManageAdditionalFiles:
 				case TournamentPermission.StartEvaluation:
 				case TournamentPermission.ManageInvites:
 				case TournamentPermission.Update:

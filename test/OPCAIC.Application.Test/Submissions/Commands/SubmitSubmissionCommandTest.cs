@@ -5,6 +5,7 @@ using MediatR;
 using Moq;
 using OPCAIC.ApiService.IoC;
 using OPCAIC.ApiService.Services;
+using OPCAIC.Application.Dtos.Base;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Infrastructure.Validation;
@@ -111,10 +112,10 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 
 			submissionRepository.Setup(r
 					=> r.FindSubmissionForStorageAsync(SubmissionId, CancellationToken))
-				.ReturnsAsync(new SubmissionStorageDto {Id = SubmissionId});
+				.ReturnsAsync(new SubmissionDtoBase {Id = SubmissionId});
 
 			storageService.Setup(s => s.WriteSubmissionArchive(
-					It.Is<SubmissionStorageDto>(d => d.Id == SubmissionId)))
+					It.Is<SubmissionDtoBase>(d => d.Id == SubmissionId)))
 				.Returns(new MemoryStream());
 
 			tournamentParticipationRepository.Setup(s
@@ -155,10 +156,10 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 
 			submissionRepository.Setup(r
 					=> r.FindSubmissionForStorageAsync(SubmissionId, CancellationToken))
-				.ReturnsAsync(new SubmissionStorageDto {Id = SubmissionId});
+				.ReturnsAsync(new SubmissionDtoBase {Id = SubmissionId});
 
 			storageService.Setup(s => s.WriteSubmissionArchive(
-					It.Is<SubmissionStorageDto>(d => d.Id == SubmissionId)))
+					It.Is<SubmissionDtoBase>(d => d.Id == SubmissionId)))
 				.Returns(new MemoryStream());
 
 			tournamentParticipationRepository.Setup(s

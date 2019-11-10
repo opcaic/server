@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
-using OPCAIC.Application.Dtos.MatchExecutions;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure;
@@ -115,15 +115,14 @@ namespace OPCAIC.Application.Matches.Queries
 
 				foreach (var execution in data.Dto.Executions)
 				{
+					var storageDto = new MatchExecutionDtoBase {Id = execution.Id, TournamentId = execution.Match.TournamentId, MatchId = execution.Match.Id};
+
 					execution.AdditionalFiles.AddRange(FileDto
-						.GetFilesInArchive(
-							storage.ReadMatchResultArchive(
-								new MatchExecutionStorageDto {Id = execution.Id}))
+						.GetFilesInArchive(storage.ReadMatchResultArchive(storageDto))
 						.Where(f => !MatchExecutions.Utils.IsMaskedFile(f.Filename)));
 
 					execution.AddLogs(
-						logStorage.GetMatchExecutionLogs(
-							new MatchExecutionStorageDto {Id = execution.Id}));
+						logStorage.GetMatchExecutionLogs(storageDto));
 				}
 
 				return data.Dto;

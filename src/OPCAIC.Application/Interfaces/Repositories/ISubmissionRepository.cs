@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using OPCAIC.Application.Dtos.Base;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
@@ -11,10 +12,7 @@ namespace OPCAIC.Application.Interfaces.Repositories
 		: IGenericRepository<SubmissionDetailDto, NewSubmissionDto, UpdateSubmissionScoreDto>,
 			IRepository<Submission>
 	{
-		Task<SubmissionStorageDto> FindSubmissionForStorageAsync(long id,
+		Task<SubmissionDtoBase> FindSubmissionForStorageAsync(long id,
 			CancellationToken cancellationToken = default);
-
-		Task<List<SubmissionDetailDto>> AllSubmissionsFromTournament(long tournamentId,
-			CancellationToken cancellationToken);
 	}
 }

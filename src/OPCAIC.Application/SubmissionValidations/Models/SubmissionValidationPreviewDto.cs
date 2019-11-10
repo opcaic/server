@@ -1,19 +1,14 @@
 ﻿using System;
 using AutoMapper;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.SubmissionValidations.Models
 {
-	public class SubmissionValidationPreviewDto : ICustomMapping
+	public class SubmissionValidationPreviewDto : SubmissionValidationDtoBase, ICustomMapping
 	{
-		public long Id { get; set; }
-
-		public long SubmissionId { get; set; }
-
-		public long TournamentId { get; set; }
-
 		public WorkerJobState State { get; set; }
 
 		public EntryPointResult CheckerResult { get; set; }
@@ -30,7 +25,6 @@ namespace OPCAIC.Application.SubmissionValidations.Models
 			configuration
 				.CreateMap<SubmissionValidation, SubmissionValidationPreviewDto>(MemberList
 					.Destination)
-				.ForMember(d => d.TournamentId, opt => opt.MapFrom(d => d.Submission.TournamentId))
 				.IncludeAllDerived();
 		}
 	}

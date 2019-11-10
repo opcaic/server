@@ -2,9 +2,8 @@
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Extensions.Options;
-using OPCAIC.Application.Dtos.MatchExecutions;
-using OPCAIC.Application.Dtos.Submissions;
-using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.Base;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Utils;
 
@@ -12,56 +11,66 @@ namespace OPCAIC.Application.Services
 {
 	public class StorageService : IStorageService
 	{
-		private const string SubmissionsDir = "Submissions";
-		private const string MatchResultsDir = "Results";
-		private const string ValidationsDir = "Validations";
-		private const string TournamentFilesDir = "Tournaments";
 
 		private readonly DirectoryInfo directory;
 
 		public StorageService(IOptions<StorageConfiguration> config)
 		{
 			directory = Directory.CreateDirectory(config.Value.Directory);
-			directory.CreateSubdirectory(SubmissionsDir);
-			directory.CreateSubdirectory(MatchResultsDir);
-			directory.CreateSubdirectory(ValidationsDir);
-			directory.CreateSubdirectory(TournamentFilesDir);
 		}
 
 		/// <inheritdoc />
-		public Stream ReadSubmissionArchive(SubmissionStorageDto submission)
+		public Stream ReadSubmissionArchive(SubmissionDtoBase submission)
 		{
 			return ReadFile(SubmissionPath(submission));
 		}
 
 		/// <inheritdoc />
-		public Stream WriteSubmissionArchive(SubmissionStorageDto submission)
+		public Stream WriteSubmissionArchive(SubmissionDtoBase submission)
 		{
 			return WriteFile(SubmissionPath(submission));
 		}
 
 		/// <inheritdoc />
-		public Stream ReadMatchResultArchive(MatchExecutionStorageDto matchExecution)
+		public void DeleteSubmissionArchive(SubmissionDtoBase submission)
+		{
+			DeleteFile(SubmissionPath(submission));
+		}
+
+		/// <inheritdoc />
+		public Stream ReadMatchResultArchive(MatchExecutionDtoBase matchExecution)
 		{
 			return ReadFile(MatchResultPath(matchExecution));
 		}
 
 		/// <inheritdoc />
-		public Stream WriteMatchResultArchive(MatchExecutionStorageDto matchExecution)
+		public Stream WriteMatchResultArchive(MatchExecutionDtoBase matchExecution)
 		{
 			return WriteFile(MatchResultPath(matchExecution));
 		}
 
 		/// <inheritdoc />
-		public Stream WriteSubmissionValidationResultArchive(SubmissionValidationStorageDto validation)
+		public void DeleteMatchResultArchive(MatchExecutionDtoBase matchExecution)
+		{
+			DeleteFile(MatchResultPath(matchExecution));
+		}
+
+		/// <inheritdoc />
+		public Stream WriteSubmissionValidationResultArchive(SubmissionValidationDtoBase validation)
 		{
 			return WriteFile(ValidationPath(validation));
 		}
 
 		/// <inheritdoc />
-		public Stream ReadSubmissionValidationResultArchive(SubmissionValidationStorageDto validation)
+		public Stream ReadSubmissionValidationResultArchive(SubmissionValidationDtoBase validation)
 		{
 			return ReadFile(ValidationPath(validation));
+		}
+
+		/// <inheritdoc />
+		public void DeleteSubmissionValidationResultArchive(SubmissionValidationDtoBase validation)
+		{
+			DeleteFile(ValidationPath(validation));
 		}
 
 		/// <inheritdoc />
@@ -76,25 +85,45 @@ namespace OPCAIC.Application.Services
 			return WriteFile(TournamentFilesPath(id), overwrite);
 		}
 
-		// TODO: choose better folder hierarchy once we have complete domain model
+		/// <inheritdoc />
+		public void DeleteTournamentAdditionalFiles(long id)
+		{
+			DeleteFile(TournamentFilesPath(id));
+		}
+
+		/// <inheritdoc />
+		public void DeleteAllTournamentFiles(long id)
+		{
+			var path = TournamentPath(id);
+			if (Directory.Exists(path))
+			{
+				Directory.Delete(path, true);
+			}
+		}
+
+		private string TournamentPath(long id)
+		{
+			return Path.Combine(directory.FullName, $"tournament-{id}");
+		}
+
 		private string TournamentFilesPath(long id)
 		{
-			return Path.Combine(directory.FullName, TournamentFilesDir, $"{id}.zip");
+			return Path.Combine(TournamentPath(id), "additionalFiles.zip");
 		}
 
-		private string SubmissionPath(SubmissionStorageDto sub)
+		private string SubmissionPath(SubmissionDtoBase sub)
 		{
-			return Path.Combine(directory.FullName, SubmissionsDir, $"{sub.Id}.zip");
+			return Path.Combine(TournamentPath(sub.TournamentId), "submissions", $"submission-{sub.Id}", "submission.zip");
 		}
 
-		private string MatchResultPath(MatchExecutionStorageDto m)
+		private string ValidationPath(SubmissionValidationDtoBase dto)
 		{
-			return Path.Combine(directory.FullName, MatchResultsDir, $"{m.Id}.zip");
+			return Path.Combine(TournamentPath(dto.TournamentId), "submissions", $"submission-{dto.SubmissionId}", $"validation-{dto.Id}.zip");
 		}
 
-		private string ValidationPath(SubmissionValidationStorageDto dto)
+		private string MatchResultPath(MatchExecutionDtoBase m)
 		{
-			return Path.Combine(directory.FullName, ValidationsDir, $"{dto.Id}.zip");
+			return Path.Combine(TournamentPath(m.TournamentId), "matches", $"match-{m.MatchId}", $"execution-{m.Id}.zip");
 		}
 
 		private Stream ReadFile(string path)
@@ -110,11 +139,23 @@ namespace OPCAIC.Application.Services
 		private Stream WriteFile(string path, bool overwrite = false)
 		{
 			Require.ArgNotNull(path, nameof(path));
+
 			Require.That<InvalidOperationException>(overwrite || !File.Exists(path),
 				$"File {path} already exists");
 			Debug.Assert(Path.IsPathFullyQualified(path));
 
+			// make sure the dir exists
+			Directory.CreateDirectory(Path.GetDirectoryName(path));
 			return File.Open(path, overwrite ? FileMode.Create : FileMode.CreateNew, FileAccess.Write);
+		}
+
+		private void DeleteFile(string path)
+		{
+			Require.ArgNotNull(path, nameof(path));
+			if (File.Exists(path))
+			{
+				File.Delete(path);
+			}
 		}
 	}
 }

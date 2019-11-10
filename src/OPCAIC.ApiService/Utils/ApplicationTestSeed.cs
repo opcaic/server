@@ -8,12 +8,10 @@ using Bogus;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OPCAIC.ApiService.Services;
-using OPCAIC.Application.Dtos.MatchExecutions;
-using OPCAIC.Application.Dtos.Submissions;
-using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.Base;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Services;
 using OPCAIC.Application.Services.MatchGeneration;
@@ -53,7 +51,7 @@ namespace OPCAIC.ApiService.Utils
 
 		private void EnsureSubmissionArchiveExists(IStorageService storage, Submission sub)
 		{
-			var storageDto = mapper.Map<SubmissionStorageDto>(sub);
+			var storageDto = mapper.Map<SubmissionDtoBase>(sub);
 
 			var archive = storage.ReadSubmissionArchive(storageDto);
 			if (archive != null)
@@ -71,7 +69,7 @@ namespace OPCAIC.ApiService.Utils
 		private void EnsureSubmissionValidationResultExists(IStorageService storage,
 			SubmissionValidation sub)
 		{
-			var storageDto = mapper.Map<SubmissionValidationStorageDto>(sub);
+			var storageDto = mapper.Map<SubmissionValidationDtoBase>(sub);
 
 			var archive = storage.ReadSubmissionValidationResultArchive(storageDto);
 			if (archive != null)
@@ -102,7 +100,7 @@ namespace OPCAIC.ApiService.Utils
 		private void EnsureMatchExecutionResultExists(IStorageService storage,
 			MatchExecution execution)
 		{
-			var storageDto = mapper.Map<MatchExecutionStorageDto>(execution);
+			var storageDto = mapper.Map<MatchExecutionDtoBase>(execution);
 
 			var archive = storage.ReadMatchResultArchive(storageDto);
 			if (archive != null)

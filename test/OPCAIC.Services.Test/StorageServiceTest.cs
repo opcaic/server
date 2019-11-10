@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using OPCAIC.Application.Dtos.Submissions;
+using OPCAIC.Application.Dtos.Base;
 using OPCAIC.Application.Services;
 using OPCAIC.TestUtils;
 using Xunit;
@@ -25,7 +25,7 @@ namespace OPCAIC.Services.Test
 		[Fact]
 		public void CorrectlySavesFile()
 		{
-			var sub = new SubmissionStorageDto {Id = 1};
+			var sub = new SubmissionDtoBase {Id = 1};
 			var contents = new byte[] {1, 2, 3, 4, 5, 6, 7, 8};
 			using (var s = StorageService.WriteSubmissionArchive(sub))
 			{
@@ -46,7 +46,7 @@ namespace OPCAIC.Services.Test
 		public void ThrowsWhenFileAlreadyExists()
 		{
 			// create file first
-			var sub = new SubmissionStorageDto {Id = 1};
+			var sub = new SubmissionDtoBase {Id = 1};
 			using (var s = StorageService.WriteSubmissionArchive(sub))
 			{
 				s.WriteByte(1);

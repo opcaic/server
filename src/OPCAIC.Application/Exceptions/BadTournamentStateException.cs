@@ -1,6 +1,7 @@
 ﻿using System;
 using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Exceptions
 {
@@ -8,8 +9,8 @@ namespace OPCAIC.Application.Exceptions
 	public class BadTournamentStateException : BusinessException
 	{
 		public BadTournamentStateException(long resourceId,
-			string expectedState, string actualState) :
-			base(new Error(nameof(Tournament), expectedState, actualState, resourceId))
+			TournamentState expectedState, TournamentState actualState) :
+			base(new Error(nameof(Tournament), expectedState.ToString(), actualState.ToString(), resourceId))
 		{
 		}
 

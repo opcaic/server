@@ -20,11 +20,6 @@ namespace OPCAIC.Application.Test
 
 		protected CancellationToken CancellationToken => CancellationToken.None;
 
-		protected Task<TResponse> Send<TRequest, TResponse>(TRequest request)
-			where TRequest : IRequest<TResponse>
-			=> ((IRequestHandler<TRequest, TResponse>)Handler).Handle(request,
-				CancellationToken);
-
 		/// <inheritdoc />
 		protected HandlerTest(ITestOutputHelper output) : base(output)
 		{

@@ -1,5 +1,7 @@
 ﻿using System;
 using AutoMapper;
+using OPCAIC.Application.Dtos.Base;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Application.Tournaments.Models;
@@ -8,9 +10,8 @@ using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Submissions.Models
 {
-	public class SubmissionPreviewDto : ICustomMapping
+	public class SubmissionPreviewDto : SubmissionDtoBase, ICustomMapping
 	{
-		public long Id { get; set; }
 		public double Score { get; set; }
 		public UserReferenceDto Author { get; set; }
 		public TournamentReferenceDto Tournament { get; set; }

@@ -1,9 +1,24 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace OPCAIC.Application.Exceptions
 {
 	[Serializable]
-	public class NotFoundException : Exception
+	public class AppException : Exception
+	{
+		public AppException() { }
+		public AppException(string message) : base(message) { }
+		public AppException(string message, Exception inner) : base(message, inner) { }
+
+		protected AppException(
+			SerializationInfo info,
+			StreamingContext context) : base(info, context)
+		{
+		}
+	}
+
+	[Serializable]
+	public class NotFoundException : AppException
 	{
 		public string Resource { get; }
 		public long? ResourceId { get; }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OPCAIC.Domain.ValueObjects;
@@ -10,9 +11,10 @@ using OPCAIC.Persistence;
 namespace OPCAIC.Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20191110141403_Remove_SoftDelete")]
+    partial class Remove_SoftDelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1069,8 +1071,7 @@ namespace OPCAIC.Persistence.Migrations
                 {
                     b.HasOne("OPCAIC.Domain.Entities.Tournament", null)
                         .WithMany("MenuItems")
-                        .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("TournamentId");
                 });
 
             modelBuilder.Entity("OPCAIC.Domain.ValueObjects.DocumentLinkMenuItem", b =>

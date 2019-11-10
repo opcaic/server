@@ -15,13 +15,10 @@ using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Dtos.TournamentParticipations;
-using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Infrastructure.AutoMapper;
 using OPCAIC.Application.MatchExecutions.Events;
-using OPCAIC.Application.MatchExecutions.Models;
 using OPCAIC.Application.SubmissionValidations.Events;
-using OPCAIC.Application.SubmissionValidations.Models;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
@@ -100,20 +97,11 @@ namespace OPCAIC.ApiService
 
 		private void AddSubmissionValidationMapping()
 		{
-			CreateMap<SubmissionValidation, SubmissionValidationStorageDto>(MemberList
-				.Destination);
-			CreateMap<SubmissionValidationPreviewDto, SubmissionValidationStorageDto>(MemberList
-				.Destination);
-
 			CreateMap<NewSubmissionValidationDto, SubmissionValidation>(MemberList.Source);
 			CreateMap<SubmissionValidationResult, SubmissionValidationFinished>(MemberList
-					.Destination)
+					.Source)
 				.ForMember(d => d.State, opt => opt.MapFrom(r => r.JobStatus))
-				.IgnoreProperty(m => m.Executed)
-				.IgnoreProperty(e => e.TournamentId)
-				.IgnoreProperty(e => e.SubmissionId)
-				.IgnoreProperty(e => e.ValidationId)
-				.IgnoreProperty(e => e.GameId);
+				.IgnoreProperty(m => m.Executed);
 
 			CreateMap<SubmissionValidationFinished, SubmissionValidation>(MemberList.Source)
 				.IgnoreSourceProperty(e => e.TournamentId)
@@ -145,19 +133,14 @@ namespace OPCAIC.ApiService
 		{
 			CreateMap<NewMatchExecutionDto, MatchExecution>(MemberList.Source);
 
-			CreateMap<MatchExecution, MatchExecutionStorageDto>(MemberList.Destination);
-			CreateMap<MatchExecutionPreviewDto, MatchExecutionStorageDto>(MemberList.Destination);
-
-			CreateMap<BotResult, SubmissionMatchResult>(MemberList.Source);
-
 			CreateMap<MatchExecutionResult, MatchExecutionFinished>(MemberList.Source);
-
+			CreateMap<BotResult, SubmissionMatchResult>(MemberList.Source);
 			CreateMap<MatchExecutionFinished, MatchExecution>(MemberList.Source)
 				.ForMember(d => d.State, opt => opt.MapFrom(r => r.JobStatus))
-				.IgnoreSourceProperty(e => e.TournamentId)
-				.IgnoreSourceProperty(e => e.ExecutionId)
-				.IgnoreSourceProperty(e => e.MatchId)
-				.IgnoreSourceProperty(e => e.GameId);
+				.IgnoreSourceProperty(m => m.ExecutionId)
+				.IgnoreSourceProperty(m => m.GameId)
+				.IgnoreSourceProperty(m => m.MatchId)
+				.IgnoreSourceProperty(m => m.TournamentId);
 
 			CreateMap<JobStateUpdateDto, MatchExecution>(MemberList.Source);
 			CreateMap<MatchExecution, MatchExecutionRequestDataDto>(MemberList

@@ -1,4 +1,5 @@
-﻿using OPCAIC.Application.Dtos.MatchExecutions;
+﻿using OPCAIC.Application.Dtos.BaseDtos;
+using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.SubmissionValidations;
 
 namespace OPCAIC.Application.Interfaces
@@ -6,8 +7,8 @@ namespace OPCAIC.Application.Interfaces
 	public interface ILogStorageService
 	{
 		SubmissionValidationLogsDto GetSubmissionValidationLogs(
-			SubmissionValidationStorageDto storage);
+			SubmissionValidationDtoBase storage);
 
-		MatchExecutionLogsDto GetMatchExecutionLogs(MatchExecutionStorageDto storage);
+		MatchExecutionLogsDto GetMatchExecutionLogs(MatchExecutionDtoBase storage);
 	}
 }

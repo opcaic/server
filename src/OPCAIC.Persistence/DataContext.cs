@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,8 +44,7 @@ namespace OPCAIC.Persistence
 		{
 			base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(DataContext).Assembly);
-			RegisterSoftDeleteQueryFilters(modelBuilder);
-			ConfigureEntities(modelBuilder);
+            ConfigureEntities(modelBuilder);
 			ConfigureEnumerations(modelBuilder);
 		}
 
@@ -94,23 +91,6 @@ namespace OPCAIC.Persistence
 			}
 		}
 
-		private static void RegisterSoftDeleteQueryFilters(ModelBuilder modelBuilder)
-		{
-			var property = typeof(ISoftDeletable).GetProperty(nameof(ISoftDeletable.IsDeleted));
-
-			foreach (var type in modelBuilder.Model.GetEntityTypes()
-				.Where(t => typeof(ISoftDeletable).IsAssignableFrom(t.ClrType)))
-			{
-				// construct (e => !e.isDeleted) expression
-				var parameterExpression = Expression.Parameter(type.ClrType);
-				var memberAccess =
-					Expression.MakeMemberAccess(parameterExpression, property);
-				var negation = Expression.Not(memberAccess);
-				var lambda = Expression.Lambda(negation, parameterExpression);
-				modelBuilder.Entity(type.ClrType).HasQueryFilter(lambda);
-			}
-		}
-
 		/// <inheritdoc />
 		public override int SaveChanges()
 		{
@@ -147,13 +127,6 @@ namespace OPCAIC.Persistence
 
 			foreach (var e in ChangeTracker.Entries())
 			{
-				if (e.Entity is ISoftDeletable sd && e.State == EntityState.Deleted)
-				{
-					// process soft delete condition
-					e.State = EntityState.Modified;
-					sd.IsDeleted = true;
-				}
-
 				if (e.Entity is IChangeTrackable eb)
 				{
 					// update timestamps

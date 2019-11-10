@@ -7,6 +7,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.SubmissionValidations.Models;
@@ -32,10 +33,10 @@ namespace OPCAIC.Persistence.Repositories
 		}
 
 		/// <inheritdoc />
-		public Task<SubmissionValidationStorageDto> FindStorageAsync(long id,
+		public Task<SubmissionValidationDtoBase> FindStorageAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			return GetDtoByIdAsync<SubmissionValidationStorageDto>(id, cancellationToken);
+			return GetDtoByIdAsync<SubmissionValidationDtoBase>(id, cancellationToken);
 		}
 
 		public Task<bool> UpdateJobStateAsync(Guid jobId, JobStateUpdateDto dto,

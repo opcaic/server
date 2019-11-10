@@ -5,7 +5,7 @@ namespace OPCAIC.Domain.Entities
 	/// <summary>
 	///     Represents a single match in a tournament.
 	/// </summary>
-	public class Match : SoftDeletableEntity
+	public class Match : Entity
 	{
 		/// <summary>
 		///     Index of the match in a tournament.

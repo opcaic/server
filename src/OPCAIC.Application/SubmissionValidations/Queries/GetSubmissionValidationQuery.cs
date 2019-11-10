@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
-using OPCAIC.Application.Dtos.SubmissionValidations;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure;
@@ -84,8 +84,7 @@ namespace OPCAIC.Application.SubmissionValidations.Queries
 				var dto = await repository
 					.GetAsync<SubmissionValidation, TResponse>(request.ValidationId, mapper, cancellationToken);
 
-				var logs = logStorage.GetSubmissionValidationLogs(
-					new SubmissionValidationStorageDto {Id = request.ValidationId});
+				var logs = logStorage.GetSubmissionValidationLogs(dto);
 
 				dto.AddLogs(logs);
 				return dto;

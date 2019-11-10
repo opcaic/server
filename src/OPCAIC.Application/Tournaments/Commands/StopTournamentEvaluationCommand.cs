@@ -36,12 +36,12 @@ namespace OPCAIC.Application.Tournaments.Commands
 				if (tournament.State != TournamentState.Running && tournament.State != TournamentState.Paused)
 				{
 					throw new BadTournamentStateException(request.TournamentId,
-						nameof(TournamentState.Running), tournament.State.ToString());
+						TournamentState.Running, tournament.State);
 				}
 				if (tournament.Scope != TournamentScope.Ongoing)
 				{
 					throw new BadTournamentScopeException(request.TournamentId,
-						nameof(TournamentScope.Ongoing), tournament.Scope.ToString());
+						TournamentScope.Ongoing, tournament.Scope);
 				}
 
 				// Will be transitioned to finished by TournamentProcessor when all matches finish

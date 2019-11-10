@@ -6,7 +6,7 @@ namespace OPCAIC.Domain.Entities
 	/// <summary>
 	///     Result of a validation process of a submission.
 	/// </summary>
-	public class SubmissionValidation : SoftDeletableEntity, IWorkerJob
+	public class SubmissionValidation : Entity, IWorkerJob
 	{
 		/// <summary>
 		///     Id of the validated submission.

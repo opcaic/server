@@ -4,7 +4,7 @@ using OPCAIC.Utils;
 
 namespace OPCAIC.Application.Exceptions
 {
-	public class BusinessException : Exception
+	public class BusinessException : AppException
 	{
 		public BusinessException(ApplicationError error)
 		{

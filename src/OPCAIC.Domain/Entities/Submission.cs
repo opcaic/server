@@ -6,7 +6,7 @@ namespace OPCAIC.Domain.Entities
 	/// <summary>
 	///     Represents a bot submission to a tournament.
 	/// </summary>
-	public class Submission : SoftDeletableEntity
+	public class Submission : Entity
 	{
 		/// <summary>
 		///     Id of the user who created this submission.

@@ -12,7 +12,7 @@
 		ManageInvites,
 		Join,
 		DownloadAdditionalFiles,
-		UploadAdditionalFiles,
+		ManageAdditionalFiles,
 		StartEvaluation,
 		PauseEvaluation,
 		UnpauseEvaluation,

@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using Newtonsoft.Json.Linq;
+using OPCAIC.Application.Dtos.BaseDtos;
+using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
@@ -43,6 +45,7 @@ namespace OPCAIC.Application.Test.MatchExecutions
 		{
 			Created = DateTime.Now,
 			AdditionalData = new JObject(),
+			Match = new MatchReferenceDto(),
 			BotResults = new List<MatchExecutionDetailDto.SubmissionResultDetailDto>
 			{
 				new MatchExecutionDetailDto.SubmissionResultDetailDto
@@ -86,15 +89,15 @@ namespace OPCAIC.Application.Test.MatchExecutions
 			}, CancellationToken);
 
 			storageService.Setup(s
-					=> s.ReadMatchResultArchive(It.Is<MatchExecutionStorageDto>(d => d.Id == successfulExecutionPreviewDto.Id)))
+					=> s.ReadMatchResultArchive(It.Is<MatchExecutionDtoBase>(d => d.Id == successfulExecutionPreviewDto.Id)))
 				.Returns((Stream) null);
 
 			logStorageService
 				.Setup(r => r.GetMatchExecutionLogs(
-					It.IsAny<MatchExecutionStorageDto>()))
+					It.IsAny<MatchExecutionDtoBase>()))
 				.Returns(new MatchExecutionLogsDto { ExecutorLog = "log" });
 
-			var dto = await Send<GetMatchExecutionQuery, MatchExecutionDetailDto>(new GetMatchExecutionQuery(successfulExecutionPreviewDto.Id));
+			var dto = await Handler.Handle(new GetMatchExecutionQuery(successfulExecutionPreviewDto.Id), CancellationToken);
 				
 			dto.BotResults[0].Score.ShouldBe(1.0);
 			dto.BotResults[1].Score.ShouldBe(0.0);

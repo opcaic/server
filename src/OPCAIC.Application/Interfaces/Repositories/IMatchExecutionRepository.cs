@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.MatchExecutions.Models;
 using OPCAIC.Application.Specifications;
@@ -20,7 +21,7 @@ namespace OPCAIC.Application.Interfaces.Repositories
 		/// <param name="id">Id of the match execution.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		Task<MatchExecutionStorageDto> FindExecutionForStorageAsync(long id,
+		Task<MatchExecutionDtoBase> FindExecutionForStorageAsync(long id,
 			CancellationToken cancellationToken = default);
 
 		Task<List<MatchExecutionRequestDataDto>> GetRequestsForSchedulingAsync(int count,

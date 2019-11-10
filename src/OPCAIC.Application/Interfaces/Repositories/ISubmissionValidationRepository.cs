@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.SubmissionValidations.Models;
@@ -16,7 +17,7 @@ namespace OPCAIC.Application.Interfaces.Repositories
 			ILookupRepository<SubmissionValidationPreviewDto>,
 			IRepository<SubmissionValidation>
 	{
-		Task<SubmissionValidationStorageDto> FindStorageAsync(long id,
+		Task<SubmissionValidationDtoBase> FindStorageAsync(long id,
 			CancellationToken cancellationToken);
 
 		Task<bool> UpdateJobStateAsync(Guid jobId, JobStateUpdateDto dto,

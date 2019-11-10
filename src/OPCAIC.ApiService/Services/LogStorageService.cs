@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.SubmissionValidations;
 using OPCAIC.Application.Interfaces;
@@ -21,7 +22,7 @@ namespace OPCAIC.ApiService.Services
 
 		/// <inheritdoc />
 		public SubmissionValidationLogsDto GetSubmissionValidationLogs(
-			SubmissionValidationStorageDto storage)
+			SubmissionValidationDtoBase storage)
 		{
 			var logs = new SubmissionValidationLogsDto();
 
@@ -62,7 +63,7 @@ namespace OPCAIC.ApiService.Services
 		}
 
 		/// <inheritdoc />
-		public MatchExecutionLogsDto GetMatchExecutionLogs(MatchExecutionStorageDto storage)
+		public MatchExecutionLogsDto GetMatchExecutionLogs(MatchExecutionDtoBase storage)
 		{
 			var logs = new MatchExecutionLogsDto();
 
