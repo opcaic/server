@@ -33,6 +33,11 @@ namespace OPCAIC.Domain.Entities
 		public virtual IList<MatchExecution> Executions { get; set; }
 
 		/// <summary>
+		///     Id of the <see cref="LastExecution"/>
+		/// </summary>
+		public long? LastExecutionId { get; set; }
+
+		/// <summary>
 		///     Last execution of this match which determines the match state and winner.
 		/// </summary>
 		public virtual MatchExecution LastExecution { get; set; }

@@ -14,6 +14,7 @@ using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Services;
 using OPCAIC.ApiService.Utils;
+using OPCAIC.Domain.Enums;
 using OPCAIC.Persistence;
 
 namespace OPCAIC.FunctionalTest.Infrastructure
@@ -63,6 +64,8 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 					services.AddSingleton(options);
 					services.AddSingleton<DbContextOptions>(options);
 
+					services.AddTransient<IDatabaseSeed, ApplicationTestSeed>();
+
 					services.Configure<SeedConfig>(cfg =>
 					{
 						cfg.AdminEmail = "admin@opcaic.com";
@@ -82,7 +85,7 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 
 						// confirm admin email
 						var mgr = scope.ServiceProvider.GetRequiredService<UserManager>();
-						var user = mgr.Users.Single();
+						var user = mgr.Users.Single(u => u.Role == UserRole.Admin);
 						var token = mgr.GenerateEmailConfirmationTokenAsync(user).GetAwaiter().GetResult();
 						mgr.ConfirmEmailAsync(user, token).GetAwaiter().GetResult().ThrowIfFailed();
 					}

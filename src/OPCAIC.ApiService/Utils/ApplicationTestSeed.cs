@@ -148,7 +148,7 @@ namespace OPCAIC.ApiService.Utils
 		{
 			// dev settings: recreate the database
 			context.Database.EnsureDeleted();
-			context.Database.Migrate();
+			context.Database.EnsureCreated();
 
 			// delete all existing files to prevent inconsistent state
 			var conf = services.GetRequiredService<IOptions<StorageConfiguration>>()

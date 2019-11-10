@@ -72,9 +72,9 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 				.GetRequiredService<IOptions<MvcNewtonsoftJsonOptions>>().Value.SerializerSettings;
 		}
 
-		protected Task<HttpResponseMessage> GetAsync(string url)
+		protected Task<HttpResponseMessage> GetAsync(string url, bool dump = true)
 		{
-			return SendAsync(HttpMethod.Get, url);
+			return SendAsync(HttpMethod.Get, url, null, dump);
 		}
 
 		protected async Task<T> GetAsync<T>(string url)
@@ -88,6 +88,11 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 			authHeader = new AuthenticationHeaderValue("Bearer", token);
 		}
 
+		protected void Logout()
+		{
+			authHeader = null;
+		}
+
 		private string Serialize(object o)
 		{
 			return JsonConvert.SerializeObject(o, serializerSettings);
@@ -98,7 +103,7 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 			return JsonConvert.DeserializeObject<T>(json, serializerSettings);
 		}
 
-		protected Task<HttpResponseMessage> PostAsync(string url, object body, bool dump = true)
+		protected Task<HttpResponseMessage> PostAsync(string url, object body = null, bool dump = true)
 		{
 			return SendAsync(HttpMethod.Post, url, JsonContent(body), dump);
 		}

@@ -126,7 +126,7 @@ namespace OPCAIC.ApiService.Controllers
 		public async Task<SubmissionAdminDto> GetSubmissionByIdForAdminAsync(long id,
 			CancellationToken cancellationToken)
 		{
-			await authorizationService.CheckPermission(User, id, SubmissionPermission.Read);
+			await authorizationService.CheckPermission(User, id, SubmissionPermission.ReadAdmin);
 			return await mediator.Send(new GetSubmissionAdminQuery(id), cancellationToken);
 		}
 

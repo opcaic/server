@@ -10,7 +10,7 @@ namespace OPCAIC.Application.Infrastructure
 			List = list;
 		}
 
-		public int Total { get; }
-		public List<T> List { get; }
+		public int Total { get; set; }
+		public List<T> List { get; set; }
 	}
 }

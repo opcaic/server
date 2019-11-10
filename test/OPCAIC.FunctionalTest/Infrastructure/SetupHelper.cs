@@ -1,4 +1,5 @@
-﻿using Bogus;
+﻿using System.Linq;
+using Bogus;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Services;
 using OPCAIC.ApiService.Test;
@@ -35,8 +36,8 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 			var ctx = fixture.GetServerService<DataContext>();
 			var game = new Game
 			{
-				Name = "A testing game",
-				Key = "testGame1231241",
+				Name = "A testing game " + Faker.IndexFaker++,
+				Key = "game" + Faker.IndexFaker++,
 				Type = GameType.TwoPlayer,
 				Description = "A trivial game for testing purposes",
 				ImageUrl =
@@ -62,10 +63,17 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 			tournament.Game = game;
 			tournament.Owner = owner;
 			tournament.Format = game.Type.SupportedFormats[0];
+			tournament.Scope = TournamentScope.Deadline;
 
 			ctx.Add(tournament);
 			ctx.SaveChanges();
 			return tournament;
+		}
+
+		public static User GetAdminUser(this FunctionalTestFixture fixture)
+		{
+			var ctx = fixture.GetServerService<DataContext>();
+			return ctx.Users.FirstOrDefault(u => u.Role == UserRole.Admin);
 		}
 	}
 }
