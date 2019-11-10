@@ -119,15 +119,15 @@ namespace OPCAIC.ApiService.Controllers
 		/// <response code="403">User does not have permissions to view given submission.</response>
 		/// <response code="404">Resource was not found.</response>
 		[HttpGet("{id}/admin")]
-		[ProducesResponseType(typeof(SubmissionDetailDto), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(SubmissionAdminDto), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<SubmissionDetailDto> GetSubmissionByIdForAdminAsync(long id,
+		public async Task<SubmissionAdminDto> GetSubmissionByIdForAdminAsync(long id,
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermission(User, id, SubmissionPermission.Read);
-			return await mediator.Send(new GetSubmissionQuery(id), cancellationToken);
+			return await mediator.Send(new GetSubmissionAdminQuery(id), cancellationToken);
 		}
 
 		/// <summary>
