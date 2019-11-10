@@ -51,6 +51,10 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case SubmissionPermission.QueueValidation:
 					return Task.FromResult(false); // admin only
 
+				case SubmissionPermission.ReadAdmin:
+					return repository.GetStructAsync(id.Value, s =>
+						s.Tournament.OwnerId == userId ||
+						s.Tournament.Managers.Any(m => m.UserId == userId));
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
 			}

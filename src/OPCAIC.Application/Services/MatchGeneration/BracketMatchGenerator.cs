@@ -42,7 +42,7 @@ namespace OPCAIC.Application.Services.MatchGeneration
 				case MatchTreeLinkType.Winner:
 				case MatchTreeLinkType.Looser:
 					var execution = ctx.QueuedMatches.GetValueOrDefault(link.SourceNode.MatchIndex)?
-						.Executions.OrderBy(e => e.Created).First();
+						.LastExecution;
 
 					if (execution?.ExecutorResult != EntryPointResult.Success)
 					{
@@ -119,7 +119,7 @@ namespace OPCAIC.Application.Services.MatchGeneration
 		{
 			Debug.Assert(match.Submissions.Count == 2);
 
-			var results = match.Executions?.OrderBy(e => e.Created).FirstOrDefault()?.BotResults;
+			var results = match.LastExecution?.BotResults;
 
 			switch (strategy)
 			{

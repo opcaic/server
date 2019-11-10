@@ -4,13 +4,14 @@ using OPCAIC.Application.Dtos.Base;
 using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Application.SubmissionValidations.Models;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Submissions.Models
 {
-	public class SubmissionPreviewDto : SubmissionDtoBase, ICustomMapping
+	public abstract class SubmissionPreviewDtoBase : SubmissionDtoBase, ICustomMapping
 	{
 		public double Score { get; set; }
 		public UserReferenceDto Author { get; set; }
@@ -22,10 +23,15 @@ namespace OPCAIC.Application.Submissions.Models
 		/// <inheritdoc />
 		void ICustomMapping.CreateMapping(Profile configuration)
 		{
-			configuration.CreateMap<Submission, SubmissionPreviewDto>(MemberList.Destination)
+			configuration.CreateMap<Submission, SubmissionPreviewDtoBase>(MemberList.Destination)
 				.ForMember(s => s.IsActive,
 					opt => opt.MapFrom(s => s.TournamentParticipation.ActiveSubmissionId == s.Id))
 				.IncludeAllDerived();
 		}
+	}
+
+	public class SubmissionPreviewDto : SubmissionPreviewDtoBase
+	{
+		public SubmissionValidationPreviewDto LastValidation { get; set; }
 	}
 }

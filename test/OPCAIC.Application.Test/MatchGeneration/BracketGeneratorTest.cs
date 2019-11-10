@@ -173,10 +173,7 @@ namespace OPCAIC.Application.Test.MatchGeneration
 					Submissions =
 						m.Submissions.ConvertAll(i => new SubmissionReferenceDto {Id = i}),
 					Index = m.Index,
-					Executions = new List<MatchExecutionDetailDto>
-					{
-						new MatchExecutionDetailDto {Created = DateTime.Now}
-					}
+					LastExecution = new MatchExecutionDetailDto {Created = DateTime.Now}
 				}).ToList();
 
 				toExecute.AddRange(newMatches);
@@ -192,8 +189,8 @@ namespace OPCAIC.Application.Test.MatchGeneration
 				match.Submissions[0].ShouldNotBe(match.Submissions[1]);
 
 				// execute the match
-				ExecuteMatch(match.Executions[0], match.Submissions, resultPicker(match));
-				executions.Add(match.Executions[0]);
+				ExecuteMatch(match.LastExecution, match.Submissions, resultPicker(match));
+				executions.Add(match.LastExecution);
 
 				// invoke generation of next match
 				(matches, done) = generator.Generate(tournament);

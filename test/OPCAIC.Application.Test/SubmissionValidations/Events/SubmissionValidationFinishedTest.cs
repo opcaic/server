@@ -22,8 +22,8 @@ namespace OPCAIC.Application.Test.SubmissionValidations.Events
 		{
 			mediator = Services.Mock<IMediator>(MockBehavior.Strict);
 			validationRepository =
-				Services.Mock<ISubmissionValidationRepository>(MockBehavior.Strict);
-			submissionRepository = Services.Mock<ISubmissionRepository>(MockBehavior.Strict);
+				Services.Mock<IRepository<SubmissionValidation>>(MockBehavior.Strict);
+			submissionRepository = Services.Mock<IRepository<Submission>>(MockBehavior.Strict);
 
 			// setup common code
 			validationRepository.Setup(r
@@ -39,8 +39,8 @@ namespace OPCAIC.Application.Test.SubmissionValidations.Events
 		}
 
 		private readonly Mock<IMediator> mediator;
-		private readonly Mock<ISubmissionValidationRepository> validationRepository;
-		private readonly Mock<ISubmissionRepository> submissionRepository;
+		private readonly Mock<IRepository<SubmissionValidation>> validationRepository;
+		private readonly Mock<IRepository<Submission>> submissionRepository;
 
 		private readonly SubmissionValidationFinished.Handler.Data Data =
 			new SubmissionValidationFinished.Handler.Data
@@ -80,7 +80,11 @@ namespace OPCAIC.Application.Test.SubmissionValidations.Events
 				.Returns(Task.CompletedTask);
 
 			return Handler.Handle(
-				new SubmissionValidationFinished {ValidatorResult = validatorResult,},
+				new SubmissionValidationFinished
+				{
+					ValidatorResult = validatorResult,
+					State = WorkerJobState.Finished
+				},
 				CancellationToken);
 		}
 	}

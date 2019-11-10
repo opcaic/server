@@ -55,6 +55,7 @@
 	public enum SubmissionPermission
 	{
 		Read,
+		ReadAdmin,
 		Update,
 		Download,
 		Search,

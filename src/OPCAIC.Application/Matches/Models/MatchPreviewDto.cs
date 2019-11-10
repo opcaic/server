@@ -58,9 +58,8 @@ namespace OPCAIC.Application.Matches.Models
 
 	public class MatchPreviewDto : MatchDtoBase, IMapFrom<Match>
 	{
-		public override MatchState State => LastExecution.ComputeMatchState();
+		public override MatchState State => LastExecution?.ComputeMatchState() ?? MatchState.Failed;
 
 		public MatchExecutionPreviewDto LastExecution { get; set; }
-
 	}
 }

@@ -10,6 +10,9 @@ namespace OPCAIC.Persistence.Configurations
 		public void Configure(EntityTypeBuilder<Submission> builder)
 		{
 			builder.HasOne(e => e.TournamentParticipation).WithMany(e => e.Submissions).HasForeignKey(nameof(Submission.TournamentId), nameof(Submission.AuthorId));
+
+			builder.HasMany(e => e.Validations).WithOne(e => e.Submission)
+				.HasForeignKey(e => e.SubmissionId);
 		}
 	}
 }

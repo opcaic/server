@@ -9,7 +9,9 @@ using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure.Events;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Logging;
+using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Submissions.Events;
+using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.SubmissionValidations.Events
@@ -27,12 +29,12 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 		{
 			private readonly ILogger<SubmissionValidationFinished> logger;
 			private readonly IMediator mediator;
-			private readonly ISubmissionValidationRepository repository;
-			private readonly ISubmissionRepository submissionRepository;
+			private readonly IRepository<SubmissionValidation> repository;
+			private readonly IRepository<Submission> submissionRepository;
 
-			public Handler(ISubmissionValidationRepository repository,
+			public Handler(IRepository<SubmissionValidation> repository,
 				ILogger<SubmissionValidationFinished> logger,
-				ISubmissionRepository submissionRepository, IMediator mediator)
+				IRepository<Submission> submissionRepository, IMediator mediator)
 			{
 				this.repository = repository;
 				this.logger = logger;
@@ -67,7 +69,7 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 					return; // newer validation exists
 				}
 
-				var validationState = SelectValidationState(notification);
+				var validationState = CalculateValidationState(notification.State, notification.ValidatorResult);
 				await submissionRepository.UpdateAsync(data.SubmissionId,
 					new UpdateValidationStateDto(validationState), cancellationToken);
 
@@ -76,34 +78,20 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 						data.ValidationId, data.UserId, validationState), cancellationToken);
 			}
 
-			public SubmissionValidationState SelectValidationState(
-				SubmissionValidationFinished notification)
+			public static SubmissionValidationState CalculateValidationState(WorkerJobState state, EntryPointResult validatorResult) => state switch
 			{
-				if (notification.State == WorkerJobState.Cancelled)
+				WorkerJobState.Waiting => SubmissionValidationState.Queued,
+				WorkerJobState.Scheduled => SubmissionValidationState.Queued,
+				WorkerJobState.Cancelled => SubmissionValidationState.Cancelled,
+				WorkerJobState.Finished => validatorResult switch
 				{
-					return SubmissionValidationState.Cancelled;
-				}
-
-				switch (notification.ValidatorResult)
-				{
-					case EntryPointResult.Success:
-						return SubmissionValidationState.Valid;
-
-					case EntryPointResult.UserError:
-						return SubmissionValidationState.Invalid;
-
-					case EntryPointResult.Cancelled:
-						return SubmissionValidationState.Cancelled;
-
-					case EntryPointResult.NotExecuted: // validation ended in earlier stage
-					case EntryPointResult.ModuleError:
-					case EntryPointResult.PlatformError:
-						return SubmissionValidationState.Error;
-
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
-			}
+					EntryPointResult.Success => SubmissionValidationState.Valid,
+					EntryPointResult.UserError => SubmissionValidationState.Invalid,
+					_ => SubmissionValidationState.Error
+				},
+				WorkerJobState.Blocked => SubmissionValidationState.Cancelled,
+				_ => throw new ArgumentOutOfRangeException()
+			};
 
 			public class Data
 			{

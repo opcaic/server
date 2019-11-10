@@ -1,8 +1,14 @@
-﻿using OPCAIC.Application.MatchExecutions.Models;
+﻿using OPCAIC.Application.Infrastructure.AutoMapper;
+using OPCAIC.Application.MatchExecutions.Models;
+using OPCAIC.Domain.Entities;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Matches.Models
 {
-	public class MatchDetailDto : MatchDetailDtoBase<MatchExecutionDetailDto, MatchExecutionDetailDto.SubmissionResultDetailDto>
+	public class MatchDetailDto : MatchDtoBase, IMapFrom<Match>
 	{
+		public override MatchState State => LastExecution?.ComputeMatchState() ?? MatchState.Failed;
+
+		public MatchExecutionDetailDto LastExecution { get; set; }
 	}
 }

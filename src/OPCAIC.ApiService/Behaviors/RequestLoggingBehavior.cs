@@ -23,9 +23,6 @@ namespace OPCAIC.ApiService.Behaviors
 		private static readonly Action<ILogger, TRequest, Exception> logAction =
 			LoggerMessage.Define<TRequest>(LogLevel.Information, 0, messageTemplate);
 
-		private static readonly Action<ILogger, TRequest, Exception> logActionError =
-			LoggerMessage.Define<TRequest>(LogLevel.Error, 0, messageTemplate);
-
 		private readonly ILogger<TRequest> logger;
 
 		public RequestLoggingBehavior(ILogger<TRequest> logger)
@@ -38,26 +35,18 @@ namespace OPCAIC.ApiService.Behaviors
 			RequestHandlerDelegate<TResponse> next)
 		{
 			using var scope = logger.CreateScopeWithIds(request);
-			try
+			logAction(logger, request, null);
+
+			var sw = Stopwatch.StartNew();
+
+			var response = await next();
+
+			if (sw.ElapsedMilliseconds > 100)
 			{
-				logAction(logger, request, null);
-
-				var sw = Stopwatch.StartNew();
-
-				var response = await next();
-
-				if (sw.ElapsedMilliseconds > 100)
-				{
-					slowRequestLogAction(logger, sw.ElapsedMilliseconds, request, null);
-				}
-
-				return response;
+				slowRequestLogAction(logger, sw.ElapsedMilliseconds, request, null);
 			}
-			catch (Exception e) when (!(e is AppException))
-			{
-				logActionError(logger, request, e);
-				throw;
-			}
+
+			return response;
 		}
 	}
 }

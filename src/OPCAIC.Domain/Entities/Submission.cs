@@ -49,6 +49,11 @@ namespace OPCAIC.Domain.Entities
 		public virtual IList<SubmissionValidation> Validations { get; set; }
 
 		/// <summary>
+		///     Last validation which determines the validation state of this submission.
+		/// </summary>
+		public virtual SubmissionValidation LastValidation { get; set; }
+
+		/// <summary>
 		///     Resulting state of the validation process.
 		/// </summary>
 		public SubmissionValidationState ValidationState { get; set; }

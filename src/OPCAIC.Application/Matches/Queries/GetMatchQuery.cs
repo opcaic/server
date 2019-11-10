@@ -15,6 +15,7 @@ using OPCAIC.Application.MatchExecutions.Models;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Utils;
+using MatchDtoBase = OPCAIC.Application.Matches.Models.MatchDtoBase;
 
 namespace OPCAIC.Application.Matches.Queries
 {
@@ -34,6 +35,15 @@ namespace OPCAIC.Application.Matches.Queries
 			public Handler(IMapper mapper, IMatchRepository repository, IStorageService storage,
 				ILogStorageService logStorage) : base(mapper, repository, storage, logStorage)
 			{
+			}
+
+			/// <inheritdoc />
+			protected override void PostProcess(QueryData<MatchDetailDto> data)
+			{
+				if (data.Dto.LastExecution != null)
+				{
+					FillExecutionDetails(data.Dto.LastExecution);
+				}
 			}
 		}
 	}
@@ -55,6 +65,15 @@ namespace OPCAIC.Application.Matches.Queries
 				ILogStorageService logStorage) : base(mapper, repository, storage, logStorage)
 			{
 			}
+
+			/// <inheritdoc />
+			protected override void PostProcess(QueryData<MatchAdminDto> data)
+			{
+				foreach (var execution in data.Dto.Executions)
+				{
+					FillExecutionDetails(execution);
+				}
+			}
 		}
 	}
 
@@ -74,7 +93,7 @@ namespace OPCAIC.Application.Matches.Queries
 
 		public abstract class HandlerBase<TRequest, TResponse, TExecution, TSubmission>
 			: IRequestHandler<TRequest, TResponse>
-			where TResponse : MatchDetailDtoBase<TExecution, TSubmission>
+			where TResponse : MatchDtoBase
 			where TSubmission : IAnonymizable
 			where TExecution : MatchExecutionDetailDtoBase<TSubmission>
 			where TRequest : GetMatchQueryBase, IRequest<TResponse>
@@ -113,19 +132,21 @@ namespace OPCAIC.Application.Matches.Queries
 				var data = await repository.GetAsync(spec, cancellationToken);
 				data.AnonymizeIfNecessary(request);
 
-				foreach (var execution in data.Dto.Executions)
-				{
-					var storageDto = new MatchExecutionDtoBase {Id = execution.Id, TournamentId = execution.Match.TournamentId, MatchId = execution.Match.Id};
-
-					execution.AdditionalFiles.AddRange(FileDto
-						.GetFilesInArchive(storage.ReadMatchResultArchive(storageDto))
-						.Where(f => !MatchExecutions.Utils.IsMaskedFile(f.Filename)));
-
-					execution.AddLogs(
-						logStorage.GetMatchExecutionLogs(storageDto));
-				}
+				PostProcess(data);
 
 				return data.Dto;
+			}
+
+			protected abstract void PostProcess(QueryData<TResponse> data);
+
+			protected void FillExecutionDetails(TExecution execution)
+			{
+				execution.AdditionalFiles.AddRange(FileDto
+					.GetFilesInArchive(storage.ReadMatchResultArchive(execution))
+					.Where(f => !MatchExecutions.Utils.IsMaskedFile(f.Filename)));
+
+				execution.AddLogs(
+					logStorage.GetMatchExecutionLogs(execution));
 			}
 		}
 	}

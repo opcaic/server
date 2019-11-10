@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Dtos.Matches;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.AutoMapper;
@@ -10,10 +11,9 @@ using OPCAIC.Domain.Enums;
 namespace OPCAIC.Application.MatchExecutions.Models
 {
 	public abstract class MatchExecutionDtoBase<TSubmissionResult>
-		: IAnonymizable, IMapFrom<MatchExecution>
+		: MatchExecutionDtoBase, IAnonymizable, IMapFrom<MatchExecution>
 		where TSubmissionResult : IAnonymizable
 	{
-		public long Id { get; set; }
 		public EntryPointResult ExecutorResult { get; set; }
 		public List<TSubmissionResult> BotResults { get; set; }
 		public DateTime? Executed { get; set; }

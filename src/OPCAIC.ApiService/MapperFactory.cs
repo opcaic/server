@@ -89,8 +89,6 @@ namespace OPCAIC.ApiService
 			CreateMap<NewSubmissionModel, NewSubmissionDto>(MemberList.Source)
 				.ForSourceMember(d => d.Archive, opt => opt.DoNotValidate());
 
-			CreateMap<SubmissionDetailDto, SubmissionDetailModel>(MemberList.Destination);
-
 			CreateMap<Submission, SubmissionReferenceDto, SubmissionReferenceModel>(MemberList
 				.Destination);
 		}
