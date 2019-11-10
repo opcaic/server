@@ -30,7 +30,7 @@ namespace OPCAIC.Application.Submissions.Models
 		}
 	}
 
-	public class SubmissionPreviewDto : SubmissionPreviewDtoBase
+	public class SubmissionPreviewDto : SubmissionPreviewDtoBase, IMapFrom<Submission>
 	{
 		public SubmissionValidationPreviewDto LastValidation { get; set; }
 	}
