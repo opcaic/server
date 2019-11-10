@@ -161,14 +161,19 @@ namespace OPCAIC.Application.Infrastructure.Validation
 		private static void ValidateGameConfiguration(CustomContext context, JObject config,
 			string schema)
 		{
-			if (!config.IsValid(JSchema.Parse(schema), out IList<string> errors))
+			if (!config.IsValid(JSchema.Parse(schema),
+				out IList<Newtonsoft.Json.Schema.ValidationError> errors))
 			{
 				context.AddFailure(
 					new ValidationFailure(context.PropertyName,
 						"Configuration does not validate against game's schema")
 					{
 						ErrorCode = ValidationErrorCodes.InvalidConfiguration,
-						CustomState = new Dictionary<string, object> {["errors"] = errors}
+						CustomState = new Dictionary<string, object>
+						{
+							["errors"] = errors.Select(e
+								=> new {e.Value, e.ErrorType, e.Path, e.Message})
+						}
 					});
 			}
 		}
