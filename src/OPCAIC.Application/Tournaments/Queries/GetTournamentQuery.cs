@@ -5,6 +5,7 @@ using AutoMapper;
 using MediatR;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure.Queries;
+using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Tournaments.Models;
 using OPCAIC.Domain.Entities;
@@ -23,12 +24,14 @@ namespace OPCAIC.Application.Tournaments.Queries
 		{
 			private readonly IMapper mapper;
 			private readonly IRepository<Tournament> repository;
+			private readonly IStorageService storage;
 
 			/// <inheritdoc />
-			public Handler(IMapper mapper, IRepository<Tournament> repository)
+			public Handler(IMapper mapper, IRepository<Tournament> repository, IStorageService storage)
 			{
 				this.mapper = mapper;
 				this.repository = repository;
+				this.storage = storage;
 			}
 
 			/// <inheritdoc />
@@ -43,6 +46,8 @@ namespace OPCAIC.Application.Tournaments.Queries
 				}), cancellationToken);
 
 				data.dto.MenuItems = mapper.Map<List<MenuItemDto>>(data.menu);
+				await using var archive = storage.ReadTournamentAdditionalFiles(request.Id);
+				data.dto.AdditionalFilesLength = archive?.Length;
 				return data.dto;
 			}
 		}

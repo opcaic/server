@@ -128,11 +128,6 @@ namespace OPCAIC.Domain.Entities
 		public virtual ICollection<Document> Documents { get; set; }
 
 		/// <summary>
-		///     Whether there are additional files needed for match execution and submission validation.
-		/// </summary>
-		public bool HasAdditionalFiles { get; set; }
-
-		/// <summary>
 		///     Image url that is used both in tournament list and tournament detail.
 		/// </summary>
 		public string ImageUrl { get; set; }

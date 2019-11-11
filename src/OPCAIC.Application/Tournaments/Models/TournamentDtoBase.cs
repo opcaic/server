@@ -35,8 +35,6 @@ namespace OPCAIC.Application.Tournaments.Models
 
 		public int ActiveSubmissionsCount { get; set; }
 
-		public bool HasAdditionalFiles { get; set; }
-
 		public string ImageUrl { get; set; }
 
 		public double? ImageOverlay { get; set; }

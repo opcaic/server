@@ -18,6 +18,7 @@
 		UnpauseEvaluation,
 		StopEvaluation,
 		Publish,
+		ReadManagers,
 		ManageManagers,
 		ManageDocuments
 	}

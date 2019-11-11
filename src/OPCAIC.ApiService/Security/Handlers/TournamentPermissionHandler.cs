@@ -43,6 +43,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case TournamentPermission.UnpauseEvaluation:
 				case TournamentPermission.Publish:
 				case TournamentPermission.ManageDocuments:
+				case TournamentPermission.ReadManagers:
 					// only owner and managers
 					return IsOwnerOrManager(userId, id);
 
@@ -68,7 +69,6 @@ namespace OPCAIC.ApiService.Security.Handlers
 					}
 
 					return IsOwnerOrManager(userId, id);
-
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
 			}

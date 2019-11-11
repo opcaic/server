@@ -246,10 +246,6 @@ namespace OPCAIC.ApiService.Controllers
 			await authorizationService.CheckPermission(User, model.TournamentId,
 				TournamentPermission.ManageAdditionalFiles);
 
-			await mediator.Send(
-				new TournamentAdditionalFilesUploadedCommand { TournamentId = model.TournamentId },
-				cancellationToken);
-
 			await using var stream = storage.WriteTournamentAdditionalFiles(model.TournamentId, true);
 			await model.Archive.CopyToAsync(stream, cancellationToken);
 		}
@@ -406,7 +402,7 @@ namespace OPCAIC.ApiService.Controllers
 			CancellationToken cancellationToken)
 		{
 			await authorizationService.CheckPermission(User, tournamentId,
-				TournamentPermission.ManageManagers);
+				TournamentPermission.ReadManagers);
 
 			return await mediator.Send(
 				new GetTournamentManagersQuery(tournamentId),
