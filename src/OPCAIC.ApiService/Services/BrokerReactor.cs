@@ -52,6 +52,30 @@ namespace OPCAIC.ApiService.Services
 				=> Task.Run(() => ScopeExecute((sp, ct) => OnTaskExpired(sp, msg, ct)));
 		}
 
+
+		protected override async Task Init(IServiceProvider services, CancellationToken cancellationToken)
+		{
+			var executionRepository = services.GetRequiredService<IRepository<MatchExecution>>();
+			var executions = await executionRepository.ListAsync(e => e.State == WorkerJobState.Scheduled, cancellationToken);
+
+			foreach (var e in executions)
+			{
+				e.State = WorkerJobState.Waiting;
+			}
+
+			await executionRepository.SaveChangesAsync(cancellationToken);
+
+			var validationRepository = services.GetRequiredService<IRepository<SubmissionValidation>>();
+			var validations = await executionRepository.ListAsync(e => e.State == WorkerJobState.Scheduled, cancellationToken);
+
+			foreach (var v in validations)
+			{
+				v.State = WorkerJobState.Waiting;
+			}
+
+			await validationRepository.SaveChangesAsync(cancellationToken);
+		}
+
 		/// <inheritdoc />
 		protected override async Task ExecuteJob(IServiceProvider scopedProvider,
 			CancellationToken cancellationToken)
@@ -122,7 +146,7 @@ namespace OPCAIC.ApiService.Services
 
 			await broker.EnqueueWork(request);
 			await repository.UpdateAsync(data.Id,
-				new JobStateUpdateDto {State = WorkerJobState.Scheduled},
+				new JobStateUpdateDto { State = WorkerJobState.Scheduled },
 				cancellationToken);
 		}
 
@@ -133,12 +157,13 @@ namespace OPCAIC.ApiService.Services
 			var request = new MatchExecutionRequest
 			{
 				JobId = data.JobId,
+				MatchId = data.MatchId,
 				ExecutionId = data.Id,
 				TournamentId = data.TournamentId,
 				Configuration = data.TournamentConfiguration,
 				GameKey = data.GameKey,
 				Bots =
-					data.SubmissionIds.Select(id => new BotInfo {SubmissionId = id}).ToList(),
+					data.SubmissionIds.Select(id => new BotInfo { SubmissionId = id }).ToList(),
 				AdditionalFilesUri = workerService.GetAdditionalFilesUrl(data.TournamentId),
 				AccessToken = workerService.GenerateWorkerToken(new ClaimsIdentity(data
 					.SubmissionIds
@@ -153,7 +178,7 @@ namespace OPCAIC.ApiService.Services
 
 			await broker.EnqueueWork(request);
 			await repository.UpdateAsync(data.Id,
-				new JobStateUpdateDto {State = WorkerJobState.Scheduled},
+				new JobStateUpdateDto { State = WorkerJobState.Scheduled },
 				cancellationToken);
 		}
 
@@ -166,7 +191,7 @@ namespace OPCAIC.ApiService.Services
 
 			// fill notification ids
 			var data = await repository.GetAsync(e => e.JobId == result.JobId,
-				e => new {e.Id, e.MatchId, e.Match.TournamentId, e.Match.Tournament.GameId},
+				e => new { e.Id, e.MatchId, e.Match.TournamentId, e.Match.Tournament.GameId },
 				cancellationToken);
 
 			notification.Executed = time.Now;
@@ -220,7 +245,7 @@ namespace OPCAIC.ApiService.Services
 					Logger.SubmissionValidationExpired(req.JobId);
 					await services.GetRequiredService<IRepository<SubmissionValidation>>()
 						.UpdateAsync(req.ValidationId,
-							new JobStateUpdateDto {State = WorkerJobState.Waiting},
+							new JobStateUpdateDto { State = WorkerJobState.Waiting },
 							CancellationToken.None);
 					return;
 
@@ -228,7 +253,7 @@ namespace OPCAIC.ApiService.Services
 					Logger.MatchExecutionExpired(req.JobId);
 					await services.GetRequiredService<IRepository<MatchExecution>>().UpdateAsync(
 						req.ExecutionId,
-						new JobStateUpdateDto {State = WorkerJobState.Waiting}, cancellationToken);
+						new JobStateUpdateDto { State = WorkerJobState.Waiting }, cancellationToken);
 					return;
 
 				default:

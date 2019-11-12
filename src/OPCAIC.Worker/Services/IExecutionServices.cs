@@ -8,9 +8,9 @@ namespace OPCAIC.Worker.Services
 		/// <summary>
 		///     Gets working directory for the given work task.
 		/// </summary>
-		/// <param name="request">The message defining the task.</param>
+		/// <param name="workIdentifier"></param>
 		/// <returns></returns>
-		DirectoryInfo GetWorkingDirectory(WorkMessageBase request);
+		DirectoryInfo GetWorkingDirectory(string workIdentifier);
 
 		/// <summary>
 		///     Archives the contents of the given directory.

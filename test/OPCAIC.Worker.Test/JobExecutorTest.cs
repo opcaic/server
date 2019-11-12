@@ -39,7 +39,7 @@ namespace OPCAIC.Worker.Test
 				.Returns(GameModuleMock.Object);
 
 			ExecutionServicesMock
-				.Setup(s => s.GetWorkingDirectory(It.IsAny<WorkMessageBase>()))
+				.Setup(s => s.GetWorkingDirectory(It.IsAny<string>()))
 				.Returns(NewDirectory);
 
 			DownloadServiceMock = Services.Mock<IDownloadService>();

@@ -29,7 +29,7 @@ namespace OPCAIC.Broker.Runner
 			using (logger.BeginScope("Check"))
 			{
 				logger.LogInformation("Simulating work...");
-				Thread.Sleep(workTime);
+				await Task.Delay(workTime, cancellationToken);
 			}
 
 			return null;
@@ -43,7 +43,7 @@ namespace OPCAIC.Broker.Runner
 			using (logger.BeginScope("Compile"))
 			{
 				logger.LogInformation("Simulating work...");
-				Thread.Sleep(workTime);
+				await Task.Delay(workTime, cancellationToken);
 			}
 
 			return null;
@@ -58,7 +58,7 @@ namespace OPCAIC.Broker.Runner
 			using (logger.BeginScope("Validate"))
 			{
 				logger.LogInformation("Simulating work...");
-				Thread.Sleep(workTime);
+				await Task.Delay(workTime, cancellationToken);
 			}
 
 			return null;
@@ -72,20 +72,22 @@ namespace OPCAIC.Broker.Runner
 			using (logger.BeginScope("Execute"))
 			{
 				logger.LogInformation("Simulating work...");
-				Thread.Sleep(workTime);
+				await Task.Delay(workTime, cancellationToken);
 			}
 
 			return null;
 		}
 
 		/// <inheritdoc />
-		public async Task Clean(CancellationToken cancellationToken)
+		public async Task<CleanerResult> Clean(EntryPointConfiguration config, CancellationToken cancellationToken)
 		{
 			using (logger.BeginScope("Clean"))
 			{
 				logger.LogInformation("Simulating work...");
-				Thread.Sleep(workTime);
+				await Task.Delay(workTime, cancellationToken);
 			}
+
+			return null;
 		}
 	}
 }

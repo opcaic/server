@@ -40,6 +40,12 @@ namespace OPCAIC.Worker.Services
 		}
 
 		/// <inheritdoc />
+		protected override string GetWorkIdentifier(SubmissionValidationRequest request)
+		{
+			return $"submission-{request.SubmissionId}-validation-{request.ValidationId}";
+		}
+
+		/// <inheritdoc />
 		protected override IDisposable CreateLoggingScope(SubmissionValidationRequest request)
 		{
 			return Logger.SubmissionValidationScope(request);

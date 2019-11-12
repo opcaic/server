@@ -21,6 +21,12 @@ namespace OPCAIC.Worker.Services
 		}
 
 		/// <inheritdoc />
+		protected override string GetWorkIdentifier(MatchExecutionRequest request)
+		{
+			return $"match-{request.MatchId}-execution-{request.ExecutionId}";
+		}
+
+		/// <inheritdoc />
 		protected override IDisposable CreateLoggingScope(MatchExecutionRequest request)
 		{
 			return Logger.MatchExecutionScope(request);
@@ -44,7 +50,6 @@ namespace OPCAIC.Worker.Services
 				return;
 			}
 
-			Logger.LogInformation("Executing the match.");
 			ExecutorResult result;
 			(Response.ExecutorResult, result) = await Execute(Submissions);
 

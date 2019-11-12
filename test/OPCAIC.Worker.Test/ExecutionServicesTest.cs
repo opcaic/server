@@ -42,12 +42,12 @@ namespace OPCAIC.Worker.Test
 		[Fact]
 		public void CreatesWorkDirForJob()
 		{
-			var id = Guid.NewGuid();
+			var id = Guid.NewGuid().ToString();
 
-			var dir = ExecutionServices.GetWorkingDirectory(new MatchExecutionRequest { JobId = id });
+			var dir = ExecutionServices.GetWorkingDirectory(id);
 
 			Assert.True(dir.Exists);
-			Assert.True(Directory.Exists(Path.Combine(workdir.FullName, id.ToString())));
+			Assert.True(Directory.Exists(Path.Combine(workdir.FullName, id)));
 		}
 
 		[Fact]

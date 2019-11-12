@@ -61,7 +61,8 @@ namespace OPCAIC.GameModules.Interface
 		/// <summary>
 		///     Invokes the Cleaner entry point to reset the game module after a crash.
 		/// </summary>
+		/// <param name="config">Configuration to be used.</param>
 		/// <param name="cancellationToken">Cancellation token used to cancel the request prematurely.</param>
-		Task Clean(CancellationToken cancellationToken);
+		Task<CleanerResult> Clean(EntryPointConfiguration config, CancellationToken cancellationToken);
 	}
 }

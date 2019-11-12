@@ -33,7 +33,7 @@ namespace OPCAIC.Worker.Services
 		}
 
 		/// <summary>
-		///     Configuration of the
+		///     Configuration for entry points to be executed on the game module.
 		/// </summary>
 		private EntryPointConfiguration EntryPointConfig { get; }
 
@@ -107,6 +107,13 @@ namespace OPCAIC.Worker.Services
 		/// </summary>
 		protected CancellationToken CancellationToken { get; private set; }
 
+		/// <summary>
+		///     Returns a unique string identifier for this task.
+		/// </summary>
+		/// <param name="request">The request for the work done.</param>
+		/// <returns></returns>
+		protected abstract string GetWorkIdentifier(TRequest request);
+
 		/// <inheritdoc />
 		public async Task<TResult> ExecuteAsync(TRequest request,
 			CancellationToken cancellationToken = new CancellationToken())
@@ -123,7 +130,7 @@ namespace OPCAIC.Worker.Services
 				{
 					// create directory structure 
 					GameModule = GameModuleRegistry.FindGameModule(request.GameKey);
-					TaskDirectory = Services.GetWorkingDirectory(request);
+					TaskDirectory = Services.GetWorkingDirectory(GetWorkIdentifier(request));
 					SourcesDirectory =
 						TaskDirectory.CreateSubdirectory(Constants.DirectoryNames.Source);
 					BinariesDirectory =
@@ -147,8 +154,9 @@ namespace OPCAIC.Worker.Services
 				{
 					if (TaskDirectory != null)
 					{
-						await UploadResults();
 						Services.ArchiveDirectory(TaskDirectory, Response.JobStatus == JobStatus.Ok);
+						await UploadResults();
+						await Cleanup();
 						TaskDirectory.Delete(true);
 					}
 				}
@@ -240,8 +248,16 @@ namespace OPCAIC.Worker.Services
 		protected Task<(SubTaskResult status, ExecutorResult result)>
 			Execute(IEnumerable<SubmissionData> subs)
 		{
+			Logger.LogInformation("Executing the match.");
 			return Invoke(nameof(IGameModule.Execute), GameModule.Execute,
 				subs.Select(s => s.BotInfo));
+		}
+
+		protected async Task<SubTaskResult> Cleanup()
+		{
+			Logger.LogInformation($"Cleaning up");
+			return (await Invoke<CleanerResult, object>(nameof(IGameModule.Clean),
+				(cfg, a, dir, token) => GameModule.Clean(cfg, token), null)).status;
 		}
 
 		private async Task<(SubTaskResult status, TModuleResult result)>

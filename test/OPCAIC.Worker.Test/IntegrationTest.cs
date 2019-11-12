@@ -41,7 +41,7 @@ namespace OPCAIC.Worker.Test
 
 			executionServicesMock = Services.Mock<IExecutionServices>();
 			executionServicesMock
-				.Setup(s => s.GetWorkingDirectory(It.IsAny<WorkMessageBase>()))
+				.Setup(s => s.GetWorkingDirectory(It.IsAny<string>()))
 				.Returns(NewDirectory);
 
 			downloadServiceMock = Services.Mock<IDownloadService>();

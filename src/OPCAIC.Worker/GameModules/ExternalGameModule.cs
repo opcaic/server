@@ -59,7 +59,7 @@ namespace OPCAIC.Worker.GameModules
 			{
 				WorkingDirectory = rootDir,
 				EntryPoint = moduleConfig.Checker,
-				Arguments = {config.AdditionalFiles.FullName, bot.SourceDirectory.FullName}
+				Arguments = { config.AdditionalFiles.FullName, bot.SourceDirectory.FullName }
 			};
 
 			return ConfigureAndInvoke<CheckerResult>(procStart, logPrefix, config,
@@ -108,7 +108,7 @@ namespace OPCAIC.Worker.GameModules
 			{
 				WorkingDirectory = rootDir,
 				EntryPoint = moduleConfig.Validator,
-				Arguments = {config.AdditionalFiles.FullName, bot.BinaryDirectory.FullName}
+				Arguments = { config.AdditionalFiles.FullName, bot.BinaryDirectory.FullName }
 			};
 
 			return ConfigureAndInvoke<ValidatorResult>(procStart, logPrefix, config,
@@ -133,7 +133,7 @@ namespace OPCAIC.Worker.GameModules
 			{
 				WorkingDirectory = rootDir,
 				EntryPoint = moduleConfig.Executor,
-				Arguments = {config.AdditionalFiles.FullName}
+				Arguments = { config.AdditionalFiles.FullName }
 			};
 			// 1..N participating bots
 			procStart.Arguments.AddRange(binDirs);
@@ -155,23 +155,41 @@ namespace OPCAIC.Worker.GameModules
 		}
 
 		/// <inheritdoc />
-		public Task Clean(CancellationToken cancellationToken)
+		public Task<CleanerResult> Clean(EntryPointConfiguration config, CancellationToken cancellationToken)
 		{
-			return Task.CompletedTask;
+			Require.ArgNotNull(config, nameof(config));
+
+			var procStart = new GameModuleProcessArgs
+			{
+				WorkingDirectory = rootDir,
+				EntryPoint = moduleConfig.Cleanup,
+				Arguments = { config.AdditionalFiles.FullName }
+			};
+
+			return ConfigureAndInvoke<CleanerResult>(procStart, null, config, cancellationToken);
 		}
 
-		private async Task<T> ConfigureAndInvoke<T>(GameModuleProcessArgs procStart,
+		private async Task<T> ConfigureAndInvoke<T>(GameModuleProcessArgs args,
 			string logPrefix,
 			EntryPointConfiguration config, CancellationToken cancellationToken)
 			where T : GameModuleResult, new()
 		{
 			var configPath = Path.Combine(config.AdditionalFiles.FullName,
 				Constants.FileNames.GameModuleConfig);
-			File.WriteAllText(
-				configPath,
+			File.WriteAllText(configPath,
 				JsonConvert.SerializeObject(config.Configuration));
 
-			return await InvokeGameModule<T>(procStart, logPrefix, cancellationToken);
+			await using var stdout = logPrefix != null
+				?  new StreamWriter($"{logPrefix}{Constants.FileNames.StdoutLogSuffix}")
+				: null;
+			await using var stderr = logPrefix != null
+				? new StreamWriter($"{logPrefix}{Constants.FileNames.StderrLogSuffix}")
+				: null;
+
+			args.StandardOutput = stdout;
+			args.StandardError = stderr;
+
+			return await InvokeGameModule<T>(args, cancellationToken);
 		}
 
 		/// <summary>
@@ -215,48 +233,37 @@ namespace OPCAIC.Worker.GameModules
 		///     Invokes game module entry point and returns its result.
 		/// </summary>
 		/// <param name="args">Arguments of the entry point.</param>
-		/// <param name="logPrefix">Prefix of the path where logs should be stored.</param>
 		/// <param name="cancellationToken">Cancellation token used to cancel the request prematurely.</param>
 		/// <returns>Complete or incomplete result of the game module, depending on the result of the entry point process.</returns>
 		private async Task<TResult> InvokeGameModule<TResult>(GameModuleProcessArgs args,
-			string logPrefix,
 			CancellationToken cancellationToken)
 			where TResult : GameModuleResult, new()
 		{
-			using (var stdout =
-				new StreamWriter($"{logPrefix}{Constants.FileNames.StdoutLogSuffix}"))
-			using (var stderr =
-				new StreamWriter($"{logPrefix}{Constants.FileNames.StderrLogSuffix}"))
+			var result = new TResult();
+			var exitCode = await RunProcessAsync(args, cancellationToken);
+
+			switch (exitCode)
 			{
-				args.StandardOutput = stdout;
-				args.StandardError = stderr;
+				case GameModuleEntryPointResult.Success:
+					result.EntryPointResult = GameModuleEntryPointResult.Success;
+					break;
 
-				var result = new TResult();
-				var exitCode = await RunProcessAsync(args, cancellationToken);
+				case GameModuleEntryPointResult.Failure:
+					result.EntryPointResult = GameModuleEntryPointResult.Failure;
+					break;
 
-				switch (exitCode)
-				{
-					case GameModuleEntryPointResult.Success:
-						result.EntryPointResult = GameModuleEntryPointResult.Success;
-						break;
+				case GameModuleEntryPointResult.ModuleError:
+					result.EntryPointResult = GameModuleEntryPointResult.ModuleError;
+					break;
 
-					case GameModuleEntryPointResult.Failure:
-						result.EntryPointResult = GameModuleEntryPointResult.Failure;
-						break;
-
-					case GameModuleEntryPointResult.ModuleError:
-						result.EntryPointResult = GameModuleEntryPointResult.ModuleError;
-						break;
-
-					default:
-						throw new InvalidOperationException(
-							$"Invalid {nameof(GameModuleEntryPointResult)}: {exitCode}.");
-				}
-
-				logger.LogDebug("Entry point finished with '{}'", exitCode);
-
-				return result;
+				default:
+					throw new InvalidOperationException(
+						$"Invalid {nameof(GameModuleEntryPointResult)}: {exitCode}.");
 			}
+
+			logger.LogDebug("Entry point finished with '{ExitCode}'", exitCode);
+
+			return result;
 		}
 
 		/// <summary>
@@ -292,22 +299,31 @@ namespace OPCAIC.Worker.GameModules
 				logger.LogDebug(
 					$"Starting {args.EntryPoint.Executable} with args '{string.Join("', '", process.StartInfo.ArgumentList)}'");
 
-				process.OutputDataReceived += (_, e) =>
+				if (args.StandardOutput != null)
 				{
-					args.StandardOutput.WriteLine(e.Data);
-				};
-				process.ErrorDataReceived += (_, e) =>
+					process.OutputDataReceived += (_, e) =>
+					{
+						args.StandardOutput.WriteLine(e.Data);
+					};
+				}
+				if (args.StandardError != null)
 				{
-					args.StandardError.WriteLine(e.Data);
-				};
-				
+					process.ErrorDataReceived += (_, e) =>
+					{
+						args.StandardError.WriteLine(e.Data);
+					};
+				}
+
 				if (!process.Start())
 				{
 					throw new GameModuleProcessStartException(
 						"Unable to start game module process.");
 				}
-				process.BeginOutputReadLine();
-				process.BeginErrorReadLine();
+
+				if (args.StandardOutput != null)
+					process.BeginOutputReadLine();
+				if (args.StandardError != null)
+					process.BeginErrorReadLine();
 
 				logger.LogDebug(
 					$"Process started, PID: {{{LoggingTags.GameModuleProcessId}}}", process.Id);

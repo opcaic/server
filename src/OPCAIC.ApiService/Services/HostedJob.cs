@@ -28,15 +28,23 @@ namespace OPCAIC.ApiService.Services
 			Logger = logger;
 		}
 
-		public Task StartAsync(CancellationToken cancellationToken)
+		protected virtual Task Init(IServiceProvider services, CancellationToken cancellationToken)
 		{
-			Logger.LogInformation($"{GetType().Name} - started.");
-			executionTask = Task.Run(() => ExecuteAsync(cancellationTokenSource.Token), CancellationToken.None);
 			return Task.CompletedTask;
+		}
+
+		public async Task StartAsync(CancellationToken cancellationToken)
+		{
+			Logger.LogInformation($"{GetType().Name} - starting.");
+			await ScopeExecute(Init, cancellationToken);
+
+			executionTask = Task.Run(() => ExecuteAsync(cancellationTokenSource.Token), CancellationToken.None);
+			Logger.LogInformation($"{GetType().Name} - started.");
 		}
 
 		public async Task StopAsync(CancellationToken cancellationToken)
 		{
+			Logger.LogInformation($"{GetType().Name} - stopping.");
 			cancellationToken.Register(cancellationTokenSource.Cancel);
 			stopTaskSource.SetResult(null); // signal stop
 			await executionTask;

@@ -33,9 +33,9 @@ namespace OPCAIC.Worker.Services
 		}
 
 		/// <inheritdoc />
-		public DirectoryInfo GetWorkingDirectory(WorkMessageBase request)
+		public DirectoryInfo GetWorkingDirectory(string workIdentifier)
 		{
-			var path = Path.Combine(config.WorkingDirectory, request.JobId.ToString());
+			var path = Path.Combine(config.WorkingDirectory, workIdentifier);
 			logger.LogTrace("Creating directory {path}", path);
 			return Directory.CreateDirectory(path);
 		}
