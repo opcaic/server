@@ -119,7 +119,8 @@ namespace OPCAIC.Application.Test.Tournaments.Queries
 		}
 
 		[Theory]
-		[MemberData(nameof(GetRange), 4, 8)]
+		[MemberData(nameof(GetRange), 1, 4)]
+		[InlineData(8)]
 		public async Task Generate_DoubleElimination(int submissionCount)
 		{
 			SetupTournament(TournamentScope.Deadline, TournamentFormat.DoubleElimination,
@@ -129,7 +130,7 @@ namespace OPCAIC.Application.Test.Tournaments.Queries
 			leaderboards.Participations.Count.ShouldBe(submissionCount);
 			leaderboards.Finished.ShouldBe(true);
 
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; i < Math.Min(submissionCount, 4); i++)
 			{
 				leaderboards.Participations[i].Place.ShouldBe(i + 1);
 			}
@@ -145,16 +146,18 @@ namespace OPCAIC.Application.Test.Tournaments.Queries
 			leaderboards.Participations[0].Place.ShouldBe(1);
 		}
 
-		[Fact]
-		public async Task Generate_SingleElimination()
+		[Theory]
+		[MemberData(nameof(GetRange), 1, 4)]
+		[InlineData(8)]
+		public async Task Generate_SingleElimination(int submissionCount)
 		{
-			SetupTournament(TournamentScope.Deadline, TournamentFormat.SingleElimination, 4);
+			SetupTournament(TournamentScope.Deadline, TournamentFormat.SingleElimination, submissionCount);
 			var leaderboards = await Handler.Handle(query, CancellationToken);
 			var tree = leaderboards.ShouldBeOfType<SingleEliminationLeaderboardDto>();
-			leaderboards.Participations.Count.ShouldBe(4);
+			leaderboards.Participations.Count.ShouldBe(submissionCount);
 			leaderboards.Finished.ShouldBe(true);
 
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; i < Math.Min(submissionCount, 4); i++)
 			{
 				leaderboards.Participations[i].Place.ShouldBe(i + 1);
 			}

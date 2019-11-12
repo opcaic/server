@@ -24,9 +24,10 @@ namespace OPCAIC.Application.Tournaments.Models
 		public List<List<long?>> LosersBrackets { get; set; }
 
 		/// <summary>
-		///     Index of the grand final match between winners of winner and loser bracket.
+		///     Index of the grand final match between winners of winner and loser bracket. Can be
+		///     null if there are too few players.
 		/// </summary>
-		public long FinalIndex { get; set; }
+		public long? FinalIndex { get; set; }
 
 		/// <summary>
 		///     Optional rematch of Grand final if winner of losers brackets bests the winner of
@@ -35,8 +36,8 @@ namespace OPCAIC.Application.Tournaments.Models
 		public long? SecondaryFinalIndex { get; set; }
 
 		/// <summary>
-		///     Index of the match for third and fourth place.
+		///     Index of the match for third and fourth place. Can be null if there is not enouth players.
 		/// </summary>
-		public long ConsolationFinalIndex { get; set; }
+		public long? ConsolationFinalIndex { get; set; }
 	}
 }

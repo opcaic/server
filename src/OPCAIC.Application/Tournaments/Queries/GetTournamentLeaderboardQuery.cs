@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -190,7 +191,16 @@ namespace OPCAIC.Application.Tournaments.Queries
 
 				SetStartingSlotsFromBrackets(model.Participations, tree.Levels);
 
-				if (model.Finished && model.Participations.Count > 0)
+				if (!model.Finished || model.Participations.Count == 0)
+				{
+					return model;
+				}
+
+				if (model.Participations.Count == 1)
+				{
+					model.Participations.Single().Place = 1;
+				}
+				else
 				{
 					// determine also placement order
 					var players = model.Participations.ToDictionary(d => d.SubmissionId);
@@ -261,21 +271,34 @@ namespace OPCAIC.Application.Tournaments.Queries
 					Matches = await GetMatches(tournamentId, cancellationToken),
 					LosersBrackets = GetBracketIndices(tree.LosersLevels),
 					WinnersBrackets = GetBracketIndices(tree.Levels),
-					FinalIndex = tree.Final.MatchIndex,
-					ConsolationFinalIndex = tree.ThirdPlaceMatch.MatchIndex
+					FinalIndex = tree.Final?.MatchIndex,
+					ConsolationFinalIndex = tree.ThirdPlaceMatch?.MatchIndex
 				};
 
 				SetStartingSlotsFromBrackets(model.Participations, tree.Levels);
 
-				// If secondary final was needed, fill the index
+				// avoid edge cases
+				if (!model.Finished || model.Participations.Count == 0)
 				{
-					var final = model.Matches.GetValueOrDefault(model.FinalIndex);
-					if (final?.Executed != null &&
-						GetResult(final, model.RankingStrategy).winner ==
-						final.SecondPlayer.SubmissionId)
-					{
-						model.SecondaryFinalIndex = tree.SecondaryFinal.MatchIndex;
-					}
+					return model;
+				}
+
+				if (model.Participations.Count == 1)
+				{
+					model.Participations.Single().Place = 1;
+					return model;
+				}
+				// now we have 2 or more participants, so there must be a final
+				Debug.Assert(model.FinalIndex.HasValue);
+
+				// If secondary final was needed, fill the index
+				var final = model.Matches.GetValueOrDefault(model.FinalIndex.Value);
+				if (final?.Executed != null &&
+					GetResult(final, model.RankingStrategy).winner ==
+					final.SecondPlayer.SubmissionId &&
+					dto.Participations.Count > 2) // secondary final does not make sense with 2 players
+				{
+					model.SecondaryFinalIndex = tree.SecondaryFinal.MatchIndex;
 				}
 
 				if (model.Finished && model.Participations.Count > 0)
@@ -286,19 +309,25 @@ namespace OPCAIC.Application.Tournaments.Queries
 					// finals
 					{
 						var match =
-							model.Matches[model.SecondaryFinalIndex ?? model.FinalIndex];
+							model.Matches[model.SecondaryFinalIndex ?? model.FinalIndex.Value];
 						var (winner, loser) = GetResult(match, model.RankingStrategy);
 						players[winner].Place = 1;
 						players[loser].Place = 2;
 					}
 
 					// third and fourth places
+					if (model.ConsolationFinalIndex.HasValue)
 					{
 						var match =
-							model.Matches[model.ConsolationFinalIndex];
+							model.Matches[model.ConsolationFinalIndex.Value];
 						var (winner, loser) = GetResult(match, model.RankingStrategy);
 						players[winner].Place = 3;
 						players[loser].Place = 4;
+					}
+					else if (model.Participations.Count == 3)
+					{
+						// the remaining player has to be third
+						players.Values.Single(p => p.Place == null).Place = 3;
 					}
 
 					// rest of the placement can be determined from loser brackets
