@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoMapper;
 using FluentValidation;
 using MediatR;
 using OPCAIC.Application.Dtos;
+using OPCAIC.Application.Dtos.Tournaments;
+using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Infrastructure;
 using OPCAIC.Application.Infrastructure.Queries;
 using OPCAIC.Application.Infrastructure.Validation;
@@ -11,6 +16,7 @@ using OPCAIC.Application.MatchExecutions.Models;
 using OPCAIC.Application.Specifications;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using OPCAIC.Utils;
 
 namespace OPCAIC.Application.MatchExecutions.Queries
 {
@@ -42,18 +48,20 @@ namespace OPCAIC.Application.MatchExecutions.Queries
 			}
 		}
 
-		public class Handler
-			: FilterQueryHandler<GetMatchExecutionsQuery, MatchExecution, MatchExecutionPreviewDto>
+		public class Handler : IRequestHandler<GetMatchExecutionsQuery, PagedResult<MatchExecutionPreviewDto>>
 		{
-			/// <inheritdoc />
-			public Handler(IMapper mapper, IRepository<MatchExecution> repository) : base(mapper,
-				repository)
-			{
-			}
+			private readonly IMapper mapper;
+			private readonly IRepository<MatchExecution> repository;
 
 			/// <inheritdoc />
-			protected override void ApplyUserFilter(
-				ProjectingSpecification<MatchExecution, MatchExecutionPreviewDto> spec,
+			public Handler(IMapper mapper, IRepository<MatchExecution> repository)
+			{
+				this.mapper = mapper;
+				this.repository = repository;
+			}
+
+			protected void ApplyUserFilter(
+				ProjectingSpecification<MatchExecution, QueryData<MatchExecutionPreviewDto>> spec,
 				GetMatchExecutionsQuery request)
 			{
 				// only executions of managed/owned tournaments
@@ -62,9 +70,8 @@ namespace OPCAIC.Application.MatchExecutions.Queries
 					m.Match.Tournament.Managers.Any(u => u.UserId == request.RequestingUserId));
 			}
 
-			/// <inheritdoc />
-			protected override void SetupSpecification(GetMatchExecutionsQuery request,
-				ProjectingSpecification<MatchExecution, MatchExecutionPreviewDto> spec)
+			protected void SetupSpecification(GetMatchExecutionsQuery request,
+				ProjectingSpecification<MatchExecution, QueryData<MatchExecutionPreviewDto>> spec)
 			{
 				if (request.TournamentId != null)
 				{
@@ -130,6 +137,42 @@ namespace OPCAIC.Application.MatchExecutions.Queries
 						spec.Ordered(row => row.Id, request.Asc);
 						break;
 				}
+			}
+
+			/// <inheritdoc />
+			public async Task<PagedResult<MatchExecutionPreviewDto>> Handle(GetMatchExecutionsQuery request, CancellationToken cancellationToken)
+			{
+				var map = mapper.GetMapExpression<MatchExecution, MatchExecutionPreviewDto>();
+				var orgMap = mapper.GetMapExpression<Tournament, TournamentOrganizersDto>();
+				var spec = ProjectingSpecification.Create(Rebind.Map((MatchExecution m) =>
+					new QueryData<MatchExecutionPreviewDto>
+					{
+						Dto = Rebind.Invoke(m, map),
+						OrganizersDto = Rebind.Invoke(m.Match.Tournament, orgMap),
+						TournamentAnonymize = m.Match.Tournament.Anonymize
+					}
+				));
+
+				SetupSpecification(request, spec);
+				spec.WithPaging(request.Offset, request.Count);
+
+				if (request.RequestingUserRole != UserRole.Admin)
+				{
+					ApplyUserFilter(spec, request);
+				}
+
+				var result = await repository.ListPagedAsync(spec, cancellationToken);
+				var toReturn = new PagedResult<MatchExecutionPreviewDto>(result.Total,
+					new List<MatchExecutionPreviewDto>(result.Total));
+
+				foreach (var data in result.List)
+				{
+					data.AnonymizeIfNecessary(request);
+
+					toReturn.List.Add(data.Dto);
+				}
+
+				return toReturn;
 			}
 		}
 	}

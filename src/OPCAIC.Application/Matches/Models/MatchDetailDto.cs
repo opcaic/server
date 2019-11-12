@@ -10,5 +10,13 @@ namespace OPCAIC.Application.Matches.Models
 		public override MatchState State => LastExecution?.ComputeMatchState() ?? MatchState.Failed;
 
 		public MatchExecutionDetailDto LastExecution { get; set; }
+
+		/// <inheritdoc />
+		public override void AnonymizeUsersExcept(long? userId)
+		{
+			base.AnonymizeUsersExcept(userId);
+
+			LastExecution.AnonymizeUsersExcept(userId);
+		}
 	}
 }
