@@ -51,7 +51,8 @@ namespace OPCAIC.Application.Users.Queries
 			protected override void ApplyUserFilter(
 				ProjectingSpecification<User, UserPreviewDto> spec, GetUsersQuery request)
 			{
-				throw new BusinessException("Only admin may query users.");
+				// if we got there, the user must be organizer, filter out ordinary users
+				spec.AddCriteria(u => u.Role != Domain.Enums.UserRole.User);
 			}
 
 			/// <inheritdoc />

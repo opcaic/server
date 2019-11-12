@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using OPCAIC.ApiService.Extensions;
+using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.ApiService.Security.Handlers
 {
@@ -22,8 +23,8 @@ namespace OPCAIC.ApiService.Security.Handlers
 					return Task.FromResult(userId == id.Value);
 
 				case UserPermission.Search:
-					// no search for non-admin user's
-					return Task.FromResult(false);
+					// only admin and organizers, admin has his own handler
+					return Task.FromResult(user.GetUserRole() == UserRole.Organizer);
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
 			}
