@@ -67,7 +67,8 @@ namespace OPCAIC.ApiService.Controllers
 			await mediator.Send(new InvitePlayersCommand
 			{
 				TournamentId = tournamentId,
-				Emails = model.Emails
+				Emails = model.Emails,
+				UserName = User.Identity.Name
 			}, cancellationToken);
 		}
 

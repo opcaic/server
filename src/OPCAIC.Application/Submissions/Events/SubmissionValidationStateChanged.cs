@@ -16,19 +16,21 @@ namespace OPCAIC.Application.Submissions.Events
 		/// <inheritdoc />
 		public SubmissionValidationStateChanged(long submissionId, long tournamentId,
 			long validationId,
-			long authorId, SubmissionValidationState state)
+			long authorId, string tournamentName, SubmissionValidationState state)
 		{
 			SubmissionId = submissionId;
 			AuthorId = authorId;
 			State = state;
 			TournamentId = tournamentId;
 			ValidationId = validationId;
+			TournamentName = tournamentName;
 		}
 
 		public long SubmissionId { get; }
 		public long TournamentId { get; }
 		public long ValidationId { get; }
 		public long AuthorId { get; }
+		public string TournamentName { get; }
 		public SubmissionValidationState State { get; }
 
 		public class Handler : INotificationHandler<SubmissionValidationStateChanged>

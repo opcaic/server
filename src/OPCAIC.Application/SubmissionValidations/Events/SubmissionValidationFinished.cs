@@ -61,7 +61,8 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 						ValidationId = v.Id,
 						LastValidationId = v.Submission.Validations
 							.OrderByDescending(vv => vv.Created)
-							.First().Id
+							.First().Id,
+						TournamentName = v.Submission.Tournament.Name
 					}, cancellationToken);
 
 				if (data.ValidationId != data.LastValidationId)
@@ -75,7 +76,7 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 
 				await mediator.Publish(
 					new SubmissionValidationStateChanged(data.SubmissionId, data.TournamentId,
-						data.ValidationId, data.UserId, validationState), cancellationToken);
+						data.ValidationId, data.UserId, data.TournamentName, validationState), cancellationToken);
 			}
 
 			public static SubmissionValidationState CalculateValidationState(WorkerJobState state, EntryPointResult validatorResult) => state switch
@@ -100,6 +101,7 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 				public long SubmissionId { get; set; }
 				public long ValidationId { get; set; }
 				public long LastValidationId { get; set; }
+				public string TournamentName { get; set; }
 			}
 		}
 	}

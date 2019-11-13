@@ -11,6 +11,7 @@ using OPCAIC.Application.Infrastructure.Validation;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Interfaces.Repositories;
 using OPCAIC.Application.Specifications;
+using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Domain.Entities;
 
 namespace OPCAIC.Application.TournamentInvitations.Commands
@@ -19,6 +20,7 @@ namespace OPCAIC.Application.TournamentInvitations.Commands
 	{
 		public long TournamentId { get; set; }
 		public string[] Emails { get; set; }
+		public string UserName { get; set; }
 
 		public class Validator
 			: AbstractValidator<InvitePlayersCommand>
@@ -65,7 +67,7 @@ namespace OPCAIC.Application.TournamentInvitations.Commands
 
 				var mailDto = EmailType.TournamentInvitation.CreateEmail(
 					urlGenerator.TournamentPageLink(request.TournamentId),
-					tournamentName
+					tournamentName, request.UserName
 				);
 
 				foreach (var email in toSend)

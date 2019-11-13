@@ -25,7 +25,7 @@ namespace OPCAIC.Application.Test.Submissions.Events
 		private readonly Mock<IRepository<Submission>> repository;
 
 		private readonly SubmissionValidationStateChanged Notification =
-			new SubmissionValidationStateChanged(1, 2, 3, 4, SubmissionValidationState.Valid);
+			new SubmissionValidationStateChanged(1, 2, 3, 4, "tournament", SubmissionValidationState.Valid);
 
 		private readonly SubmissionValidationStateChanged.Handler.Data Data =
 			new SubmissionValidationStateChanged.Handler.Data {LastSubmissionId = 1};
@@ -47,7 +47,7 @@ namespace OPCAIC.Application.Test.Submissions.Events
 		{
 			// strict mocks handle the logic
 			return Handler.Handle(
-				new SubmissionValidationStateChanged(1, 2, 3, 4, SubmissionValidationState.Invalid),
+				new SubmissionValidationStateChanged(1, 2, 3, 4, "tournament", SubmissionValidationState.Invalid),
 				CancellationToken);
 		}
 

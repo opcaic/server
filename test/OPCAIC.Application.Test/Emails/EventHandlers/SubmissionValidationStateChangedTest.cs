@@ -29,7 +29,7 @@ namespace OPCAIC.Application.Test.Emails.EventHandlers
 		private readonly string email = "a@aaa.com";
 
 		private readonly SubmissionValidationStateChanged Notification =
-			new SubmissionValidationStateChanged(1, 2, 3, 4, SubmissionValidationState.Invalid);
+			new SubmissionValidationStateChanged(1, 2, 3, 4, "tournament", SubmissionValidationState.Invalid);
 
 		[Theory]
 		[InlineData(SubmissionValidationState.Error)]
@@ -37,7 +37,7 @@ namespace OPCAIC.Application.Test.Emails.EventHandlers
 		[InlineData(SubmissionValidationState.Queued)]
 		public Task DoesNothingForNotFailedValidations(SubmissionValidationState state)
 		{
-			return Handler.Handle(new SubmissionValidationStateChanged(1, 1, 1, 1, state),
+			return Handler.Handle(new SubmissionValidationStateChanged(1, 1, 1, 1, "", state),
 				CancellationToken);
 		}
 

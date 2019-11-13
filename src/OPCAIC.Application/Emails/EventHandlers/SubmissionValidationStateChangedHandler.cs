@@ -49,7 +49,7 @@ namespace OPCAIC.Application.Emails.EventHandlers
 
 			var emailDto = EmailType.SubmissionValidationFailed.CreateEmail(
 				urlGenerator.SubmissionPageLink(notification.TournamentId,
-					notification.SubmissionId));
+					notification.SubmissionId), notification.TournamentName);
 
 			await emailService.EnqueueEmailAsync(emailDto, data.Email, cancellationToken);
 		}

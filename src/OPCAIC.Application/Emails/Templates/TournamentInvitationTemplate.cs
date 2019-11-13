@@ -13,19 +13,20 @@
 
 			}
 
-			public Email CreateEmail(string tournamentUrl, string tournamentName)
+			public Email CreateEmail(string tournamentUrl, string tournamentName, string userName)
 			{
-				return new Email(Name, tournamentUrl, tournamentName);
+				return new Email(Name, tournamentUrl, tournamentName, userName);
 			}
 
 			public class Email : EmailData
 			{
 				/// <inheritdoc />
-				public Email(string templateName, string tournamentUrl, string tournamentName)
+				public Email(string templateName, string tournamentUrl, string tournamentName, string userName)
 				{
 					TemplateName = templateName;
 					TournamentUrl = tournamentUrl;
 					TournamentName = tournamentName;
+					UserName = userName;
 				}
 
 				/// <inheritdoc />
@@ -34,6 +35,8 @@
 				public string TournamentUrl { get; }
 
 				public string TournamentName { get; }
+
+				public string UserName { get; }
 			}
 		}
 	}
