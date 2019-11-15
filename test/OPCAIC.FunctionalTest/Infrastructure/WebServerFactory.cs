@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OPCAIC.ApiService;
 using OPCAIC.ApiService.Configs;
 using OPCAIC.ApiService.Extensions;
@@ -39,6 +42,22 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 			configureAction.Add(sp => sp.AddSingleton(impl));
 		}
 
+		public class TestStartup : Startup
+		{
+			/// <inheritdoc />
+			public override void Configure(IApplicationBuilder app)
+			{
+				app.UseMiddleware<FakeRemoteAddressMiddleware>();
+
+				base.Configure(app);
+			}
+
+			/// <inheritdoc />
+			public TestStartup(IConfiguration configuration, IWebHostEnvironment environment, ILogger<Startup> logger) : base(configuration, environment, logger)
+			{
+			}
+		}
+
 		/// <inheritdoc />
 		protected override TestServer CreateServer(IWebHostBuilder builder)
 		{
@@ -46,6 +65,7 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 
 			// overwrite some configuration and services for test purposes
 			builder
+				.UseStartup<TestStartup>()
 				.UseEnvironment("Production")
 				.ConfigureServices((ctx, services) =>
 				{
@@ -63,6 +83,7 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 
 					services.AddSingleton(options);
 					services.AddSingleton<DbContextOptions>(options);
+					services.AddSingleton<FakeRemoteAddressMiddleware>();
 
 					services.AddTransient<IDatabaseSeed, ApplicationTestSeed>();
 
@@ -90,7 +111,6 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 						mgr.ConfirmEmailAsync(user, token).GetAwaiter().GetResult().ThrowIfFailed();
 					}
 				});
-
 
 			return base.CreateServer(builder);
 		}

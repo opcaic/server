@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -13,14 +14,17 @@ using Xunit.Abstractions;
 
 namespace OPCAIC.FunctionalTest.Infrastructure
 {
-	public class FunctionalTestBase<TSetup> : FunctionalTestBase, IClassFixture<TSetup> where TSetup : class
+	public class FunctionalTestBase<TSetup> : FunctionalTestBase, IClassFixture<TSetup>
+		where TSetup : class
 	{
-		protected TSetup FixtureSetup { get; }
 		/// <inheritdoc />
-		public FunctionalTestBase(ITestOutputHelper output, FunctionalTestFixture fixture, TSetup fixtureSetup) : base(output, fixture)
+		public FunctionalTestBase(ITestOutputHelper output, FunctionalTestFixture fixture,
+			TSetup fixtureSetup) : base(output, fixture)
 		{
 			FixtureSetup = fixtureSetup;
 		}
+
+		protected TSetup FixtureSetup { get; }
 	}
 
 	[Collection("ServerContext")]
@@ -36,11 +40,23 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 		{
 			this.Fixture = fixture;
 			this.Output = output;
-			Client = fixture.ClientFactory.CreateClient();
+			Client = CreateClient();
+			// give each client a unique header
+
 			serializerSettings = GetJsonSerializerOptions(fixture);
 		}
 
 		protected WebServerFactory ClientFactory => Fixture.ClientFactory;
+
+		protected HttpClient CreateClient()
+		{
+			var client = Fixture.ClientFactory.CreateClient();
+
+			client.DefaultRequestHeaders.Add(FakeRemoteAddressMiddleware.CustomHeaderName,
+				Guid.NewGuid().ToString());
+
+			return client;
+		}
 
 		protected void Log(string msg)
 		{
@@ -103,16 +119,17 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 			return JsonConvert.DeserializeObject<T>(json, serializerSettings);
 		}
 
-		protected Task<HttpResponseMessage> PostAsync(string url, object body = null, bool dump = true)
+		protected Task<HttpResponseMessage> PostAsync(string url, object body = null,
+			bool dump = true)
 		{
 			return SendAsync(HttpMethod.Post, url, JsonContent(body), dump);
 		}
 
 		protected Task<T> PostAsync<T>(string url, object body = null, bool dump = true)
 		{
-			return SendAsync<T>(HttpMethod.Post, url, 
+			return SendAsync<T>(HttpMethod.Post, url,
 				body == null
-					? null 
+					? null
 					: JsonContent(body),
 				dump);
 		}
@@ -192,8 +209,22 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 			Output.WriteLine("Response:");
 			Output.WriteLine($"Status code: {response.StatusCode}");
 			Output.WriteLine($"Headers:\n{response.Headers}");
-			Output.WriteLine(
-				$"Body: {PrettifyJson(response.Content.ReadAsStringAsync().GetAwaiter().GetResult())}");
+
+			var body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+			if (body.Length > 0 && body[0] == '{') // format if received json
+			{
+				try
+				{
+					body = PrettifyJson(body);
+				}
+				catch
+				{
+					// ignore errors
+				}
+			}
+
+			Output.WriteLine($"Body: {body}");
 			Output.WriteLine("\n#####################################################\n");
 		}
 

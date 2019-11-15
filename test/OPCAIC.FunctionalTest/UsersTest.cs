@@ -2,6 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
+using Bogus;
 using OPCAIC.ApiService.Extensions;
 using OPCAIC.ApiService.Models.Users;
 using OPCAIC.ApiService.Security;
@@ -118,6 +119,34 @@ namespace OPCAIC.FunctionalTest
 			{
 				Email = email, Password = "Pa$Sw0rd"
 			});
+		}
+
+		[Fact]
+		public async Task MultipleRegistrations()
+		{
+			var faker = new Faker();
+
+			for (int i = 0; i < 4; i++)
+			{
+				var response = await PostAsync("api/users", new CreateUserCommand
+				{
+					Email = faker.Internet.Email(),
+					LocalizationLanguage = LocalizationLanguage.EN,
+					Password = "Pa$Sw0rd",
+					Organization = "MFF",
+					Username = faker.Internet.UserName(),
+					WantsEmailNotifications = false
+				});
+
+				if (i < 2)
+				{
+					response.IsSuccessStatusCode.ShouldBeTrue();
+				}
+				else
+				{
+					response.IsSuccessStatusCode.ShouldBeFalse();
+				}
+			}
 		}
 
 		/// <inheritdoc />

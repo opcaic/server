@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
@@ -15,8 +16,17 @@ namespace OPCAIC.ApiService.Security
 {
 	internal static class SecuritySetup
 	{
+		public static void ConfigureApiThrottling(this IServiceCollection services)
+		{
+			services
+				.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>()
+				.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>()
+				.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+		}
+
 		public static void ConfigureSecurity(this IServiceCollection services, IConfiguration configuration, ILogger logger)
 		{
+			services.ConfigureApiThrottling();
 			services.ConfigureIdentity(configuration, logger);
 
 			services

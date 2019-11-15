@@ -1,4 +1,5 @@
-﻿using FluentValidation.AspNetCore;
+﻿using AspNetCoreRateLimit;
+using FluentValidation.AspNetCore;
 using MediatR;
 using MediatR.Pipeline;
 using Microsoft.AspNetCore.Builder;
@@ -67,7 +68,7 @@ namespace OPCAIC.ApiService
 			}
 		}
 
-		public void ConfigureServices(IServiceCollection services)
+		public virtual void ConfigureServices(IServiceCollection services)
 		{
 			services.AddControllers(options =>
 				{
@@ -164,10 +165,12 @@ namespace OPCAIC.ApiService
 			services.Configure<JwtConfiguration>(Configuration.GetSection("Security:JWT"));
 			services.Configure<BrokerConnectorConfig>(Configuration.GetSection("Broker"));
 			services.Configure<BrokerOptions>(Configuration.GetSection("Broker"));
+			services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
 		}
 
-		public void Configure(IApplicationBuilder app)
+		public virtual void Configure(IApplicationBuilder app)
 		{
+			app.UseIpRateLimiting();
 			app.UseRouting();
 
 			if (!Environment.IsProduction())

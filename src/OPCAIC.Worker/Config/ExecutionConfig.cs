@@ -30,6 +30,6 @@
 		/// <summary>
 		///     Hard time limit in seconds for which a task can run.
 		/// </summary>
-		public int MaxTaskTimeoutSeconds { get; set; } = 60;
+		public int MaxTaskTimeoutSeconds { get; set; } = 60 * 5;
 	}
 }
