@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using AutoMapper;
 using Newtonsoft.Json.Linq;
 using OPCAIC.Application.Dtos.BaseDtos;
 using OPCAIC.Application.Dtos.Matches;
@@ -11,7 +13,7 @@ using OPCAIC.Domain.Enums;
 namespace OPCAIC.Application.MatchExecutions.Models
 {
 	public abstract class MatchExecutionDtoBase<TSubmissionResult>
-		: MatchExecutionDtoBase, IAnonymizable, IMapFrom<MatchExecution>
+		: MatchExecutionDtoBase, IAnonymizable, ICustomMapping 
 		where TSubmissionResult : IAnonymizable
 	{
 		public EntryPointResult ExecutorResult { get; set; }
@@ -23,6 +25,16 @@ namespace OPCAIC.Application.MatchExecutions.Models
 		public WorkerJobState State { get; set; }
 		public Guid JobId { get; set; }
 
+		/// <inheritdoc />
+		protected static void CreateCustomMapping(Profile configuration)
+		{
+			configuration
+				.CreateMap<MatchExecution, MatchExecutionDtoBase<TSubmissionResult>>(MemberList
+					.Destination)
+				.ForMember(d => d.BotResults,
+					opt => opt.MapFrom(e => e.BotResults.OrderBy(b => b.Order)))
+				.IncludeAllDerived();
+		}
 
 		public void AnonymizeUsersExcept(long? userId)
 		{

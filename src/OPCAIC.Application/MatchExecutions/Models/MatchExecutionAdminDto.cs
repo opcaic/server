@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using AutoMapper;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Infrastructure.AutoMapper;
 
 namespace OPCAIC.Application.MatchExecutions.Models
 {
 	public class MatchExecutionAdminDto
-		: MatchExecutionDetailDtoBase<MatchExecutionAdminDto.SubmissionResultAdminDto>
+		: MatchExecutionDetailDtoBase<MatchExecutionAdminDto.SubmissionResultAdminDto>, ICustomMapping
 	{
 		[IgnoreMap]
 		public string ExecutorLog { get; set; }
@@ -25,6 +26,12 @@ namespace OPCAIC.Application.MatchExecutions.Models
 			{
 				BotResults[i].AddLogs(logs.SubmissionLogs[i]);
 			}
+		}
+
+		/// <inheritdoc />
+		public void CreateMapping(Profile configuration)
+		{
+			CreateCustomMapping(configuration);
 		}
 
 		public class SubmissionResultAdminDto : MatchExecutionDetailDto.SubmissionResultDetailDto

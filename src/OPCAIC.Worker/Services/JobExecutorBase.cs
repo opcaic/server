@@ -11,7 +11,9 @@ using OPCAIC.GameModules.Interface;
 using OPCAIC.Messaging.Messages;
 using OPCAIC.Utils;
 using OPCAIC.Worker.GameModules;
+using Serilog;
 using BotInfo = OPCAIC.GameModules.Interface.BotInfo;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace OPCAIC.Worker.Services
 {
@@ -233,6 +235,7 @@ namespace OPCAIC.Worker.Services
 		{
 			Logger.LogInformation($"Compiling submission {{{LoggingTags.SubmissionId}}}.",
 				sub.SubmissionId);
+			using var scope = Logger.SubmissionScope(sub.SubmissionId);
 			return (await Invoke(nameof(IGameModule.Compile), GameModule.Compile, sub.BotInfo))
 				.status;
 		}

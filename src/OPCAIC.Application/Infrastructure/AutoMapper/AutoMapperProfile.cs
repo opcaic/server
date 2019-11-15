@@ -68,8 +68,11 @@ namespace OPCAIC.Application.Infrastructure.AutoMapper
 							types.FirstOrDefault(t => type.IsAssignableFrom(t) && !t.IsAbstract);
 					}
 
-					// if abstract and no derived type, then we don't need to care
-					if (instantiatedType == null) continue;
+					if (instantiatedType == null)
+					{
+						// probably misconfiguration, having abstract type with mappings is useless
+						throw new InvalidOperationException($"Abstract type with explicit mappings but no derived types: {type}");
+					}
 
 					var instance = Activator.CreateInstance(instantiatedType);
 

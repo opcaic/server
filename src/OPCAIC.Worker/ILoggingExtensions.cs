@@ -23,8 +23,7 @@ namespace OPCAIC.Worker
 
 		public static IDisposable EntryPointScope(this ILogger logger, string name)
 		{
-			return logger.BeginScope(
-				new Dictionary<string, object> {[LoggingTags.GameModuleEntryPoint] = name});
+			return logger.SimpleScope(LoggingTags.GameModuleEntryPoint, name);
 		}
 
 		public static IDisposable SubmissionValidationScope(this ILogger logger,
@@ -34,6 +33,19 @@ namespace OPCAIC.Worker
 			{
 				[LoggingTags.SubmissionId] = request.SubmissionId,
 				[LoggingTags.ValidationId] = request.ValidationId
+			});
+		}
+
+		public static IDisposable SubmissionScope(this ILogger logger, long submissionId)
+		{
+			return logger.SimpleScope(LoggingTags.SubmissionId, submissionId);
+		}
+
+		public static IDisposable SimpleScope<T>(this ILogger logger, string name, T value)
+		{
+			return logger.BeginScope(new Dictionary<string, object>
+			{
+				[name] = value
 			});
 		}
 

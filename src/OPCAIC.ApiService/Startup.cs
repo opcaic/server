@@ -170,7 +170,6 @@ namespace OPCAIC.ApiService
 
 		public virtual void Configure(IApplicationBuilder app)
 		{
-			app.UseIpRateLimiting();
 			app.UseRouting();
 
 			if (!Environment.IsProduction())
@@ -178,6 +177,8 @@ namespace OPCAIC.ApiService
 				app.UseDeveloperExceptionPage();
 				app.UseCors(myAllowSpecificOrigins);
 			}
+
+			app.UseIpRateLimiting();
 
 			app.UseSwagger(SwaggerConfig.SetupSwagger);
 			app.UseSwaggerUI(SwaggerConfig.SetupSwaggerUi);

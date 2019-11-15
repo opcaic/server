@@ -6,7 +6,7 @@ using OPCAIC.Application.Infrastructure.AutoMapper;
 namespace OPCAIC.Application.MatchExecutions.Models
 {
 	public class MatchExecutionDetailDto
-		: MatchExecutionDetailDtoBase<MatchExecutionDetailDto.SubmissionResultDetailDto>
+		: MatchExecutionDetailDtoBase<MatchExecutionDetailDto.SubmissionResultDetailDto>, ICustomMapping
 	{
 		[IgnoreMap]
 		public string ExecutorLog { get; set; }
@@ -24,6 +24,12 @@ namespace OPCAIC.Application.MatchExecutions.Models
 				base.AddLogs(logs);
 				CompilerLog = logs.CompilerLog;
 			}
+		}
+
+		/// <inheritdoc />
+		public void CreateMapping(Profile configuration)
+		{
+			CreateCustomMapping(configuration);
 		}
 
 		/// <inheritdoc />

@@ -8,7 +8,7 @@ using OPCAIC.Domain.Entities;
 namespace OPCAIC.Application.MatchExecutions.Models
 {
 	public abstract class MatchExecutionDetailDtoBase<TSubmissionResult>
-		: MatchExecutionDtoBase<TSubmissionResult>
+		: MatchExecutionDtoBase<TSubmissionResult>, IMapFrom<MatchExecution>
 		where TSubmissionResult : IAnonymizable
 	{
 		[IgnoreMap]

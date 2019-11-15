@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using AutoMapper;
+using Newtonsoft.Json.Linq;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Users;
@@ -10,7 +11,7 @@ using OPCAIC.Domain.Enums;
 namespace OPCAIC.Application.MatchExecutions.Models
 {
 	public class MatchExecutionPreviewDto
-		: MatchExecutionDtoBase<MatchExecutionPreviewDto.SubmissionResultDto>
+		: MatchExecutionDtoBase<MatchExecutionPreviewDto.SubmissionResultDto>, ICustomMapping
 	{
 		public class SubmissionResultDto : IMapFrom<SubmissionMatchResult>, IAnonymizable
 		{
@@ -31,6 +32,14 @@ namespace OPCAIC.Application.MatchExecutions.Models
 			public virtual void AddLogs(MatchExecutionLogsDto.SubmissionLog logs)
 			{
 			}
+		}
+
+		/// <inheritdoc />
+		void ICustomMapping.CreateMapping(Profile configuration)
+		{
+			CreateCustomMapping(configuration);
+			configuration.CreateMap<MatchExecution, MatchExecutionPreviewDto>(
+				MemberList.Destination);
 		}
 	}
 }

@@ -271,12 +271,12 @@ namespace OPCAIC.Worker.GameModules
 		/// </summary>
 		/// <param name="args">Set of parameters to the process to be run.</param>
 		/// <param name="cancellationToken">Cancellation token used to cancel the request prematurely.</param>
-		/// <returns>Task with process' resulting exitcode.</returns>
+		/// <returns>Task with process' resulting exit code.</returns>
 		internal async Task<GameModuleEntryPointResult> RunProcessAsync(
 			GameModuleProcessArgs args,
 			CancellationToken cancellationToken = new CancellationToken())
 		{
-			using (var process = new Process
+			using var process = new Process
 			{
 				StartInfo =
 				{
@@ -288,54 +288,54 @@ namespace OPCAIC.Worker.GameModules
 					WorkingDirectory = args.WorkingDirectory
 				},
 				EnableRaisingEvents = true
-			})
+			};
+
+			// push all arguments
+			foreach (var arg in args.EntryPoint.Arguments.Concat(args.Arguments))
 			{
-				// push all arguments
-				foreach (var arg in args.EntryPoint.Arguments.Concat(args.Arguments))
-				{
-					process.StartInfo.ArgumentList.Add(arg);
-				}
-
-				logger.LogDebug(
-					$"Starting {args.EntryPoint.Executable} with args '{string.Join("', '", process.StartInfo.ArgumentList)}'");
-
-				if (args.StandardOutput != null)
-				{
-					process.OutputDataReceived += (_, e) =>
-					{
-						args.StandardOutput.WriteLine(e.Data);
-					};
-				}
-				if (args.StandardError != null)
-				{
-					process.ErrorDataReceived += (_, e) =>
-					{
-						args.StandardError.WriteLine(e.Data);
-					};
-				}
-
-				if (!process.Start())
-				{
-					throw new GameModuleProcessStartException(
-						"Unable to start game module process.");
-				}
-
-				if (args.StandardOutput != null)
-					process.BeginOutputReadLine();
-				if (args.StandardError != null)
-					process.BeginErrorReadLine();
-
-				logger.LogDebug(
-					$"Process started, PID: {{{LoggingTags.GameModuleProcessId}}}", process.Id);
-
-
-				var res = await WaitForExitOrKillAsync(process, cancellationToken);
-
-				// wait for stdout and stderr buffers to flush
-				process.WaitForExit();
-
-				return res;
+				process.StartInfo.ArgumentList.Add(arg);
 			}
+
+			logger.LogDebug(
+				$"Starting {args.EntryPoint.Executable} with args '{string.Join("', '", process.StartInfo.ArgumentList)}'");
+
+			if (args.StandardOutput != null)
+			{
+				process.OutputDataReceived += (_, e) =>
+				{
+					args.StandardOutput.WriteLine(e.Data);
+				};
+			}
+			if (args.StandardError != null)
+			{
+				process.ErrorDataReceived += (_, e) =>
+				{
+					args.StandardError.WriteLine(e.Data);
+				};
+			}
+
+			if (!process.Start())
+			{
+				throw new GameModuleProcessStartException(
+					"Unable to start game module process.");
+			}
+
+			if (args.StandardOutput != null)
+				process.BeginOutputReadLine();
+			if (args.StandardError != null)
+				process.BeginErrorReadLine();
+
+			using var s = logger.SimpleScope(LoggingTags.GameModuleProcessId, process.Id);
+			logger.LogDebug(
+				$"Process started, PID: {{{LoggingTags.GameModuleProcessId}}}", process.Id);
+
+
+			var res = await WaitForExitOrKillAsync(process, cancellationToken);
+
+			// wait for stdout and stderr buffers to flush
+			process.WaitForExit();
+
+			return res;
 		}
 
 		/// <summary>
