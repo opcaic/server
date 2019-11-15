@@ -19,6 +19,7 @@
 		StopEvaluation,
 		Publish,
 		ReadManagers,
+		ReadAdmin,
 		ManageManagers,
 		ManageDocuments
 	}

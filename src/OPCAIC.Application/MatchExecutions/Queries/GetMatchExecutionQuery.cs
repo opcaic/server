@@ -79,7 +79,7 @@ namespace OPCAIC.Application.MatchExecutions.Queries
 			private readonly IStorageService storage;
 
 			/// <inheritdoc />
-			public HandlerBase(IMapper mapper, IRepository<MatchExecution> repository,
+			protected HandlerBase(IMapper mapper, IRepository<MatchExecution> repository,
 				ILogStorageService logStorage, IStorageService storage)
 			{
 				this.mapper = mapper;

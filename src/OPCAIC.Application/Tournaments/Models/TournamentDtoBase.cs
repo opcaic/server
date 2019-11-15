@@ -53,8 +53,6 @@ namespace OPCAIC.Application.Tournaments.Models
 
 		public int? MatchesPerDay { get; set; }
 
-		public JObject Configuration { get; set; }
-
 		/// <inheritdoc />
 		void ICustomMapping.CreateMapping(Profile configuration)
 		{

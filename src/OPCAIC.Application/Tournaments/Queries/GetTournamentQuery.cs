@@ -13,32 +13,69 @@ using OPCAIC.Utils;
 
 namespace OPCAIC.Application.Tournaments.Queries
 {
-	public class GetTournamentQuery : EntityRequestQuery<Tournament>, IRequest<TournamentDetailDto>
+	public class GetTournamentAdminQuery : GetTournamentQueryBase<TournamentAdminDto>
+	{
+		/// <inheritdoc />
+		public GetTournamentAdminQuery(long id) : base(id)
+		{
+		}
+
+		public class Handler : HandlerBase<GetTournamentAdminQuery>
+		{
+			private readonly IStorageService storage;
+
+			/// <inheritdoc />
+			public Handler(IMapper mapper, IRepository<Tournament> repository, IStorageService storage) : base(mapper, repository)
+			{
+				this.storage = storage;
+			}
+
+			/// <inheritdoc />
+			protected override void PostProcess(TournamentAdminDto dto)
+			{
+				using var archive = storage.ReadTournamentAdditionalFiles(dto.Id);
+				dto.AdditionalFilesLength = archive?.Length;
+				base.PostProcess(dto);
+			}
+		}
+	}
+	public class GetTournamentQuery : GetTournamentQueryBase<TournamentDetailDto>
 	{
 		/// <inheritdoc />
 		public GetTournamentQuery(long id) : base(id)
 		{
 		}
 
-		public class Handler : IRequestHandler<GetTournamentQuery, TournamentDetailDto>
+		public class Handler : HandlerBase<GetTournamentQuery>
+		{
+			/// <inheritdoc />
+			public Handler(IMapper mapper, IRepository<Tournament> repository) : base(mapper, repository)
+			{
+			}
+		}
+	}
+
+	public abstract class GetTournamentQueryBase<TDto> : EntityRequestQuery<Tournament>, IRequest<TDto>
+		where TDto : TournamentDetailDto
+	{
+		public class HandlerBase<TRequest> : IRequestHandler<TRequest, TDto>
+			where TRequest : GetTournamentQueryBase<TDto>
 		{
 			private readonly IMapper mapper;
 			private readonly IRepository<Tournament> repository;
-			private readonly IStorageService storage;
 
 			/// <inheritdoc />
-			public Handler(IMapper mapper, IRepository<Tournament> repository, IStorageService storage)
+			public HandlerBase(IMapper mapper, IRepository<Tournament> repository)
 			{
 				this.mapper = mapper;
 				this.repository = repository;
-				this.storage = storage;
 			}
 
 			/// <inheritdoc />
-			public async Task<TournamentDetailDto> Handle(GetTournamentQuery request, CancellationToken cancellationToken)
+			public async Task<TDto> Handle(TRequest request, CancellationToken cancellationToken)
 			{
 				// perform the menu mapping in-memory in order to successfully map inheritance
-				var tournamentMap = mapper.GetMapExpression<Tournament, TournamentDetailDto>();
+				var tournamentMap = mapper.GetMapExpression<Tournament, TDto>();
 				var data = await repository.GetAsync(request.Id, Rebind.Map((Tournament t) => new
 				{
 					dto = Rebind.Invoke(t, tournamentMap),
@@ -46,10 +83,18 @@ namespace OPCAIC.Application.Tournaments.Queries
 				}), cancellationToken);
 
 				data.dto.MenuItems = mapper.Map<List<MenuItemDto>>(data.menu);
-				await using var archive = storage.ReadTournamentAdditionalFiles(request.Id);
-				data.dto.AdditionalFilesLength = archive?.Length;
+				PostProcess(data.dto);
 				return data.dto;
 			}
+
+			protected virtual void PostProcess(TDto dto)
+			{
+			}
+		}
+
+		/// <inheritdoc />
+		protected GetTournamentQueryBase(long id) : base(id)
+		{
 		}
 	}
 }

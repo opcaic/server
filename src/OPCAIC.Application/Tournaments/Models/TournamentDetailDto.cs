@@ -13,9 +13,6 @@ namespace OPCAIC.Application.Tournaments.Models
 
 		public string Description { get; set; }
 
-		[IgnoreMap]
-		public long? AdditionalFilesLength { get; set; }
-
 		public long MaxSubmissionSize { get; set; }
 
 		[IgnoreMap] // has to be mapped in-memory manually due to inheritance

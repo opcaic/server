@@ -44,6 +44,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case TournamentPermission.Publish:
 				case TournamentPermission.ManageDocuments:
 				case TournamentPermission.ReadManagers:
+				case TournamentPermission.ReadAdmin:
 					// only owner and managers
 					return IsOwnerOrManager(userId, id);
 

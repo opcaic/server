@@ -57,7 +57,7 @@ namespace OPCAIC.FunctionalTest
 			var id = await PostAsync<IdModel>("/api/tournaments", command);
 
 			Log("Get the created tournament back:");
-			var tournament = await GetAsync<TournamentDetailDto>($"/api/tournaments/{id.Id}");
+			var tournament = await GetAsync<TournamentAdminDto>($"/api/tournaments/{id.Id}/admin");
 
 			tournament.Id.ShouldBe(id.Id);
 			tournament.Name.ShouldBe(command.Name);
@@ -79,11 +79,11 @@ namespace OPCAIC.FunctionalTest
 			response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
 			Log("Check that the name was updated");
-			tournament = await GetAsync<TournamentDetailDto>($"/api/tournaments/{id.Id}");
-			tournament.Name.ShouldBe(update.Name);
+			var updated = await GetAsync<TournamentDetailDto>($"/api/tournaments/{id.Id}");
+			updated.Name.ShouldBe(update.Name);
 		}
 
-		private static UpdateTournamentCommand MakeUpdateCommand(TournamentDetailDto tournament)
+		private static UpdateTournamentCommand MakeUpdateCommand(TournamentAdminDto tournament)
 		{
 			return new UpdateTournamentCommand
 			{
@@ -132,7 +132,7 @@ namespace OPCAIC.FunctionalTest
 				});
 
 			Log("Add the document to the tournament");
-			var tournament = await GetAsync<TournamentDetailDto>($"/api/tournaments/{id.Id}");
+			var tournament = await GetAsync<TournamentAdminDto>($"/api/tournaments/{id.Id}/admin");
 			var update = MakeUpdateCommand(tournament);
 			update.MenuItems = new List<MenuItemDto>
 			{
@@ -150,11 +150,13 @@ namespace OPCAIC.FunctionalTest
 			};
 			var response = await PutAsync($"/api/tournaments/{id.Id}", update);
 			response.EnsureSuccessStatusCode();
-			tournament = await GetAsync<TournamentDetailDto>($"/api/tournaments/{id.Id}");
+
+			Log("Refetch the updated tournament");
+			tournament = await GetAsync<TournamentAdminDto>($"/api/tournaments/{id.Id}/admin");
 
 			Log("Try cloning the tournament");
 			var cloneId = await PostAsync<IdModel>($"/api/tournaments/{id.Id}/clone");
-			var clone = await GetAsync<TournamentDetailDto>($"/api/tournaments/{cloneId.Id}");
+			var clone = await GetAsync<TournamentAdminDto>($"/api/tournaments/{cloneId.Id}/admin");
 
 			Log("Comparing the two tournaments");
 			clone.Id.ShouldNotBe(id.Id);
