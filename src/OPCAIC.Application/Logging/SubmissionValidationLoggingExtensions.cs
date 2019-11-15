@@ -12,7 +12,7 @@ namespace OPCAIC.Application.Logging
 			long submissionId, Guid jobId)
 		{
 			logger.LogInformation(LoggingEvents.SubmissionValidationQueued,
-				$"Queuing validation for submission {{{LoggingTags.SubmissionId}}} as job {{{LoggingTags.JobId}}} with id {{{LoggingTags.SubmissionValidationId}}}",
+				$"Queuing validation for submission {{{LoggingTags.SubmissionId}}} as job {{{LoggingTags.JobId}}} with id {{{LoggingTags.ValidationId}}}",
 				submissionId, jobId, id);
 		}
 
@@ -34,7 +34,7 @@ namespace OPCAIC.Application.Logging
 		public static void SubmissionValidationResultUploaded(this ILogger logger, long id)
 		{
 			logger.LogInformation(LoggingEvents.SubmissionValidationUploadResults,
-				$"Uploaded results of Submission validation {{{LoggingTags.SubmissionValidationId}}}",
+				$"Uploaded results of Submission validation {{{LoggingTags.ValidationId}}}",
 				id);
 		}
 	}

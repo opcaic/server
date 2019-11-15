@@ -22,8 +22,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 				case GamePermission.Read:
 				case GamePermission.Search:
 					return
-						Task.FromResult(
-							true); // TODO: Verify, or maybe more granular level (details or not)
+						Task.FromResult(true); 
 				default:
 					throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
 			}

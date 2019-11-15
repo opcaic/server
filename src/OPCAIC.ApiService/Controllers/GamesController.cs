@@ -92,10 +92,9 @@ namespace OPCAIC.ApiService.Controllers
 		/// <summary>
 		///     Updates game data by id.
 		/// </summary>
-		/// <param name="id"></param>
 		/// <param name="model"></param>
 		/// <param name="cancellationToken"></param>
-		/// <response code="200">User was successfully updated.</response>
+		/// <response code="200">Game was successfully updated.</response>
 		/// <response code="401">User is not authenticated.</response>
 		/// <response code="403">User does not have permissions to this resource.</response>
 		/// <response code="404">Resource was not found.</response>
@@ -110,6 +109,28 @@ namespace OPCAIC.ApiService.Controllers
 		{
 			await authorizationService.CheckPermission(User, model.Id, GamePermission.Update);
 			await mediator.Send(model, cancellationToken);
+		}
+
+		/// <summary>
+		///     Deletes game with given id and all associated tournaments.
+		/// </summary>
+		/// <param name="id">Id fo the game</param>
+		/// <param name="cancellationToken"></param>
+		/// <response code="200">Game was successfully deleted.</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to this resource.</response>
+		/// <response code="404">Resource was not found.</response>
+		[HttpDelete("{id}")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task DeleteAsync(long id,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermission(User, id, GamePermission.Delete);
+			await mediator.Send(new DeleteGameCommand(id), cancellationToken);
 		}
 	}
 }

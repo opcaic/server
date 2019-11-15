@@ -12,10 +12,10 @@ namespace OPCAIC.Application.MatchExecutions.Queries
 	{
 		public GetMatchResultArchiveQuery(long matchExecutionId)
 		{
-			MatchExecutionId = matchExecutionId;
+			ExecutionId = matchExecutionId;
 		}
 
-		public long MatchExecutionId { get; }
+		public long ExecutionId { get; }
 
 		public class Handler : IRequestHandler<GetMatchResultArchiveQuery, Stream>
 		{
@@ -33,7 +33,7 @@ namespace OPCAIC.Application.MatchExecutions.Queries
 				CancellationToken cancellationToken)
 			{
 				var storageDto =
-					await repository.FindExecutionForStorageAsync(request.MatchExecutionId,
+					await repository.FindExecutionForStorageAsync(request.ExecutionId,
 						cancellationToken);
 
 				return storage.ReadMatchResultArchive(storageDto);

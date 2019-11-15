@@ -47,10 +47,6 @@
 
 		public const string DocumentId = "DocumentId";
 
-		public const string MatchExecutionId = "MatchExecutionId";
-
-		public const string SubmissionValidationId = "SubmissionValidationId";
-
 		public const string EmailTemplateType = "EmailTemplateType";
 
 		public const string LanguageCode = "LanguageCode";

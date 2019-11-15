@@ -12,7 +12,7 @@ namespace OPCAIC.Application.Logging
 			Guid jobId)
 		{
 			logger.LogInformation(LoggingEvents.MatchExecutionQueued,
-				$"Queueing execution of match {{{LoggingTags.MatchId}}} as job {{{LoggingTags.JobId}}} with id {{{LoggingTags.MatchExecutionId}}}.",
+				$"Queueing execution of match {{{LoggingTags.MatchId}}} as job {{{LoggingTags.JobId}}} with id {{{LoggingTags.ExecutionId}}}.",
 				matchId, jobId, id);
 		}
 
@@ -34,7 +34,7 @@ namespace OPCAIC.Application.Logging
 		public static void MatchExecutionResultUploaded(this ILogger logger, long id)
 		{
 			logger.LogInformation(LoggingEvents.MatchExecutionUploadResults,
-				$"Uploaded results of match execution {{{LoggingTags.MatchExecutionId}}}", id);
+				$"Uploaded results of match execution {{{LoggingTags.ExecutionId}}}", id);
 		}
 	}
 }

@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces;
 using OPCAIC.Application.Specifications;
+using OPCAIC.Broker;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 
@@ -23,59 +24,72 @@ namespace OPCAIC.Application.Tournaments.Commands
 
 		public class Handler : IRequestHandler<DeleteTournamentCommand>
 		{
+			private readonly IBroker broker;
 			private readonly IRepository<Tournament> repository;
 			private readonly IStorageService storage;
 
-			public class Data
-			{
-				public class MatchDto
-				{
-					public long Id { get; set; }
-					public List<long> Executions { get; set; }
-				}
-
-				public class SubmissionDto
-				{
-					public long Id { get; set; }
-					public List<long> Validations { get; set; }
-				}
-
-				public List<SubmissionDto> Submissions { get; set; }
-				public List<MatchDto> Matches { get; set; }
-
-				public TournamentState State { get; set; }
-			}
-
 			/// <inheritdoc />
-			public Handler(IRepository<Tournament> repository, IStorageService storage)
+			public Handler(IRepository<Tournament> repository, IStorageService storage,
+				IBroker broker)
 			{
 				this.repository = repository;
 				this.storage = storage;
+				this.broker = broker;
 			}
 
 			/// <inheritdoc />
-			public async Task<Unit> Handle(DeleteTournamentCommand request, CancellationToken cancellationToken)
+			public async Task<Unit> Handle(DeleteTournamentCommand request,
+				CancellationToken cancellationToken)
 			{
-				var data = await repository.GetAsync(request.TournamentId, (Tournament t) => new Data
-				{
-					Submissions = t.Submissions.Select(s => new Data.SubmissionDto
+				var data = await repository.GetAsync(request.TournamentId,
+					t => new Data
 					{
-						Id = s.Id,
-						Validations = s.Validations.Select(v => v.Id).ToList()
-					}).ToList(),
-					Matches = t.Matches.Select(m => new Data.MatchDto { Id = m.Id, Executions = m.Executions.Select(e => e.Id).ToList() }).ToList(),
-					State = t.State
-				}, cancellationToken);
+						Submissions = t.Submissions.Select(s => new Data.SubmissionDto
+						{
+							Id = s.Id,
+							Validations = s.Validations
+								.Where(s => s.State == WorkerJobState.Scheduled)
+								.Select(v => v.JobId).ToList()
+						}).ToList(),
+						Matches = t.Matches.Select(m => new Data.MatchDto
+						{
+							Id = m.Id,
+							Executions = m.Executions
+								.Where(e => e.State == WorkerJobState.Scheduled)
+								.Select(e => e.JobId).ToList()
+						}).ToList(),
+						State = t.State
+					}, cancellationToken);
 
-				if (data.State != TournamentState.Finished)
-				{
-					throw new BadTournamentStateException(request.TournamentId, TournamentState.Finished, data.State);
-				}
+				// cancel all pending requests
+				await Task.WhenAll(data.Matches.SelectMany(m => m.Executions)
+					.Select(broker.CancelWork).Concat(data.Submissions
+						.SelectMany(s => s.Validations).Select(broker.CancelWork)));
 
 				await repository.DeleteAsync(request.TournamentId, cancellationToken);
 				storage.DeleteAllTournamentFiles(request.TournamentId);
 
 				return Unit.Value;
+			}
+
+			public class Data
+			{
+				public List<SubmissionDto> Submissions { get; set; }
+				public List<MatchDto> Matches { get; set; }
+
+				public TournamentState State { get; set; }
+
+				public class MatchDto
+				{
+					public long Id { get; set; }
+					public List<Guid> Executions { get; set; }
+				}
+
+				public class SubmissionDto
+				{
+					public long Id { get; set; }
+					public List<Guid> Validations { get; set; }
+				}
 			}
 		}
 	}

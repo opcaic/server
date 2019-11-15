@@ -90,7 +90,11 @@ namespace OPCAIC.Worker.Services
 		{
 			Logger.LogInformation("Preparing submissions");
 			// download all submissions and compile them
-			var results = await Task.WhenAll(Request.Bots.Select(PrepareSubmission).ToList());
+			var results = new SubTaskResult[Request.Bots.Count];
+			for (var i = 0; i < Request.Bots.Count; i++)
+			{
+				results[i] = await PrepareSubmission(Request.Bots[i]);
+			}
 
 			// if cancellation requested, return such, otherwise return most severe error
 			return results.Contains(SubTaskResult.Aborted)

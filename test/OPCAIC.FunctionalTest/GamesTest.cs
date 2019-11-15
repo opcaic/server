@@ -1,10 +1,12 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using OPCAIC.ApiService.Models;
 using OPCAIC.Application.Games.Commands;
 using OPCAIC.Application.Games.Models;
 using OPCAIC.Application.Infrastructure;
+using OPCAIC.Application.Tournaments.Commands;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using OPCAIC.FunctionalTest.Infrastructure;
@@ -100,7 +102,7 @@ namespace OPCAIC.FunctionalTest
 			response.EnsureSuccessStatusCode();
 		}
 
-		[Fact(Skip = "Delete not implemented")]
+		[Fact]
 		public async Task DeleteGame()
 		{
 			await LoginAsAdmin();
@@ -119,11 +121,30 @@ namespace OPCAIC.FunctionalTest
 			Log("Check that it exists");
 			await GetAsync<GameDetailDto>($"/api/games/{id}");
 
-			Log("Delete it");
-			await DeleteAsync($"/api/games/{id}");
+			Log("Create a tournament for it");
+			var tournamentId = (await PostAsync<IdModel>("/api/tournaments", 
+				new CreateTournamentCommand
+				{
+					GameId = id,
+					Availability = TournamentAvailability.Public,
+					Configuration = new JObject(),
+					Format = TournamentFormat.SinglePlayer,
+					Name = "Test tournament",
+					RankingStrategy = TournamentRankingStrategy.Maximum,
+					MaxSubmissionSize = 1000,
+					Scope = TournamentScope.Deadline,
+					Deadline = DateTime.Now.AddHours(1),
+				})).Id;
 
-			Log("Check that it is deleted");
+			Log("Delete the game");
+			(await DeleteAsync($"/api/games/{id}")).EnsureSuccessStatusCode();
+
+			Log("Check that the game is deleted");
 			var response = await GetAsync($"/api/games/{id}");
+			response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+
+			Log("Check that the tournament is deleted as well");
+			response = await GetAsync($"/api/tournaments/{tournamentId}");
 			response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 		}
 
