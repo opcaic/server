@@ -8,9 +8,7 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAIC.Application.Dtos.Matches;
-using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Dtos.Tournaments;
-using OPCAIC.Application.Dtos.Users;
 using OPCAIC.Application.Extensions;
 using OPCAIC.Application.Interfaces.MatchGeneration;
 using OPCAIC.Application.Interfaces.Repositories;
@@ -24,8 +22,8 @@ namespace OPCAIC.ApiService.Services
 {
 	public class TournamentProcessor : HostedJob
 	{
-		private DateTime lastUpdated = DateTime.MinValue;
 		private readonly ITimeService time;
+		private DateTime lastUpdated = DateTime.MinValue;
 
 		/// <inheritdoc />
 		public TournamentProcessor(IServiceScopeFactory scopeFactory,
@@ -42,18 +40,19 @@ namespace OPCAIC.ApiService.Services
 			var now = time.Now;
 			var lastRun = lastUpdated;
 			lastUpdated = now;
-			return scopedProvider.GetRequiredService<Job>().ExecuteAsync(lastRun, cancellationToken);
+			return scopedProvider.GetRequiredService<Job>()
+				.ExecuteAsync(lastRun, cancellationToken);
 		}
 
 		internal class Job
 		{
 			private readonly ILogger logger;
+			private readonly IMapper mapper;
 			private readonly IMatchGenerator matchGenerator;
 			private readonly IMatchRepository matchRepository;
 			private readonly IMediator mediator;
 			private readonly DateTime now;
 			private readonly ITournamentRepository tournamentRepository;
-			private readonly IMapper mapper;
 
 			/// <inheritdoc />
 			public Job(ILogger<TournamentProcessor> logger, IMediator mediator,
@@ -77,7 +76,8 @@ namespace OPCAIC.ApiService.Services
 				await TransferTournamentsToFinished(cancellationToken);
 			}
 
-			private async Task GenerateMatchesAsync(DateTime lastRun, CancellationToken cancellationToken)
+			private async Task GenerateMatchesAsync(DateTime lastRun,
+				CancellationToken cancellationToken)
 			{
 				// brackets
 				{
@@ -88,7 +88,11 @@ namespace OPCAIC.ApiService.Services
 
 					foreach (var tournament in tournaments)
 					{
+						var idScope = logger.SimpleScope(LoggingTags.TournamentId, tournament.Id);
+
 						var (matches, done) = matchGenerator.GenerateBrackets(tournament);
+						var countScope = logger.SimpleScope(LoggingTags.MatchesCount, matches);
+
 						await CreateMatches(cancellationToken, tournament.Id, matches);
 
 						if (done)
@@ -107,6 +111,8 @@ namespace OPCAIC.ApiService.Services
 
 					foreach (var tournament in tournaments)
 					{
+						var idScope = logger.SimpleScope(LoggingTags.TournamentId, tournament.Id);
+
 						var matches = matchGenerator.GenerateDeadline(tournament);
 						await CreateMatches(cancellationToken, tournament.Id, matches);
 						await MarkGenerationDone(tournament.Id, cancellationToken);
@@ -116,14 +122,15 @@ namespace OPCAIC.ApiService.Services
 				// ongoing
 				{
 					var tournaments =
-						await tournamentRepository.ListAsync<Tournament, TournamentOngoingGenerationDto>(t =>
-								t.State == TournamentState.Running &&
-								t.Scope == TournamentScope.Ongoing &&
-								(!t.Matches.Any() ||
-									t.Matches.Any(m
-										=> m.Executions.Any(e
-											=> e.Executed.HasValue && e.Executed > lastRun))),
-mapper, cancellationToken);
+						await tournamentRepository
+							.ListAsync<Tournament, TournamentOngoingGenerationDto>(t =>
+									t.State == TournamentState.Running &&
+									t.Scope == TournamentScope.Ongoing &&
+									(!t.Matches.Any() ||
+										t.Matches.Any(m
+											=> m.Executions.Any(e
+												=> e.Executed.HasValue && e.Executed > lastRun))),
+								mapper, cancellationToken);
 
 					foreach (var tournament in tournaments)
 					{
@@ -135,6 +142,10 @@ mapper, cancellationToken);
 						{
 							continue;
 						}
+
+						var scope = logger.SimpleScope(
+							(LoggingTags.TournamentId, tournament.Id),
+							(LoggingTags.MatchesCount, toGenerate));
 
 						var matches = matchGenerator.GenerateOngoing(tournament, (int)toGenerate);
 						await CreateMatches(cancellationToken, tournament.Id, matches);
@@ -180,10 +191,14 @@ mapper, cancellationToken);
 
 			private async Task TransferTournamentsToFinished(CancellationToken cancellationToken)
 			{
-				var events = await tournamentRepository.ListAsync(
-					t => t.State == TournamentState.WaitingForFinish &&
-						t.Matches.All(m => m.LastExecution.ExecutorResult == EntryPointResult.Success),
-					t => new TournamentFinished(t.Id, t.Name), cancellationToken);
+				var events = await tournamentRepository.ListAsync( t =>
+					t.State == TournamentState.WaitingForFinish &&
+					t.Matches.All(m => m.LastExecution.State == WorkerJobState.Finished) &&
+					(
+						// if deadline match, require all matches successfully executed
+						t.Scope != TournamentScope.Deadline ||
+						t.Matches.All(m => m.LastExecution.ExecutorResult == EntryPointResult.Success
+					)), t => new TournamentFinished(t.Id, t.Name), cancellationToken);
 
 				var updateDto = new TournamentFinishedUpdateDto(now);
 

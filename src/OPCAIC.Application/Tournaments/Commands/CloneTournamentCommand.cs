@@ -45,19 +45,25 @@ namespace OPCAIC.Application.Tournaments.Commands
 					.AddCriteria(t => t.Id == request.Id)
 					.Include($"{nameof(Tournament.MenuItems)}.{nameof(DocumentLinkMenuItem.Document)}")
 					.Include(nameof(Tournament.Documents))
-					.AsReadOnly();
+					.AsReadOnly(); // disables change tracking in repository
 
 				// does not fetch related entities aside from explicitly included ones
 				var tournament = await repository.FindAsync(spec, cancellationToken) ??
 					throw new NotFoundException(nameof(Tournament), request.Id);
 
 				tournament.OwnerId = request.RequestingUserId;
+
+				// clear data tournament data
 				tournament.State = TournamentState.Created;
+				tournament.Published = null;
+				tournament.EvaluationStarted = null;
+				tournament.EvaluationFinished = null;
 
 				// take care of duplicated objects
 				var documents = tournament.Documents.ToDictionary(d => d.Id);
 
-				// flush Ids so the tournament is stored as new tournament
+				// clear Ids, since the objects are not tracked by repository, new rows in database
+				// are created
 				tournament.Id = 0;
 				foreach (var item in tournament.Documents)
 				{

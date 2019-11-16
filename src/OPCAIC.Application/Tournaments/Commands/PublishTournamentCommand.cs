@@ -23,12 +23,14 @@ namespace OPCAIC.Application.Tournaments.Commands
 			private readonly ILogger<PublishTournamentCommand> logger;
 			private readonly IRepository<Tournament> repository;
 			private readonly ITimeService time;
+			private readonly IMediator mediator;
 
 			public Handler(ILogger<PublishTournamentCommand> logger,
-				IRepository<Tournament> repository, ITimeService time)
+				IRepository<Tournament> repository, ITimeService time, IMediator mediator)
 			{
 				this.repository = repository;
 				this.time = time;
+				this.mediator = mediator;
 				this.logger = logger;
 			}
 
@@ -45,18 +47,17 @@ namespace OPCAIC.Application.Tournaments.Commands
 						TournamentState.Created, tournament.State);
 				}
 
-				var targetState = tournament.Scope switch
-				{
-					TournamentScope.Deadline => TournamentState.Published,
-					// avoid waiting for manual start, since submissions are accepted even in
-					// running state
-					TournamentScope.Ongoing => TournamentState.Running,
-					_ => throw new ArgumentOutOfRangeException()
-				};
-
-				var updateDto = new PublishUpdateDto(time.Now, targetState);
+				var updateDto = new PublishUpdateDto(time.Now);
 				await repository.UpdateAsync(request.TournamentId, updateDto, cancellationToken);
 				logger.TournamentStateChanged(request.TournamentId, updateDto.State);
+
+				if (tournament.Scope == TournamentScope.Ongoing)
+				{
+					await mediator.Send(new StartTournamentEvaluationCommand
+					{
+						TournamentId = request.TournamentId
+					}, cancellationToken);
+				}
 
 				return Unit.Value;
 			}
@@ -64,8 +65,8 @@ namespace OPCAIC.Application.Tournaments.Commands
 			public class PublishUpdateDto : TournamentStateUpdateDto
 			{
 				/// <inheritdoc />
-				public PublishUpdateDto(DateTime published, TournamentState state)
-					: base(state)
+				public PublishUpdateDto(DateTime published)
+					: base(TournamentState.Published)
 				{
 					Published = published;
 				}

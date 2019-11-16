@@ -69,6 +69,7 @@ namespace OPCAIC.ApiService.Test.Services
 			{
 				match.LastExecution = match.Executions.Single();
 				match.LastExecution.ExecutorResult = EntryPointResult.Success;
+				match.LastExecution.State = WorkerJobState.Finished;
 			}
 			await DbContext.SaveChangesAsync();
 

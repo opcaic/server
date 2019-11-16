@@ -1,4 +1,6 @@
-﻿namespace OPCAIC.Common
+﻿using System.Runtime.Serialization;
+
+namespace OPCAIC.Common
 {
 	public static class LoggingTags
 	{
@@ -54,5 +56,7 @@
 		public const string Payload = "Payload";
 
 		public const string WorkerCapabilities = "WorkerCapabilites";
+
+		public const string MatchesCount = "MatchesCount";
 	}
 }

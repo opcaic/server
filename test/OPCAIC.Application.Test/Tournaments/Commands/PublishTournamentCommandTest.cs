@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using MediatR;
 using Moq;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
@@ -20,22 +21,29 @@ namespace OPCAIC.Application.Test.Tournaments.Commands
 		{
 			Services.Mock<ITimeService>();
 			repository = Services.Mock<IRepository<Tournament>>(MockBehavior.Strict);
+			mediator = Services.Mock<IMediator>(MockBehavior.Strict);
 		}
 
 		private readonly Mock<IRepository<Tournament>> repository;
+		private readonly Mock<IMediator> mediator;
 
 		[Theory]
-		[InlineData(TournamentScope.Deadline, TournamentState.Published)]
-		[InlineData(TournamentScope.Ongoing, TournamentState.Running)]
-		public async Task Handle_Success(TournamentScope scope, TournamentState expectedState)
+		[InlineData(TournamentScope.Deadline)]
+		[InlineData(TournamentScope.Ongoing)]
+		public async Task Handle_Success(TournamentScope scope)
 		{
+			if (scope == TournamentScope.Ongoing)
+			{
+				mediator.Setup(s => s.Send(It.IsAny<StartTournamentEvaluationCommand>(), CancellationToken)).ReturnsAsync(Unit.Value);
+			}
+
 			repository
 				.SetupFind(new Tournament {State = TournamentState.Created, Scope = scope},
 					CancellationToken);
 
 			repository
 				.SetupUpdate((TournamentStateUpdateDto dto)
-					=> dto.State == expectedState, CancellationToken);
+					=> dto.State == TournamentState.Published, CancellationToken);
 
 			await Handler.Handle(new PublishTournamentCommand(), CancellationToken);
 		}

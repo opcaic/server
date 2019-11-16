@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace OPCAIC.Application.Logging
@@ -19,6 +20,19 @@ namespace OPCAIC.Application.Logging
 			}
 
 			return logger.BeginScope(ids);
+		}
+
+		public static IDisposable SimpleScope<T>(this ILogger logger, string name, T value)
+		{
+			return logger.BeginScope(new Dictionary<string, object>
+			{
+				[name] = value
+			});
+		}
+
+		public static IDisposable SimpleScope(this ILogger logger, params (string key, object value)[] values)
+		{
+			return logger.BeginScope(values.ToDictionary(v => v.key, v => v.value));
 		}
 	}
 }
