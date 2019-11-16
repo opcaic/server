@@ -12,8 +12,8 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 {
 	public static class SetupHelper
 	{
-		static EntityFaker EntityFaker = new EntityFaker();
-		static Faker Faker = new Faker();
+		static readonly EntityFaker EntityFaker = new EntityFaker();
+		static readonly Faker Faker = new Faker();
 
 		public static (User user, string password) CreateUser(this FunctionalTestFixture fixture, UserRole role = UserRole.User)
 		{

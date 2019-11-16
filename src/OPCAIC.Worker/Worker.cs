@@ -193,16 +193,15 @@ namespace OPCAIC.Worker
 
 				try
 				{
-					using (var scope = serviceProvider.CreateScope())
-					{
-						var r = await scope.ServiceProvider
-							.GetRequiredService<IJobExecutor<TRequest, TResult>>()
-							.ExecuteAsync(request, token);
+					using var scope = serviceProvider.CreateScope();
 
-						if (r != null)
-						{
-							response = r;
-						}
+					var r = await scope.ServiceProvider
+						.GetRequiredService<IJobExecutor<TRequest, TResult>>()
+						.ExecuteAsync(request, token);
+
+					if (r != null)
+					{
+						response = r;
 					}
 				}
 				// log in when handler to preserve scopes.

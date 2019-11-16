@@ -99,6 +99,7 @@ namespace OPCAIC.ApiService.Controllers
 		///     Gets detailed information about the given match execution.
 		/// </summary>
 		/// <param name="id">Id of the match execution.</param>
+		/// <param name="anonymize">Optional override of the tournaments anonymization.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[HttpGet("{id}")]
@@ -143,7 +144,6 @@ namespace OPCAIC.ApiService.Controllers
 		///     Downloads match execution results as a zip model.
 		/// </summary>
 		/// <param name="id">Id of the match execution.</param>
-		/// <param name="anonymize">Flag to override anonymization of the tournament</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		[HttpGet("{id}/download")]

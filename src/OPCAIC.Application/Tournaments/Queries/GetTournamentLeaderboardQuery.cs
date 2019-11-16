@@ -157,8 +157,7 @@ namespace OPCAIC.Application.Tournaments.Queries
 			}
 
 			private void SetStartingSlotsFromBrackets(
-				List<TournamentLeaderboardDto.ParticipationDto> participants,
-				IReadOnlyList<IReadOnlyList<MatchTreeNode>> bracket)
+				List<TournamentLeaderboardDto.ParticipationDto> participants)
 			{
 				var indices = MatchTreeGenerator.GenerateIndicesForCount(participants.Count);
 				participants.Sort((a, b) => a.SubmissionId.CompareTo(b.SubmissionId));
@@ -189,7 +188,7 @@ namespace OPCAIC.Application.Tournaments.Queries
 						.ToList()
 				};
 
-				SetStartingSlotsFromBrackets(model.Participations, tree.Levels);
+				SetStartingSlotsFromBrackets(model.Participations);
 
 				if (!model.Finished || model.Participations.Count == 0)
 				{
@@ -275,7 +274,7 @@ namespace OPCAIC.Application.Tournaments.Queries
 					ConsolationFinalIndex = tree.ThirdPlaceMatch?.MatchIndex
 				};
 
-				SetStartingSlotsFromBrackets(model.Participations, tree.Levels);
+				SetStartingSlotsFromBrackets(model.Participations);
 
 				// avoid edge cases
 				if (!model.Finished || model.Participations.Count == 0)

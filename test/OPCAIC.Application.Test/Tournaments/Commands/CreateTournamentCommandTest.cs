@@ -62,7 +62,7 @@ namespace OPCAIC.Application.Test.Tournaments
 }";
 
 		[Fact]
-		public async Task Create_InvalidConfiguration()
+		public void Create_InvalidConfiguration()
 		{
 			const long gameId = 1;
 

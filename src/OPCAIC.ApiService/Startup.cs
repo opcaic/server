@@ -178,8 +178,6 @@ namespace OPCAIC.ApiService
 				app.UseCors(myAllowSpecificOrigins);
 			}
 
-			app.UseIpRateLimiting();
-
 			app.UseSwagger(SwaggerConfig.SetupSwagger);
 			app.UseSwaggerUI(SwaggerConfig.SetupSwaggerUi);
 
@@ -187,8 +185,9 @@ namespace OPCAIC.ApiService
 			app.UseAuthorization();
 
 			app.UseMiddleware<ExceptionMiddleware>();
-			app.UseMiddleware<DbTransactionMiddleware>();
+			app.UseIpRateLimiting();
 
+			app.UseMiddleware<DbTransactionMiddleware>();
 			app.UseEndpoints(endpoints =>
 			{
 				endpoints.MapHealthChecks("/api/health", HealthSetup.Options);

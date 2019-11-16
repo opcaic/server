@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -44,13 +45,13 @@ namespace OPCAIC.ApiService.Middlewares
 				Formatting = Formatting.Indented
 			};
 
-		private readonly IHostingEnvironment env;
+		private readonly IWebHostEnvironment env;
 
 		private readonly ILogger logger;
 
 		private readonly RequestDelegate next;
 
-		public ExceptionMiddleware(RequestDelegate next, IHostingEnvironment env,
+		public ExceptionMiddleware(RequestDelegate next, IWebHostEnvironment env,
 			ILoggerFactory loggerFactory)
 		{
 			logger = loggerFactory.CreateLogger("RequestLogger");

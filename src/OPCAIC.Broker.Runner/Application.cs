@@ -78,7 +78,7 @@ namespace OPCAIC.Broker.Runner
 
 		private bool stop;
 
-		public Application(ILogger<Application> logger, IApplicationLifetime lifetime,
+		public Application(ILogger<Application> logger,
 			IBroker broker, IServiceProvider serviceProvider, IOptions<AppConfig> config)
 		{
 			this.broker = broker;

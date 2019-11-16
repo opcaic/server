@@ -126,7 +126,7 @@ namespace OPCAIC.Application.Test.Tournaments.Queries
 			SetupTournament(TournamentScope.Deadline, TournamentFormat.DoubleElimination,
 				submissionCount);
 			var leaderboards = await Handler.Handle(query, CancellationToken);
-			var tree = leaderboards.ShouldBeOfType<DoubleEliminationLeaderboardDto>();
+			leaderboards.ShouldBeOfType<DoubleEliminationLeaderboardDto>();
 			leaderboards.Participations.Count.ShouldBe(submissionCount);
 			leaderboards.Finished.ShouldBe(true);
 
@@ -153,7 +153,7 @@ namespace OPCAIC.Application.Test.Tournaments.Queries
 		{
 			SetupTournament(TournamentScope.Deadline, TournamentFormat.SingleElimination, submissionCount);
 			var leaderboards = await Handler.Handle(query, CancellationToken);
-			var tree = leaderboards.ShouldBeOfType<SingleEliminationLeaderboardDto>();
+			leaderboards.ShouldBeOfType<SingleEliminationLeaderboardDto>();
 			leaderboards.Participations.Count.ShouldBe(submissionCount);
 			leaderboards.Finished.ShouldBe(true);
 

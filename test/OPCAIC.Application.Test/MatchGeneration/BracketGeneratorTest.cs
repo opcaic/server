@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Newtonsoft.Json.Linq;
 using OPCAIC.Application.Dtos.MatchExecutions;
 using OPCAIC.Application.Dtos.Submissions;
@@ -77,13 +76,10 @@ namespace OPCAIC.Application.Test.MatchGeneration
 		{
 			Services.AddSingleton<IMatchTreeFactory>(new CachedMatchTreeFactory(new MemoryCache(new MemoryCacheOptions())));
 
-			matchRepository = Services.Mock<IMatchRepository>();
-			new List<MatchDetailDto>();
+			Services.Mock<IMatchRepository>();
 		}
 
 		protected IBracketsMatchGenerator generator;
-		private readonly Mock<IMatchRepository> matchRepository;
-
 
 		public static TheoryData<int, int> GetSeedsUpTo(int size)
 		{

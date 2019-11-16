@@ -52,7 +52,7 @@ namespace OPCAIC.Worker.Services
 
 
 			// make sure target directory exists
-			var dir = Directory.CreateDirectory(targetDir);
+			Directory.CreateDirectory(targetDir);
 
 			var destinationArchiveFileName = Path.Combine(targetDir, taskDirectory.Name) + ".zip";
 

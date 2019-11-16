@@ -98,7 +98,6 @@ namespace OPCAIC.ApiService.Controllers
 		/// <summary>
 		///     Updates document data by id.
 		/// </summary>
-		/// <param name="id">Id of document to update.</param>
 		/// <param name="model">New model of document.</param>
 		/// <param name="cancellationToken"></param>
 		/// <response code="200">Document was successfully updated.</response>

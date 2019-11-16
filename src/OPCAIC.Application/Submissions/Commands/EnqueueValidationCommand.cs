@@ -26,7 +26,6 @@ namespace OPCAIC.Application.Submissions.Commands
 
 		public class Handler : IRequestHandler<EnqueueValidationCommand, Guid>
 		{
-			private readonly IMapper mapper;
 			private readonly ILogger<EnqueueValidationCommand> logger;
 			private readonly ISubmissionValidationRepository repository;
 			private readonly ISubmissionRepository submissionRepository;
@@ -38,7 +37,6 @@ namespace OPCAIC.Application.Submissions.Commands
 				this.repository = repository;
 				this.submissionRepository = submissionRepository;
 				this.logger = logger;
-				this.mapper = mapper;
 			}
 
 			/// <inheritdoc />

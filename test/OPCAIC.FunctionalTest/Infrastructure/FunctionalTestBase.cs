@@ -232,15 +232,14 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 		{
 			if (json == null) return string.Empty;
 
-			using (var reader = new StringReader(json))
-			using (var writer = new StringWriter())
-			using (var jsonReader = new JsonTextReader(reader))
-			using (var jsonWriter = new JsonTextWriter(writer))
-			{
-				jsonWriter.Formatting = Formatting.Indented;
-				jsonWriter.WriteToken(jsonReader);
-				return writer.ToString();
-			}
+			using var reader = new StringReader(json);
+			using var writer = new StringWriter();
+			using var jsonReader = new JsonTextReader(reader);
+			using var jsonWriter = new JsonTextWriter(writer);
+
+			jsonWriter.Formatting = Formatting.Indented;
+			jsonWriter.WriteToken(jsonReader);
+			return writer.ToString();
 		}
 	}
 }

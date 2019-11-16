@@ -99,17 +99,16 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 						action(services);
 					}
 
-					using (var scope = services.BuildServiceProvider().CreateScope())
-					{
-						// initialize db
-						scope.ServiceProvider.GetRequiredService<IDatabaseSeed>().DoSeed();
+					using var scope = services.BuildServiceProvider().CreateScope();
 
-						// confirm admin email
-						var mgr = scope.ServiceProvider.GetRequiredService<UserManager>();
-						var user = mgr.Users.Single(u => u.Role == UserRole.Admin);
-						var token = mgr.GenerateEmailConfirmationTokenAsync(user).GetAwaiter().GetResult();
-						mgr.ConfirmEmailAsync(user, token).GetAwaiter().GetResult().ThrowIfFailed();
-					}
+					// initialize db
+					scope.ServiceProvider.GetRequiredService<IDatabaseSeed>().DoSeed();
+
+					// confirm admin email
+					var mgr = scope.ServiceProvider.GetRequiredService<UserManager>();
+					var user = mgr.Users.Single(u => u.Role == UserRole.Admin);
+					var token = mgr.GenerateEmailConfirmationTokenAsync(user).GetAwaiter().GetResult();
+					mgr.ConfirmEmailAsync(user, token).GetAwaiter().GetResult().ThrowIfFailed();
 				});
 
 			return base.CreateServer(builder);

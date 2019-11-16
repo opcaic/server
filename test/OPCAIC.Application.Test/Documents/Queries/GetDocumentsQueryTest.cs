@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using Moq;
 using OPCAIC.Application.Documents.Models;
 using OPCAIC.Application.Documents.Queries;
@@ -21,8 +22,8 @@ namespace OPCAIC.Application.Test.Documents.Queries
 		/// <inheritdoc />
 		public GetDocumentsQueryTest(ITestOutputHelper output) : base(output)
 		{
-//			Services.AddAutoMapper(typeof(GetDocumentQuery).Assembly);
-//			documentRepository = Services.Mock<IDocumentRepository>();
+			Services.AddAutoMapper(typeof(GetDocumentQuery).Assembly);
+			documentRepository = Services.Mock<IRepository<Document>>();
 		}
 
 		private readonly Mock<IRepository<Document>> documentRepository;

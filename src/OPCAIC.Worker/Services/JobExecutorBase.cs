@@ -279,23 +279,13 @@ namespace OPCAIC.Worker.Services
 					result = await entryPoint(EntryPointConfig, botOrBots, OutputDirectory,
 						CancellationToken);
 
-					switch (result.EntryPointResult)
+					status = result.EntryPointResult switch
 					{
-						case GameModuleEntryPointResult.Success:
-							status = SubTaskResult.Ok;
-							break;
-
-						case GameModuleEntryPointResult.Failure:
-							status = SubTaskResult.NotOk;
-							break;
-
-						case GameModuleEntryPointResult.ModuleError:
-							status = SubTaskResult.ModuleError;
-							break;
-
-						default:
-							throw new ArgumentOutOfRangeException();
-					}
+						GameModuleEntryPointResult.Success => SubTaskResult.Ok,
+						GameModuleEntryPointResult.Failure => SubTaskResult.NotOk,
+						GameModuleEntryPointResult.ModuleError => SubTaskResult.ModuleError,
+						_ => throw new ArgumentOutOfRangeException()
+					};
 				}
 				catch (OperationCanceledException)
 					when (DoLog(LogLevel.Warning, 0, null,

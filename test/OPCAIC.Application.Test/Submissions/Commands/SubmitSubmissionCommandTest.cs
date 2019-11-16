@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using MediatR;
 using Moq;
 using OPCAIC.ApiService.IoC;
-using OPCAIC.ApiService.Services;
 using OPCAIC.Application.Dtos.Base;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Exceptions;
@@ -58,8 +57,6 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 		public long TournamentId = 1;
 		public long SubmissionId = 1;
 		public long UserId = 1;
-
-		private SubmissionService SubmissionService => GetService<SubmissionService>();
 
 		[Fact]
 		public async Task Create_AfterDeadline()

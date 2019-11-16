@@ -31,7 +31,7 @@ namespace OPCAIC.FunctionalTest
 		{
 			await LoginAsAdmin();
 
-			var result = await GetAsync<SubmissionValidationDetailDto>("api/validation/5");
+			await GetAsync<SubmissionValidationDetailDto>("api/validation/5");
 		}
 
 		[Fact]
@@ -39,7 +39,7 @@ namespace OPCAIC.FunctionalTest
 		{
 			await LoginAsAdmin();
 
-			var result = await GetAsync<SubmissionValidationAdminDto>("api/validation/5/admin");
+			await GetAsync<SubmissionValidationAdminDto>("api/validation/5/admin");
 		}
 
 		[Fact]

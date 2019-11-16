@@ -26,7 +26,6 @@ namespace OPCAIC.ApiService.Utils
 	public class ApplicationTestSeed : IDatabaseSeed
 	{
 		private readonly DataContext context;
-		private readonly IWebHostEnvironment environment;
 		private readonly Faker faker = new Faker();
 		private readonly IMapper mapper;
 		private readonly Random random = new Random(0);
@@ -39,7 +38,7 @@ namespace OPCAIC.ApiService.Utils
 			this.services = services;
 			mapper = services.GetRequiredService<IMapper>();
 			context = services.GetRequiredService<DataContext>();
-			environment = services.GetRequiredService<IWebHostEnvironment>();
+			services.GetRequiredService<IWebHostEnvironment>();
 			userManager = services.GetRequiredService<UserManager>();
 		}
 

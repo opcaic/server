@@ -22,7 +22,7 @@ namespace OPCAIC.FunctionalTest
 {
 	public class UsersTest : FunctionalTestBase<UsersTest.Setup>
 	{
-		private static string Password = "Password##@afawef88";
+		private static readonly string Password = "Password##@afawef88";
 
 		private User User => FixtureSetup.User;
 
@@ -115,7 +115,7 @@ namespace OPCAIC.FunctionalTest
 			response.EnsureSuccessStatusCode();
 
 			// at last, try logging in
-			var identity = await PostAsync<UserIdentityModel>("api/users/login", new UserCredentialsModel
+			await PostAsync<UserIdentityModel>("api/users/login", new UserCredentialsModel
 			{
 				Email = email, Password = "Pa$Sw0rd"
 			});

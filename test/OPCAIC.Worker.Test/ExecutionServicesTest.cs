@@ -30,11 +30,10 @@ namespace OPCAIC.Worker.Test
 				ErrorDirectory = NewDirectory().FullName,
 				ArchiveDirectory = NewDirectory().FullName
 			}));
-			downloadService = Services.Mock<IDownloadService>();
+			Services.Mock<IDownloadService>();
 			gameModuleRegistry = Services.Mock<IGameModuleRegistry>();
 		}
 
-		private readonly Mock<IDownloadService> downloadService;
 		private readonly Mock<IGameModuleRegistry> gameModuleRegistry;
 		private readonly DirectoryInfo workdir;
 		private ExecutionServices ExecutionServices => GetService<ExecutionServices>();
