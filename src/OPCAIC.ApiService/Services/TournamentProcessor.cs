@@ -125,11 +125,7 @@ namespace OPCAIC.ApiService.Services
 						await tournamentRepository
 							.ListAsync<Tournament, TournamentOngoingGenerationDto>(t =>
 									t.State == TournamentState.Running &&
-									t.Scope == TournamentScope.Ongoing &&
-									(!t.Matches.Any() ||
-										t.Matches.Any(m
-											=> m.Executions.Any(e
-												=> e.Executed.HasValue && e.Executed > lastRun))),
+									t.Scope == TournamentScope.Ongoing,
 								mapper, cancellationToken);
 
 					foreach (var tournament in tournaments)
