@@ -45,7 +45,16 @@ namespace OPCAIC.Application.Tournaments.Commands
 						TournamentState.Created, tournament.State);
 				}
 
-				var updateDto = new PublishUpdateDto(time.Now);
+				var targetState = tournament.Scope switch
+				{
+					TournamentScope.Deadline => TournamentState.Published,
+					// avoid waiting for manual start, since submissions are accepted even in
+					// running state
+					TournamentScope.Ongoing => TournamentState.Running,
+					_ => throw new ArgumentOutOfRangeException()
+				};
+
+				var updateDto = new PublishUpdateDto(time.Now, targetState);
 				await repository.UpdateAsync(request.TournamentId, updateDto, cancellationToken);
 				logger.TournamentStateChanged(request.TournamentId, updateDto.State);
 
@@ -55,8 +64,8 @@ namespace OPCAIC.Application.Tournaments.Commands
 			public class PublishUpdateDto : TournamentStateUpdateDto
 			{
 				/// <inheritdoc />
-				public PublishUpdateDto(DateTime published)
-					: base(TournamentState.Published)
+				public PublishUpdateDto(DateTime published, TournamentState state)
+					: base(state)
 				{
 					Published = published;
 				}

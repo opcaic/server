@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using System.Threading.Tasks;
+using Moq;
 using OPCAIC.Application.Dtos.Tournaments;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Specifications;
@@ -7,7 +8,6 @@ using OPCAIC.Common;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
 using Shouldly;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -24,15 +24,18 @@ namespace OPCAIC.Application.Test.Tournaments.Commands
 
 		private readonly Mock<IRepository<Tournament>> repository;
 
-		[Fact]
-		public async Task Handle_Success()
+		[Theory]
+		[InlineData(TournamentScope.Deadline, TournamentState.Published)]
+		[InlineData(TournamentScope.Ongoing, TournamentState.Running)]
+		public async Task Handle_Success(TournamentScope scope, TournamentState expectedState)
 		{
 			repository
-				.SetupFind(new Tournament { State = TournamentState.Created }, CancellationToken);
+				.SetupFind(new Tournament {State = TournamentState.Created, Scope = scope},
+					CancellationToken);
 
 			repository
 				.SetupUpdate((TournamentStateUpdateDto dto)
-					=> dto.State == TournamentState.Published, CancellationToken);
+					=> dto.State == expectedState, CancellationToken);
 
 			await Handler.Handle(new PublishTournamentCommand(), CancellationToken);
 		}
@@ -41,7 +44,7 @@ namespace OPCAIC.Application.Test.Tournaments.Commands
 		public async Task Handle_TournamentBadState()
 		{
 			repository
-				.SetupFind(new Tournament { State = TournamentState.Finished }, CancellationToken);
+				.SetupFind(new Tournament {State = TournamentState.Finished}, CancellationToken);
 
 			var exception =
 				await Should.ThrowAsync<BadTournamentStateException>(
