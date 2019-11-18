@@ -13,14 +13,14 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 		/// <inheritdoc />
 		public DeleteInvitationCommandTest(ITestOutputHelper output) : base(output)
 		{
-			repository = Services.Mock<IRepository<TournamentInvitation>>(MockBehavior.Strict);
+			invitationRepository = Services.Mock<IRepository<TournamentInvitation>>(MockBehavior.Strict);
 			participationsRepository = Services.Mock<IRepository<TournamentParticipation>>(MockBehavior.Strict);
 
-			repository.SetupFind(Invitation, CancellationToken);
-			repository.SetupDelete(Invitation);
+			invitationRepository.SetupFind(Invitation, CancellationToken);
+			invitationRepository.SetupDelete(Invitation);
 		}
 
-		private readonly Mock<IRepository<TournamentInvitation>> repository;
+		private readonly Mock<IRepository<TournamentInvitation>> invitationRepository;
 		private readonly Mock<IRepository<TournamentParticipation>> participationsRepository;
 
 		private TournamentInvitation Invitation = new TournamentInvitation
@@ -33,6 +33,7 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 		[Fact]
 		public Task Success_NoUser()
 		{
+			invitationRepository.SetupDelete(CancellationToken);
 			return Handler.Handle(new DeleteInvitationCommand(Invitation.TournamentId, Invitation.Email), CancellationToken);
 		}
 
@@ -41,6 +42,7 @@ namespace OPCAIC.Application.Test.TournamentInvitations.Commands
 		{
 			Invitation.UserId = 1;
 
+			invitationRepository.SetupDelete(CancellationToken);
 			participationsRepository.SetupDelete(CancellationToken);
 			return Handler.Handle(new DeleteInvitationCommand(Invitation.TournamentId, Invitation.Email), CancellationToken);
 		}

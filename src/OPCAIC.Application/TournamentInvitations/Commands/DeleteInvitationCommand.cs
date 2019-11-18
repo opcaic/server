@@ -33,19 +33,23 @@ namespace OPCAIC.Application.TournamentInvitations.Commands
 
 		public class Handler : IRequestHandler<DeleteInvitationCommand>
 		{
-			private readonly IRepository<TournamentInvitation> repository;
+			private readonly IRepository<TournamentInvitation> invitationRepository;
 			private readonly IRepository<TournamentParticipation> participationRepository;
 
-			public Handler(IRepository<TournamentInvitation> repository, IRepository<TournamentParticipation> participationRepository)
+			public Handler(IRepository<TournamentInvitation> invitationRepository, IRepository<TournamentParticipation> participationRepository)
 			{
-				this.repository = repository;
+				this.invitationRepository = invitationRepository;
 				this.participationRepository = participationRepository;
 			}
 
 			/// <inheritdoc />
 			public async Task<Unit> Handle(DeleteInvitationCommand request, CancellationToken cancellationToken)
 			{
-				var invitation = await repository.GetAsync(i => i.TournamentId == request.TournamentId && i.Email == request.Email, cancellationToken);
+				var invitation = await invitationRepository.GetAsync(i => i.TournamentId == request.TournamentId && i.Email == request.Email, cancellationToken);
+
+				await invitationRepository.DeleteAsync(p
+					=> p.Email == request.Email 
+					&& p.TournamentId == request.TournamentId, cancellationToken);
 
 				if (invitation.UserId != null) // user exists, delete him if he has not already submitted something
 				{
