@@ -10,6 +10,14 @@
     <Compile Remove="Migrations\20191019212411_InitialCreate.Designer.cs" />
     <Compile Remove="Migrations\20191110155713_Explicit_LastValidation.cs" />
     <Compile Remove="Migrations\20191110155713_Explicit_LastValidation.Designer.cs" />
+    <Compile Remove="Migrations\20191118090932_DeletableUser.cs" />
+    <Compile Remove="Migrations\20191118090932_DeletableUser.Designer.cs" />
+    <Compile Remove="Migrations\20191118094609_DeletableUser.cs" />
+    <Compile Remove="Migrations\20191118094609_DeletableUser.Designer.cs" />
+    <Compile Remove="Migrations\20191118095508_DeletableUser.cs" />
+    <Compile Remove="Migrations\20191118095508_DeletableUser.Designer.cs" />
+    <Compile Remove="Migrations\20191118173918_DeletableUser.cs" />
+    <Compile Remove="Migrations\20191118173918_DeletableUser.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

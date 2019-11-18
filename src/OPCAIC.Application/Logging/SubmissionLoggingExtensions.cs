@@ -7,12 +7,11 @@ namespace OPCAIC.Application.Logging
 {
 	public static class SubmissionLoggingExtensions
 	{
-		public static void SubmissionCreated(this ILogger logger, long submissionId,
-			NewSubmissionDto dto)
+		public static void SubmissionCreated(this ILogger logger, long submissionId, long tournamentId)
 		{
 			logger.LogInformation(LoggingEvents.SubmissionCreate,
 				$"Created new submission {{{LoggingTags.SubmissionId}}} to tournament {{{LoggingTags.TournamentId}}}",
-				submissionId, dto.TournamentId);
+				submissionId, tournamentId);
 		}
 
 		public static void SubmissionUpdated(this ILogger logger, long submissionId,

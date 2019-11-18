@@ -11,7 +11,7 @@ namespace OPCAIC.Domain.Entities
 		/// <summary>
 		///     Id of the user who created this submission.
 		/// </summary>
-		public long AuthorId { get; set; }
+		public long? AuthorId { get; set; }
 
 		/// <summary>
 		///     Author of this submission.

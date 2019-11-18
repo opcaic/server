@@ -42,6 +42,12 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 			Faker.Configure<Tournament>()
 				.RuleFor(t => t.Id, TournamentId)
 				.RuleFor(d => d.State, TournamentState.Published);
+
+			TournamentParticipation = new TournamentParticipation
+			{
+				TournamentId = TournamentId,
+				UserId = UserId
+			};
 		}
 
 		private readonly Mock<ISubmissionRepository> submissionRepository;
@@ -57,6 +63,8 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 		public long TournamentId = 1;
 		public long SubmissionId = 1;
 		public long UserId = 1;
+
+		public TournamentParticipation TournamentParticipation;
 
 		[Fact]
 		public async Task Create_AfterDeadline()
@@ -103,27 +111,28 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 				.ReturnsAsync(Faker
 					.Dto<Tournament, TournamentDetailDto>()); // not deadline by default
 
-			submissionRepository.Setup(r => r.CreateAsync(It.Is<NewSubmissionDto>(
-					d => d.AuthorId == UserId), CancellationToken))
-				.ReturnsAsync(SubmissionId);
+			submissionRepository.Setup(s => 
+				s.Add(It.Is<Submission>(s => 
+					s.TournamentId == TournamentId &&
+					s.AuthorId == UserId &&
+					s.TournamentParticipation.TournamentId == TournamentId)))
+				.Callback((Submission s) => s.Id = SubmissionId);
 
 			submissionRepository.Setup(r
 					=> r.FindSubmissionForStorageAsync(SubmissionId, CancellationToken))
 				.ReturnsAsync(new SubmissionDtoBase {Id = SubmissionId});
 
+			submissionRepository.Setup(r => r.SaveChangesAsync(CancellationToken))
+				.Returns(Task.CompletedTask);
+
 			storageService.Setup(s => s.WriteSubmissionArchive(
 					It.Is<SubmissionDtoBase>(d => d.Id == SubmissionId)))
 				.Returns(new MemoryStream());
 
+			tournamentParticipationRepository.SetupFind(null, CancellationToken);
 			tournamentParticipationRepository.Setup(s
-				=> s.ExistsAsync(It.IsAny<ISpecification<TournamentParticipation>>(),
-					CancellationToken)).ReturnsAsync(false);
-
-			tournamentParticipationRepository.Setup(s
-				=> s.CreateAsync(
-					It.Is<TournamentParticipation>(p
-						=> p.TournamentId == TournamentId && p.UserId == UserId),
-					CancellationToken)).Returns(Task.CompletedTask);
+				=> s.Add(It.Is<TournamentParticipation>(p
+					=> p.UserId == UserId && p.TournamentId == TournamentId)));
 
 			mediator.Setup(m
 				=> m.Publish(It.Is<SubmissionCreated>(e => e.SubmissionId == SubmissionId),
@@ -147,21 +156,25 @@ namespace OPCAIC.Application.Test.Submissions.Commands
 				.ReturnsAsync(Faker
 					.Dto<Tournament, TournamentDetailDto>()); // not deadline by default
 
-			submissionRepository.Setup(r => r.CreateAsync(It.Is<NewSubmissionDto>(
-					d => d.AuthorId == UserId), CancellationToken))
-				.ReturnsAsync(SubmissionId);
+			submissionRepository.Setup(s =>
+					s.Add(It.Is<Submission>(s =>
+						s.TournamentId == TournamentId &&
+						s.AuthorId == UserId &&
+						s.TournamentParticipation == TournamentParticipation)))
+				.Callback((Submission s) => s.Id = SubmissionId);
 
 			submissionRepository.Setup(r
 					=> r.FindSubmissionForStorageAsync(SubmissionId, CancellationToken))
 				.ReturnsAsync(new SubmissionDtoBase {Id = SubmissionId});
 
+			submissionRepository.Setup(r => r.SaveChangesAsync(CancellationToken))
+				.Returns(Task.CompletedTask);
+
 			storageService.Setup(s => s.WriteSubmissionArchive(
 					It.Is<SubmissionDtoBase>(d => d.Id == SubmissionId)))
 				.Returns(new MemoryStream());
 
-			tournamentParticipationRepository.Setup(s
-				=> s.ExistsAsync(It.IsAny<ISpecification<TournamentParticipation>>(),
-					CancellationToken)).ReturnsAsync(true);
+			tournamentParticipationRepository.SetupFind(TournamentParticipation, CancellationToken);
 
 			mediator.Setup(m
 				=> m.Publish(It.Is<SubmissionCreated>(e => e.SubmissionId == SubmissionId),

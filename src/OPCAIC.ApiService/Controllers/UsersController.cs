@@ -225,6 +225,27 @@ namespace OPCAIC.ApiService.Controllers
 		}
 
 		/// <summary>
+		///     Deletes the user with given id.
+		/// </summary>
+		/// <param name="id">Id of the user to delete.</param>
+		/// <param name="cancellationToken"></param>
+		/// <response code="200">User deleted</response>
+		/// <response code="401">User is not authenticated.</response>
+		/// <response code="403">User does not have permissions to delete given user.</response>
+		/// <response code="404">User was not found.</response>
+		[HttpDelete("{id}")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task DeleteAsync(long id,
+			CancellationToken cancellationToken)
+		{
+			await authorizationService.CheckPermission(User, id, UserPermission.Delete);
+			await mediator.Send(new DeleteUserCommand(id), cancellationToken);
+		}
+
+		/// <summary>
 		///     Switches localization language for current user.
 		/// </summary>
 		/// <param name="command">The localization language to change.</param>

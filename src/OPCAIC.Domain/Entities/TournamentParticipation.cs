@@ -6,7 +6,7 @@ namespace OPCAIC.Domain.Entities
 	/// <summary>
 	///     Represents a participation of a user in a tournament.
 	/// </summary>
-	public class TournamentParticipation : IChangeTrackable
+	public class TournamentParticipation : EntityBase, IChangeTrackable
 	{
 		/// <summary>
 		///     Tournament in which user participates.
@@ -26,7 +26,7 @@ namespace OPCAIC.Domain.Entities
 		/// <summary>
 		///     Id of the user participating in the tournament.
 		/// </summary>
-		public long UserId { get; set; }
+		public long? UserId { get; set; }
 
 		/// <summary>
 		///     User's active submission in the tournament (which should be used for matches).

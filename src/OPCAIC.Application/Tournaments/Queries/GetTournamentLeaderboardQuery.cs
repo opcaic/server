@@ -65,12 +65,12 @@ namespace OPCAIC.Application.Tournaments.Queries
 								.Select(p => new TournamentLeaderboardDto.ParticipationDto
 								{
 									SubmissionId = p.ActiveSubmission.Id,
-									Author = new UserReferenceDto
+									Author = p.UserId.HasValue? new UserReferenceDto
 									{
-										Id = p.UserId,
+										Id = p.UserId.Value,
 										Organization = p.User.Organization,
 										Username = p.User.UserName
-									},
+									} : null,
 									SubmissionScore = p.ActiveSubmission.Score
 								}).ToList(),
 							RankingStrategy = t.RankingStrategy
@@ -291,11 +291,7 @@ namespace OPCAIC.Application.Tournaments.Queries
 				Debug.Assert(model.FinalIndex.HasValue);
 
 				// If secondary final was needed, fill the index
-				var final = model.Matches.GetValueOrDefault(model.FinalIndex.Value);
-				if (final?.Executed != null &&
-					GetResult(final, model.RankingStrategy).winner ==
-					final.SecondPlayer.SubmissionId &&
-					dto.Participations.Count > 2) // secondary final does not make sense with 2 players
+				if (tree.SecondaryFinal != null && model.Matches.ContainsKey(tree.SecondaryFinal.MatchIndex))
 				{
 					model.SecondaryFinalIndex = tree.SecondaryFinal.MatchIndex;
 				}

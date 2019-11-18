@@ -18,6 +18,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 			{
 				case UserPermission.Read:
 				case UserPermission.Update:
+				case UserPermission.Delete:
 					// user can do anything to themselves
 					var userId = user.TryGetId();
 					return Task.FromResult(userId == id.Value);

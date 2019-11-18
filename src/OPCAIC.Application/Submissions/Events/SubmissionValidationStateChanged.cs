@@ -66,11 +66,13 @@ namespace OPCAIC.Application.Submissions.Events
 					return; // newer submission exists
 				}
 
-				var dto = new UpdateTournamentParticipationDto(notification.SubmissionId);
-				await participationsRepository.UpdateAsync(
-					p => p.TournamentId == notification.TournamentId &&
+				var participation = await participationsRepository.GetAsync(p => 
+						p.TournamentId == notification.TournamentId &&
 						p.UserId == notification.AuthorId,
-					dto, cancellationToken);
+					cancellationToken);
+				participation.ActiveSubmissionId = notification.SubmissionId;
+
+				await participationsRepository.SaveChangesAsync(cancellationToken);
 			}
 
 			public class Data

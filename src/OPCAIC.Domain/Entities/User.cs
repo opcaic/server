@@ -52,6 +52,11 @@ namespace OPCAIC.Domain.Entities
 		public virtual IList<TournamentParticipation> TournamentParticipations { get; set; }
 
 		/// <summary>
+		///     Link to all tournaments this user is invited to.
+		/// </summary>
+		public virtual IList<TournamentInvitation> TournamentInvitations { get; set; }
+
+		/// <summary>
 		///     All tournaments this user has created.
 		/// </summary>
 		public virtual IList<Tournament> OwnedTournaments { get; set; }

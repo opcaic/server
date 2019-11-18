@@ -22,7 +22,7 @@ namespace OPCAIC.Application.MatchExecutions.Events
 		public BotResult[] BotResults { get; set; }
 		public SubTaskResult ExecutorResult { get; set; }
 		public DateTime Executed { get; set; }
-		public Exception Exception { get; set; }
+		public string Exception { get; set; }
 		public Dictionary<string, object> AdditionalData { get; set; } =
 			new Dictionary<string, object>();
 

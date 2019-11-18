@@ -152,8 +152,12 @@ namespace OPCAIC.ApiService.Services
 			private Task CreateMatches(CancellationToken cancellationToken, long tournamentId,
 				List<NewMatchDto> matches)
 			{
-				logger.TournamentMatchesGenerated(tournamentId, matches.Count);
-				return matchRepository.CreateMatchesAsync(matches, cancellationToken);
+				if (matches.Count > 0)
+				{
+					logger.TournamentMatchesGenerated(tournamentId, matches.Count);
+					return matchRepository.CreateMatchesAsync(matches, cancellationToken);
+				}
+				return Task.CompletedTask;
 			}
 
 			private async Task MarkGenerationDone(long tournamentId,

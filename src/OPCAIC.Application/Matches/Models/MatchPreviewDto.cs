@@ -42,7 +42,7 @@ namespace OPCAIC.Application.Matches.Models
 		{
 			configuration.CreateMap<Match, MatchDtoBase>(MemberList.Destination)
 				.ForMember(d => d.Submissions,
-					opt => opt.MapFrom(m => m.Participations.Select(p => p.Submission)))
+					opt => opt.MapFrom(m => m.Participations.OrderBy(s => s.Order).Select(p => p.Submission)))
 				.IncludeAllDerived();
 		}
 

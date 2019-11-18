@@ -299,6 +299,7 @@ namespace OPCAIC.Worker.Services
 						name))
 				{
 					status = SubTaskResult.ModuleError;
+					Response.Exception = e.Message;
 				}
 				catch (Exception e)
 					when (DoLog(LogLevel.Critical, LoggingEvents.GameModuleFailure, e,
@@ -306,6 +307,7 @@ namespace OPCAIC.Worker.Services
 						name))
 				{
 					status = SubTaskResult.PlatformError;
+					Response.Exception = e.Message;
 				}
 
 				return (status, result);

@@ -29,6 +29,7 @@
 		Read,
 		Update,
 		Search,
+		Delete
 	}
 
 	public enum GamePermission

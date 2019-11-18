@@ -15,7 +15,7 @@ namespace OPCAIC.Persistence.Configurations
 			builder.Property(e => e.Name).IsRequired().HasMaxLength(StringLengths.TournamentName);
 			builder.HasMany(e => e.MenuItems).WithOne().OnDelete(DeleteBehavior.Cascade);
 			builder.Property(e => e.Configuration).IsRequired();
-			builder.HasMany(e => e.Submissions).WithOne(e => e.Tournament);
+			builder.HasMany(e => e.Submissions).WithOne(e => e.Tournament).HasForeignKey(s => s.TournamentId);
 		}
 	}
 

@@ -104,7 +104,7 @@ namespace OPCAIC.ApiService.Security.Handlers
 					OwnerId = t.OwnerId, 
 					Availability = t.Availability, 
 					ManagerIds = t.Managers.Select(m => m.UserId).ToArray(),
-					ParticipantIds = t.Participants.Select(m => m.UserId).ToArray()
+					ParticipantIds = t.Participants.Where(m => m.UserId.HasValue).Select(m => m.UserId.Value).ToArray()
 				});
 
 			switch (data.Availability)

@@ -4,11 +4,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Bogus;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OPCAIC.ApiService.Models.Users;
+using OPCAIC.ApiService.Security;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -33,6 +35,8 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 		protected readonly HttpClient Client;
 		protected readonly FunctionalTestFixture Fixture;
 		protected readonly ITestOutputHelper Output;
+		protected readonly Faker Faker = new Faker();
+		protected UserIdentityModel CurrentIdentity { get; private set; }
 		private readonly JsonSerializerSettings serializerSettings;
 		private AuthenticationHeaderValue authHeader;
 
@@ -74,10 +78,11 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 
 		protected async Task LoginAs(string email, string password)
 		{
-			var tokens = await PostAsync<UserTokens>("api/users/login",
+			var tokens = await PostAsync<UserIdentityModel>("api/users/login",
 				new UserCredentialsModel {Email = email, Password = password}, false);
 
 			UseAccessToken(tokens.AccessToken);
+			CurrentIdentity = tokens;
 		}
 
 		private JsonSerializerSettings GetJsonSerializerOptions(FunctionalTestFixture fixture)
@@ -93,10 +98,9 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 			return SendAsync(HttpMethod.Get, url, null, dump);
 		}
 
-		protected async Task<T> GetAsync<T>(string url)
+		protected Task<T> GetAsync<T>(string url, bool dump = true)
 		{
-			var response = await GetAsync(url);
-			return Deserialize<T>(await response.Content.ReadAsStringAsync());
+			return SendAsync<T>(HttpMethod.Get, url, null, dump);
 		}
 
 		protected void UseAccessToken(string token)
@@ -123,6 +127,18 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 			bool dump = true)
 		{
 			return SendAsync(HttpMethod.Post, url, JsonContent(body), dump);
+		}
+
+		protected Task<HttpResponseMessage> PostAsync(string url, HttpContent content,
+			bool dump = true)
+		{
+			return SendAsync(HttpMethod.Post, url, content, dump);
+		}
+
+		protected Task<T> PostAsync<T>(string url, HttpContent content,
+			bool dump = true)
+		{
+			return SendAsync<T>(HttpMethod.Post, url, content, dump);
 		}
 
 		protected Task<T> PostAsync<T>(string url, object body = null, bool dump = true)
@@ -200,7 +216,7 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 			Output.WriteLine($"Request: {request.Method} {request.RequestUri}");
 			Output.WriteLine($"Headers:\n{request.Headers}");
 			Output.WriteLine(
-				$"Body: {PrettifyJson(request.Content?.ReadAsStringAsync().GetAwaiter().GetResult())}");
+				$"Body: {PrettifyBody(request.Content?.ReadAsStringAsync().GetAwaiter().GetResult())}");
 			Output.WriteLine("\n-----------------------------------------------------\n");
 		}
 
@@ -209,10 +225,13 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 			Output.WriteLine("Response:");
 			Output.WriteLine($"Status code: {response.StatusCode}");
 			Output.WriteLine($"Headers:\n{response.Headers}");
+			Output.WriteLine($"Body: {PrettifyBody(response.Content.ReadAsStringAsync().GetAwaiter().GetResult())}");
+			Output.WriteLine("\n#####################################################\n");
+		}
 
-			var body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-			if (body.Length > 0 && body[0] == '{') // format if received json
+		private string PrettifyBody(string body)
+		{
+			if (!string.IsNullOrEmpty(body) && body[0] == '{') // assume json
 			{
 				try
 				{
@@ -224,8 +243,7 @@ namespace OPCAIC.FunctionalTest.Infrastructure
 				}
 			}
 
-			Output.WriteLine($"Body: {body}");
-			Output.WriteLine("\n#####################################################\n");
+			return body;
 		}
 
 		private string PrettifyJson(string json)

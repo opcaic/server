@@ -155,9 +155,16 @@ namespace OPCAIC.ApiService.Test.Services
 				User = s.Author,
 				Submissions = new List<Submission>
 				{
-					s
+					s,
 				}
 			}).ToList();
+
+			tournament.Submissions =
+				tournament.Participants.SelectMany(s => s.Submissions).ToList();
+			foreach (var sub in tournament.Submissions)
+			{
+				sub.Tournament = tournament;
+			}
 
 			DbContext.SaveChanges();
 

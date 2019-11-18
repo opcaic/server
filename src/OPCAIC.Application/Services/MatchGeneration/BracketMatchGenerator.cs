@@ -120,6 +120,8 @@ namespace OPCAIC.Application.Services.MatchGeneration
 			Debug.Assert(match.Submissions.Count == 2);
 
 			var results = match.LastExecution?.BotResults;
+			if (results == null || results.Count == 0)
+				return null;
 
 			switch (strategy)
 			{

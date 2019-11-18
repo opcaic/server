@@ -207,7 +207,7 @@ namespace OPCAIC.Worker
 				// log in when handler to preserve scopes.
 				catch (Exception e) when (DoLogExecutionFailure(e, request))
 				{
-					response.Exception = e;
+					response.Exception = e.Message;
 					response.JobStatus = e is OperationCanceledException
 						? JobStatus.Canceled
 						: JobStatus.Error;

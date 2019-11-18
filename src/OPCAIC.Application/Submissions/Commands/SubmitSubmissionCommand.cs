@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using OPCAIC.Application.Dtos.Base;
 using OPCAIC.Application.Dtos.Submissions;
 using OPCAIC.Application.Exceptions;
 using OPCAIC.Application.Extensions;
@@ -20,7 +21,7 @@ using OPCAIC.Domain.Enums;
 
 namespace OPCAIC.Application.Submissions.Commands
 {
-	public class SubmitSubmissionCommand : PublicRequest, IRequest<long>
+	public class SubmitSubmissionCommand : AuthenticatedRequest, IRequest<long>
 	{
 		public long TournamentId { get; set; }
 
@@ -30,7 +31,7 @@ namespace OPCAIC.Application.Submissions.Commands
 		{
 			private readonly IMediator mediator;
 			private readonly ILogger<SubmitSubmissionCommand> logger;
-			private readonly ISubmissionRepository repository;
+			private readonly IRepository<Submission> repository;
 			private readonly IStorageService storage;
 			private readonly ITimeService time;
 			private readonly ITournamentRepository tournamentRepository;
@@ -54,13 +55,6 @@ namespace OPCAIC.Application.Submissions.Commands
 			public async Task<long> Handle(SubmitSubmissionCommand request,
 				CancellationToken cancellationToken)
 			{
-				if (request.RequestingUserId == null)
-				{
-					// TODO: This should never happen with the authentication at the WebAPI side, maybe introduce another interface where the RequestingUserId is not nullable
-					throw new BusinessException(ValidationErrorCodes.GenericError,
-						"User not logged in");
-				}
-
 				// check whether the tournament can still accept submissions
 				var tournament =
 					await tournamentRepository.FindByIdAsync(request.TournamentId,
@@ -76,45 +70,52 @@ namespace OPCAIC.Application.Submissions.Commands
 
 					throw new BusinessException(
 						ValidationErrorCodes.TournamentDoesNotAcceptSubmission,
-						"This tournament does not accept submissions anymore.");
+						"This tournament currently does not accept submissions.");
 				}
 
-				if (!await tournamentParticipationsRepository.ExistsAsync(p
-					=> p.TournamentId == request.TournamentId &&
-					p.UserId == request.RequestingUserId, cancellationToken))
+				var participation = await tournamentParticipationsRepository.FindAsync(p => 
+					p.TournamentId == request.TournamentId &&
+					p.UserId == request.RequestingUserId, cancellationToken);
+
+				if (participation == null)
 				{
-					await tournamentParticipationsRepository.CreateAsync(
-						new TournamentParticipation
-						{
-							TournamentId = request.TournamentId,
-							UserId = request.RequestingUserId.Value
-						}, cancellationToken);
+					participation = new TournamentParticipation
+					{
+						TournamentId = request.TournamentId,
+						UserId = request.RequestingUserId
+					};
+
+					tournamentParticipationsRepository.Add(participation);
 				}
 
 				// save db entity
-				var dto = new NewSubmissionDto
+				var submission = new Submission
 				{
 					TournamentId = request.TournamentId,
-					AuthorId = request.RequestingUserId.Value,
-					Score = tournament.Format == TournamentFormat.Elo ? 1200 : 0
+					AuthorId = request.RequestingUserId,
+					Score = tournament.Format == TournamentFormat.Elo ? 1200 : 0,
+					TournamentParticipation = participation
 				};
 
-				var id = await repository.CreateAsync(dto, cancellationToken);
-				var storeDto =
-					await repository.FindSubmissionForStorageAsync(id, cancellationToken);
+				repository.Add(submission);
+				await repository.SaveChangesAsync(cancellationToken);
 
 				// save archive
-				await using (var stream = storage.WriteSubmissionArchive(storeDto))
+				await using (var stream = storage.WriteSubmissionArchive(new SubmissionDtoBase()
+				{
+					Id = submission.Id,
+					TournamentId = submission.TournamentId
+				}))
 				{
 					// TODO: do we really want to permit cancellation here?
 					// TODO: connect db transactions and filesystem transactions storage
 					await request.Archive.CopyToAsync(stream, cancellationToken);
 				}
 
-				logger.SubmissionCreated(id, dto);
-				await mediator.Publish(new SubmissionCreated(id), cancellationToken);
+				logger.SubmissionCreated(submission.Id, submission.TournamentId);
+				await mediator.Publish(new SubmissionCreated(submission.Id), cancellationToken);
 
-				return id;
+				return submission.Id;
 			}
 
 			public bool CanTournamentAcceptSubmissions(TournamentDetailDto tournament)

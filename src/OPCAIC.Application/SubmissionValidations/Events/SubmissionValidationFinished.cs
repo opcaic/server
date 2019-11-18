@@ -23,7 +23,7 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 		public EntryPointResult CompilerResult { get; set; }
 		public EntryPointResult ValidatorResult { get; set; }
 		public DateTime Executed { get; set; }
-		public Exception Exception { get; set; }
+		public string Exception { get; set; }
 
 		public class Handler : INotificationHandler<SubmissionValidationFinished>
 		{
@@ -56,7 +56,7 @@ namespace OPCAIC.Application.SubmissionValidations.Events
 					=> new Data
 					{
 						TournamentId = v.Submission.TournamentId,
-						UserId = v.Submission.AuthorId,
+						UserId = v.Submission.AuthorId.Value,
 						SubmissionId = v.SubmissionId,
 						ValidationId = v.Id,
 						LastValidationId = v.Submission.Validations

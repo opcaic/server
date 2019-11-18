@@ -9,12 +9,7 @@ namespace OPCAIC.Persistence.Configurations
 		/// <inheritdoc />
 		public void Configure(EntityTypeBuilder<TournamentParticipation> builder)
 		{
-			// mapping table, does not need a dedicated key
-			builder.HasKey(nameof(TournamentParticipation.TournamentId),
-				nameof(TournamentParticipation.UserId));
-
-			builder.HasMany(e => e.Submissions).WithOne(e => e.TournamentParticipation)
-				.HasForeignKey(nameof(Submission.TournamentId), nameof(Submission.AuthorId));
+			builder.HasMany(e => e.Submissions).WithOne(e => e.TournamentParticipation).IsRequired();
 		}
 	}
 }

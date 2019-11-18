@@ -5,6 +5,7 @@ using OPCAIC.Application.Specifications;
 using OPCAIC.Application.Submissions.Events;
 using OPCAIC.Domain.Entities;
 using OPCAIC.Domain.Enums;
+using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -52,15 +53,19 @@ namespace OPCAIC.Application.Test.Submissions.Events
 		}
 
 		[Fact]
-		public Task UpdatesActiveSubmission()
+		public async Task UpdatesActiveSubmission()
 		{
 			Data.LastSubmissionId = Notification.SubmissionId;
 
 			repository.SetupProject(Data, CancellationToken);
-			pariticipationsRepository.SetupUpdate((UpdateTournamentParticipationDto dto) =>
-				dto.ActiveSubmissionId == Notification.SubmissionId, CancellationToken);
+			var participation = new TournamentParticipation();
+			pariticipationsRepository.SetupFind(participation, CancellationToken);
+			pariticipationsRepository.Setup(s => s.SaveChangesAsync(CancellationToken))
+				.Returns(Task.CompletedTask);
 
-			return Handler.Handle(Notification, CancellationToken);
+			await Handler.Handle(Notification, CancellationToken);
+
+			participation.ActiveSubmissionId.ShouldBe(Notification.SubmissionId);
 		}
 	}
 }
