@@ -89,7 +89,7 @@ namespace OPCAIC.Application.Tournaments.Queries
 				{
 					p.StartingSlot = slot++;
 
-					if (shouldAnonymize && p.Author.Id != request.RequestingUserId)
+					if (shouldAnonymize && p.Author?.Id != request.RequestingUserId)
 					{
 						p.Author = UserReferenceDto.Anonymous;
 					}
