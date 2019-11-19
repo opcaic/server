@@ -30,7 +30,7 @@ namespace OPCAIC.Application.Matches.Models
 		{
 			foreach (var sub in Submissions)
 			{
-				if (sub.Author.Id != userId)
+				if (sub.Author?.Id != userId)
 				{
 					sub.Author = UserReferenceDto.Anonymous;
 				}
